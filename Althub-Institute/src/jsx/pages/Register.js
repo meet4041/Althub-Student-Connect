@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

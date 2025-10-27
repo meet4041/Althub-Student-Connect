@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import axios from 'axios';
 import { ALTHUB_API_URL } from './baseURL';

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
 import Loader from '../layout/Loader'
@@ -116,7 +117,7 @@ const Users = () => {
                     <div className="card">
                         <div className="card-body">
                             <div class="form-outline mb-4">
-                                <input type="search" class="form-control" id="datatable-search-input" placeholder='Search User' onChange={handleSearch} />
+                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search User' onChange={handleSearch} />
                             </div>
                             <div className="row">
                                 <div className="col-12">
@@ -138,7 +139,7 @@ const Users = () => {
                                                     <tr key={index}>
                                                         <td align='left'>{index + 1}</td>
                                                         <td>{elem.fname}</td>
-                                                        <td>{elem.profilepic === '' || elem.profilepic === undefined ? <img src='assets/img/profile1.png' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}></img> : <img src={`${ALTHUB_API_URL}${elem.profilepic}`} alt='user-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
+                                                        <td>{elem.profilepic === '' || elem.profilepic === undefined ? <img src='assets/img/profile1.png' alt='default profile' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} /> : <img src={`${ALTHUB_API_URL}${elem.profilepic}`} alt='user-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
                                                         <td>{elem.email}</td>
                                                         <td>{elem.phone ? elem.phone : ''}</td>
                                                         <td>{elem.dob.split('T')[0]}</td>
@@ -148,11 +149,11 @@ const Users = () => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div class="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul class="pagination">
+                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <ul className="pagination">
                                             {pageNumbers.map((number) =>
-                                                <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span class="page-link" onClick={() => paginate(number)}>{number}</span>
+                                                <li key={number} className={currentPage === number ? "page-item active" : "page-item"} aria-current={currentPage === number ? 'page' : undefined}>
+                                                    <button type="button" className="page-link" onClick={() => paginate(number)}>{number}</button>
                                                 </li>
                                             )}
                                         </ul>

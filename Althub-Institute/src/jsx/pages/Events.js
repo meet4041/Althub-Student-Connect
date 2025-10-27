@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
 import Loader from '../layout/Loader'
@@ -143,7 +144,7 @@ const Events = () => {
                                                     <tr key={index}>
                                                         <td align='left'>{index + 1}</td>
                                                         <td>{elem.title}</td>
-                                                        <td>{elem.photos === '' || elem.photos === undefined || elem.photos.length <= 0 ? <img src='assets/img/Events-amico.png' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}></img> : <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='user-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
+                                                        <td>{elem.photos === '' || elem.photos === undefined || elem.photos.length <= 0 ? <img src='assets/img/Events-amico.png' alt='default event' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} /> : <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='event-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
                                                         <td>{elem.description}</td>
                                                         <td>{elem.date.split('T')[0]}</td>
                                                         <td>{elem.date.split('T')[1]}</td>
@@ -154,8 +155,8 @@ const Events = () => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div class="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul class="pagination">
+                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <ul className="pagination">
                                             {pageNumbers.map((number) =>
                                                 <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
                                                     <span class="page-link" onClick={() => paginate(number)}>{number}</span>

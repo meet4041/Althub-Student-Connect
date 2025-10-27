@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/alt-text, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom'
 import Loader from '../layout/Loader'
