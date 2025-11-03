@@ -1,0 +1,136 @@
+# Dependencies
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+build/
+dist/
+*/build/
+*/dist/
+.next/
+out/
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.AppleDouble
+.LSOverride
+Icon
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+*.code-workspace
+.history/
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+test/coverage/
+__tests__/__snapshots__/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+.cache/
+.sass-cache/
+*.tsbuildinfo
+
+# Package manager locks (optional - some teams prefer to commit these)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+lib/
+*.pyc
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.tgz
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Uploaded files and media (from server)
+Althub-Server/public/userImages/
+Althub-Server/public/postImages/
+Althub-Server/public/eventImages/
+Althub-Server/public/instituteImages/
+Althub-Server/public/companyImages/
+Althub-Server/public/educationImages/
+Althub-Server/public/experienceImages/
+Althub-Server/public/adminImages/
+Althub-Server/public/notificationSenderImages/
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Misc
+*.md.bak
+*.txt.bak
+.vscode-test/
+.vercel
+.netlify
+
+# Optional: Keep structure but ignore content
+# !Althub-Server/public/*/
+# !Althub-Server/public/*/.gitkeep
+
