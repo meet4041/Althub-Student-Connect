@@ -335,30 +335,35 @@ export default function Register() {
                 <div className="text-danger">{errors.dob_err}</div>
                 <div className="gender">
                   <div>Gender</div>
-                  <div>
-
-                    <input
-                      type="radio"
-                      name="gender"
-                      onChange={(e) => {
-                        setUser({ ...user, gender: e.target.value });
-                      }}
-                      value="Male"
-                      checked={user.gender === "Male" ? true : false}
-                    />
-                    <span>Male</span>
+                  {/* Option 1: Male */}
+                  <div className="gender-option">
+                    <label>
+                      <input
+                        type="radio"
+                        name="gender"
+                        onChange={(e) => {
+                          setUser({ ...user, gender: e.target.value });
+                        }}
+                        value="Male"
+                        checked={user.gender === "Male"}
+                      />
+                      <span>Male</span>
+                    </label>
                   </div>
-                  <div>
-                    <input
-                      type="radio"
-                      name="gender"
-                      onChange={(e) => {
-                        setUser({ ...user, gender: e.target.value });
-                      }}
-                      value="Female"
-                      checked={user.gender === "Female" ? true : false}
-                    />
-                    <span>Female</span>
+                  {/* Option 2: Female */}
+                  <div className="gender-option">
+                    <label>
+                      <input
+                        type="radio"
+                        name="gender"
+                        onChange={(e) => {
+                          setUser({ ...user, gender: e.target.value });
+                        }}
+                        value="Female"
+                        checked={user.gender === "Female"}
+                      />
+                      <span>Female</span>
+                    </label>
                   </div>
                 </div>
                 <div className="text-danger">{errors.gender_err}</div>

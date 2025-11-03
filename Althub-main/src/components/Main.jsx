@@ -146,19 +146,15 @@ function Main() {
                         </ul>
                     </div>
                     <div className="address">
-                        <h3>Address</h3>
+                        <h3>Contact</h3>
                         <ul>
                             <li>
-                                <i className="fa-solid fa-location-dot"></i>
-                                Althub
-                            </li><br />
-                            <li>
                                 <i className="fa-solid fa-phone"></i>
-                                +91 9876543210
+                                +91 6352314322
                             </li><br />
                             <li>
                                 <i className="fa-regular fa-envelope"></i>
-                                Althub1111@gmail.com
+                                <a href="mailto:althub.daiict@gmail.com" target="_blank" rel="noopener noreferrer">althub.daiict@gmail.com</a>
                             </li>
                         </ul>
                     </div>
@@ -166,16 +162,26 @@ function Main() {
                         <h3>Social Media</h3>
                         <ul>
                             <li>
-                                <i className="fa-brands fa-instagram"></i>
-                                Althub
+                                <a
+                                    href="https://www.linkedin.com/in/meetgandhi4041/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                >
+                                    <i className="fa-brands fa-linkedin"></i>
+                                    LinkedIn
+                                </a>
                             </li><br />
                             <li>
-                                <i className="fa-brands fa-linkedin"></i>
-                                Althub
-                            </li><br />
-                            <li>
-                                <i className="fa-brands fa-github"></i>
-                                Althub
+                                <a
+                                    href="https://github.com/meet4041"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                >
+                                    <i className="fa-brands fa-github"></i>
+                                    Github
+                                </a>
                             </li><br />
                         </ul>
                     </div>
