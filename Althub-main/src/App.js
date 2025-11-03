@@ -1,3 +1,4 @@
+import React from "react";
 import Events from "./components/Events";
 import Feedback from "./components/Feedback";
 import Home from "./components/Home";
@@ -18,26 +19,35 @@ import Navbar from "./components/Navbar";
 import HelpStudents from "./components/HelpStudents";
 
 function App() {
-  const socket = io("ws://localhost:8900");
+  // Use useMemo to prevent socket from being recreated on every render
+  const socket = React.useMemo(() => io("ws://localhost:8900"), []);
+  
+  // Cleanup socket connection on unmount
+  React.useEffect(() => {
+    return () => {
+      socket.disconnect();
+    };
+  }, [socket]);
+
   return (
     <>
     <ToastContainer/>
     <Navbar socket={socket}/>
       <Routes>
-        <Route exact path="/" element={<Main />} />
-        <Route exact path="/login" element={<Login />} />
-        <Route exact path="/register" element={<Register />} />
-        <Route exact path="/home" element={<Home socket={socket}/>} />
-        <Route exact path="/events" element={<Events />} />
-        <Route exact path="/feedback" element={<Feedback />} />
-        <Route exact path="/view-profile" element={<ViewProfile />} />
-        <Route exact path="/view-search-profile" element={<ViewSearchProfile socket={socket}/>} />
-        <Route exact path="/search-profile" element={<SearchProfile />} />
-        <Route exact path="/message" element={<Message socket={socket}/>} />
-        <Route exact path="/notification" element={<Notidfication />} />
-        <Route exact path="/forget-password" element={<ForgetPassword />} />
-        <Route exact path="/new-password" element={<NewPassword />} />
-        <Route exact path="/help-students" element={<HelpStudents />} />
+        <Route path="/" element={<Main />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/home" element={<Home socket={socket}/>} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/feedback" element={<Feedback />} />
+        <Route path="/view-profile" element={<ViewProfile />} />
+        <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket}/>} />
+        <Route path="/search-profile" element={<SearchProfile />} />
+        <Route path="/message" element={<Message socket={socket}/>} />
+        <Route path="/notification" element={<Notidfication />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route path="/new-password" element={<NewPassword />} />
+        <Route path="/help-students" element={<HelpStudents />} />
       </Routes>
     </>
   );

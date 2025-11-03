@@ -31,26 +31,12 @@ export default function Home({ socket }) {
         setUser(Response.data.data[0]);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching user:", error);
+        toast.error("Failed to load user data");
       });
   }, [userid]);
 
-  useEffect(() => {
-    getUser();
-    getPost();
-    getEvents();
-    getAids();
-  }, [getUser]);
-
-  const uploadImg = () => {
-    document.getElementById("myFileInput").click();
-  };
-
-  const imgChange = (e) => {
-    setFileList(e.target.files);
-  };
-
-  const getAids = () => {
+  const getAids = useCallback(() => {
     axios({
       url: `${WEB_URL}/api/getFinancialAid`,
       method: "get",
@@ -59,11 +45,11 @@ export default function Home({ socket }) {
         setAids(Response.data.data);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching financial aids:", error);
       });
-  }
+  }, []);
 
-  const getPost = () => {
+  const getPost = useCallback(() => {
     axios({
       method: "get",
       url: `${WEB_URL}/api/getPost`,
@@ -72,8 +58,39 @@ export default function Home({ socket }) {
         setPost(Response.data.data.reverse());
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching posts:", error);
       });
+  }, []);
+
+  const getEvents = useCallback(() => {
+    axios({
+      method: "get",
+      url: `${WEB_URL}/api/getEvents`,
+    })
+      .then((Response) => {
+        setEvents(Response.data.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching events:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    getUser();
+    getPost();
+    getEvents();
+    getAids();
+  }, [getUser, getPost, getEvents, getAids]);
+
+  const uploadImg = () => {
+    const fileInput = document.getElementById("myFileInput");
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
+  const imgChange = (e) => {
+    setFileList(e.target.files);
   };
 
   const addPost = () => {
@@ -106,19 +123,6 @@ export default function Home({ socket }) {
       });
   };
 
-  const getEvents = () => {
-    axios({
-      method: "get",
-      url: `${WEB_URL}/api/getEvents`,
-    })
-      .then((Response) => {
-        setEvents(Response.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
   const Logout = () => {
     localStorage.clear();
     nav("/");
@@ -144,7 +148,7 @@ export default function Home({ socket }) {
         getPost();
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error:", error);
       });
   };
 
