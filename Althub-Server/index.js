@@ -6,13 +6,25 @@ const connectToMongo = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = 5001;
 const cors = require("cors");
-const io = require("socket.io")(8900, {
-  cors: {
-    origin: "http://localhost:3000",
-  },
+
+// Configure CORS dynamically for deployment
+const allowedOrigin = process.env.CLIENT_ORIGIN || "*";
+
+// Initialize Socket.IO only when not running on Vercel serverless
+let io = null;
+if (!process.env.VERCEL && process.env.ENABLE_SOCKET_IO !== "false") {
+  io = require("socket.io")(process.env.SOCKET_PORT || 8900, {
+    cors: {
+      origin: allowedOrigin,
+    },
+  });
+}
+
+// Initialize database connection
+connectToMongo().catch(err => {
+  console.error("Failed to connect to MongoDB:", err);
 });
 
-connectToMongo();
 //routes
 const user_route = require("./routes/userRoute");
 const event_route = require("./routes/eventRoute");
@@ -29,7 +41,8 @@ const company_route = require("./routes/companyRoute");
 const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 
-app.use(cors());
+app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(express.json());
 app.use(cookieParser());
 app.use("/api", user_route);
 app.use("/api", event_route);
@@ -47,14 +60,17 @@ app.use("/api", notification_route);
 app.use("/api", financialaid_route);
 
 app.get("/", (req, res) => {
-  res.end("Hellooo");
+  res.send("Althub Server is running!");
 });
 
 app.use(express.static("public"));
 
-app.listen(port, function () {
-  console.log("Server is ready");
-});
+// Do not start a server when running on serverless (Vercel). Export a handler instead.
+if (!process.env.VERCEL) {
+  app.listen(port, function () {
+    console.log("Server is ready");
+  });
+}
 
 //socket server--------------------
 let users = [];
@@ -72,43 +88,49 @@ const getUser = (userId) => {
   return users.find((user) => user.userId === userId);
 };
 
-io.on("connection", (socket) => {
-  // console.log("a user connected!");
+if (io) {
+  io.on("connection", (socket) => {
+    // console.log("a user connected!");
 
-  socket.on("addUser", (userId) => {
-    addUser(userId, socket.id);
-    io.emit("getUsers", users);
+    socket.on("addUser", (userId) => {
+      addUser(userId, socket.id);
+      io.emit("getUsers", users);
+    });
+
+    socket.on("disconnect", () => {
+      // console.log("user disconnected");
+      removeUser(socket.id);
+      io.emit("getUsers", users);
+    });
+
+    socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
+      const user = getUser(receiverId);
+      if (user && user.socketId) {
+        io.to(user.socketId).emit("getMessage", {
+          senderId,
+          text,
+          time,
+        });
+      } else {
+        // console.log("Invalid user or socketId not found.");
+      }
+    });
+
+    socket.on("sendNotification", ({ receiverid, title, msg}) => {
+      const user = getUser(receiverid);
+
+      if (user && user.socketId) {
+        io.to(user.socketId).emit("getNotification", {
+          title,
+          msg,
+        });
+      } else {
+        // console.log("Invalid user or socketId not found.");
+      }
+    });
   });
+}
 
-  socket.on("disconnect", () => {
-    // console.log("user disconnected");
-    removeUser(socket.id);
-    io.emit("getUsers", users);
-  });
-
-  socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
-    const user = getUser(receiverId);
-    if (user && user.socketId) {
-      io.to(user.socketId).emit("getMessage", {
-        senderId,
-        text,
-        time,
-      });
-    } else {
-      // console.log("Invalid user or socketId not found.");
-    }
-  });
-
-  socket.on("sendNotification", ({ receiverid, title, msg}) => {
-    const user = getUser(receiverid);
-
-    if (user && user.socketId) {
-      io.to(user.socketId).emit("getNotification", {
-        title,
-        msg,
-      });
-    } else {
-      // console.log("Invalid user or socketId not found.");
-    }
-  });
-});
+// Export for Vercel Serverless
+// For Vercel, we need to export the app directly
+module.exports = app;
