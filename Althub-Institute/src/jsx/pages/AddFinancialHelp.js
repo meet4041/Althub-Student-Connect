@@ -10,22 +10,14 @@ import Footer from '../layout/Footer';
 
 const AddFinancialHelp = () => {
     const navigate = useNavigate();
-    const [institute_Id, setInstitute_Id] = useState(null);
-    const [institute_Name, setInstitute_Name] = useState(null);
-
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            const name = localStorage.getItem("AlmaPlus_institute_Name");
-            setInstitute_Id(id);
-            setInstitute_Name(name);
-        }
+        document.getElementById('page-loader').style.display = 'none';
+        var element = document.getElementById("page-container");
+        element.classList.add("show");
     }, []);
+
+    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
+    const institute_Name = localStorage.getItem("AlmaPlus_institute_Name");
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
 

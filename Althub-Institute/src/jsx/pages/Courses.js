@@ -8,7 +8,7 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 const Courses = () => {
-    const [institute_Id, setInstitute_Id] = useState(null);
+    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
     let navigate = useNavigate();
     const [courses, setCourses] = useState([]);
     const [displayCourses, setDisplayCourses] = useState([]);
@@ -16,35 +16,23 @@ const Courses = () => {
     const [coursesPerPage, setCoursesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element && element.classList) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
-    }, []);
-
     const getCoursesData = useCallback(() => {
-        if (institute_Id) {
-            axios({
-                method: "get",
-                url: `${ALTHUB_API_URL}/api/getCourseByInstitute/${institute_Id}`,
-            }).then((response) => {
-                setCourses(response.data.data || []);
-            }).catch(() => {
-                setCourses([]);
-            });
-        }
+        axios({
+            method: "get",
+            url: `${ALTHUB_API_URL}/api/getCourseByInstitute/${institute_Id}`,
+        }).then((response) => {
+            setCourses(response.data.data || []);
+        }).catch(() => {
+            setCourses([]);
+        });
     }, [institute_Id]);
 
     useEffect(() => {
-        if (institute_Id) {
-            getCoursesData();
-        }
+        document.getElementById('page-loader').style.display = 'none';
+        var element = document.getElementById("page-container");
+        if (element && element.classList) element.classList.add("show");
+
+        getCoursesData();
     }, [getCoursesData]);
 
     useEffect(() => {

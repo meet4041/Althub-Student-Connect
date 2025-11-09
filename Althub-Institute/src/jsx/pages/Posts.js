@@ -9,7 +9,7 @@ import axios from 'axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 const Posts = () => {
-    const [institute_Id, setInstitute_Id] = useState(null);
+    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
     const [posts, setPosts] = useState([]);
     const [displayPosts, setDisplayPosts] = useState([]);
     const rows = [10, 20, 30];
@@ -19,25 +19,14 @@ const Posts = () => {
     const [to, setTo] = useState('');
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
+        document.getElementById('page-loader').style.display = 'none';
+        var element = document.getElementById("page-container");
+        element.classList.add("show");
+        getPostsData();
     }, []);
 
-    useEffect(() => {
-        if (institute_Id) {
-            getPostsData();
-        }
-    }, [institute_Id]);
-
     const getPostsData = () => {
-        if (!institute_Id) return;
+
         axios({
             method: "get",
             url: `${ALTHUB_API_URL}/api/getPostById/${institute_Id}`,
@@ -152,8 +141,8 @@ const Posts = () => {
 
                     <div className="card">
                         <div className="card-body">
-                            <div className="form-outline mb-4">
-                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search post' onChange={handleSearch} />
+                            <div class="form-outline mb-4">
+                                <input type="search" class="form-control" id="datatable-search-input" placeholder='Search post' onChange={handleSearch} />
                             </div>
                             <div className="row">
                                 <div className="col-12">
@@ -181,11 +170,11 @@ const Posts = () => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul className="pagination">
+                                    <div class="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <ul class="pagination">
                                             {pageNumbers.map((number) =>
-                                                <li className={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
+                                                <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
+                                                    <span class="page-link" onClick={() => paginate(number)}>{number}</span>
                                                 </li>
                                             )}
                                         </ul>

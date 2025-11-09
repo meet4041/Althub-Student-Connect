@@ -7,63 +7,45 @@ import { ALTHUB_API_URL } from '../pages/baseURL';
 
 function Menu() {
    const navigate = useNavigate();
-   const [institute_Id, setInstitute_Id] = useState(null);
-   const [dashboardClass, setDashboardClass] = useState("");
-   const [usersClass, setUsersClass] = useState("");
-   const [coursesClass, setCoursesClass] = useState("");
-   const [eventsClass, setEventsClass] = useState("");
-   const [postsClass, setPostsClass] = useState("");
-   const [aidClass, setAidClass] = useState("");
 
-   useEffect(() => {
-      if (typeof window !== 'undefined') {
-         const id = localStorage.getItem("AlmaPlus_institute_Id");
-         if (id == null) {
-            toast.error("Please login first...!");
-            navigate(`/`);
-            return;
-         }
-         setInstitute_Id(id);
-         
-         // Set active class based on current pathname
-         const pathname = window.location.pathname;
-         setDashboardClass(pathname.match(/^\/dashboard/) ? "active" : "");
-         setUsersClass(pathname.match(/^\/users/) ? "active" : "");
-         setCoursesClass(pathname.match(/^\/courses/) ? "active" : "");
-         setEventsClass(pathname.match(/^\/events/) ? "active" : "");
-         setPostsClass(pathname.match(/^\/posts/) ? "active" : "");
-         setAidClass(pathname.match(/^\/financial-aid/) ? "active" : "");
-      }
-   }, [navigate]);
-
-   const Logout = () => {
-      if (typeof window !== 'undefined') {
-         localStorage.removeItem('AlmaPlus_institute_Id');
-      }
+   if (localStorage.getItem("AlmaPlus_institute_Id") == null) {
+      toast.error("Please login first...!");
       navigate(`/`);
    }
+
+   const Logout = () => {
+      localStorage.removeItem('AlmaPlus_institute_Id');
+      navigate(`/`);
+   }
+
+   var dashboardClass = window.location.pathname.match(/^\/dashboard/) ? "active" : "";
+   var usersClass = window.location.pathname.match(/^\/users/) ? "active" : "";
+   var coursesClass = window.location.pathname.match(/^\/courses/) ? "active" : "";
+   var eventsClass = window.location.pathname.match(/^\/events/) ? "active" : "";
+   var postsClass = window.location.pathname.match(/^\/posts/) ? "active" : "";
+   var aidClass = window.location.pathname.match(/^\/financial-aid/) ? "active" : "";
+
+   const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
    const [profileInfo, setProfileInfo] = useState({
       name: '',
       image: ''
    });
 
    const getData = () => {
-      if (institute_Id) {
-         const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
-         axios({
-            method: "get",
-            url: myurl,
-         }).then((response) => {
-            if (response.data.success === true) {
-               setProfileInfo({
-                  name: response.data.data.name,
-                  image: response.data.data.image
-               })
-            }
-         });
-      }
+      const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
+      axios({
+         method: "get",
+         url: myurl,
+      }).then((response) => {
+         if (response.data.success === true) {
+            setProfileInfo({
+               name: response.data.data.name,
+               image: response.data.data.image
+            })
+         }
+      });
    };
-   useEffect(() => getData(), [institute_Id])
+   useEffect(() => getData(), [])
 
    return (
       <>
@@ -97,31 +79,31 @@ function Menu() {
                   </li>
                   <li className={usersClass}>
                      <Link to="/users" >
-                        <i className="fa fa-users"></i>
+                        <i class="fa fa-users"></i>
                         <span>Users</span>
                      </Link>
                   </li>
                   <li className={coursesClass}>
                      <Link to="/courses" >
-                        <i className="fa fa-graduation-cap"></i>
+                        <i class="fa fa-graduation-cap"></i>
                         <span>Courses</span>
                      </Link>
                   </li>
                   <li className={eventsClass}>
                      <Link to="/events" >
-                        <i className="fa fa-calendar"></i>
+                        <i class="fa fa-calendar"></i>
                         <span>Events</span>
                      </Link>
                   </li>
                   <li className={postsClass}>
                      <Link to="/posts" >
-                        <i className="fa fa-address-card"></i>
+                        <i class="fa fa-address-card"></i>
                         <span>Post</span>
                      </Link>
                   </li>
                   <li className={aidClass}>
                      <Link to="/financial-aid" >
-                        <i className="fa-solid fa-sack-dollar"></i>
+                        <i class="fa-solid fa-sack-dollar"></i>
                         <span>Financial Aid</span>
                      </Link>
                   </li>

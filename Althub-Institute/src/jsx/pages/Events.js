@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment, useCallback } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
 import Loader from '../layout/Loader'
 import Menu from '../layout/Menu';
@@ -9,7 +9,7 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 const Events = () => {
-    const [institute_Id, setInstitute_Id] = useState(null);
+    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
     let navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [displayEvents, setDisplayEvents] = useState([]);
@@ -20,37 +20,23 @@ const Events = () => {
     const [to, setTo] = useState('');
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
+        document.getElementById('page-loader').style.display = 'none';
+        var element = document.getElementById("page-container");
+        element.classList.add("show");
+        getEventsData();
+
     }, []);
 
-    const getEventsData = useCallback(() => {
-        if (institute_Id) {
-            axios({
-                method: "get",
-                url: `${ALTHUB_API_URL}/api/getEventsByInstitute/${institute_Id}`,
+    const getEventsData = () => {
+        axios({
+            method: "get",
+            url: `${ALTHUB_API_URL}/api/getEventsByInstitute/${institute_Id}`,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         }).then((response) => {
             console.log(response.data.data);
             setEvents(response.data.data);
-        }).catch(() => {
-            setEvents([]);
         });
-        }
-    }, [institute_Id]);
-
-    useEffect(() => {
-        if (institute_Id) {
-            getEventsData();
-        }
-    }, [institute_Id, getEventsData]);
+    };
 
     useEffect(() => {
 

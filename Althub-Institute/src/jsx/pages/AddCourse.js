@@ -9,19 +9,13 @@ import Footer from '../layout/Footer';
 
 const AddCourse = () => {
     const navigate = useNavigate();
-    const [institute_Id, setInstitute_Id] = useState(null);
-    
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
+        document.getElementById('page-loader').style.display = 'none';
+        var element = document.getElementById("page-container");
+        element.classList.add("show");
     }, []);
+
+    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
 
@@ -45,7 +39,7 @@ const AddCourse = () => {
     }
 
     const submitHandler = (e) => {
-        if (validate() && institute_Id) {
+        if (validate()) {
             setDisable(true)
             axios({
                 method: "post",

@@ -9,21 +9,16 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const AddPost = () => {
-    const [institute_Id, setInstitute_Id] = useState(null);
+    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
     const [iname, setiname] = useState('');
     const [image,setImage]=useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
+        document.getElementById('page-loader').style.display = 'none';
+        var element = document.getElementById("page-container");
+        element.classList.add("show");
+
     }, []);
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -48,7 +43,6 @@ const AddPost = () => {
         });
     }
     const getData = () => {
-        if (!institute_Id) return;
         const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
         axios({
             method: "get",
@@ -76,7 +70,7 @@ const AddPost = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
-        if (validate() && institute_Id) {
+        if (validate()) {
             setDisable(true)
             const body = new FormData();
             body.append("userid", institute_Id);
