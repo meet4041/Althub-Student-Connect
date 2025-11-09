@@ -20,7 +20,6 @@ const EditCourse = () => {
     });
     const location = useLocation();
     const state = location.state.data;
-    console.log("data:", state);
 
     const getcourseData = () => {
         setData({
@@ -71,7 +70,6 @@ const EditCourse = () => {
                     navigate('/courses');
                 }, 1500);
             }).catch((error) => {
-                console.log(error);
                 setDisable(false);
             });
 

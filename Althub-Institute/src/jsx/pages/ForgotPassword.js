@@ -47,7 +47,6 @@ function ForgotPassword() {
                     }, [2000])
                 }
             }).catch((error) => {
-                console.log("Errors", error);
                 setDisable(false);
                 toast.error(error.response.data.message);
             })

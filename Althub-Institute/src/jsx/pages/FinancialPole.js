@@ -9,7 +9,7 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 const FinancialPole = () => {
-    const institute_Name = localStorage.getItem("AlmaPlus_institute_Name");
+    const [institute_Name, setInstitute_Name] = useState(null);
     let navigate = useNavigate();
     const [data, setData] = useState([]);
     const [displayCourses, setDisplayCourses] = useState([]);
@@ -20,12 +20,22 @@ const FinancialPole = () => {
     const [to, setTo] = useState('');
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
-        getAidData();
-
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+            
+            const name = localStorage.getItem("AlmaPlus_institute_Name");
+            setInstitute_Name(name);
+        }
     }, []);
+
+    useEffect(() => {
+        if (institute_Name) {
+            getAidData();
+        }
+    }, [institute_Name]);
 
     const getAidData = () => {
         axios({
@@ -119,8 +129,8 @@ const FinancialPole = () => {
 
                     <div className="card">
                         <div className="card-body">
-                            <div class="form-outline mb-4">
-                                <input type="search" class="form-control" id="datatable-search-input" placeholder='Search Course' onChange={handleSearch} />
+                            <div className="form-outline mb-4">
+                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search Course' onChange={handleSearch} />
                             </div>
                             <div className="row">
                                 <div className="col-12">
@@ -154,11 +164,11 @@ const FinancialPole = () => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div class="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul class="pagination">
+                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <ul className="pagination">
                                             {pageNumbers.map((number) =>
-                                                <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span class="page-link" onClick={() => paginate(number)}>{number}</span>
+                                                <li className={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
+                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
                                                 </li>
                                             )}
                                         </ul>

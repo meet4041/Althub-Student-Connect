@@ -10,20 +10,8 @@ const cors = require("cors");
 // Configure CORS dynamically for deployment
 const allowedOrigin = process.env.CLIENT_ORIGIN || "*";
 
-// Initialize Socket.IO only when not running on Vercel serverless
-let io = null;
-if (!process.env.VERCEL && process.env.ENABLE_SOCKET_IO !== "false") {
-  io = require("socket.io")(process.env.SOCKET_PORT || 8900, {
-    cors: {
-      origin: allowedOrigin,
-    },
-  });
-}
-
 // Initialize database connection
-connectToMongo().catch(err => {
-  console.error("Failed to connect to MongoDB:", err);
-});
+connectToMongo();
 
 //routes
 const user_route = require("./routes/userRoute");
@@ -63,14 +51,31 @@ app.get("/", (req, res) => {
   res.send("Althub Server is running!");
 });
 
+// Serve static files
 app.use(express.static("public"));
 
-// Do not start a server when running on serverless (Vercel). Export a handler instead.
-if (!process.env.VERCEL) {
-  app.listen(port, function () {
-    console.log("Server is ready");
+// Error handling middleware (must be after routes, before 404)
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack })
   });
-}
+});
+
+// 404 handler for undefined routes (must be last)
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Initialize Socket.IO
+const http = require("http");
+const server = http.createServer(app);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: allowedOrigin,
+  },
+});
 
 //socket server--------------------
 let users = [];
@@ -88,8 +93,7 @@ const getUser = (userId) => {
   return users.find((user) => user.userId === userId);
 };
 
-if (io) {
-  io.on("connection", (socket) => {
+io.on("connection", (socket) => {
     // console.log("a user connected!");
 
     socket.on("addUser", (userId) => {
@@ -129,8 +133,10 @@ if (io) {
       }
     });
   });
-}
 
-// Export for Vercel Serverless
-// For Vercel, we need to export the app directly
+// Start the server
+server.listen(port, function () {
+  console.log(`Server is ready on port ${port}`);
+});
+
 module.exports = app;

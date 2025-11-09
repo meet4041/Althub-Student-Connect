@@ -22,7 +22,6 @@ const EditEvent = () => {
     });
     const location = useLocation();
     const state = location.state.data;
-    console.log("data:", state._id);
 
     const geteventData = () => {
         setData({
@@ -60,7 +59,6 @@ const EditEvent = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
-        console.log(data.id);
         if (validate()) {
             setDisable(true);
             const body = new FormData();
@@ -88,7 +86,6 @@ const EditEvent = () => {
                     navigate('/events');
                 }, 1200);
             }).catch((error) => {
-                console.log(error);
                 setDisable(false);
             });
         }

@@ -61,7 +61,6 @@ const Login = () => {
                     toast.error('Incorrect Credentials')
                 }
             }).catch((error) => {
-                console.log("Errors", error);
                 setDisable(false);
             })
         }
