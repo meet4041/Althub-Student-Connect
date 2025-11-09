@@ -10,9 +10,12 @@ import Footer from '../layout/Footer';
 const AddUser = () => {
     const navigate = useNavigate();
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+        }
     }, []);
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);

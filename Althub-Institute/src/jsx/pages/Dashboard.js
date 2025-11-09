@@ -8,21 +8,36 @@ import axios from 'axios';
 import { ALTHUB_API_URL } from './baseURL';
 
 function Dashboard() {
-    useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
-        getTotalUser();
-        getTotalCourses();
-        getTotalEvents();
-        getTotalPosts();
-    }, []);
-    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
-    const institute_Name = localStorage.getItem("AlmaPlus_institute_Name");
     const [users, setUsers] = useState(0);
     const [courses, setCourses] = useState(0);
     const [events, setEvents] = useState(0);
     const [posts, setPosts] = useState(0);
+    const [institute_Id, setInstitute_Id] = useState(null);
+    const [institute_Name, setInstitute_Name] = useState(null);
+
+    useEffect(() => {
+        // Safely access localStorage and DOM elements
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+            
+            const id = localStorage.getItem("AlmaPlus_institute_Id");
+            const name = localStorage.getItem("AlmaPlus_institute_Name");
+            setInstitute_Id(id);
+            setInstitute_Name(name);
+        }
+    }, []);
+    
+    useEffect(() => {
+        if (institute_Id && institute_Name) {
+            getTotalUser();
+            getTotalCourses();
+            getTotalEvents();
+            getTotalPosts();
+        }
+    }, [institute_Id, institute_Name]);
 
     const getTotalUser = () => {
         axios({
@@ -94,7 +109,7 @@ function Dashboard() {
 
                         <div className="col-xl-3 col-md-6">
                             <div className="widget widget-stats bg-purple">
-                                <div className="stats-icon"><i class="fa fa-graduation-cap"></i>
+                                <div className="stats-icon"><i className="fa fa-graduation-cap"></i>
                                 </div>
                                 <div className="stats-info">
                                     <h4>Total Courses</h4>
@@ -108,7 +123,7 @@ function Dashboard() {
 
                         <div className="col-xl-3 col-md-6">
                             <div className="widget widget-stats bg-info">
-                                <div className="stats-icon"> <i class="fa fa-calendar"></i></div>
+                                <div className="stats-icon"> <i className="fa fa-calendar"></i></div>
                                 <div className="stats-info">
                                     <h4>Total Events</h4>
                                     <p>{events}</p>
@@ -121,7 +136,7 @@ function Dashboard() {
 
                         <div className="col-xl-3 col-md-6">
                             <div className="widget widget-stats bg-purple">
-                                <div className="stats-icon"> <i class="fa fa-address-card"></i></div>
+                                <div className="stats-icon"> <i className="fa fa-address-card"></i></div>
                                 <div className="stats-info">
                                     <h4>Total Posts</h4>
                                     <p>{posts}</p>

@@ -8,13 +8,18 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const AddEvent = () => {
-    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
+    const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
-
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+            
+            const id = localStorage.getItem("AlmaPlus_institute_Id");
+            setInstitute_Id(id);
+        }
     }, []);
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -47,7 +52,7 @@ const AddEvent = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
-        if (validate()) {
+        if (validate() && institute_Id) {
             setDisable(true)
             const body = new FormData();
             body.append("organizerid", institute_Id)

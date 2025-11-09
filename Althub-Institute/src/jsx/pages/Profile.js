@@ -10,7 +10,7 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const Profile = () => {
-    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
+    const [institute_Id, setInstitute_Id] = useState(null);
     const [changepass, setChangePass] = useState({
         oldpassword: '',
         newpassword: '',
@@ -27,6 +27,7 @@ const Profile = () => {
     const [disable2, setDisable2] = useState(false);
 
     const getData = () => {
+        if (!institute_Id) return;
         const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
         axios({
             method: "get",
@@ -106,11 +107,17 @@ const Profile = () => {
         })
     }
     const getPassData = () => {
-        setChangePass({
-            institute_id: localStorage.getItem("Althub_institute_Id")
-        })
+        if (institute_Id) {
+            setChangePass({
+                institute_id: institute_Id
+            })
+        }
     }
-    useEffect(() => getPassData(), [])
+    useEffect(() => {
+        if (institute_Id) {
+            getPassData();
+        }
+    }, [institute_Id])
 
     const handleChange = (e) => {
         setChangePass({ ...changepass, [e.target.name]: e.target.value });
@@ -198,9 +205,15 @@ const Profile = () => {
     };
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+            
+            const id = localStorage.getItem("AlmaPlus_institute_Id");
+            setInstitute_Id(id);
+        }
     }, []);
 
     return (
