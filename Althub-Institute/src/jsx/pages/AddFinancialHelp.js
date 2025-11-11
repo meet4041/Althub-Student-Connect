@@ -136,13 +136,13 @@ const AddFinancialHelp = () => {
                         <li className="breadcrumb-item"><Link to="/financial-aid">Scholarship</Link></li>
                         <li className="breadcrumb-item active">Add Scholarship</li>
                     </ol>
-                    <h1 className="page-header">Add Financial-Aid</h1>
+                    <h1 className="page-header">Add Scholarship</h1>
 
                     <div className="row">
                         <div className="col-xl-6 ui-sortable">
                             <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
                                 <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Add Financial-Aid</h4>
+                                    <h4 className="panel-title">Add Scholarship</h4>
                                     <Link to="/financial-aid" className="btn btn-sm btn-default pull-right">Back</Link>
                                 </div>
 

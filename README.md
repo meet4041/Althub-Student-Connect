@@ -64,7 +64,7 @@ In the value-focused reality that our alumni live in, we provide them a reason t
 - **Event Management**: Create and manage institutional events
 - **Content Library**: Secure repository for educational materials
 - **Analytics Dashboard**: Track engagement and platform usage
-- **Financial Aid Management**: Manage scholarship and aid programs
+- **Financial Aid Management**: Manage financial-aid and aid programs
 
 ### **Platform Features**
 - **Real-time Communication**: Socket.IO powered messaging
