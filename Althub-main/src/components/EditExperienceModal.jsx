@@ -21,22 +21,12 @@ const EditExperienceModal = ({
   const [errors, setErrors] = useState({});
   const [experiences, setExperiences] = useState([]);
   const [modalType, setModalType] = useState("");
-  const [company, setCompany] = useState([]);
-  const [companyShow, setCompanyShow] = useState(false);
   useEffect(() => {
     setExperiences(experience);
     setModalType(modal);
-    getCompany();
   }, [experience,modal]);
 
-  const getCompany = () => {
-    axios({
-      method: "get",
-      url: `${WEB_URL}/api/getCompanies`,
-    }).then((response) => {
-      setCompany(response.data.data);
-    });
-  };
+  // Company list dropdown removed; using free-text input for company name
 
   const handleChange = (e) => {
     setEx({ ...ex, [e.target.name]: e.target.value });
@@ -45,6 +35,25 @@ const EditExperienceModal = ({
   const handleCancel = () => {
     setEx();
     closeModal();
+  };
+
+  const handleCompanyLogoChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const body = new FormData();
+    body.append("profilepic", file);
+    axios({
+      method: "post",
+      headers: { "Content-Type": "multipart/form-data" },
+      url: `${WEB_URL}/api/uploadUserImage`,
+      data: body,
+    })
+      .then((response) => {
+        setEx({ ...ex, companylogo: response.data.data.url });
+      })
+      .catch((error) => {
+        toast.error("Image upload failed");
+      });
   };
 
   const validate = () => {
@@ -223,54 +232,44 @@ const EditExperienceModal = ({
         ) : (
           <>
             <div className="addEdit-experience">
-              <div
-                class="prise_main_drop"
-                onClick={() => setCompanyShow(!companyShow)}
-              >
-                <span class="prise-data">
-                  {ex.companyname ? ex.companyname : "Select Company"}
-                </span>
-                <span class="prise_down_icon">
-                  <i class="fa-solid fa-angle-down"></i>
-                </span>
-                {company.length > 0 ? (
-                  <ul
-                    class={
-                      companyShow === true
-                        ? "prise-list-merge opened"
-                        : "prise-list-merge"
-                    }
-                  >
-                    {company.map((elem) => (
-                      <li
-                        class={
-                          ex.company === elem.name
-                            ? "prise_list selected"
-                            : "prise_list"
-                        }
-                        onClick={() => {
-                          setEx({
-                            ...ex,
-                            companyname: elem.name,
-                            companylogo: elem.image,
-                          });
-                        }}
-                      >
-                        {elem.image !== "" ? (
-                          <img
-                            src={`${WEB_URL}${elem.image}`}
-                            className="option-img"
-                            alt=""
-                          />
-                        ) : (
-                          ""
-                        )}
-                        <span>{elem.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
+              <span>Company Logo</span>
+              <div className="profile-uload" style={{ marginBottom: "10px" }}>
+                {ex.companylogo ? (
+                  <img
+                    alt=""
+                    src={`${WEB_URL}${ex.companylogo}`}
+                    height={70}
+                    width={70}
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      backgroundColor: "#F3F3F3",
+                    }}
+                  ></div>
+                )}
+                <div className="information-profile-upload" style={{ marginTop: "8px" }}>
+                  <label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCompanyLogoChange}
+                      name="companylogo"
+                    /><span>image</span>
+                  </label>
+                </div>
               </div>
+              <span>Company</span>
+              <input
+                type="text"
+                name="companyname"
+                placeholder="Company"
+                value={ex.companyname}
+                onChange={handleChange}
+              />
               <span>Position</span>
               <input
                 type="text"
