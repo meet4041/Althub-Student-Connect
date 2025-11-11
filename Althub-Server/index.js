@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const connectToMongo = require("./db/conn");
+const { connectToMongo } = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = 5001;
 const cors = require("cors");
@@ -10,8 +10,7 @@ const cors = require("cors");
 // Configure CORS dynamically for deployment
 const allowedOrigin = process.env.CLIENT_ORIGIN || "*";
 
-// Initialize database connection
-connectToMongo();
+// Note: we'll initialize DB before starting the server further below to ensure GridFS is ready
 
 //routes
 const user_route = require("./routes/userRoute");
@@ -28,6 +27,7 @@ const experience_route = require("./routes/experienceRoute");
 const company_route = require("./routes/companyRoute");
 const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
+const images_route = require("./routes/imagesRoute");
 
 app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
@@ -46,6 +46,7 @@ app.use("/api", feedback_route);
 app.use("/api", company_route);
 app.use("/api", notification_route);
 app.use("/api", financialaid_route);
+app.use("/api", images_route);
 
 app.get("/", (req, res) => {
   res.send("Althub Server is running!");
@@ -134,9 +135,14 @@ io.on("connection", (socket) => {
     });
   });
 
-// Start the server
-server.listen(port, function () {
-  console.log(`Server is ready on port ${port}`);
+// Start the server only after DB connection is ready so GridFS bucket is initialized
+connectToMongo().then(() => {
+  server.listen(port, function () {
+    console.log(`Server is ready on port ${port}`);
+  });
+}).catch(err => {
+  console.error('Failed to connect to MongoDB on startup:', err.message);
+  process.exit(1);
 });
 
 module.exports = app;

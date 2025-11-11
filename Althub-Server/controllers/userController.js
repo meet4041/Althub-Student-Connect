@@ -312,11 +312,17 @@ const searchUser = async (req, res) => {
 //search user by id
 const searchUserById = async (req, res) => {
     try {
-        const user = await User.find({
-            _id: req.params._id
-        });
-        res.status(200).send({ success: true, data: user });
+        const id = req.params._id;
+        if (!id) return res.status(400).send({ success: false, msg: 'Missing user id' });
+        // validate ObjectId
+        const mongoose = require('mongoose');
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).send({ success: false, msg: 'Invalid user id' });
+        }
+        const user = await User.find({ _id: id });
+        return res.status(200).send({ success: true, data: user });
     } catch (error) {
+        console.error('Error in searchUserById:', error.message);
         res.status(500).send({ success: false, msg: error.message });
     }
 }

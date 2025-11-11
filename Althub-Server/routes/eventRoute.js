@@ -3,48 +3,33 @@ const event_route = express();
 const bodyParser = require("body-parser");
 event_route.use(bodyParser.json());
 event_route.use(bodyParser.urlencoded({ extended: true }));
-const multer = require("multer");
-const path = require('path');
-event_route.use(express.static('public'));
+const { uploadArray } = require('../db/storage');
 
-//for file upload 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../public/eventImages'), function (error, sucess) {
-            if (error) throw error
-        });
-    },
-    filename: function (req, file, cb) {
-        const name = Date.now() + '-' + file.originalname;
-        cb(null, name, function (error1, success1) {
-            if (error1) throw error1
-        })
-    }
-});
-
-//ulpload multiple files
+// upload multiple files using multer-gridfs-storage and set req.images to /api/images/:id
 const uploadPic = (req, res, next) => {
-    upload(req, res, async (error) => {
-        // console.log(req.files);
-        if (error) {
-            return res.status(400).send(error);
+    const uploadMiddleware = uploadArray('photos', 5);
+    uploadMiddleware(req, res, (err) => {
+        if (err) {
+            console.error('Multer error:', err);
+            return res.status(400).send({ success: false, message: 'File upload error: ' + err.message });
         }
-        else if (!req.files) {
-            return res.status(400).send("Plz select file");
+        if (!req.files || req.files.length === 0) {
+            req.images = [];
+            return next();
         }
-        else {
-            let Urls = [];
-            for (i = 0; i < req.files.length; i++) {
-                Urls[i] = '/eventImages/' + req.files[i].filename;
-                // Urls[i] = `${req.protocol}://${req.get('host')}/public/eventImages/` + req.files[i].filename;
-            }
-            req.images = Urls;
-            next();
+        try {
+            req.images = req.files.map((f) => {
+                const fid = f.id || f._id || (f.fileId && f.fileId.toString());
+                return `/api/images/${fid}`;
+            });
+            return next();
+        } catch (e) {
+            console.error('Error mapping uploaded files', e.message);
+            return res.status(500).send({ success: false, msg: e.message });
         }
-    })
+    });
 }
 
-const upload = multer({ storage: storage }).array('photos', 5);
 const event_controller = require("../controllers/eventController");
 
 //event routes
