@@ -90,7 +90,11 @@ export default function SearchProfile() {
                   </div>
                 </div>
                 <div class="card-content">
-                  <h2 class="name">
+                  <h2 class="name"
+                    onClick={() => {
+                      elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
+                    }
+                    }>
                     {elem.fname} {elem.lname}
                   </h2>
                   <p>
@@ -100,15 +104,10 @@ export default function SearchProfile() {
                   <div class="nav">
                     <ul>
                       <li>
-                        <a href="#">
-                          <i
-                            class="fa-brands fa-whatsapp"
-                            style={{ color: "#7e7f81" }}
-                          ></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#">
+                        <a href={elem.linkedin.startsWith('http') ? elem.linkedin : `https://www.linkedin.com/in/${elem.linkedin}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ marginRight: '8px' }}>
                           <i
                             class="fa-brands fa-linkedin-in"
                             style={{ color: "#7e7f81" }}
@@ -116,17 +115,12 @@ export default function SearchProfile() {
                         </a>
                       </li>
                       <li>
-                        <a href="#">
+                        <a href={elem.github.startsWith('http') ? elem.github : `https://github.com/${elem.github}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ marginRight: '8px' }}>
                           <i
                             class="fa-brands fa-github"
-                            style={{ color: "#7e7f81" }}
-                          ></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <i
-                            class="fa-brands fa-google"
                             style={{ color: "#7e7f81" }}
                           ></i>
                         </a>
