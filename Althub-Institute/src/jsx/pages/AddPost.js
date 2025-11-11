@@ -9,16 +9,21 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const AddPost = () => {
-    const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
+    const [institute_Id, setInstitute_Id] = useState(null);
     const [iname, setiname] = useState('');
     const [image,setImage]=useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
-
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+            
+            const id = localStorage.getItem("AlmaPlus_institute_Id");
+            setInstitute_Id(id);
+        }
     }, []);
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -43,6 +48,7 @@ const AddPost = () => {
         });
     }
     const getData = () => {
+        if (!institute_Id) return;
         const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
         axios({
             method: "get",
@@ -70,7 +76,7 @@ const AddPost = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
-        if (validate()) {
+        if (validate() && institute_Id) {
             setDisable(true)
             const body = new FormData();
             body.append("userid", institute_Id);
@@ -89,7 +95,6 @@ const AddPost = () => {
                     "content-type": "multipart/form-data"
                 },
             }).then((response) => {
-                console.log(response.data.data);
                 handleReset();
                 setDisable(false);
                 toast.success("Post Added");
@@ -97,7 +102,6 @@ const AddPost = () => {
                     navigate('/posts');
                 }, 1500);
             }).catch((error) => {
-                console.log(error);
                 setDisable(false);
             });
         }

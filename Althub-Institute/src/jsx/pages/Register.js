@@ -109,7 +109,6 @@ const Register = () => {
             data: body,
         })
             .then((response) => {
-                console.log(response.data.data.url);
                 setUser({ ...user, image: response.data.data.url });
             })
             .catch((error) => { });

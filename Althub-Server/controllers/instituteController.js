@@ -31,9 +31,8 @@ const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
+            port: 465,
+            secure: true,
             auth: {
                 user: config.emailUser,
                 pass: config.emailPassword
@@ -62,9 +61,8 @@ const sendInvitationMail = async (name, email, tempPass) => {
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
+            port: 465,
+            secure: true,
             auth: {
                 user: config.emailUser,
                 pass: config.emailPassword

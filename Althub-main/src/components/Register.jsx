@@ -17,38 +17,35 @@ export default function Register() {
   const [skills, setSkills] = useState([]);
 
   const option1 = [
-    { value: "Bahana Indonesia", label: "Bahana Indonesia" },
-    { value: "Bengali", label: "Bengali" },
     { value: "English", label: "English" },
     { value: "Hindi", label: "Hindi" },
+    { value: "Gujarati", label: "Gujarati" },
+    { value: "Bahana Indonesia", label: "Bahana Indonesia" },
+    { value: "Bengali", label: "Bengali" },
     { value: "Dansk", label: "Dansk" },
     { value: "Deutsch", label: "Deutsch" },
     { value: "Spanish", label: "Spanish" },
     { value: "French", label: "French" },
-    { value: "Italian", label: "Italian" },
-    { value: "Gujarati", label: "Gujarati" }
+    { value: "Italian", label: "Italian" }
   ];
 
   const option2 = [
-    { value: "Management", label: "Management" },
-    { value: "Communication", label: "Communication" },
-    { value: "Customer Service", label: "Customer Service" },
-    { value: "Leadership", label: "Leadership" },
-    { value: "Sales", label: "Sales" },
-    { value: "Project Management", label: "Project Management" },
-    { value: "Research", label: "Research" },
-    { value: "Analytical Skills", label: "Analytical Skills" },
-    { value: "Marketing", label: "Marketing" },
-    { value: "Teamwork", label: "Teamwork" },
-    { value: "Software Development", label: "Software Development" },
-    { value: "SQL", label: "SQL" },
-    { value: "Finance", label: "Finance" },
+    { value: "Machine Learning", label: "Machine Learning" },
     { value: "Python", label: "Python" },
     { value: "Java", label: "Java" },
+    { value: "SQL", label: "SQL" },
+    { value: "React.js", label: "React.js" },
+    { value: "Node", label: "Node" },
+    { value: "Git", label: "Git" },
+    { value: "Tailwind CSS", label: "Tailwind CSS" },
     { value: "JavaScript", label: "JavaScript" },
+    { value: "C++", label: "C++" },
+    { value: "Management", label: "Management" },
+    { value: "Communication", label: "Communication" },
+    { value: "Analytical Skills", label: "Analytical Skills" },
+    { value: "Marketing", label: "Marketing" },
+    { value: "Finance", label: "Finance" },
     { value: "Cloud Computing", label: "Cloud Computing" },
-    { value: "Operations", label: "Operations" },
-    { value: "Customer Relationship Management", label: "Customer Relationship Management" },
   ];
 
   const colorStyle = {
@@ -66,10 +63,12 @@ export default function Register() {
 
   const handleSelect1 = (e) => {
     setLanguages(e);
+    setErrors((prev) => ({ ...prev, languages_err: "" }));
   };
 
   const handleSelect2 = (e) => {
     setSkills(e);
+    setErrors((prev) => ({ ...prev, skills_err: "" }));
   };
 
   const [user, setUser] = useState({
@@ -93,7 +92,11 @@ export default function Register() {
   });
 
   const increaseStep = () => {
-    setStep(step + 1);
+    if (validateStep(step)) {
+      setStep(step + 1);
+    } else {
+      toast.error("Please fix the highlighted fields.");
+    }
   };
   const decraseStep = () => {
     setStep(step - 1);
@@ -101,6 +104,97 @@ export default function Register() {
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
+    // Clear field-level error on change
+    const fieldName = e.target.name;
+    setErrors((prev) => ({ ...prev, [`${fieldName}_err`]: "" }));
+  };
+
+  const validateEmail = (email) => {
+    const regex =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$/;
+    return regex.test(String(email).toLowerCase());
+  };
+
+  const validatePhone = (phone) => {
+    const digitsOnly = String(phone).replace(/\D/g, "");
+    return digitsOnly.length === 10;
+  };
+
+  const validateStep = (currentStep) => {
+    let input = user;
+    let stepErrors = {};
+    let isValid = true;
+
+    if (currentStep === 1) {
+      if (!input["fname"]) {
+        isValid = false;
+        stepErrors["fname_err"] = "Please Enter First Name";
+      }
+      if (!input["lname"]) {
+        isValid = false;
+        stepErrors["lname_err"] = "Please Enter Last Name";
+      }
+      if (!input["dob"]) {
+        isValid = false;
+        stepErrors["dob_err"] = "Please Choose Date of Birth";
+      }
+      if (!input["gender"]) {
+        isValid = false;
+        stepErrors["gender_err"] = "Please Choose Gender";
+      }
+      if (!input["phone"]) {
+        isValid = false;
+        stepErrors["phone_err"] = "Please Enter Phone Number";
+      } else if (!validatePhone(input["phone"])) {
+        isValid = false;
+        stepErrors["phone_err"] = "Enter a valid phone number (10 digits)";
+      }
+      if (!input["email"]) {
+        isValid = false;
+        stepErrors["email_err"] = "Please Enter Email";
+      } else if (!validateEmail(input["email"])) {
+        isValid = false;
+        stepErrors["email_err"] = "Please enter a valid email address";
+      }
+    }
+
+    if (currentStep === 2) {
+      // Social profiles optional - no validation
+    }
+
+    if (currentStep === 3) {
+      if (!input["institute"]) {
+        isValid = false;
+        stepErrors["institute_err"] = "Please Choose Institute";
+      }
+      if (!languages || languages.length === 0) {
+        isValid = false;
+        stepErrors["languages_err"] = "Please select at least one language";
+      }
+      if (!skills || skills.length === 0) {
+        isValid = false;
+        stepErrors["skills_err"] = "Please select at least one skill";
+      }
+      if (!input["country"]) {
+        isValid = false;
+        stepErrors["country_err"] = "Please Enter country";
+      }
+      if (!input["state"]) {
+        isValid = false;
+        stepErrors["state_err"] = "Please Enter State";
+      }
+      if (!input["city"]) {
+        isValid = false;
+        stepErrors["city_err"] = "Please Enter City";
+      }
+    }
+
+    if (currentStep === 4) {
+      // No validation for profile picture
+    }
+
+    setErrors((prev) => ({ ...prev, ...stepErrors }));
+    return isValid;
   };
 
   const validate = () => {
@@ -136,30 +230,44 @@ export default function Register() {
     if (!input["phone"]) {
       isValid = false;
       errors["phone_err"] = "Please Enter Phone Number";
+    } else if (!validatePhone(input["phone"])) {
+      isValid = false;
+      errors["phone_err"] = "Enter a valid phone number (10 digits)";
     }
     if (!input["country"]) {
       isValid = false;
       errors["country_err"] = "Please Enter country";
     }
-    // if (!input["institute"]) {
-    //   isValid = false;
-    //   errors["institute_err"] = "Please Choose Institute";
-    // }
+    if (!input["institute"]) {
+      isValid = false;
+      errors["institute_err"] = "Please Choose Institute";
+    }
     if (!input["email"]) {
       isValid = false;
       errors["email_err"] = "Please Enter Email";
+    } else if (!validateEmail(input["email"])) {
+      isValid = false;
+      errors["email_err"] = "Please enter a valid email address";
     }
     if (!input["password"]) {
       isValid = false;
       errors["password_err"] = "Please Enter Password";
-    }
-    if (input["password"].length < 8) {
+    } else if (input["password"].length < 8) {
       isValid = false;
       errors["password_err"] = "Password must be at least 8 characters long";
     }
     if (input["cpassword"] !== input["password"]) {
       isValid = false;
       errors["cpassword_err"] = "Password not match";
+    }
+    // No validation for profile picture
+    if (!languages || languages.length === 0) {
+      isValid = false;
+      errors["languages_err"] = "Please select at least one language";
+    }
+    if (!skills || skills.length === 0) {
+      isValid = false;
+      errors["skills_err"] = "Please select at least one skill";
     }
     setErrors(errors);
     return isValid;
@@ -218,6 +326,7 @@ export default function Register() {
       .then((response) => {
         console.log(response.data.data.url);
         setUser({ ...user, profilepic: response.data.data.url });
+        setErrors((prev) => ({ ...prev, profilepic_err: "" }));
       })
       .catch((error) => { });
   };
@@ -343,6 +452,7 @@ export default function Register() {
                         name="gender"
                         onChange={(e) => {
                           setUser({ ...user, gender: e.target.value });
+                          setErrors((prev) => ({ ...prev, gender_err: "" }));
                         }}
                         value="Male"
                         checked={user.gender === "Male"}
@@ -358,6 +468,7 @@ export default function Register() {
                         name="gender"
                         onChange={(e) => {
                           setUser({ ...user, gender: e.target.value });
+                          setErrors((prev) => ({ ...prev, gender_err: "" }));
                         }}
                         value="Female"
                         checked={user.gender === "Female"}
@@ -470,6 +581,7 @@ export default function Register() {
                           }
                           onClick={() => {
                             setUser({ ...user, institute: elem.name });
+                            setErrors((prev) => ({ ...prev, institute_err: "" }));
                           }}
                         >
                           {elem.image !== "" ? (

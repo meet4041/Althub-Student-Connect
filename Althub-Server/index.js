@@ -6,13 +6,13 @@ const connectToMongo = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = 5001;
 const cors = require("cors");
-const io = require("socket.io")(8900, {
-  cors: {
-    origin: "http://localhost:3000",
-  },
-});
 
+// Configure CORS dynamically for deployment
+const allowedOrigin = process.env.CLIENT_ORIGIN || "*";
+
+// Initialize database connection
 connectToMongo();
+
 //routes
 const user_route = require("./routes/userRoute");
 const event_route = require("./routes/eventRoute");
@@ -29,7 +29,8 @@ const company_route = require("./routes/companyRoute");
 const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 
-app.use(cors());
+app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(express.json());
 app.use(cookieParser());
 app.use("/api", user_route);
 app.use("/api", event_route);
@@ -47,13 +48,33 @@ app.use("/api", notification_route);
 app.use("/api", financialaid_route);
 
 app.get("/", (req, res) => {
-  res.end("Hellooo");
+  res.send("Althub Server is running!");
 });
 
+// Serve static files
 app.use(express.static("public"));
 
-app.listen(port, function () {
-  console.log("Server is ready");
+// Error handling middleware (must be after routes, before 404)
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack })
+  });
+});
+
+// 404 handler for undefined routes (must be last)
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Initialize Socket.IO
+const http = require("http");
+const server = http.createServer(app);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: allowedOrigin,
+  },
 });
 
 //socket server--------------------
@@ -73,42 +94,49 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-  // console.log("a user connected!");
+    // console.log("a user connected!");
 
-  socket.on("addUser", (userId) => {
-    addUser(userId, socket.id);
-    io.emit("getUsers", users);
+    socket.on("addUser", (userId) => {
+      addUser(userId, socket.id);
+      io.emit("getUsers", users);
+    });
+
+    socket.on("disconnect", () => {
+      // console.log("user disconnected");
+      removeUser(socket.id);
+      io.emit("getUsers", users);
+    });
+
+    socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
+      const user = getUser(receiverId);
+      if (user && user.socketId) {
+        io.to(user.socketId).emit("getMessage", {
+          senderId,
+          text,
+          time,
+        });
+      } else {
+        // console.log("Invalid user or socketId not found.");
+      }
+    });
+
+    socket.on("sendNotification", ({ receiverid, title, msg}) => {
+      const user = getUser(receiverid);
+
+      if (user && user.socketId) {
+        io.to(user.socketId).emit("getNotification", {
+          title,
+          msg,
+        });
+      } else {
+        // console.log("Invalid user or socketId not found.");
+      }
+    });
   });
 
-  socket.on("disconnect", () => {
-    // console.log("user disconnected");
-    removeUser(socket.id);
-    io.emit("getUsers", users);
-  });
-
-  socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
-    const user = getUser(receiverId);
-    if (user && user.socketId) {
-      io.to(user.socketId).emit("getMessage", {
-        senderId,
-        text,
-        time,
-      });
-    } else {
-      // console.log("Invalid user or socketId not found.");
-    }
-  });
-
-  socket.on("sendNotification", ({ receiverid, title, msg}) => {
-    const user = getUser(receiverid);
-
-    if (user && user.socketId) {
-      io.to(user.socketId).emit("getNotification", {
-        title,
-        msg,
-      });
-    } else {
-      // console.log("Invalid user or socketId not found.");
-    }
-  });
+// Start the server
+server.listen(port, function () {
+  console.log(`Server is ready on port ${port}`);
 });
+
+module.exports = app;

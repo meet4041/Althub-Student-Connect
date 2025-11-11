@@ -55,7 +55,6 @@ const EditFinancialAid = () => {
                     claimed: data.claimed,
                 },
             }).then((response) => {
-                console.log(response.data.data);
                 handleReset();
                 setDisable(false);
                 toast.success("Claimed Amount Updated");
@@ -63,7 +62,6 @@ const EditFinancialAid = () => {
                     navigate('/financial-aid');
                 }, 1500);
             }).catch((error) => {
-                console.log(error);
                 setDisable(false);
             });
 

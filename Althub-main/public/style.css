@@ -1308,7 +1308,7 @@ ul.prise-list-merge li.prise_list.selected {
   display: flex;
   align-items: center;
   flex-direction: column;
-  padding: 10px;
+  /* padding: 10px; */
 }
 
 .event-box img {
@@ -2231,6 +2231,8 @@ ul li {
 .banner-main {
   padding: 80px;
   margin-top: 45px;
+  margin-bottom: 45px;
+
   display: grid;
   grid-template-columns: 1fr 1fr;
   text-align: center;
@@ -2243,8 +2245,8 @@ ul li {
 }
 
 .banner-left img {
-  height: 100px;
-  width: 200px;
+  height: 150px;
+  width: 300px;
   /* border-radius: 100px; */
 }
 
@@ -2394,7 +2396,7 @@ ul li {
   display: flex;
   justify-content: space-evenly;
   margin: 5px;
-  padding: 10px 0;
+  padding: 40px 0;
   text-align: left;
 }
 

@@ -9,7 +9,7 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 const Users = () => {
-    const institute_Name = localStorage.getItem("AlmaPlus_institute_Name");
+    const [institute_Name, setInstitute_Name] = useState(null);
     const [users, setUsers] = useState([]);
     const [displayUsers, setDisplayUsers] = useState([]);
     const rows = [10, 20, 30];
@@ -19,11 +19,22 @@ const Users = () => {
     const [to, setTo] = useState('');
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
-        getUsersData();
+        if (typeof window !== 'undefined') {
+            const loader = document.getElementById('page-loader');
+            const element = document.getElementById("page-container");
+            if (loader) loader.style.display = 'none';
+            if (element) element.classList.add("show");
+            
+            const name = localStorage.getItem("AlmaPlus_institute_Name");
+            setInstitute_Name(name);
+        }
     }, []);
+
+    useEffect(() => {
+        if (institute_Name) {
+            getUsersData();
+        }
+    }, [institute_Name]);
 
     const getUsersData = () => {
         axios({
@@ -31,7 +42,6 @@ const Users = () => {
             url: `${ALTHUB_API_URL}/api/getUsersOfInstitute/${institute_Name}`,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         }).then((response) => {
-            console.log(response.data.data);
             setUsers(response.data.data);
 
         });
@@ -116,7 +126,7 @@ const Users = () => {
                     </h1>
                     <div className="card">
                         <div className="card-body">
-                            <div class="form-outline mb-4">
+                            <div className="form-outline mb-4">
                                 <input type="search" className="form-control" id="datatable-search-input" placeholder='Search User' onChange={handleSearch} />
                             </div>
                             <div className="row">

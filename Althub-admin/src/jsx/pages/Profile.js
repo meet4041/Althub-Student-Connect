@@ -148,8 +148,7 @@ const Profile = () => {
                     toast.error('Something went wrong')
                     setErrors({ ...errors, confirmpassword: response.data.message })
                 }
-            }).catch((error) => {
-                console.log("Errors", error);
+            }).catch(() => {
                 setDisable2(false);
             })
         }

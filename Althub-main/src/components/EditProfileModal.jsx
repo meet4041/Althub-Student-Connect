@@ -12,41 +12,35 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
   const [skills, setSkills] = useState([]);
 
   const option1 = [
-    { value: "Bahana Indonesia", label: "Bahana Indonesia" },
-    { value: "Bengali", label: "Bengali" },
     { value: "English", label: "English" },
     { value: "Hindi", label: "Hindi" },
+    { value: "Gujarati", label: "Gujarati" },
+    { value: "Bahana Indonesia", label: "Bahana Indonesia" },
+    { value: "Bengali", label: "Bengali" },
     { value: "Dansk", label: "Dansk" },
     { value: "Deutsch", label: "Deutsch" },
     { value: "Spanish", label: "Spanish" },
     { value: "French", label: "French" },
-    { value: "Italian", label: "Italian" },
-    { value: "Gujarati", label: "Gujarati" },
+    { value: "Italian", label: "Italian" }
   ];
 
   const option2 = [
-    { value: "Management", label: "Management" },
-    { value: "Communication", label: "Communication" },
-    { value: "Customer Service", label: "Customer Service" },
-    { value: "Leadership", label: "Leadership" },
-    { value: "Sales", label: "Sales" },
-    { value: "Project Management", label: "Project Management" },
-    { value: "Research", label: "Research" },
-    { value: "Analytical Skills", label: "Analytical Skills" },
-    { value: "Marketing", label: "Marketing" },
-    { value: "Teamwork", label: "Teamwork" },
-    { value: "Software Development", label: "Software Development" },
-    { value: "SQL", label: "SQL" },
-    { value: "Finance", label: "Finance" },
+    { value: "Machine Learning", label: "Machine Learning" },
     { value: "Python", label: "Python" },
     { value: "Java", label: "Java" },
+    { value: "SQL", label: "SQL" },
+    { value: "React.js", label: "React.js" },
+    { value: "Node", label: "Node" },
+    { value: "Git", label: "Git" },
+    { value: "Tailwind CSS", label: "Tailwind CSS" },
     { value: "JavaScript", label: "JavaScript" },
-    { value: "Cloud Computing", label: "Cloud Computing" },
-    { value: "Operations", label: "Operations" },
-    {
-      value: "Customer Relationship Management",
-      label: "Customer Relationship Management",
-    },
+    { value: "C++", label: "C++" },
+    { value: "Management", label: "Management" },
+    { value: "Communication", label: "Communication" },
+    { value: "Analytical Skills", label: "Analytical Skills" },
+    { value: "Marketing", label: "Marketing" },
+    { value: "Finance", label: "Finance" },
+    { value: "Cloud Computing", label: "Cloud Computing" }
   ];
 
   const colorStyle = {
