@@ -129,7 +129,7 @@ function Dashboard() {
                     )}
                     <div className="row">
                         <div className="col-xl-3 col-md-6">
-                        <div className="widget widget-stats " style={{background:'#17A2B8'}}>
+                        <div className="widget widget-stats bg-info">
                                 <div className="stats-icon"><i className="fa fa-users"></i></div>
                                 <div className="stats-info">
                                     <h4>Total Users</h4>
@@ -152,7 +152,7 @@ function Dashboard() {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-xl-3 col-md-6">
+                        {/* <div className="col-xl-3 col-md-6">
                         <div className="widget widget-stats" style={{background:'#17A2B8'}} >
                                 <div className="stats-icon"><i className="fa fa-building"></i></div>
                                 <div className="stats-info">
@@ -163,9 +163,9 @@ function Dashboard() {
                                     <Link to="/company">View Detail <i className="fa fa-arrow-alt-circle-right"></i></Link>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="col-xl-3 col-md-6">
-                        <div className="widget widget-stats bg-pink" >
+                        <div className="widget widget-stats bg-info" >
                                 <div className="stats-icon"><i className="fa fa-comments"></i></div>
                                 <div className="stats-info">
                                     <h4>Total Feedback</h4>
