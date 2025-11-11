@@ -93,13 +93,13 @@ useEffect(() => {
                         <span>Institutes</span>
                      </Link>
                   </li>
-                  <li className={companyClass}>
+                  {/* <li className={companyClass}>
                      <Link to="/company" >
                         <i className="fa fa-building"></i>
                        
                         <span>Companies</span>
                      </Link>
-                  </li>
+                  </li> */}
                   <li className={feedbackClass}>
                      <Link to="/feedback" >
                      <i class="fa fa-comments"></i>
