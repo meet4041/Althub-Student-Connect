@@ -116,7 +116,7 @@ const Login = () => {
                 <div className="login login-v2" data-pageload-addclassname="animated fadeIn">
                     <div className="login-header">
                         <div className="brand">
-                            <img src='Logo1.jpeg' style={{ width: '160px', height: '70px',borderRadius:"8px" }} alt="logo" />
+                            <img src='Logo1.jpeg' style={{ width: '150px', height: '70px',borderRadius:"8px" }} alt="logo" />
                             <b>Admin</b>
                             <small>Login for Althub Admin panel</small>
                         </div>
@@ -138,8 +138,7 @@ const Login = () => {
                                     background: 'none',
                                     border: 'none',
                                     color: 'white',
-                                    marginLeft: '243px',
-                                    textDecoration: 'underline',
+                                    marginLeft: '18rem',
                                     cursor: 'pointer',
                                     padding: 0,
                                     font: 'inherit',
