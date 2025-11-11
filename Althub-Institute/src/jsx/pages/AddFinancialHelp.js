@@ -133,8 +133,8 @@ const AddFinancialHelp = () => {
                 <div id="content" className="content">
                     <ol className="breadcrumb float-xl-right">
                         <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/financialAid">Financial-Aid</Link></li>
-                        <li className="breadcrumb-item active">Add Financial-Aid</li>
+                        <li className="breadcrumb-item"><Link to="/financial-aid">Scholarship</Link></li>
+                        <li className="breadcrumb-item active">Add Scholarship</li>
                     </ol>
                     <h1 className="page-header">Add Financial-Aid</h1>
 
@@ -143,7 +143,7 @@ const AddFinancialHelp = () => {
                             <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
                                 <div className="panel-heading ui-sortable-handle">
                                     <h4 className="panel-title">Add Financial-Aid</h4>
-                                    <Link to="/financialAid" className="btn btn-sm btn-default pull-right">Back</Link>
+                                    <Link to="/financial-aid" className="btn btn-sm btn-default pull-right">Back</Link>
                                 </div>
 
                                 <div className="panel-body">

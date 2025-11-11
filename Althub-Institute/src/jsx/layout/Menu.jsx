@@ -101,12 +101,12 @@ function Menu() {
                         <span>Users</span>
                      </Link>
                   </li>
-                  <li className={coursesClass}>
+                  {/* <li className={coursesClass}>
                      <Link to="/courses" >
                         <i className="fa fa-graduation-cap"></i>
                         <span>Courses</span>
                      </Link>
-                  </li>
+                  </li> */}
                   <li className={eventsClass}>
                      <Link to="/events" >
                         <i className="fa fa-calendar"></i>
@@ -122,7 +122,7 @@ function Menu() {
                   <li className={aidClass}>
                      <Link to="/financial-aid" >
                         <i className="fa-solid fa-sack-dollar"></i>
-                        <span>Financial Aid</span>
+                        <span>Scholarship</span>
                      </Link>
                   </li>
                </ul>
