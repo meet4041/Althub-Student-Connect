@@ -85,7 +85,7 @@ const HelpStudents = () => {
             <i className="fa-solid fa-calendar"></i>Events
           </div>
           <div className="menu" onClick={() => nav("/help-students")}>
-            <i className="fa-solid fa-handshake-angle"></i>Help Students
+            <i className="fa-solid fa-handshake-angle"></i>Scholarship
           </div>
           <div className="menu" onClick={() => nav("/feedback")}>
             <i className="fa-solid fa-star"></i>FeedBack & Rating

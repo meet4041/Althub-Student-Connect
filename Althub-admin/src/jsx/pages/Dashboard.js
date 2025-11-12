@@ -19,7 +19,6 @@ function Dashboard() {
                     getTotalUser(),
                     getTotalInstitutes(),
                     getTotalFeedback(),
-                    getTotalCompany()
                 ]);
             } catch (err) {
                 console.error('Dashboard initialization error:', err);
@@ -35,7 +34,6 @@ function Dashboard() {
     const [users, setUsers] = useState(0);
     const [institutes, setInstitutes] = useState(0);
     const [feedback, setFeedback] = useState(0);
-    const [company, setCompany] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -93,24 +91,6 @@ function Dashboard() {
         }
     };
 
-    const getTotalCompany = async () => {
-        try {
-            console.log('Fetching companies...');
-            const response = await axios.get(`${ALTHUB_API_URL}/api/getCompanies`);
-            console.log('Companies response:', response.data);
-            if (response.data && response.data.success === true && Array.isArray(response.data.data)) {
-                setCompany(response.data.data.length);
-            } else {
-                console.warn('Invalid response format from /api/getCompanies:', response.data);
-                setCompany(0);
-            }
-        } catch (err) {
-            console.error('Error fetching companies:', err);
-            setError(err.message);
-            setCompany(0);
-        }
-    };
-
     return (
         <>
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
@@ -129,7 +109,7 @@ function Dashboard() {
                     )}
                     <div className="row">
                         <div className="col-xl-3 col-md-6">
-                        <div className="widget widget-stats " style={{background:'#17A2B8'}}>
+                        <div className="widget widget-stats bg-info">
                                 <div className="stats-icon"><i className="fa fa-users"></i></div>
                                 <div className="stats-info">
                                     <h4>Total Users</h4>
@@ -152,7 +132,7 @@ function Dashboard() {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-xl-3 col-md-6">
+                        {/* <div className="col-xl-3 col-md-6">
                         <div className="widget widget-stats" style={{background:'#17A2B8'}} >
                                 <div className="stats-icon"><i className="fa fa-building"></i></div>
                                 <div className="stats-info">
@@ -163,9 +143,9 @@ function Dashboard() {
                                     <Link to="/company">View Detail <i className="fa fa-arrow-alt-circle-right"></i></Link>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="col-xl-3 col-md-6">
-                        <div className="widget widget-stats bg-pink" >
+                        <div className="widget widget-stats bg-info" >
                                 <div className="stats-icon"><i className="fa fa-comments"></i></div>
                                 <div className="stats-info">
                                     <h4>Total Feedback</h4>

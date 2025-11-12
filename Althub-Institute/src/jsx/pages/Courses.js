@@ -42,12 +42,6 @@ const Courses = () => {
     }, [institute_Id]);
 
     useEffect(() => {
-        if (institute_Id) {
-            getCoursesData();
-        }
-    }, [getCoursesData]);
-
-    useEffect(() => {
         setDisplayCourses(courses);
     }, [courses]);
 

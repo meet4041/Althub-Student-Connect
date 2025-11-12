@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Loader from '../layout/Loader'
 import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
@@ -8,7 +8,7 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 const FeedBack = () => {
-    let navigate = useNavigate();
+    // let navigate = useNavigate();
     const [feedback, setFeedBack] = useState([]);
     const [displayFeedBack, setDisplayFeedBack] = useState([]);
     const rows = [10, 20, 30];
@@ -131,7 +131,6 @@ const FeedBack = () => {
                                                         <td align='left'>{index + 1}</td>
                                                         <td>{elem.message}</td>
                                                         <td>{elem.rate}</td>
-                                                       
                                                         <td><i className='fa fa-trash' style={{ color: "red", cursor: "pointer", marginLeft: "5px" }} onClick={() => { handleDeleteUser(elem._id) }}></i></td>
                                                     </tr>
                                                 ) : <tr><td >No Record Found..</td></tr>}

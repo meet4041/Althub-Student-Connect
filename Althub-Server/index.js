@@ -29,7 +29,12 @@ const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", user_route);
@@ -75,7 +80,11 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: allowedOrigin,
+    methods: ["GET", "POST"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   },
+  transports: ["websocket", "polling"]
 });
 
 //socket server--------------------
@@ -95,7 +104,7 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-    // console.log("a user connected!");
+    console.log("✅ User connected via Socket.IO:", socket.id);
 
     socket.on("addUser", (userId) => {
       addUser(userId, socket.id);
@@ -103,7 +112,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-      // console.log("user disconnected");
+      console.log("👋 User disconnected:", socket.id);
       removeUser(socket.id);
       io.emit("getUsers", users);
     });
@@ -135,14 +144,31 @@ io.on("connection", (socket) => {
     });
   });
 
-// Start the server only after DB connection is ready so GridFS bucket is initialized
-connectToMongo().then(() => {
-  server.listen(port, function () {
-    console.log(`Server is ready on port ${port}`);
-  });
-}).catch(err => {
-  console.error('Failed to connect to MongoDB on startup:', err.message);
-  process.exit(1);
+// Error handling for socket connection
+io.on("connect_error", (error) => {
+  console.error("❌ Socket.IO connection error:", error.message);
 });
+
+server.on("error", (err) => {
+  console.error("❌ Server error:", err.message);
+});
+
+// Start the server only after DB connection is ready so GridFS bucket is initialized
+connectToMongo()
+  .then(() => {
+    server.listen(port, function () {
+      console.log(`✅ Server is ready on port ${port}`);
+      console.log(`✅ Socket.IO listening on ws://localhost:${port}/socket.io/`);
+      console.log(`✅ API endpoint: http://localhost:${port}/api`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ Failed to connect to MongoDB on startup:', err.message);
+    console.error('Please ensure:');
+    console.error('  - MongoDB is running');
+    console.error('  - MONGO_URI in .env is correct');
+    console.error('  - Network/firewall allows MongoDB connection');
+    process.exit(1);
+  });
 
 module.exports = app;

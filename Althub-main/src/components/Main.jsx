@@ -19,9 +19,9 @@ function Main() {
                 <div className="banner-left">
                     <img src="images/Logo1.jpeg" alt="logo" id="logo" />
                     <p>A Platform for Alumni and Student to Connect together.</p>
-                    <div className="banner-btn">
+                    {/* <div className="banner-btn">
                         Register Institute
-                    </div>
+                    </div> */}
                 </div>
                 <div className="banner-right">
                     <img src="images/connect.png" alt="" id="main-img" width="100%" height="100%" />
@@ -31,7 +31,7 @@ function Main() {
             <div className="main-section">
                 <div className="div5">
                     <div className="div5-left">
-                        <h1>Find the right job or internship for you</h1>
+                        <h1>Find the right connections</h1>
                     </div>
                     <div className="div5-right">
                         <button id="btn-job">Network Administrator</button>
@@ -50,17 +50,17 @@ function Main() {
                     <div className="div4-card">
                         <h3>EVENTS</h3>
                         <img src="images/event.png" alt="events" />
-                        <p>Events taking place at Althub. Spin up weekend reunions or casual hangouts.</p>
+                        <p>Events taking place at DAU. Spin up weekend reunions or casual hangouts.</p>
                     </div>
                     <div className="div4-card">
                         <h3>ALUMINI DIRECTORY</h3>
                         <img src="images/alumini-directory.png" alt="events" />
-                        <p>Help alumini discover classmates they have lost touch with, or find mentors who can help with the career change they are lokking to make.</p>
+                        <p>Help students discover classmates they have lost touch with, or find mentors/alumni who can help with building their career.</p>
                     </div>
                     <div className="div4-card">
-                        <h3>CONTENT LIBRARY</h3>
+                        <h3>CONNECTIONS</h3>
                         <img src="images/content-library.png" alt="events" />
-                        <p>Secure, on-demand libraries for your institute. Create class notes, job hiring by the list of alumni owned businesses.</p>
+                        <p>Secure, on-demand messaging for all users of ALTHUB and also connent with like minded people.</p>
                     </div>
                 </div>
                 <div className="div3">
@@ -92,7 +92,7 @@ function Main() {
                         <img src="images/Alumni-2.svg" alt="alumni" />
                     </div>
                     <div className="div2-text">
-                        <h1>We believe your Alumni should be at the Center</h1><br />
+                        <h1>We believe the Alumni should be at the Center</h1><br />
                         <p>In the value-focused reality that our alumni live in, provide them a reason to give back their time,
                             talent, & money by choosing the right technology and strategy.</p>
                     </div>
@@ -132,10 +132,7 @@ function Main() {
                                 Alumini
                             </li><br />
                             <li>
-                                JOBS
-                            </li><br />
-                            <li>
-                                Internships
+                                Connections
                             </li><br />
                             <li>
                                 Institute

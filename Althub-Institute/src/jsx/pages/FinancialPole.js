@@ -120,10 +120,10 @@ const FinancialPole = () => {
                 <div id="content" className="content">
                     <ol className="breadcrumb float-xl-right">
                         <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item active">Financial-Aid</li>
+                        <li className="breadcrumb-item active">Scholarship</li>
                     </ol>
 
-                    <h1 className="page-header">Financial-Aid
+                    <h1 className="page-header">Scholarship
                         <Link to="/add-financial-aid" className="btn btn-success mx-3" ><i className="fa fa-plus"></i></Link>
                     </h1>
 
