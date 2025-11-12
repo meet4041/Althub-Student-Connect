@@ -462,7 +462,7 @@ export default function Home({ socket }) {
           </div>
           {aids.length > 0 ?
             <div className="aid-box">
-              <h2>Aid Progress Bars</h2>
+              <h2>Scholership Progress</h2>
               {aids.map((elem) =>
                 <div className="aid">
                   {elem.image !== "" ?
