@@ -70,7 +70,6 @@ const connectToMongo = async () => {
     try {
       const db = connection.connection ? connection.connection.db : mongoose.connection.db;
       gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
-      console.log('GridFSBucket initialized');
     } catch (err) {
       console.error('Failed to initialize GridFSBucket', err.message);
     }
