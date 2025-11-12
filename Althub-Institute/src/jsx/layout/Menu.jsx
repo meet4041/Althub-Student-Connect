@@ -10,7 +10,6 @@ function Menu() {
    const [institute_Id, setInstitute_Id] = useState(null);
    const [dashboardClass, setDashboardClass] = useState("");
    const [usersClass, setUsersClass] = useState("");
-   const [coursesClass, setCoursesClass] = useState("");
    const [eventsClass, setEventsClass] = useState("");
    const [postsClass, setPostsClass] = useState("");
    const [aidClass, setAidClass] = useState("");
@@ -29,7 +28,6 @@ function Menu() {
          const pathname = window.location.pathname;
          setDashboardClass(pathname.match(/^\/dashboard/) ? "active" : "");
          setUsersClass(pathname.match(/^\/users/) ? "active" : "");
-         setCoursesClass(pathname.match(/^\/courses/) ? "active" : "");
          setEventsClass(pathname.match(/^\/events/) ? "active" : "");
          setPostsClass(pathname.match(/^\/posts/) ? "active" : "");
          setAidClass(pathname.match(/^\/financial-aid/) ? "active" : "");
@@ -101,12 +99,6 @@ function Menu() {
                         <span>Users</span>
                      </Link>
                   </li>
-                  {/* <li className={coursesClass}>
-                     <Link to="/courses" >
-                        <i className="fa fa-graduation-cap"></i>
-                        <span>Courses</span>
-                     </Link>
-                  </li> */}
                   <li className={eventsClass}>
                      <Link to="/events" >
                         <i className="fa fa-calendar"></i>

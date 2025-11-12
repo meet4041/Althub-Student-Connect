@@ -26,7 +26,6 @@ function Menu() {
    var usersClass = window.location.pathname.match(/^\/users/) ? "active" : "";
    var instituteClass = window.location.pathname.match(/^\/institute/) ? "active" : "";
    var feedbackClass = window.location.pathname.match(/^\/feedback/) ? "active" : "";
-   var companyClass = window.location.pathname.match(/^\/company/) ? "active" : "";
 
    const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
    const getData = useCallback(() => {
@@ -56,7 +55,7 @@ useEffect(() => {
          <div id="header" className="header navbar-default">
             <div className="navbar-header">
                <Link to="/dashboard" className="navbar-brand">
-                  <img src='Logo1.jpeg' style={{ marginRight: '6px' }} alt="logo" />
+                  <img src='Logo1.png' style={{ marginRight: '6px' }} alt="logo" />
                   <b>Admin</b></Link>
             </div>
             <ul className="navbar-nav navbar-right">
@@ -93,13 +92,6 @@ useEffect(() => {
                         <span>Institutes</span>
                      </Link>
                   </li>
-                  {/* <li className={companyClass}>
-                     <Link to="/company" >
-                        <i className="fa fa-building"></i>
-                       
-                        <span>Companies</span>
-                     </Link>
-                  </li> */}
                   <li className={feedbackClass}>
                      <Link to="/feedback" >
                      <i class="fa fa-comments"></i>

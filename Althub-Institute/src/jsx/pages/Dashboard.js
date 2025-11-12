@@ -9,7 +9,6 @@ import { ALTHUB_API_URL } from './baseURL';
 
 function Dashboard() {
     const [users, setUsers] = useState(0);
-    const [courses, setCourses] = useState(0);
     const [events, setEvents] = useState(0);
     const [posts, setPosts] = useState(0);
     const [institute_Id, setInstitute_Id] = useState(null);
@@ -33,7 +32,6 @@ function Dashboard() {
     useEffect(() => {
         if (institute_Id && institute_Name) {
             getTotalUser();
-            getTotalCourses();
             getTotalEvents();
             getTotalPosts();
         }
@@ -46,17 +44,6 @@ function Dashboard() {
         }).then((response) => {
             if (response.data.success === true) {
                 setUsers(response.data.data.length);
-            }
-        });
-    };
-
-    const getTotalCourses = () => {
-        axios({
-            method: "get",
-            url: `${ALTHUB_API_URL}/api/getCourseByInstitute/${institute_Id}`,
-        }).then((response) => {
-            if (response.data.success === true) {
-                setCourses(response.data.data.length);
             }
         });
     };
@@ -106,20 +93,6 @@ function Dashboard() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* <div className="col-xl-3 col-md-6">
-                            <div className="widget widget-stats bg-purple">
-                                <div className="stats-icon"><i className="fa fa-graduation-cap"></i>
-                                </div>
-                                <div className="stats-info">
-                                    <h4>Total Courses</h4>
-                                    <p>{courses}</p>
-                                </div>
-                                <div className="stats-link">
-                                    <Link to="/courses">View Detail <i className="fa fa-arrow-alt-circle-right"></i></Link>
-                                </div>
-                            </div>
-                        </div> */}
 
                         <div className="col-xl-3 col-md-6">
                             <div className="widget widget-stats bg-info">

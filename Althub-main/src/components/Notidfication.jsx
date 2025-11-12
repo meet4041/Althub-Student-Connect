@@ -123,7 +123,7 @@ export default function Notidfication() {
                 nav("/help-students");
               }}
             >
-              <i class="fa-solid fa-handshake-angle"></i>Help Students
+              <i class="fa-solid fa-handshake-angle"></i>Scholarship
             </div>
             <div
               className="menu"
