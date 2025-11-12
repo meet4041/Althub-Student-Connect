@@ -19,7 +19,6 @@ function Dashboard() {
                     getTotalUser(),
                     getTotalInstitutes(),
                     getTotalFeedback(),
-                    getTotalCompany()
                 ]);
             } catch (err) {
                 console.error('Dashboard initialization error:', err);
@@ -35,7 +34,6 @@ function Dashboard() {
     const [users, setUsers] = useState(0);
     const [institutes, setInstitutes] = useState(0);
     const [feedback, setFeedback] = useState(0);
-    const [company, setCompany] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -90,24 +88,6 @@ function Dashboard() {
             console.error('Error fetching feedback:', err);
             setError(err.message);
             setFeedback(0);
-        }
-    };
-
-    const getTotalCompany = async () => {
-        try {
-            console.log('Fetching companies...');
-            const response = await axios.get(`${ALTHUB_API_URL}/api/getCompanies`);
-            console.log('Companies response:', response.data);
-            if (response.data && response.data.success === true && Array.isArray(response.data.data)) {
-                setCompany(response.data.data.length);
-            } else {
-                console.warn('Invalid response format from /api/getCompanies:', response.data);
-                setCompany(0);
-            }
-        } catch (err) {
-            console.error('Error fetching companies:', err);
-            setError(err.message);
-            setCompany(0);
         }
     };
 
