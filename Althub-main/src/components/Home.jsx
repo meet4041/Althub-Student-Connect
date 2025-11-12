@@ -202,10 +202,9 @@ export default function Home({ socket }) {
     const options = {
       weekday: "short",
       year: "numeric",
-      month: "long",
+      month: "short", // Use short month name
       day: "numeric",
     };
-
     return date.toLocaleDateString("en-US", options);
   };
 
@@ -230,6 +229,10 @@ export default function Home({ socket }) {
       return `${ans.toFixed(2)}%`;
     }
   }
+
+  // Filter for upcoming events only
+  const now = new Date();
+  const upcomingEvents = events.filter(e => new Date(e.date) > now);
 
   return (
     <>
@@ -432,7 +435,7 @@ export default function Home({ socket }) {
           <div className="event-box">
             <span>Events</span>
             <div className="upcoming-events">
-              {events.map((elem) => (
+              {upcomingEvents.map((elem) => (
                 <div className="upcoming-event">
                   <div className="event-img">
                     {elem.photos.length > 0 ? (
@@ -462,7 +465,7 @@ export default function Home({ socket }) {
           </div>
           {aids.length > 0 ?
             <div className="aid-box">
-              <h2>Aid Progress Bars</h2>
+              <h2>Scholarship Progress</h2>
               {aids.map((elem) =>
                 <div className="aid">
                   {elem.image !== "" ?

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import FilterModal from "./FilterModal";
 
-export default function SearchProfile() {
+export default function SearchProfile({ socket }) {
   const [name, setName] = useState("");
   const [users, setUsers] = useState([]);
   const [showUsers, setShowUsers] = useState([]);
@@ -14,6 +15,59 @@ export default function SearchProfile() {
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
   const userID = localStorage.getItem("Althub_Id");
+  const [self, setSelf] = useState({});
+
+  // Fetch self info for follow logic
+  useEffect(() => {
+    if (userID) {
+      axios({
+        method: "get",
+        url: `${WEB_URL}/api/searchUserById/${userID}`,
+      })
+        .then((Response) => {
+          setSelf(Response.data.data[0]);
+        })
+        .catch((error) => {
+          // ignore
+        });
+    }
+  }, [userID]);
+  // Follow logic (like ViewSearchProfile)
+  const handleFollow = (targetUser) => {
+    if (!socket) return toast("Socket not connected");
+    socket.emit("sendNotification", {
+      receiverid: targetUser._id,
+      title: "New Follower",
+      msg: `${self.fname} ${self.lname} Started Following You`,
+    });
+    axios({
+      url: `${WEB_URL}/api/follow/${targetUser._id}`,
+      data: {
+        userId: userID,
+      },
+      method: "put",
+    })
+      .then((Response) => {
+        toast(Response.data);
+        // update local state to reflect follow
+        setShowUsers((prev) => prev.map(u => u._id === targetUser._id ? { ...u, followers: [...(u.followers || []), userID] } : u));
+        // Optionally, send notification
+        axios({
+          url: `${WEB_URL}/api/addNotification`,
+          method: "post",
+          data: {
+            userid: targetUser._id,
+            msg: `${self.fname} ${self.lname} Started Following You`,
+            image: self.profilepic,
+            title: "New Follower",
+            date: new Date(),
+          },
+        });
+      })
+      .catch((error) => {
+        toast.error("Failed to follow");
+      });
+  };
 
   useEffect(() => {
     axios({
@@ -127,15 +181,26 @@ export default function SearchProfile() {
                       </li>
                     </ul>
                   </div>
-                  <button
-                    class="btn-more"
-                    onClick={() => {
-                      elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
-                    }
-                    }
-                  >
-                    View Profile
-                  </button>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <button
+                      class="btn-more"
+                      onClick={() => {
+                        elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
+                      }}
+                    >
+                      View Profile
+                    </button>
+                    {elem._id !== userID && (
+                      <button
+                        className="view-profile-button1"
+                        style={{ minWidth: 90 }}
+                        onClick={() => handleFollow(elem)}
+                        disabled={elem.followers && elem.followers.includes(userID)}
+                      >
+                        {elem.followers && elem.followers.includes(userID) ? "Followed" : "Follow"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
