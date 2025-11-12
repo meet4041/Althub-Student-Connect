@@ -475,7 +475,7 @@ export default function Home({ socket }) {
                     />
                     :
                     <img
-                      src="images/profile1.png"
+                      src="images/user1.png"
                       alt="Default Profile"
                     />
                   }
@@ -488,7 +488,7 @@ export default function Home({ socket }) {
                       <div className="fill-progress-bar" style={{ width: calWidth(elem.aid, elem.claimed) }}></div>
                     </div>
                     <div className="amount">
-                      <span>₹0</span>
+                      <span>₹{elem.claimed}</span>
                       <span>₹{elem.aid}</span>
                     </div>
                   </div>
