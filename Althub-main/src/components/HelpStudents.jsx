@@ -109,14 +109,14 @@ const HelpStudents = () => {
               <div className="aid-info-div">
                 <div className="name">{elem.name}</div>
                 <div>
-                  <span><b>Claimed:</b> {elem.claimed}</span> ({calWidth(elem.aid, elem.claimed)})
+                  <span><b>Claimed :</b> {elem.claimed}</span> ({calWidth(elem.aid, elem.claimed)})
                 </div>
               </div>
               <div className="aid-info-div">
                 <span className="aid-info-desc">
-                  <b>Description:</b> {elem.description}
+                  <b>Description :</b> {elem.description}
                 </span>
-                <span><b>Due Date:</b> {formatDate(elem.dueDate)}</span>
+                <span><b>Due Date :</b> {formatDate(elem.dueDate)}</span>
               </div>
               <div className="progress-bar">
                 <div
@@ -125,7 +125,7 @@ const HelpStudents = () => {
                 ></div>
               </div>
               <div className="amount">
-                <span>₹0</span>
+                <span>₹{elem.claimed}</span>
                 <span>₹{elem.aid}</span>
               </div>
             </div>
