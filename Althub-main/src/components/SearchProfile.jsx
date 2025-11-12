@@ -143,7 +143,7 @@ export default function SearchProfile() {
         ) : (
           <>
             <div className="no-search">
-              <img src="images/search-bro.png" className="no-search-img" />
+              <img src="images/search-bro.png" className="no-search-img" alt="no-image"/>
               <span>"Connecting You with the Right People"</span>
             </div>
           </>
