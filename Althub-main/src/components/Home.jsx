@@ -332,8 +332,8 @@ export default function Home({ socket }) {
               </div>
               {files.length > 0 ? (
                 <div className="selected-img">
-                  {files.map((elem) => (
-                    <div>
+                  {files.map((elem, index) => (
+                    <div key={index}>
                       <img src={window.URL.createObjectURL(elem)} alt="" />
                     </div>
                   ))}
@@ -351,7 +351,7 @@ export default function Home({ socket }) {
             {post.length > 0 ? (
               <>
                 {post.map((elem) => (
-                  <div className="post">
+                  <div key={elem._id} className="post">
                     <div className="post-header">
                       <div className="post-profile">
                         <div
@@ -389,8 +389,9 @@ export default function Home({ socket }) {
                     {elem.photos.length > 0 ? (
                       <div className="post-images">
                         <Slider {...settings}>
-                          {elem.photos.map((el) => (
+                          {elem.photos.map((el, idx) => (
                             <img
+                              key={idx}
                               src={`${WEB_URL}${el}`}
                               alt=""
                               className="post-image"
@@ -436,7 +437,7 @@ export default function Home({ socket }) {
             <span>Events</span>
             <div className="upcoming-events">
               {upcomingEvents.map((elem) => (
-                <div className="upcoming-event">
+                <div key={elem._id} className="upcoming-event">
                   <div className="event-img">
                     {elem.photos.length > 0 ? (
                       <img
@@ -465,9 +466,9 @@ export default function Home({ socket }) {
           </div>
           {aids.length > 0 ?
             <div className="aid-box">
-              <h2>Scholarship Progress</h2>
+              <h2>Scholership Progress</h2>
               {aids.map((elem) =>
-                <div className="aid">
+                <div key={elem._id} className="aid">
                   {elem.image !== "" ?
                     <img
                       src={`${WEB_URL}${elem.image}`}

@@ -99,9 +99,12 @@ export default function SearchProfile({ socket }) {
   return (
     <>
       <div className="body1">
+      <div className="body1">
         <div className="search-hearder">
           <div className="search-box">
+          <div className="search-box">
             <i
+              className="fa-sharp fa-solid fa-magnifying-glass"
               className="fa-sharp fa-solid fa-magnifying-glass"
               style={{ color: "#787878" }}
             ></i>
@@ -114,7 +117,9 @@ export default function SearchProfile({ socket }) {
           </div>
           <div>
             <i className="fa-solid fa-filter" onClick={() => setModal(true)}></i>
+            <i className="fa-solid fa-filter" onClick={() => setModal(true)}></i>
             {add || skill ? <i
+              className="fa-solid fa-circle"
               className="fa-solid fa-circle"
               style={{
                 color: "#ff0000",
@@ -127,8 +132,9 @@ export default function SearchProfile({ socket }) {
         </div>
         {showUsers && showUsers.length > 0 ? (
           <div className="card-wrapper">
+          <div className="card-wrapper">
             {showUsers.map((elem) => (
-              <div className="card">
+              <div key={elem._id} className="card">
                 <div className="image-content">
                   <span className="overlay"></span>
                   <div className="card-image">
@@ -137,12 +143,20 @@ export default function SearchProfile({ socket }) {
                         src={`${WEB_URL}${elem.profilepic}`}
                         alt="amir-esrafili"
                         className="card-img"
+                        className="card-img"
                       />
                     ) : (
+                      <img src="images/profile1.png" className="card-img" alt="#"></img>
                       <img src="images/profile1.png" className="card-img" alt="#"></img>
                     )}
                   </div>
                 </div>
+                <div className="card-content">
+                  <h2 className="name"
+                    onClick={() => {
+                      elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
+                    }
+                    }>
                 <div className="card-content">
                   <h2 className="name"
                     onClick={() => {
@@ -156,19 +170,31 @@ export default function SearchProfile({ socket }) {
                     {elem.nation ? `, ${elem.nation} ` : null}
                   </p>
                   <div className="nav">
+                  <div className="nav">
                     <ul>
                       <li>
                         <a href={elem.linkedin.startsWith('http') ? elem.linkedin : `https://www.linkedin.com/in/${elem.linkedin}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ marginRight: '8px' }}>
+                        <a href={elem.linkedin.startsWith('http') ? elem.linkedin : `https://www.linkedin.com/in/${elem.linkedin}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ marginRight: '8px' }}>
                           <i
+                            className="fa-brands fa-linkedin-in"
                             className="fa-brands fa-linkedin-in"
                             style={{ color: "#7e7f81" }}
                           ></i>
                         </a>
                       </li>
                       <li>
+                        <a href={elem.github.startsWith('http') ? elem.github : `https://github.com/${elem.github}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ marginRight: '8px' }}>
+                          <i
+                            className="fa-brands fa-github"
                         <a href={elem.github.startsWith('http') ? elem.github : `https://github.com/${elem.github}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -183,6 +209,7 @@ export default function SearchProfile({ socket }) {
                   </div>
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <button
+                      className="btn-more"
                       className="btn-more"
                       onClick={() => {
                         elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
@@ -208,6 +235,7 @@ export default function SearchProfile({ socket }) {
         ) : (
           <>
             <div className="no-search">
+              <img src="images/search-bro.png" className="no-search-img" alt="no-image"/>
               <img src="images/search-bro.png" className="no-search-img" alt="no-image"/>
               <span>"Connecting You with the Right People"</span>
             </div>
