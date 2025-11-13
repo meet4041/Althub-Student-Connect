@@ -73,7 +73,7 @@ export default function Notidfication() {
 
   return (
     <>
-      <div class="home-container">
+      <div className="home-container">
         <div className="profile-card-main">
           <div className="profile-card">
             <div className="profile-card-imgbox">
@@ -123,7 +123,7 @@ export default function Notidfication() {
                 nav("/help-students");
               }}
             >
-              <i class="fa-solid fa-handshake-angle"></i>Scholarship
+              <i className="fa-solid fa-handshake-angle"></i>Scholarship
             </div>
             <div
               className="menu"
@@ -140,19 +140,19 @@ export default function Notidfication() {
           </div>
         </div>
 
-        <div class="notification-main">
+        <div className="notification-main">
           {notifications.length > 0 ? (
-            <div class="notification-box">
+            <div className="notification-box">
               {notifications.map((elem) => (
-                <div class="notification">
-                  <div class="notifiction-img">
+                <div className="notification">
+                  <div className="notifiction-img">
                     <img src={`${WEB_URL}${elem.image}`} alt="" />
                   </div>
-                  <div class="notification-info">
-                    <div class="notification-name">
+                  <div className="notification-info">
+                    <div className="notification-name">
                       {elem.title}
                     </div>
-                    <div class="notification-desc">
+                    <div className="notification-desc">
                       {elem.msg}
                     </div>
                     <div className="notification-time">

@@ -58,11 +58,11 @@ function NewPassword() {
 
   return (
     <>
-      <div class="reset">
-        <div class="reset-left">
+      <div className="reset">
+        <div className="reset-left">
           <img src="images/Forgot password-amico.svg" alt="forgot password" />
         </div>
-        <div class="reset-right">
+        <div className="reset-right">
           <h1>Set New Password ?</h1>
           <h4>Please Enter New-Password</h4>
           <input type="password" placeholder="New Password" id="email-input" value={password.new} onChange={handleChange} name='new' />

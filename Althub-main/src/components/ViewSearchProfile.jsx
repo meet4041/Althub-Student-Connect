@@ -281,17 +281,17 @@ export default function ViewSearchProfile({ socket }) {
                 >
                   {user.github !== "" ? (
                     <div>
-                      <i class="fa-brands fa-github"></i> {user.github}
+                      <i className="fa-brands fa-github"></i> {user.github}
                     </div>
                   ) : null}
                   {user.linkedin !== "" ? (
                     <div>
-                      <i class="fa-brands fa-linkedin-in"></i> {user.linkedin}
+                      <i className="fa-brands fa-linkedin-in"></i> {user.linkedin}
                     </div>
                   ) : null}
                   {user.portfolioweb !== "" ? (
                     <div>
-                      <i class="fa-regular fa-id-card"></i> {user.portfolioweb}
+                      <i className="fa-regular fa-id-card"></i> {user.portfolioweb}
                     </div>
                   ) : null}
                 </div>

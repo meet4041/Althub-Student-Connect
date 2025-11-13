@@ -557,12 +557,12 @@ export default function Register() {
                   Tell us something more about you
                 </h3>
                 <div
-                  class="prise_main_drop"
+                  className="prise_main_drop"
                   onClick={() => setUniversityShow(!universityShow)}
                 >
-                  <span class="prise-data">{user.institute ? user.institute : "Select Institute"}</span>
-                  <span class="prise_down_icon">
-                    <i class="fa-solid fa-angle-down"></i>
+                  <span className="prise-data">{user.institute ? user.institute : "Select Institute"}</span>
+                  <span className="prise_down_icon">
+                    <i className="fa-solid fa-angle-down"></i>
                   </span>
                   {university.length > 0 ? (
                     <ul

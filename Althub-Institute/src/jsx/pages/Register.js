@@ -135,8 +135,8 @@ const Register = () => {
                 <div className="right-container">
                     <form id="msform">
                         <fieldset>
-                            <h2 class="fs-title">Institute Details</h2>
-                            <h3 class="fs-subtitle">Tell us something more about your Institute</h3>
+                            <h2 className="fs-title">Institute Details</h2>
+                            <h3 className="fs-subtitle">Tell us something more about your Institute</h3>
 
                             <input type="text" name="name" placeholder=" Name" value={user.name} onChange={handleChange} />
                             <div className="text-danger">{errors.name_err}</div>
@@ -174,7 +174,7 @@ const Register = () => {
                             <input type="password" name="cpassword" placeholder="Confirm Password" value={user.cpassword} onChange={handleChange} />
                             <div className="text-danger">{errors.cpassword_err}</div>
 
-                            <input type="button" name="Submit" class="next action-button" value="SUBMIT" onClick={handleSubmit} />
+                            <input type="button" name="Submit" className="next action-button" value="SUBMIT" onClick={handleSubmit} />
                         </fieldset>
                     </form>
                 </div>

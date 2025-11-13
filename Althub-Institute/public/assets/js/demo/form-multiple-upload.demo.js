@@ -46,7 +46,7 @@ var handleJqueryFileUpload = function() {
 		$.ajax({
 			type: 'HEAD'
 		}).fail(function () {
-			$('<div class="alert alert-danger"/>').text('Upload server currently unavailable - ' + new Date()).appendTo('#fileupload');
+			$('<div className="alert alert-danger"/>').text('Upload server currently unavailable - ' + new Date()).appendTo('#fileupload');
 		});
 	}
 

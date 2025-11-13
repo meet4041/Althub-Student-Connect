@@ -30,9 +30,9 @@ var handleAddCc = function() {
 		var targetName = $(this).attr('data-name');
 		var targetId = 'email-cc-'+ targetName +'';
 		var targetHtml = ''+
-		'	<div class="email-to">'+
-		'		<label class="control-label">'+ targetName +':</label>'+
-		'		<ul id="'+ targetId +'" class="primary line-mode"></ul>'+
+		'	<div className="email-to">'+
+		'		<label className="control-label">'+ targetName +':</label>'+
+		'		<ul id="'+ targetId +'" className="primary line-mode"></ul>'+
 		'	</div>';
 		$('[data-id="extra-cc"]').append(targetHtml);
 		$('#' + targetId).tagit();

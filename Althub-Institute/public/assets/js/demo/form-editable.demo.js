@@ -94,7 +94,7 @@ var handleEditableFieldConstruct = function() {
 			{value: 2, text: 'Female'}
 		],
 		display: function(value, sourceData) {
-			var icons = {'': '', 1: '<i class="fa fa-male m-r-5"></i>', 2: '<i class="fa fa-female m-r-5"></i>'},
+			var icons = {'': '', 1: '<i className="fa fa-male m-r-5"></i>', 2: '<i className="fa fa-female m-r-5"></i>'},
 			elem = $.grep(sourceData, function(o){return o.value == value;});
 
 			if (elem.length) {    

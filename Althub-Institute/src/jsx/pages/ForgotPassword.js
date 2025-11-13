@@ -90,7 +90,7 @@ function ForgotPassword() {
                                 <div className="text-danger">{err}</div>
                             </div>
                             <div className="login-buttons">
-                                <button type="button" onClick={submitHandler} class="btn btn-success btn-block btn-lg" disabled={disable}>{disable ? 'Processing...' : 'Reset Password'}</button>
+                                <button type="button" onClick={submitHandler} className="btn btn-success btn-block btn-lg" disabled={disable}>{disable ? 'Processing...' : 'Reset Password'}</button>
                             </div>
                             <p style={{ marginLeft: "130px", paddingTop: "10px" }}>Known with Credentials then , <Link to='/' style={{ textDecoration: "underline" }}><b>Login</b></Link></p>
                         </form>

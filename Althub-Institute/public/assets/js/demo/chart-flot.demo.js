@@ -6,7 +6,7 @@ Website: http://www.seantheme.com/color-admin/admin/
 */
 
 function showFlotTooltip(x, y, contents) {
-	$('<div id="tooltip" class="flot-tooltip">' + contents + '</div>').css({
+	$('<div id="tooltip" className="flot-tooltip">' + contents + '</div>').css({
 		top: y,
 		left: x + 35
 	}).appendTo('body').fadeIn(200);

@@ -133,8 +133,8 @@ const Events = () => {
 
                     <div className="card">
                         <div className="card-body">
-                            <div class="form-outline mb-4">
-                                <input type="search" class="form-control" id="datatable-search-input" placeholder='Search Event' onChange={handleSearch} />
+                            <div className="form-outline mb-4">
+                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search Event' onChange={handleSearch} />
                             </div>
                             <div className="row">
                                 <div className="col-12">
@@ -172,7 +172,7 @@ const Events = () => {
                                         <ul className="pagination">
                                             {pageNumbers.map((number) =>
                                                 <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span class="page-link" onClick={() => paginate(number)}>{number}</span>
+                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
                                                 </li>
                                             )}
                                         </ul>

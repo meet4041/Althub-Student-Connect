@@ -339,8 +339,8 @@ var fragments=[],entries=[],rowStarted=false,lf=options.legend.labelFormatter,s,
 if(options.legend.sorted){if($.isFunction(options.legend.sorted)){entries.sort(options.legend.sorted);}else if(options.legend.sorted=="reverse"){entries.reverse();}else{var ascending=options.legend.sorted!="descending";entries.sort(function(a,b){return a.label==b.label?0:((a.label<b.label)!=ascending?1:-1);});}}
 for(var i=0;i<entries.length;++i){var entry=entries[i];if(i%options.legend.noColumns==0){if(rowStarted)
 fragments.push('</tr>');fragments.push('<tr>');rowStarted=true;}
-fragments.push('<td class="legendColorBox"><div style="border:1px solid '+options.legend.labelBoxBorderColor+';padding:1px"><div style="width:4px;height:0;border:5px solid '+entry.color+';overflow:hidden"></div></div></td>'+
-'<td class="legendLabel">'+entry.label+'</td>');}
+fragments.push('<td className="legendColorBox"><div style="border:1px solid '+options.legend.labelBoxBorderColor+';padding:1px"><div style="width:4px;height:0;border:5px solid '+entry.color+';overflow:hidden"></div></div></td>'+
+'<td className="legendLabel">'+entry.label+'</td>');}
 if(rowStarted)
 fragments.push('</tr>');if(fragments.length==0)
 return;var table='<table style="font-size:smaller;color:'+options.grid.color+'">'+fragments.join("")+'</table>';if(options.legend.container!=null)
@@ -349,7 +349,7 @@ m=[m,m];if(p.charAt(0)=="n")
 pos+='top:'+(m[1]+plotOffset.top)+'px;';else if(p.charAt(0)=="s")
 pos+='bottom:'+(m[1]+plotOffset.bottom)+'px;';if(p.charAt(1)=="e")
 pos+='right:'+(m[0]+plotOffset.right)+'px;';else if(p.charAt(1)=="w")
-pos+='left:'+(m[0]+plotOffset.left)+'px;';var legend=$('<div class="legend">'+table.replace('style="','style="position:absolute;'+pos+';')+'</div>').appendTo(placeholder);if(options.legend.backgroundOpacity!=0.0){var c=options.legend.backgroundColor;if(c==null){c=options.grid.backgroundColor;if(c&&typeof c=="string")
+pos+='left:'+(m[0]+plotOffset.left)+'px;';var legend=$('<div className="legend">'+table.replace('style="','style="position:absolute;'+pos+';')+'</div>').appendTo(placeholder);if(options.legend.backgroundOpacity!=0.0){var c=options.legend.backgroundColor;if(c==null){c=options.grid.backgroundColor;if(c&&typeof c=="string")
 c=$.color.parse(c);else
 c=$.color.extract(legend,'background-color');c.a=1;c=c.toString();}
 var div=legend.children();$('<div style="position:absolute;width:'+div.width()+'px;height:'+div.height()+'px;'+pos+'background-color:'+c+';"> </div>').prependTo(legend).css('opacity',options.legend.backgroundOpacity);}}}

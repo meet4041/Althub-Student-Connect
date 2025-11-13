@@ -4,20 +4,20 @@ var moment=(typeof window!='undefined'&&typeof window.moment!='undefined')?windo
 this.opens='left';this.drops='down';if(this.element.hasClass('dropup'))
 this.drops='up';this.buttonClasses='btn btn-sm';this.applyButtonClasses='btn-primary';this.cancelButtonClasses='btn-default';this.locale={direction:'ltr',format:moment.localeData().longDateFormat('L'),separator:' - ',applyLabel:'Apply',cancelLabel:'Cancel',weekLabel:'W',customRangeLabel:'Custom Range',daysOfWeek:moment.weekdaysMin(),monthNames:moment.monthsShort(),firstDay:moment.localeData().firstDayOfWeek()};this.callback=function(){};this.isShowing=false;this.leftCalendar={};this.rightCalendar={};if(typeof options!=='object'||options===null)
 options={};options=$.extend(this.element.data(),options);if(typeof options.template!=='string'&&!(options.template instanceof $))
-options.template='<div class="daterangepicker">'+
-'<div class="ranges"></div>'+
-'<div class="drp-calendar left">'+
-'<div class="calendar-table"></div>'+
-'<div class="calendar-time"></div>'+
+options.template='<div className="daterangepicker">'+
+'<div className="ranges"></div>'+
+'<div className="drp-calendar left">'+
+'<div className="calendar-table"></div>'+
+'<div className="calendar-time"></div>'+
 '</div>'+
-'<div class="drp-calendar right">'+
-'<div class="calendar-table"></div>'+
-'<div class="calendar-time"></div>'+
+'<div className="drp-calendar right">'+
+'<div className="calendar-table"></div>'+
+'<div className="calendar-time"></div>'+
 '</div>'+
-'<div class="drp-buttons">'+
-'<span class="drp-selected"></span>'+
-'<button class="cancelBtn" type="button"></button>'+
-'<button class="applyBtn" disabled="disabled" type="button"></button> '+
+'<div className="drp-buttons">'+
+'<span className="drp-selected"></span>'+
+'<button className="cancelBtn" type="button"></button>'+
+'<button className="applyBtn" disabled="disabled" type="button"></button> '+
 '</div>'+
 '</div>';this.parentEl=(options.parentEl&&$(options.parentEl).length)?$(options.parentEl):$(this.parentEl);this.container=$(options.template).appendTo(this.parentEl);if(typeof options.locale==='object'){if(typeof options.locale.direction==='string')
 this.locale.direction=options.locale.direction;if(typeof options.locale.format==='string')
@@ -131,23 +131,23 @@ startDay=daysInLastMonth-6;var curDate=moment([lastYear,lastMonth,startDay,12,mi
 calendar[row][col]=curDate.clone().hour(hour).minute(minute).second(second);curDate.hour(12);if(this.minDate&&calendar[row][col].format('YYYY-MM-DD')==this.minDate.format('YYYY-MM-DD')&&calendar[row][col].isBefore(this.minDate)&&side=='left'){calendar[row][col]=this.minDate.clone();}
 if(this.maxDate&&calendar[row][col].format('YYYY-MM-DD')==this.maxDate.format('YYYY-MM-DD')&&calendar[row][col].isAfter(this.maxDate)&&side=='right'){calendar[row][col]=this.maxDate.clone();}}
 if(side=='left'){this.leftCalendar.calendar=calendar;}else{this.rightCalendar.calendar=calendar;}
-var minDate=side=='left'?this.minDate:this.startDate;var maxDate=this.maxDate;var selected=side=='left'?this.startDate:this.endDate;var arrow=this.locale.direction=='ltr'?{left:'chevron-left',right:'chevron-right'}:{left:'chevron-right',right:'chevron-left'};var html='<table class="table-condensed">';html+='<thead>';html+='<tr>';if(this.showWeekNumbers||this.showISOWeekNumbers)
-html+='<th></th>';if((!minDate||minDate.isBefore(calendar.firstDay))&&(!this.linkedCalendars||side=='left')){html+='<th class="prev available"><span></span></th>';}else{html+='<th></th>';}
-var dateHtml=this.locale.monthNames[calendar[1][1].month()]+calendar[1][1].format(" YYYY");if(this.showDropdowns){var currentMonth=calendar[1][1].month();var currentYear=calendar[1][1].year();var maxYear=(maxDate&&maxDate.year())||(this.maxYear);var minYear=(minDate&&minDate.year())||(this.minYear);var inMinYear=currentYear==minYear;var inMaxYear=currentYear==maxYear;var monthHtml='<select class="monthselect">';for(var m=0;m<12;m++){if((!inMinYear||(minDate&&m>=minDate.month()))&&(!inMaxYear||(maxDate&&m<=maxDate.month()))){monthHtml+="<option value='"+m+"'"+
+var minDate=side=='left'?this.minDate:this.startDate;var maxDate=this.maxDate;var selected=side=='left'?this.startDate:this.endDate;var arrow=this.locale.direction=='ltr'?{left:'chevron-left',right:'chevron-right'}:{left:'chevron-right',right:'chevron-left'};var html='<table className="table-condensed">';html+='<thead>';html+='<tr>';if(this.showWeekNumbers||this.showISOWeekNumbers)
+html+='<th></th>';if((!minDate||minDate.isBefore(calendar.firstDay))&&(!this.linkedCalendars||side=='left')){html+='<th className="prev available"><span></span></th>';}else{html+='<th></th>';}
+var dateHtml=this.locale.monthNames[calendar[1][1].month()]+calendar[1][1].format(" YYYY");if(this.showDropdowns){var currentMonth=calendar[1][1].month();var currentYear=calendar[1][1].year();var maxYear=(maxDate&&maxDate.year())||(this.maxYear);var minYear=(minDate&&minDate.year())||(this.minYear);var inMinYear=currentYear==minYear;var inMaxYear=currentYear==maxYear;var monthHtml='<select className="monthselect">';for(var m=0;m<12;m++){if((!inMinYear||(minDate&&m>=minDate.month()))&&(!inMaxYear||(maxDate&&m<=maxDate.month()))){monthHtml+="<option value='"+m+"'"+
 (m===currentMonth?" selected='selected'":"")+
 ">"+this.locale.monthNames[m]+"</option>";}else{monthHtml+="<option value='"+m+"'"+
 (m===currentMonth?" selected='selected'":"")+
 " disabled='disabled'>"+this.locale.monthNames[m]+"</option>";}}
-monthHtml+="</select>";var yearHtml='<select class="yearselect">';for(var y=minYear;y<=maxYear;y++){yearHtml+='<option value="'+y+'"'+
+monthHtml+="</select>";var yearHtml='<select className="yearselect">';for(var y=minYear;y<=maxYear;y++){yearHtml+='<option value="'+y+'"'+
 (y===currentYear?' selected="selected"':'')+
 '>'+y+'</option>';}
 yearHtml+='</select>';dateHtml=monthHtml+yearHtml;}
-html+='<th colspan="5" class="month">'+dateHtml+'</th>';if((!maxDate||maxDate.isAfter(calendar.lastDay))&&(!this.linkedCalendars||side=='right'||this.singleDatePicker)){html+='<th class="next available"><span></span></th>';}else{html+='<th></th>';}
+html+='<th colspan="5" className="month">'+dateHtml+'</th>';if((!maxDate||maxDate.isAfter(calendar.lastDay))&&(!this.linkedCalendars||side=='right'||this.singleDatePicker)){html+='<th className="next available"><span></span></th>';}else{html+='<th></th>';}
 html+='</tr>';html+='<tr>';if(this.showWeekNumbers||this.showISOWeekNumbers)
-html+='<th class="week">'+this.locale.weekLabel+'</th>';$.each(this.locale.daysOfWeek,function(index,dayOfWeek){html+='<th>'+dayOfWeek+'</th>';});html+='</tr>';html+='</thead>';html+='<tbody>';if(this.endDate==null&&this.maxSpan){var maxLimit=this.startDate.clone().add(this.maxSpan).endOf('day');if(!maxDate||maxLimit.isBefore(maxDate)){maxDate=maxLimit;}}
+html+='<th className="week">'+this.locale.weekLabel+'</th>';$.each(this.locale.daysOfWeek,function(index,dayOfWeek){html+='<th>'+dayOfWeek+'</th>';});html+='</tr>';html+='</thead>';html+='<tbody>';if(this.endDate==null&&this.maxSpan){var maxLimit=this.startDate.clone().add(this.maxSpan).endOf('day');if(!maxDate||maxLimit.isBefore(maxDate)){maxDate=maxLimit;}}
 for(var row=0;row<6;row++){html+='<tr>';if(this.showWeekNumbers)
-html+='<td class="week">'+calendar[row][0].week()+'</td>';else if(this.showISOWeekNumbers)
-html+='<td class="week">'+calendar[row][0].isoWeek()+'</td>';for(var col=0;col<7;col++){var classes=[];if(calendar[row][col].isSame(new Date(),"day"))
+html+='<td className="week">'+calendar[row][0].week()+'</td>';else if(this.showISOWeekNumbers)
+html+='<td className="week">'+calendar[row][0].isoWeek()+'</td>';for(var col=0;col<7;col++){var classes=[];if(calendar[row][col].isSame(new Date(),"day"))
 classes.push('today');if(calendar[row][col].isoWeekday()>5)
 classes.push('weekend');if(calendar[row][col].month()!=calendar[1][1].month())
 classes.push('off','ends');if(this.minDate&&calendar[row][col].isBefore(this.minDate,'day'))
@@ -162,7 +162,7 @@ Array.prototype.push.apply(classes,isCustom);}
 var cname='',disabled=false;for(var i=0;i<classes.length;i++){cname+=classes[i]+' ';if(classes[i]=='disabled')
 disabled=true;}
 if(!disabled)
-cname+='available';html+='<td class="'+cname.replace(/^\s+|\s+$/g,'')+'" data-title="'+'r'+row+'c'+col+'">'+calendar[row][col].date()+'</td>';}
+cname+='available';html+='<td className="'+cname.replace(/^\s+|\s+$/g,'')+'" data-title="'+'r'+row+'c'+col+'">'+calendar[row][col].date()+'</td>';}
 html+='</tr>';}
 html+='</tbody>';html+='</table>';this.container.find('.drp-calendar.'+side+' .calendar-table').html(html);},renderTimePicker:function(side){if(side=='right'&&!this.endDate)return;var html,selected,minDate,maxDate=this.maxDate;if(this.maxSpan&&(!this.maxDate||this.startDate.clone().add(this.maxSpan).isBefore(this.maxDate)))
 maxDate=this.startDate.clone().add(this.maxSpan);if(side=='left'){selected=this.startDate.clone();minDate=this.minDate;}else if(side=='right'){selected=this.endDate.clone();minDate=this.startDate;var timeSelector=this.container.find('.drp-calendar.right .calendar-time');if(timeSelector.html()!=''){selected.hour(!isNaN(selected.hour())?selected.hour():timeSelector.find('.hourselect option:selected').val());selected.minute(!isNaN(selected.minute())?selected.minute():timeSelector.find('.minuteselect option:selected').val());selected.second(!isNaN(selected.second())?selected.second():timeSelector.find('.secondselect option:selected').val());if(!this.timePicker24Hour){var ampm=timeSelector.find('.ampmselect option:selected').val();if(ampm==='PM'&&selected.hour()<12)
@@ -171,20 +171,20 @@ selected.hour(0);}}
 if(selected.isBefore(this.startDate))
 selected=this.startDate.clone();if(maxDate&&selected.isAfter(maxDate))
 selected=maxDate.clone();}
-html='<select class="hourselect">';var start=this.timePicker24Hour?0:1;var end=this.timePicker24Hour?23:12;for(var i=start;i<=end;i++){var i_in_24=i;if(!this.timePicker24Hour)
+html='<select className="hourselect">';var start=this.timePicker24Hour?0:1;var end=this.timePicker24Hour?23:12;for(var i=start;i<=end;i++){var i_in_24=i;if(!this.timePicker24Hour)
 i_in_24=selected.hour()>=12?(i==12?12:i+12):(i==12?0:i);var time=selected.clone().hour(i_in_24);var disabled=false;if(minDate&&time.minute(59).isBefore(minDate))
 disabled=true;if(maxDate&&time.minute(0).isAfter(maxDate))
-disabled=true;if(i_in_24==selected.hour()&&!disabled){html+='<option value="'+i+'" selected="selected">'+i+'</option>';}else if(disabled){html+='<option value="'+i+'" disabled="disabled" class="disabled">'+i+'</option>';}else{html+='<option value="'+i+'">'+i+'</option>';}}
-html+='</select> ';html+=': <select class="minuteselect">';for(var i=0;i<60;i+=this.timePickerIncrement){var padded=i<10?'0'+i:i;var time=selected.clone().minute(i);var disabled=false;if(minDate&&time.second(59).isBefore(minDate))
+disabled=true;if(i_in_24==selected.hour()&&!disabled){html+='<option value="'+i+'" selected="selected">'+i+'</option>';}else if(disabled){html+='<option value="'+i+'" disabled="disabled" className="disabled">'+i+'</option>';}else{html+='<option value="'+i+'">'+i+'</option>';}}
+html+='</select> ';html+=': <select className="minuteselect">';for(var i=0;i<60;i+=this.timePickerIncrement){var padded=i<10?'0'+i:i;var time=selected.clone().minute(i);var disabled=false;if(minDate&&time.second(59).isBefore(minDate))
 disabled=true;if(maxDate&&time.second(0).isAfter(maxDate))
-disabled=true;if(selected.minute()==i&&!disabled){html+='<option value="'+i+'" selected="selected">'+padded+'</option>';}else if(disabled){html+='<option value="'+i+'" disabled="disabled" class="disabled">'+padded+'</option>';}else{html+='<option value="'+i+'">'+padded+'</option>';}}
-html+='</select> ';if(this.timePickerSeconds){html+=': <select class="secondselect">';for(var i=0;i<60;i++){var padded=i<10?'0'+i:i;var time=selected.clone().second(i);var disabled=false;if(minDate&&time.isBefore(minDate))
+disabled=true;if(selected.minute()==i&&!disabled){html+='<option value="'+i+'" selected="selected">'+padded+'</option>';}else if(disabled){html+='<option value="'+i+'" disabled="disabled" className="disabled">'+padded+'</option>';}else{html+='<option value="'+i+'">'+padded+'</option>';}}
+html+='</select> ';if(this.timePickerSeconds){html+=': <select className="secondselect">';for(var i=0;i<60;i++){var padded=i<10?'0'+i:i;var time=selected.clone().second(i);var disabled=false;if(minDate&&time.isBefore(minDate))
 disabled=true;if(maxDate&&time.isAfter(maxDate))
-disabled=true;if(selected.second()==i&&!disabled){html+='<option value="'+i+'" selected="selected">'+padded+'</option>';}else if(disabled){html+='<option value="'+i+'" disabled="disabled" class="disabled">'+padded+'</option>';}else{html+='<option value="'+i+'">'+padded+'</option>';}}
+disabled=true;if(selected.second()==i&&!disabled){html+='<option value="'+i+'" selected="selected">'+padded+'</option>';}else if(disabled){html+='<option value="'+i+'" disabled="disabled" className="disabled">'+padded+'</option>';}else{html+='<option value="'+i+'">'+padded+'</option>';}}
 html+='</select> ';}
-if(!this.timePicker24Hour){html+='<select class="ampmselect">';var am_html='';var pm_html='';if(minDate&&selected.clone().hour(12).minute(0).second(0).isBefore(minDate))
-am_html=' disabled="disabled" class="disabled"';if(maxDate&&selected.clone().hour(0).minute(0).second(0).isAfter(maxDate))
-pm_html=' disabled="disabled" class="disabled"';if(selected.hour()>=12){html+='<option value="AM"'+am_html+'>AM</option><option value="PM" selected="selected"'+pm_html+'>PM</option>';}else{html+='<option value="AM" selected="selected"'+am_html+'>AM</option><option value="PM"'+pm_html+'>PM</option>';}
+if(!this.timePicker24Hour){html+='<select className="ampmselect">';var am_html='';var pm_html='';if(minDate&&selected.clone().hour(12).minute(0).second(0).isBefore(minDate))
+am_html=' disabled="disabled" className="disabled"';if(maxDate&&selected.clone().hour(0).minute(0).second(0).isAfter(maxDate))
+pm_html=' disabled="disabled" className="disabled"';if(selected.hour()>=12){html+='<option value="AM"'+am_html+'>AM</option><option value="PM" selected="selected"'+pm_html+'>PM</option>';}else{html+='<option value="AM" selected="selected"'+am_html+'>AM</option><option value="PM"'+pm_html+'>PM</option>';}
 html+='</select>';}
 this.container.find('.drp-calendar.'+side+' .calendar-time').html(html);},updateFormInputs:function(){if(this.singleDatePicker||(this.endDate&&(this.startDate.isBefore(this.endDate)||this.startDate.isSame(this.endDate)))){this.container.find('button.applyBtn').removeAttr('disabled');}else{this.container.find('button.applyBtn').attr('disabled','disabled');}},move:function(){var parentOffset={top:0,left:0},containerTop;var parentRightEdge=$(window).width();if(!this.parentEl.is('body')){parentOffset={top:this.parentEl.offset().top-this.parentEl.scrollTop(),left:this.parentEl.offset().left-this.parentEl.scrollLeft()};parentRightEdge=this.parentEl[0].clientWidth+this.parentEl.offset().left;}
 if(this.drops=='up')

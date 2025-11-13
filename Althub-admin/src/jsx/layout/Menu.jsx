@@ -94,7 +94,7 @@ useEffect(() => {
                   </li>
                   <li className={feedbackClass}>
                      <Link to="/feedback" >
-                     <i class="fa fa-comments"></i>
+                     <i className="fa fa-comments"></i>
                         <span>Feedback</span>
                      </Link>
                   </li>

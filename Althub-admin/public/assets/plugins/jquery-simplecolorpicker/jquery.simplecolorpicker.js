@@ -37,26 +37,26 @@
 
       if (self.options.picker === true) {
         var selectText = self.$select.find('> option:selected').text();
-        self.$icon = $('<span class="simplecolorpicker icon"'
+        self.$icon = $('<span className="simplecolorpicker icon"'
                      + ' title="' + selectText + '"'
                      + ' style="background-color: ' + self.$select.val() + ';"'
                      + ' role="button" tabindex="0">'
                      + '</span>').insertAfter(self.$select);
         self.$icon.on('click.' + self.type, $.proxy(self.showPicker, self));
 
-        self.$picker = $('<span class="simplecolorpicker picker ' + self.options.theme + '"></span>').appendTo(document.body);
+        self.$picker = $('<span className="simplecolorpicker picker ' + self.options.theme + '"></span>').appendTo(document.body);
         self.$colorList = self.$picker;
 
         // Hide picker when clicking outside
         $(document).on('mousedown.' + self.type, $.proxy(self.hidePicker, self));
         self.$picker.on('mousedown.' + self.type, $.proxy(self.mousedown, self));
       } else {
-        self.$inline = $('<span class="simplecolorpicker inline ' + self.options.theme + '"></span>').insertAfter(self.$select);
+        self.$inline = $('<span className="simplecolorpicker inline ' + self.options.theme + '"></span>').insertAfter(self.$select);
         self.$colorList = self.$inline;
       }
 
       // Build the list of colors
-      // <span class="color selected" title="Green" style="background-color: #7bd148;" role="button"></span>
+      // <span className="color selected" title="Green" style="background-color: #7bd148;" role="button"></span>
       self.$select.find('> option').each(function() {
         var $option = $(this);
         var color = $option.val();
@@ -84,7 +84,7 @@
           role = ' role="button" tabindex="0"';
         }
 
-        var $colorSpan = $('<span class="color"'
+        var $colorSpan = $('<span className="color"'
                          + title
                          + ' style="background-color: ' + color + ';"'
                          + ' data-color="' + color + '"'
@@ -99,7 +99,7 @@
         var $next = $option.next();
         if ($next.is('optgroup') === true) {
           // Vertical break, like hr
-          self.$colorList.append('<span class="vr"></span>');
+          self.$colorList.append('<span className="vr"></span>');
         }
       });
     },

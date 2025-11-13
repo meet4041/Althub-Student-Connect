@@ -173,7 +173,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
       <div className="modal-container">
         <div className="edit-profile-header" onClick={closeModal}>
           <h2>Edit Education</h2>
-          <i class="fa-solid fa-xmark close-modal"></i>
+          <i className="fa-solid fa-xmark close-modal"></i>
         </div>
         {modalType === "Edit" ? (
           <>
@@ -199,7 +199,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
                   </div>
                   <div className="ex-button">
                     <i
-                      class="fa-solid fa-pencil"
+                      className="fa-solid fa-pencil"
                       onClick={() => {
                         setEx({
                           _id: elem._id,
@@ -220,14 +220,14 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
           <>
             <div className="addEdit-experience">
               <div
-                class="prise_main_drop"
+                className="prise_main_drop"
                 onClick={() => setUniversityShow(!universityShow)}
               >
-                <span class="prise-data">
+                <span className="prise-data">
                   {ex.institutename ? ex.institutename : "Select Institute"}
                 </span>
-                <span class="prise_down_icon">
-                  <i class="fa-solid fa-angle-down"></i>
+                <span className="prise_down_icon">
+                  <i className="fa-solid fa-angle-down"></i>
                 </span>
                 {university.length > 0 ? (
                   <ul

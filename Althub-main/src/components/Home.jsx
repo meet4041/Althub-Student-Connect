@@ -286,7 +286,7 @@ export default function Home({ socket }) {
                 nav("/help-students");
               }}
             >
-              <i class="fa-solid fa-handshake-angle"></i>Scholarship
+              <i className="fa-solid fa-handshake-angle"></i>Scholarship
             </div>
             <div
               className="menu"

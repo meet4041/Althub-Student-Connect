@@ -185,7 +185,7 @@ const EditExperienceModal = ({
       <div className="modal-container">
         <div className="edit-profile-header" onClick={closeModal}>
           <h2>Edit Experience</h2>
-          <i class="fa-solid fa-xmark close-modal"></i>
+          <i className="fa-solid fa-xmark close-modal"></i>
         </div>
         {modalType === "Edit" ? (
           <>
@@ -211,7 +211,7 @@ const EditExperienceModal = ({
                   </div></div>
                   <div className="ex-button">
                     <i
-                      class="fa-solid fa-pencil"
+                      className="fa-solid fa-pencil"
                       onClick={() => {
                         setEx({
                           _id: elem._id,

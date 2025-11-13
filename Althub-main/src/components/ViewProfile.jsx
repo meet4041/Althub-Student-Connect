@@ -220,19 +220,19 @@ export default function ViewProfile() {
               </div>
               <div className="edit-icon">
                 <i
-                  class="fa-solid fa-pencil"
+                  className="fa-solid fa-pencil"
                   onClick={() => setShowModal1(true)}
                 ></i>
-                <div class="dropdown" style={{ marginLeft: "6px" }}>
+                <div className="dropdown" style={{ marginLeft: "6px" }}>
                   <i
-                    class="fa-solid fa-ellipsis-vertical dropbtn"
+                    className="fa-solid fa-ellipsis-vertical dropbtn"
                     onClick={() => {
                       setEditMenu(!editmenu);
                     }}
                     style={{ padding: "0 10px", cursor: "pointer" }}
                   ></i>
                   <div
-                    class="dropdown-content"
+                    className="dropdown-content"
                     style={{ display: `${editmenu ? "block" : "none"}` }}
                   >
                     <b onClick={() => setEditMenu(!editmenu)}>Add Details</b>
@@ -304,7 +304,7 @@ export default function ViewProfile() {
                 <h2>Experience</h2>
                 <div className="edit-icon">
                   <i
-                    class="fa-solid fa-plus"
+                    className="fa-solid fa-plus"
                     style={{ marginRight: "10px" }}
                     onClick={() => {
                       setModal("Add");
@@ -312,7 +312,7 @@ export default function ViewProfile() {
                     }}
                   ></i>
                   <i
-                    class="fa-solid fa-pencil"
+                    className="fa-solid fa-pencil"
                     onClick={() => {
                       setModal("Edit");
                       setShowModal2(true);
@@ -355,7 +355,7 @@ export default function ViewProfile() {
                 <h2>Education</h2>
                 <div className="edit-icon">
                   <i
-                    class="fa-solid fa-plus"
+                    className="fa-solid fa-plus"
                     style={{ marginRight: "10px" }}
                     onClick={() => {
                       setModal("Add");
@@ -363,7 +363,7 @@ export default function ViewProfile() {
                     }}
                   ></i>
                   <i
-                    class="fa-solid fa-pencil"
+                    className="fa-solid fa-pencil"
                     onClick={() => {
                       setModal("Edit");
                       setShowModal3(true);

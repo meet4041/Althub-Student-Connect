@@ -83,7 +83,7 @@ const ChangePasswordModal = ({ closeModal }) => {
       <div className="modal-container">
         <div className="edit-profile-header" onClick={closeModal}>
           <h2>Change Password</h2>
-          <i class="fa-solid fa-xmark close-modal"></i>
+          <i className="fa-solid fa-xmark close-modal"></i>
         </div>
         <>
           <div className="addEdit-experience">

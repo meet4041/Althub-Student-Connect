@@ -12,7 +12,7 @@ const FilterModal = ({ closeModal, add, setAdd, skill, setSkill, handleFilter })
       <div className="modal-container">
         <div className="edit-profile-header" onClick={closeModal}>
           <h2>Filter</h2>
-          <i class="fa-solid fa-xmark close-modal"></i>
+          <i className="fa-solid fa-xmark close-modal"></i>
         </div>
         <div className="filter-details">
           <span>City</span>

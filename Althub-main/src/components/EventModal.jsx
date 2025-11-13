@@ -60,7 +60,7 @@ const EventModal = ({ closeModal, event, getEvents }) => {
       <div className="event-modal-container">
         <div className="edit-profile-header" onClick={closeModal}>
           <h2>{event.title}</h2>
-          <i class="fa-solid fa-xmark close-modal"></i>
+          <i className="fa-solid fa-xmark close-modal"></i>
         </div>
         <div className="event-modal">
           {event.photos.length > 0 ? (

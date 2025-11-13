@@ -72,7 +72,7 @@ export default function Navbar({ socket }) {
           color: "black",
         }}
       >
-        <i class="fa-solid fa-xmark"></i>
+        <i className="fa-solid fa-xmark"></i>
         <h4>Menubar</h4>
       </div>
       <Divider />
@@ -85,7 +85,7 @@ export default function Navbar({ socket }) {
           }}
         >
           <ListItemButton>
-            <i class="fa-solid fa-house" style={{ padding: "10px 15px" }}></i>
+            <i className="fa-solid fa-house" style={{ padding: "10px 15px" }}></i>
             <ListItemText primary={"Home"} />
           </ListItemButton>
         </ListItem>
@@ -98,7 +98,7 @@ export default function Navbar({ socket }) {
         >
           <ListItemButton>
             <i
-              class="fa-solid fa-magnifying-glass"
+              className="fa-solid fa-magnifying-glass"
               style={{ padding: "10px 15px" }}
             ></i>
             <ListItemText primary={"search"} />
@@ -113,7 +113,7 @@ export default function Navbar({ socket }) {
         >
           <ListItemButton>
             <i
-              class="fa-solid fa-calendar"
+              className="fa-solid fa-calendar"
               style={{ padding: "10px 15px" }}
             ></i>
             <ListItemText primary={"Events"} />
@@ -127,7 +127,7 @@ export default function Navbar({ socket }) {
           }}
         >
           <ListItemButton>
-            <i class="fa-solid fa-message" style={{ padding: "10px 15px" }}></i>
+            <i className="fa-solid fa-message" style={{ padding: "10px 15px" }}></i>
             <ListItemText primary={"Message"} />
           </ListItemButton>
         </ListItem>
@@ -139,7 +139,7 @@ export default function Navbar({ socket }) {
           }}
         >
           <ListItemButton>
-            <i class="fa-solid fa-handshake-angle" style={{ padding: "10px 15px" }}></i>
+            <i className="fa-solid fa-handshake-angle" style={{ padding: "10px 15px" }}></i>
             <ListItemText primary={"Help Students"} />
           </ListItemButton>
         </ListItem>
@@ -151,7 +151,7 @@ export default function Navbar({ socket }) {
           }}
         >
           <ListItemButton>
-            <i class="fa-solid fa-bell" style={{ padding: "10px 15px" }}></i>
+            <i className="fa-solid fa-bell" style={{ padding: "10px 15px" }}></i>
             <ListItemText primary={"Notification"} />
           </ListItemButton>
         </ListItem>
@@ -219,36 +219,36 @@ export default function Navbar({ socket }) {
 
   return (
     <>
-      <nav class="navbar" style={{ display: navbar ? "flex" : "none" }}>
-        <div class="navbar-left">
-          <Link to="/home" class="logo">
+      <nav className="navbar" style={{ display: navbar ? "flex" : "none" }}>
+        <div className="navbar-left">
+          <Link to="/home" className="logo">
             <img src="/images/Logo1.jpeg" alt="#" />
           </Link>
         </div>
-        <div class="navbar-center">
+        <div className="navbar-center">
           <ul>
             <Link to="/home">
               <li>
-                <i class="fa-solid fa-house"></i>
+                <i className="fa-solid fa-house"></i>
                 <span>Home</span>
               </li>
             </Link>
             <Link to="/search-profile">
               <li>
-                <i class="fa-solid fa-magnifying-glass"></i>
+                <i className="fa-solid fa-magnifying-glass"></i>
                 <span>Search</span>
               </li>
             </Link>
             <Link to="/events">
               <li>
-                <i class="fa-solid fa-calendar"></i>
+                <i className="fa-solid fa-calendar"></i>
                 <span>Events</span>
               </li>
             </Link>
             <Link to="/message">
               <li onClick={() => { setMesDot(false) }}>
                 {mesDot ? <i
-                  class="fa-solid fa-circle"
+                  className="fa-solid fa-circle"
                   style={{
                     color: "#ff0000",
                     fontSize: "6px",
@@ -256,14 +256,14 @@ export default function Navbar({ socket }) {
                     marginLeft: "20px",
                   }}
                 ></i> : null}
-                <i class="fa-solid fa-message"></i>
+                <i className="fa-solid fa-message"></i>
                 <span>Message</span>
               </li>
             </Link>
             <Link to="/notification">
               <li onClick={() => { setNotDot(false) }}>
                 {notDot ? <i
-                  class="fa-solid fa-circle"
+                  className="fa-solid fa-circle"
                   style={{
                     color: "#ff0000",
                     fontSize: "6px",
@@ -271,13 +271,13 @@ export default function Navbar({ socket }) {
                     marginLeft: "16px",
                   }}
                 ></i> : null}
-                <i class="fa-solid fa-bell"></i>
+                <i className="fa-solid fa-bell"></i>
                 <span>Notification</span>
               </li>
             </Link>
           </ul>
         </div>
-        <div class="navbar-right">
+        <div className="navbar-right">
           <div
             className="nav-profile"
             onClick={() => {
@@ -288,12 +288,12 @@ export default function Navbar({ socket }) {
               <img
                 src={`${WEB_URL}${user.profilepic}`}
                 alt=""
-                class="nav-profile-img"
+                className="nav-profile-img"
               />
             ) : (
-              <img src="images/profile1.png" class="nav-profile-img" alt="#"></img>
+              <img src="images/profile1.png" className="nav-profile-img" alt="#"></img>
             )}
-            <div class="user-profile">
+            <div className="user-profile">
               {user.fname ? (
                 <span>
                   {user.fname} {user.lname}
@@ -307,7 +307,7 @@ export default function Navbar({ socket }) {
           <div className="nav-search-bar">
             <React.Fragment>
               <Button onClick={toggleDrawer("right", true)}>
-                <i class="fa-solid fa-bars"></i>
+                <i className="fa-solid fa-bars"></i>
               </Button>
               <SwipeableDrawer
                 anchor="right"
