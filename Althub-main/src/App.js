@@ -20,26 +20,12 @@ import HelpStudents from "./components/HelpStudents";
 
 function App() {
   // Use useMemo to prevent socket from being recreated on every render
-  const socket = React.useMemo(
-    () =>
-      io("http://localhost:5001", {
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: Infinity,
-        transports: ["websocket", "polling"]
-      }),
-    []
-  );
-
+  const socket = React.useMemo(() => io("ws://localhost:8900"), []);
+  
   // Cleanup socket connection on unmount
   React.useEffect(() => {
     return () => {
-      try {
-        socket.disconnect();
-      } catch (e) {
-        // ignore
-      }
+      socket.disconnect();
     };
   }, [socket]);
 
