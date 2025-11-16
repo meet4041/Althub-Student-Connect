@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import ChatUser from "./ChatUser";
 import ChatMessage from "./ChatMessage";
@@ -22,7 +22,7 @@ export default function Message({ socket }) {
   const msgBoxRef = useRef(null);
   const [searchName, setSearchName] = useState("");
 
-  const getConversation = () => {
+  const getConversation = useCallback(() => {
     axios({
       url: `${WEB_URL}/api/getConversations/${userid}`,
       method: "get",
@@ -33,9 +33,9 @@ export default function Message({ socket }) {
       .catch((error) => {
         console.log(error);
       });
-  };
+  }, [userid]);
 
-  const getUser = () => {
+  const getUser = useCallback(() => {
     if (userid !== "") {
       axios({
         method: "get",
@@ -48,20 +48,22 @@ export default function Message({ socket }) {
           console.log(error);
         });
     }
-  };
+  }, [userid]);
 
-  const searchConversation = () => {
-    axios({
-      url: `${WEB_URL}/api/searchConversations`,
-      method: "post",
-      data: {
-        person1: location.state._id,
-        person2: userid,
-      },
-    }).then((Response) => {
-      setCurrentId(Response.data.data[0]._id);
-    });
-  };
+  const searchConversation = useCallback(() => {
+    if (location.state !== null) {
+      axios({
+        url: `${WEB_URL}/api/searchConversations`,
+        method: "post",
+        data: {
+          person1: location.state._id,
+          person2: userid,
+        },
+      }).then((Response) => {
+        setCurrentId(Response.data.data[0]._id);
+      });
+    }
+  }, [location.state, userid]);
 
   useEffect(() => {
     socket.on("getMessage", (data) => {
@@ -81,7 +83,7 @@ export default function Message({ socket }) {
     }
     getConversation();
     getUser();
-  }, [location.state, socket]);
+  }, [location.state, socket, searchConversation, getConversation, getUser]);
 
   useEffect(() => {
     arrivalMessage &&
@@ -89,7 +91,7 @@ export default function Message({ socket }) {
       setMessages((prev) => [...prev, arrivalMessage]);
   }, [arrivalMessage, receiverId]);
 
-  const getMessages = () => {
+  const getMessages = useCallback(() => {
     if (currentId !== "") {
       axios({
         url: `${WEB_URL}/api/getMessages/${currentId}`,
@@ -102,11 +104,11 @@ export default function Message({ socket }) {
           console.log(error);
         });
     }
-  };
+  }, [currentId]);
 
   useEffect(() => {
     getMessages();
-  }, [currentId]);
+  }, [currentId, getMessages]);
 
   const sendMessage = (e) => {
     e.preventDefault();

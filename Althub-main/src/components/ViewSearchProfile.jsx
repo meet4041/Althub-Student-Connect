@@ -238,7 +238,7 @@ export default function ViewSearchProfile({ socket }) {
     getUser();
     getEducation();
     getExperience();
-  }, [userID]);
+  }, [userID, getSelf, getUser, getEducation, getExperience]);
 
   useEffect(()=>{
     getNewUsers();
@@ -267,7 +267,9 @@ export default function ViewSearchProfile({ socket }) {
                   {user.city && user.city} {user.state && user.state}{" "}
                   {user.nation ? `, ${user.nation} ` : null}
                   <a
-                    onClick={() => {
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
                       setContactInfo(!contactInfo);
                     }}
                     style={{ cursor: "pointer" }}
@@ -399,8 +401,8 @@ export default function ViewSearchProfile({ socket }) {
           {skills.length > 0 ? (
             <div className="profile-description">
               <h3>Skills</h3>
-              {skills.map((elem) => (
-                <a className="skills-btn">{elem}</a>
+              {skills.map((elem, index) => (
+                <a key={index} href="#" className="skills-btn">{elem}</a>
               ))}
             </div>
           ) : null}
@@ -408,8 +410,8 @@ export default function ViewSearchProfile({ socket }) {
           {language.length > 0 ? (
             <div className="profile-description">
               <h3>Language</h3>
-              {language.map((elem) => (
-                <a className="language-btn">{elem}</a>
+              {language.map((elem, index) => (
+                <a key={index} href="#" className="language-btn">{elem}</a>
               ))}
             </div>
           ) : null}
@@ -425,7 +427,7 @@ export default function ViewSearchProfile({ socket }) {
                     <div>
                       <h2>{elem.fname} {elem.lname}</h2>
                       <p>{elem.city} {elem.state}, {elem.nation} </p>
-                      <a onClick={()=>myID===elem._id?nav("/view-profile"):setUserID(elem._id)}>View Profile</a>
+                      <a href="#" onClick={(e) => {e.preventDefault(); myID===elem._id?nav("/view-profile"):setUserID(elem._id)}}>View Profile</a>
                     </div>
                   </div>
                   <hr />
