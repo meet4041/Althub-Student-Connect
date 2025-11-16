@@ -104,7 +104,7 @@ export default function Events() {
           {showEvent.length > 0 ? (
             <div className="events-list">
               {showEvent.map((elem) => (
-                <div className="card">
+                <div key={elem._id} className="card">
                   {elem.photos.length > 0 ? (
                     <img src={`${WEB_URL}${elem.photos[0]}`} alt="" />
                   ) : (
@@ -147,7 +147,17 @@ export default function Events() {
                 </div>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <div style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "#999",
+              fontSize: "18px",
+              fontWeight: "500"
+            }}>
+              No {type} events
+            </div>
+          )}
         </div>
       </div>
       {modal && <EventModal closeModal={closeModal} event={event} getEvents={getEvents} />}

@@ -16,7 +16,7 @@ import NewPassword from "./components/NewPassword";
 import ViewSearchProfile from "./components/ViewSearchProfile";
 import { io } from "socket.io-client";
 import Navbar from "./components/Navbar";
-import HelpStudents from "./components/HelpStudents";
+import Scholarship from "./components/Scholarship";
 
 function App() {
   // Use useMemo to prevent socket from being recreated on every render
@@ -57,7 +57,7 @@ function App() {
         <Route path="/notification" element={<Notidfication />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/new-password" element={<NewPassword />} />
-        <Route path="/help-students" element={<HelpStudents />} />
+        <Route path="/scholarship" element={<Scholarship />} />
       </Routes>
     </>
   );

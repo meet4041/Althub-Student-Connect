@@ -6,13 +6,15 @@ function ConnectionUser({ userid ,type, getUser}) {
   const [user, setUser] = useState({});
   const myid = localStorage.getItem("Althub_Id");
   const getUser1 = () => {
-    if (userid !== "") {
+    if (userid && userid !== "") {
       axios({
         method: "get",
         url: `${WEB_URL}/api/searchUserById/${userid}`,
       })
         .then((Response) => {
-          setUser(Response.data.data[0]);
+          if (Response.data && Response.data.data && Response.data.data[0]) {
+            setUser(Response.data.data[0]);
+          }
         })
         .catch((error) => {
           console.log(error);
@@ -46,9 +48,9 @@ function ConnectionUser({ userid ,type, getUser}) {
     <>
       <div className="connection-user">
         <div>
-        {user.profilepic!==""?<img src={`${WEB_URL}${user.profilepic}`} alt="" />:<img src="images/profile1.png" alt="" />}
+        {user && user.profilepic !== "" ? <img src={`${WEB_URL}${user.profilepic}`} alt="" /> : <img src="images/profile1.png" alt="" />}
         <span className="chat-user-name">
-          {user.fname} {user.lname}
+          {user && user.fname ? `${user.fname} ${user.lname}` : "User"}
         </span>
         </div>
         <button className="action-button-cancel" onClick={handleUnfollow}>Remove</button>

@@ -23,16 +23,18 @@ export default function Home({ socket }) {
   const userid = localStorage.getItem("Althub_Id");
 
   const getUser = useCallback(() => {
+    if (!userid) return;
     axios({
       method: "get",
       url: `${WEB_URL}/api/searchUserById/${userid}`,
     })
       .then((Response) => {
-        setUser(Response.data.data[0]);
+        if (Response.data && Response.data.data && Response.data.data[0]) {
+          setUser(Response.data.data[0]);
+        }
       })
       .catch((error) => {
         console.error("Error fetching user:", error);
-        toast.error("Failed to load user data");
       });
   }, [userid]);
 
@@ -94,6 +96,10 @@ export default function Home({ socket }) {
   };
 
   const addPost = () => {
+    if (!user || !user.fname || !user.lname) {
+      toast.error("User data not loaded. Please refresh.");
+      return;
+    }
     var body = new FormData();
     body.append("userid", localStorage.getItem("Althub_Id"));
     body.append("description", description);
@@ -103,7 +109,7 @@ export default function Home({ socket }) {
     });
     body.append("fname", user.fname);
     body.append("lname", user.lname);
-    body.append("profilepic", user.profilepic);
+    body.append("profilepic", user.profilepic || "");
     axios({
       url: `${WEB_URL}/api/addPost`,
       method: "post",
@@ -153,14 +159,14 @@ export default function Home({ socket }) {
   };
 
   const handleNotification = (elem, msg) => {
-    if (userid !== elem.userid) {
+    if (userid !== elem.userid && user && user.fname && user.lname) {
       axios({
         url: `${WEB_URL}/api/addNotification`,
         method: "post",
         data: {
           userid: elem.userid,
           msg: `${user.fname} ${user.lname} ${msg} your Post`,
-          image: user.profilepic,
+          image: user.profilepic || "",
           title: "New Like",
           date: new Date(),
         },
@@ -240,7 +246,7 @@ export default function Home({ socket }) {
         <div className="profile-card-main">
           <div className="profile-card">
             <div className="profile-card-imgbox">
-              {user.profilepic ? (
+              {user && user.profilepic ? (
                 <img
                   src={`${WEB_URL}${user.profilepic}`}
                   alt=""
@@ -251,7 +257,7 @@ export default function Home({ socket }) {
                   alt=""
                   src="images/profile1.png"
                   className="profile-card-img"
-                ></img>
+                />
               )}
             </div>
 
@@ -283,7 +289,7 @@ export default function Home({ socket }) {
             <div
               className="menu"
               onClick={() => {
-                nav("/help-students");
+                nav("/scholarship");
               }}
             >
               <i className="fa-solid fa-handshake-angle"></i>Scholarship
@@ -305,10 +311,10 @@ export default function Home({ socket }) {
 
         <div className="home-post-main">
           <div className="new-post-box">
-            {user.profilepic ? (
+            {user && user.profilepic ? (
               <img src={`${WEB_URL}${user.profilepic}`} alt="" />
             ) : (
-              <img src="images/profile1.png" alt=""></img>
+              <img src="images/profile1.png" alt="" />
             )}
             <div className="new-post-content">
               <div className="new-post-text">
@@ -365,9 +371,9 @@ export default function Home({ socket }) {
                         >
                           <img
                             src={
-                              elem.profilepic === "" ||
-                                user.profilepic === "undefined" ||
-                                user.profilepic === null
+                              !elem || elem.profilepic === "" ||
+                                (user && (user.profilepic === "undefined" ||
+                                user.profilepic === null))
                                 ? "images/profile1.png"
                                 : `${WEB_URL}${elem.profilepic}`
                             }

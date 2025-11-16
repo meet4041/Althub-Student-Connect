@@ -66,8 +66,8 @@ const EventModal = ({ closeModal, event, getEvents }) => {
           {event.photos.length > 0 ? (
             <div className="event-modal-images">
               <Slider {...settings}>
-                {event.photos.map((el) => (
-                  <img src={`${WEB_URL}${el}`} alt="" className="post-image" />
+                {event.photos.map((el, index) => (
+                  <img key={index} src={`${WEB_URL}${el}`} alt="" className="post-image" />
                 ))}
               </Slider>
             </div>

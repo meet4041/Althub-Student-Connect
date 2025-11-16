@@ -29,7 +29,7 @@ const FollowerModal = ({ closeModal, user, getUser }) => {
         {type === "Follower" && user.followers && user.followers.length > 0 ? (
           <div className="peopleList">
             {user.followers.map((elem) => (
-              <ConnectionUser userid={elem} type={type} getUser={getUser}/>
+              <ConnectionUser key={elem} userid={elem} type={type} getUser={getUser}/>
             ))}
           </div>
         ) : null}
@@ -38,7 +38,7 @@ const FollowerModal = ({ closeModal, user, getUser }) => {
         user.followings.length > 0 ? (
           <div className="peopleList">
             {user.followings.map((elem) => (
-              <ConnectionUser userid={elem} type={type} getUser={getUser}/>
+              <ConnectionUser key={elem} userid={elem} type={type} getUser={getUser}/>
             ))}
           </div>
         ) : null}

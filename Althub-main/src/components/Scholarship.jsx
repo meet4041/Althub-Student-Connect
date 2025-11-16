@@ -3,17 +3,20 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
 
-const HelpStudents = () => {
+const Scholarship = () => {
   const [user, setUser] = useState({});
   const [aids, setAids] = useState([]);
   const userid = localStorage.getItem("Althub_Id");
   const nav = useNavigate();
 
   const getUser = useCallback(() => {
+    if (!userid) return;
     axios
       .get(`${WEB_URL}/api/searchUserById/${userid}`)
       .then((response) => {
-        setUser(response.data.data[0]);
+        if (response.data && response.data.data && response.data.data[0]) {
+          setUser(response.data.data[0]);
+        }
       })
       .catch((error) => console.log(error));
   }, [userid]);
@@ -22,7 +25,9 @@ const HelpStudents = () => {
     axios
       .get(`${WEB_URL}/api/getFinancialAid`)
       .then((response) => {
-        setAids(response.data.data);
+        if (response.data && response.data.data) {
+          setAids(response.data.data);
+        }
       })
       .catch((error) => console.log(error));
   }, []);
@@ -58,7 +63,7 @@ const HelpStudents = () => {
         <div className="profile-card">
           <div className="profile-card-imgbox">
             <img
-              src={user.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+              src={user && user.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
               alt="Profile"
               className="profile-card-img"
             />
@@ -66,7 +71,7 @@ const HelpStudents = () => {
 
           <div className="profile-card-info">
             <span className="profile-card-name">
-              {user.fname} {user.lname}
+              {user && user.fname ? `${user.fname} ${user.lname}` : "User"}
             </span>
           </div>
           <div
@@ -84,7 +89,7 @@ const HelpStudents = () => {
           <div className="menu" onClick={() => nav("/events")}>
             <i className="fa-solid fa-calendar"></i>Events
           </div>
-          <div className="menu" onClick={() => nav("/help-students")}>
+          <div className="menu" onClick={() => nav("/scholarship")}>
             <i className="fa-solid fa-handshake-angle"></i>Scholarship
           </div>
           <div className="menu" onClick={() => nav("/feedback")}>
@@ -98,42 +103,54 @@ const HelpStudents = () => {
       </div>
 
       <div className="aid-main">
-        {aids.map((elem) => (
-          <div className="aid-div" key={elem._id}>
-            <img
-              src={elem.image ? `${WEB_URL}${elem.image}` : "images/profile1.png"}
-              className="aid-img"
-              alt="Aid"
-            />
-            <div className="aid-info">
-              <div className="aid-info-div">
-                <div className="name">{elem.name}</div>
-                <div>
-                  <span><b>Claimed :</b> {elem.claimed}</span> ({calWidth(elem.aid, elem.claimed)})
+        {aids && aids.length > 0 ? (
+          aids.map((elem) => (
+            <div className="aid-div" key={elem._id}>
+              <img
+                src={elem.image ? `${WEB_URL}${elem.image}` : "images/profile1.png"}
+                className="aid-img"
+                alt="Aid"
+              />
+              <div className="aid-info">
+                <div className="aid-info-div">
+                  <div className="name">{elem.name}</div>
+                  <div>
+                    <span><b>Claimed :</b> {elem.claimed}</span> ({calWidth(elem.aid, elem.claimed)})
+                  </div>
+                </div>
+                <div className="aid-info-div">
+                  <span className="aid-info-desc">
+                    <b>Description :</b> {elem.description}
+                  </span>
+                  <span><b>Due Date :</b> {formatDate(elem.dueDate)}</span>
+                </div>
+                <div className="progress-bar">
+                  <div
+                    className="fill-progress-bar"
+                    style={{ width: calWidth(elem.aid, elem.claimed) }}
+                  ></div>
+                </div>
+                <div className="amount">
+                  <span>₹{elem.claimed}</span>
+                  <span>₹{elem.aid}</span>
                 </div>
               </div>
-              <div className="aid-info-div">
-                <span className="aid-info-desc">
-                  <b>Description :</b> {elem.description}
-                </span>
-                <span><b>Due Date :</b> {formatDate(elem.dueDate)}</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="fill-progress-bar"
-                  style={{ width: calWidth(elem.aid, elem.claimed) }}
-                ></div>
-              </div>
-              <div className="amount">
-                <span>₹{elem.claimed}</span>
-                <span>₹{elem.aid}</span>
-              </div>
             </div>
+          ))
+        ) : (
+          <div style={{
+            textAlign: "center",
+            padding: "40px",
+            color: "#999",
+            fontSize: "18px",
+            fontWeight: "500"
+          }}>
+            No scholarships available
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
 };
 
-export default HelpStudents;
+export default Scholarship;

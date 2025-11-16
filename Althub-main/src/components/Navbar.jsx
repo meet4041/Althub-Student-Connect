@@ -37,15 +37,18 @@ export default function Navbar({ socket }) {
 
   const getUser = () => {
     const userID = localStorage.getItem("Althub_Id");
+    if (!userID) return;
     axios({
       method: "get",
       url: `${WEB_URL}/api/searchUserById/${userID}`,
     })
       .then((Response) => {
-        setUser(Response.data.data[0]);
+        if (Response.data && Response.data.data && Response.data.data[0]) {
+          setUser(Response.data.data[0]);
+        }
       })
       .catch((error) => {
-        toast.error("Something Went Wrong");
+        // Silently ignore errors during initial load
       });
   };
 
@@ -132,15 +135,15 @@ export default function Navbar({ socket }) {
           </ListItemButton>
         </ListItem>
         <ListItem
-          key={"helpstudent"}
+          key={"scholarship"}
           disablePadding
           onClick={() => {
-            nav("/help-students");
+            nav("/scholarship");
           }}
         >
           <ListItemButton>
             <i className="fa-solid fa-handshake-angle" style={{ padding: "10px 15px" }}></i>
-            <ListItemText primary={"Help Students"} />
+            <ListItemText primary={"Scholarship"} />
           </ListItemButton>
         </ListItem>
         <ListItem
@@ -189,6 +192,11 @@ export default function Navbar({ socket }) {
   const nav = useNavigate();
 
   useEffect(() => {
+    // Load user on component mount
+    getUser();
+  }, []);
+
+  useEffect(() => {
     if (
       pathname === "/register" ||
       pathname === "/login" ||
@@ -199,11 +207,12 @@ export default function Navbar({ socket }) {
       setNavbar(false);
     } else {
       setNavbar(true);
-      getUser();
     }
+    if (!socket) return;
     socket.emit("addUser", localStorage.getItem("Althub_Id"));
     socket.on("getMessage", (data) => {
-      setMesDot(true); if (pathname === "/message") {
+      setMesDot(true);
+      if (pathname === "/message") {
         setMesDot(false);
       }
     });
@@ -213,8 +222,6 @@ export default function Navbar({ socket }) {
         setNotDot(false);
       }
     });
-
-
   }, [pathname, socket]);
 
   return (
@@ -284,17 +291,17 @@ export default function Navbar({ socket }) {
               nav("/view-profile");
             }}
           >
-            {user.profilepic ? (
+            {user && user.profilepic ? (
               <img
                 src={`${WEB_URL}${user.profilepic}`}
                 alt=""
                 className="nav-profile-img"
               />
             ) : (
-              <img src="images/profile1.png" className="nav-profile-img" alt="#"></img>
+              <img src="images/profile1.png" className="nav-profile-img" alt="#" />
             )}
             <div className="user-profile">
-              {user.fname ? (
+              {user && user.fname ? (
                 <span>
                   {user.fname} {user.lname}
                 </span>

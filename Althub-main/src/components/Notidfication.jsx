@@ -120,7 +120,7 @@ export default function Notidfication() {
             <div
               className="menu"
               onClick={() => {
-                nav("/help-students");
+                nav("/scholarship");
               }}
             >
               <i className="fa-solid fa-handshake-angle"></i>Scholarship
