@@ -24,7 +24,6 @@ function Menu() {
          }
          setInstitute_Id(id);
          
-         // Set active class based on current pathname
          const pathname = window.location.pathname;
          setDashboardClass(pathname.match(/^\/dashboard/) ? "active" : "");
          setUsersClass(pathname.match(/^\/users/) ? "active" : "");

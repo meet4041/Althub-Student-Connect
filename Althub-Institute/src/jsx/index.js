@@ -20,7 +20,6 @@ import FinancialPole from './pages/FinancialPole';
 import AddFinancialHelp from './pages/AddFinancialHelp';
 import EditFinancialAid from './pages/EditFinancialAid';
 
-
 const Markup = () => {
     return (
         <Routes>
