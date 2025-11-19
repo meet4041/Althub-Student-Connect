@@ -46,7 +46,6 @@ const Login = () => {
             }).then((response) => {
                 if (response.data.success === true) {
                     toast.success('Login Successfully')
-                    // Store auth token and user info, but never store password
                     localStorage.setItem('AlmaPlus_admin_Id', response.data.data._id);
                     localStorage.setItem('AlmaPlus_admin_Email', loginInfo.email);
                     localStorage.setItem('AlmaPlus_admin_Token', response.data.token);
@@ -55,7 +54,6 @@ const Login = () => {
                     } else {
                         localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Disabled')
                     }
-                    // Configure axios defaults for subsequent requests
                     axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
                     setDisable(false);
                     navigate('/dashboard');

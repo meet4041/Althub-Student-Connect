@@ -8,7 +8,6 @@ import axios from 'axios';
 function ForgotPassword() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
-
     const [err, setErr] = useState('');
     const [disable, setDisable] = useState(false);
 

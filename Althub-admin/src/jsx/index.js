@@ -15,7 +15,6 @@ import EditCompany from './pages/EditCompany';
 // import EditUser from './pages/EditUser';
 // import AddInstitute from './pages/AddInstitute';
 
-
 const Markup = () => {
     return (
         <Routes>

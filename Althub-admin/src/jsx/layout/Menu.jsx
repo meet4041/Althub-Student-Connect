@@ -79,7 +79,7 @@ useEffect(() => {
                         <span>Dashboard</span>
                      </Link>
                   </li>
-  <li className={usersClass}>
+                  <li className={usersClass}>
                      <Link to="/users" >
                         <i className="fa fa-users"></i>
                         <span>Users</span>

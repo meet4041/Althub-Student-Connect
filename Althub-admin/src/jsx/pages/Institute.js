@@ -33,7 +33,6 @@ const Institutes = () => {
         }).then((response) => {
             console.log(response.data.data);
             setInstitutes(response.data.data);
-
         });
     };
     useEffect(() => {

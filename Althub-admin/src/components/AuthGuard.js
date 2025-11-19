@@ -5,7 +5,6 @@ const AuthGuard = ({ children }) => {
     const isAuthenticated = !!localStorage.getItem('AlmaPlus_admin_Token');
     
     if (!isAuthenticated) {
-        // Redirect to login if not authenticated
         return <Navigate to="/" replace />;
     }
 

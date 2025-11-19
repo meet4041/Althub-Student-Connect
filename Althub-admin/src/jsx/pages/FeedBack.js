@@ -8,7 +8,6 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 const FeedBack = () => {
-    // let navigate = useNavigate();
     const [feedback, setFeedBack] = useState([]);
     const [displayFeedBack, setDisplayFeedBack] = useState([]);
     const rows = [10, 20, 30];
