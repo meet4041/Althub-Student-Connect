@@ -24,7 +24,7 @@ function App() {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
-    reconnectionAttempts: 5,
+    reconnectionAttempts: 3,
     transports: ["websocket", "polling"]
   }), []);
   

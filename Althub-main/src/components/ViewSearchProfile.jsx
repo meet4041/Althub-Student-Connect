@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
@@ -22,73 +22,109 @@ export default function ViewSearchProfile({ socket }) {
     setUserID(location.state.id);
   }, [location.state.id]);
 
-  const getUser = () => {
+  const getUser = useCallback((signal) => {
     if (userID !== "") {
-      axios({
+      return axios({
         method: "get",
         url: `${WEB_URL}/api/searchUserById/${userID}`,
+        signal,
       })
         .then((Response) => {
-          setUser(Response.data.data[0]);
-          Response.data.data[0].skills && setSkills(JSON.parse(Response.data.data[0].skills));
-          Response.data.data[0].languages && setLanguage(JSON.parse(Response.data.data[0].languages));
+          if (Response?.data?.data && Response.data.data[0]) {
+            setUser(Response.data.data[0]);
+            Response.data.data[0].skills && setSkills(JSON.parse(Response.data.data[0].skills));
+            Response.data.data[0].languages && setLanguage(JSON.parse(Response.data.data[0].languages));
+          }
         })
         .catch((error) => {
+          if (
+            error?.code === "ERR_CANCELED" ||
+            error?.message?.toLowerCase()?.includes("aborted") ||
+            error?.name === "CanceledError"
+          ) {
+            return;
+          }
           toast.error("Something Went Wrong");
         });
     }
-  };
+  }, [userID]);
 
-  const getSelf = () => {
+  const getSelf = useCallback((signal) => {
     if (userID !== "") {
-      axios({
+      return axios({
         method: "get",
         url: `${WEB_URL}/api/searchUserById/${myID}`,
+        signal,
       })
         .then((Response) => {
-          setSelf(Response.data.data[0]);
+          if (Response?.data?.data && Response.data.data[0]) {
+            setSelf(Response.data.data[0]);
+          }
         })
         .catch((error) => {
+          if (
+            error?.code === "ERR_CANCELED" ||
+            error?.message?.toLowerCase()?.includes("aborted") ||
+            error?.name === "CanceledError"
+          ) {
+            return;
+          }
           toast.error("Something Went Wrong");
         });
     }
-  };
+  }, [userID, myID]);
 
-  const getEducation = () => {
+  const getEducation = useCallback((signal) => {
     if (userID !== "") {
-      axios({
+      return axios({
         method: "post",
         url: `${WEB_URL}/api/getEducation`,
         data: {
           userid: userID,
         },
+        signal,
       })
         .then((Response) => {
-          setEducation(Response.data.data);
+          setEducation(Response.data.data || []);
         })
         .catch((Error) => {
+          if (
+            Error?.code === "ERR_CANCELED" ||
+            Error?.message?.toLowerCase()?.includes("aborted") ||
+            Error?.name === "CanceledError"
+          ) {
+            return;
+          }
           console.log(Error);
         });
     }
-  };
+  }, [userID]);
 
-  const getExperience = () => {
+  const getExperience = useCallback((signal) => {
     if (userID !== "") {
-      axios({
+      return axios({
         method: "post",
         url: `${WEB_URL}/api/getExperience`,
         data: {
           userid: userID,
         },
+        signal,
       })
         .then((Response) => {
-          setExperience(Response.data.data);
+          setExperience(Response.data.data || []);
         })
         .catch((Error) => {
+          if (
+            Error?.code === "ERR_CANCELED" ||
+            Error?.message?.toLowerCase()?.includes("aborted") ||
+            Error?.name === "CanceledError"
+          ) {
+            return;
+          }
           console.log(Error);
         });
     }
-  };
+  }, [userID]);
 
   const handleFollow = () => {
     socket.emit("sendNotification", {
@@ -183,19 +219,31 @@ export default function ViewSearchProfile({ socket }) {
     });
   };
 
-  const getNewUsers = () => {
-    if(user != {}){
-      axios({
+  const getNewUsers = useCallback((signal) => {
+    if (user && Object.keys(user).length > 0 && user.institute) {
+      return axios({
         url: `${WEB_URL}/api/getTopUsers`,
         method: "post",
         data: {
           institute: user.institute,
         },
-      }).then((Response) => {
-        setTopUsers(Response.data.data.filter((elem)=>elem._id!==myID&&elem._id!==user._id));
-      });
+        signal,
+      })
+        .then((Response) => {
+          setTopUsers(Response.data.data.filter((elem) => elem._id !== myID && elem._id !== user._id));
+        })
+        .catch((err) => {
+          if (
+            err?.code === "ERR_CANCELED" ||
+            err?.message?.toLowerCase()?.includes("aborted") ||
+            err?.name === "CanceledError"
+          ) {
+            return;
+          }
+          console.error("getTopUsers error:", err?.response?.data || err?.message);
+        });
     }
-  };
+  }, [user, myID]);
 
   const formatDate = (date) => {
     if (date === "" || date === null) {
@@ -234,15 +282,25 @@ export default function ViewSearchProfile({ socket }) {
   };
 
   useEffect(() => {
-    getSelf();
-    getUser();
-    getEducation();
-    getExperience();
-  }, [userID, getSelf, getUser, getEducation, getExperience]);
+    const controller = new AbortController();
+    const { signal } = controller;
 
-  useEffect(()=>{
-    getNewUsers();
-  },[user, getNewUsers]);
+    getSelf(signal);
+    getUser(signal);
+    getEducation(signal);
+    getExperience(signal);
+
+    return () => controller.abort();
+  }, [getSelf, getUser, getEducation, getExperience]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    getNewUsers(signal);
+
+    return () => controller.abort();
+  }, [getNewUsers]);
 
   return (
     <>
@@ -267,9 +325,7 @@ export default function ViewSearchProfile({ socket }) {
                   {user.city && user.city} {user.state && user.state}{" "}
                   {user.nation ? `, ${user.nation} ` : null}
                   <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={() => {
                       setContactInfo(!contactInfo);
                     }}
                     style={{ cursor: "pointer" }}
@@ -348,7 +404,7 @@ export default function ViewSearchProfile({ socket }) {
                 <h2>Experience</h2>
               </div>
               {experience.map((elem) => (
-                <div className="profile-desc-row">
+                <div key={elem._id} className="profile-desc-row">
                   <img src={`${WEB_URL}${elem.companylogo}`} alt="" />
                   <div>
                     <h3>{elem.position}</h3>
@@ -382,7 +438,7 @@ export default function ViewSearchProfile({ socket }) {
                 <h2>Education</h2>
               </div>
               {education.map((elem) => (
-                <div className="profile-desc-row">
+                <div key={elem._id} className="profile-desc-row">
                   <img src={`${WEB_URL}${elem.collagelogo}`} alt="" />
                   <div>
                     <h3>{elem.institutename}</h3>
@@ -401,8 +457,8 @@ export default function ViewSearchProfile({ socket }) {
           {skills.length > 0 ? (
             <div className="profile-description">
               <h3>Skills</h3>
-              {skills.map((elem, index) => (
-                <a key={index} href="#" className="skills-btn">{elem}</a>
+              {skills.map((elem, idx) => (
+                <a key={idx} className="skills-btn">{elem}</a>
               ))}
             </div>
           ) : null}
@@ -410,8 +466,8 @@ export default function ViewSearchProfile({ socket }) {
           {language.length > 0 ? (
             <div className="profile-description">
               <h3>Language</h3>
-              {language.map((elem, index) => (
-                <a key={index} href="#" className="language-btn">{elem}</a>
+              {language.map((elem, idx) => (
+                <a key={idx} className="language-btn">{elem}</a>
               ))}
             </div>
           ) : null}
@@ -421,17 +477,17 @@ export default function ViewSearchProfile({ socket }) {
             <div className="sidebar-people">
               <h3>People you may know</h3>
               {topUsers.map((elem) => (
-                <>
+                <div key={elem._id}>
                   <div className="sidebar-people-row">
                     <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
                     <div>
                       <h2>{elem.fname} {elem.lname}</h2>
                       <p>{elem.city} {elem.state}, {elem.nation} </p>
-                      <a href="#" onClick={(e) => {e.preventDefault(); myID===elem._id?nav("/view-profile"):setUserID(elem._id)}}>View Profile</a>
+                      <a onClick={()=>myID===elem._id?nav("/view-profile"):setUserID(elem._id)}>View Profile</a>
                     </div>
                   </div>
                   <hr />
-                </>
+                </div>
               ))}
             </div>
           ) : null}

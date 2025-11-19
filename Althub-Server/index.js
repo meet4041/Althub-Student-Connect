@@ -29,12 +29,35 @@ const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
-app.use(cors({
-  origin: allowedOrigin,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// Configure CORS robustly: if CLIENT_ORIGIN is set use it, otherwise allow all origins but disable credentials.
+if (allowedOrigin && allowedOrigin !== "*") {
+  app.use(cors({
+    origin: allowedOrigin,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  }));
+} else {
+  // Allow any origin but do not allow credentials when origin is '*'
+  app.use(cors({
+    origin: true,
+    credentials: false,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  }));
+}
+
+// Ensure preflight (OPTIONS) requests are handled for all routes
+app.options('*', (req, res) => {
+  // If CLIENT_ORIGIN is configured, allow it; otherwise use request Origin
+  const origin = (allowedOrigin && allowedOrigin !== '*') ? allowedOrigin : req.header('Origin') || '*';
+  res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', req.header('Access-Control-Request-Headers') || 'Content-Type, Authorization');
+  // Only allow credentials when a specific origin is configured
+  if (allowedOrigin && allowedOrigin !== '*') res.header('Access-Control-Allow-Credentials', 'true');
+  return res.sendStatus(204);
+});
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", user_route);

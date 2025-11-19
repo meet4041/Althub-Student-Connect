@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
@@ -32,67 +32,108 @@ export default function ViewProfile() {
   const [editmenu, setEditMenu] = useState(false);
   const userID = localStorage.getItem("Althub_Id");
 
-  const getUser = () => {
-    axios({
+  const getUser = useCallback((signal) => {
+    return axios({
       method: "get",
       url: `${WEB_URL}/api/searchUserById/${userID}`,
+      signal,
     })
       .then((Response) => {
-        Response.data.data[0].languages &&
-          setLanguage(JSON.parse(Response.data.data[0].languages));
-        setUser(Response.data.data[0]);
-        Response.data.data[0].skills &&
-          setSkills(JSON.parse(Response.data.data[0].skills));
+        if (Response?.data?.data && Response.data.data[0]) {
+          Response.data.data[0].languages &&
+            setLanguage(JSON.parse(Response.data.data[0].languages));
+          setUser(Response.data.data[0]);
+          Response.data.data[0].skills &&
+            setSkills(JSON.parse(Response.data.data[0].skills));
+        }
       })
       .catch((error) => {
+        // Ignore aborted requests
+        if (
+          error?.code === "ERR_CANCELED" ||
+          error?.message?.toLowerCase()?.includes("aborted") ||
+          error?.name === "CanceledError"
+        ) {
+          return;
+        }
         toast.error("Something Went Wrong");
       });
-  };
+  }, [userID]);
 
-  const getEducation = () => {
-    axios({
+  const getEducation = useCallback((signal) => {
+    return axios({
       method: "post",
       url: `${WEB_URL}/api/getEducation`,
       data: {
         userid: userID,
       },
+      signal,
     })
       .then((Response) => {
-        setEducation(Response.data.data);
+        setEducation(Response.data.data || []);
       })
       .catch((Error) => {
+        if (
+          Error?.code === "ERR_CANCELED" ||
+          Error?.message?.toLowerCase()?.includes("aborted") ||
+          Error?.name === "CanceledError"
+        ) {
+          return;
+        }
         console.log(Error);
       });
-  };
+  }, [userID]);
 
-  const getExperience = () => {
-    axios({
+  const getExperience = useCallback((signal) => {
+    return axios({
       method: "post",
       url: `${WEB_URL}/api/getExperience`,
       data: {
         userid: userID,
       },
+      signal,
     })
       .then((Response) => {
-        setExperience(Response.data.data);
+        setExperience(Response.data.data || []);
       })
       .catch((Error) => {
+        if (
+          Error?.code === "ERR_CANCELED" ||
+          Error?.message?.toLowerCase()?.includes("aborted") ||
+          Error?.name === "CanceledError"
+        ) {
+          return;
+        }
         console.log(Error);
       });
-  };
+  }, [userID]);
 
-  const getNewUsers = () => {
-    axios({
-      url: `${WEB_URL}/api/getTopUsers`,
-      method: "post",
-      data: {
-        institute: user.institute,
-      },
-    }).then((Response) => {
-      console.log(Response.data.data.filter((elem) => elem._id !== user._id));
-      setTopUsers(Response.data.data.filter((elem) => elem._id !== user._id));
-    });
-  };
+  const getNewUsers = useCallback((signal) => {
+    if (user && Object.keys(user).length > 0 && user.institute) {
+      return axios({
+        url: `${WEB_URL}/api/getTopUsers`,
+        method: "post",
+        data: {
+          institute: user.institute,
+        },
+        signal,
+      })
+        .then((Response) => {
+          console.log(Response.data.data.filter((elem) => elem._id !== user._id));
+          setTopUsers(Response.data.data.filter((elem) => elem._id !== user._id));
+        })
+        .catch((err) => {
+          if (
+            err?.code === "ERR_CANCELED" ||
+            err?.message?.toLowerCase()?.includes("aborted") ||
+            err?.name === "CanceledError"
+          ) {
+            return;
+          }
+          console.error("getTopUsers error:", err?.response?.data || err?.message);
+        });
+    }
+  }, [user]);
 
   const formatDate = (date) => {
     if (date === "" || date == null) {
@@ -131,14 +172,24 @@ export default function ViewProfile() {
   };
 
   useEffect(() => {
-    getUser();
-    getEducation();
-    getExperience();
-  }, []);
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    getUser(signal);
+    getEducation(signal);
+    getExperience(signal);
+
+    return () => controller.abort();
+  }, [getUser, getEducation, getExperience]);
 
   useEffect(() => {
-    getNewUsers();
-  }, [user, getUser, getNewUsers]);
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    getNewUsers(signal);
+
+    return () => controller.abort();
+  }, [getNewUsers]);
 
   return (
     <>
@@ -165,7 +216,9 @@ export default function ViewProfile() {
                   {user.city && user.city} {user.state && user.state}{" "}
                   {user.nation ? `, ${user.nation} ` : null}
                   <a
-                    onClick={() => {
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
                       setContactInfo(!contactInfo);
                     }}
                     style={{ cursor: "pointer" }}
@@ -238,7 +291,9 @@ export default function ViewProfile() {
                     <b onClick={() => setEditMenu(!editmenu)}>Add Details</b>
                     <hr />
                     <a
-                      onClick={() => {
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setShowModal1(true);
                         setEditMenu(!editmenu);
                       }}
@@ -246,7 +301,9 @@ export default function ViewProfile() {
                       Profile
                     </a>
                     <a
-                      onClick={() => {
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setShowModal5(true);
                         setEditMenu(!editmenu);
                       }}
@@ -254,7 +311,9 @@ export default function ViewProfile() {
                       Connections
                     </a>
                     <a
-                      onClick={() => {
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setModal("Add");
                         setShowModal3(true);
                         setEditMenu(!editmenu);
@@ -263,7 +322,9 @@ export default function ViewProfile() {
                       Education
                     </a>
                     <a
-                      onClick={() => {
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setModal("Add");
                         setShowModal2(true);
                         setEditMenu(!editmenu);
@@ -321,7 +382,7 @@ export default function ViewProfile() {
                 </div>
               </div>
               {experience.map((elem) => (
-                <div className="profile-desc-row">
+                <div className="profile-desc-row" key={elem._id}>
                   <img src={`${WEB_URL}${elem.companylogo}`} alt="" />
                   <div>
                     <h3>{elem.position}</h3>
@@ -372,7 +433,7 @@ export default function ViewProfile() {
                 </div>
               </div>
               {education.map((elem) => (
-                <div className="profile-desc-row">
+                <div className="profile-desc-row" key={elem._id}>
                   <img src={`${WEB_URL}${elem.collagelogo}`} alt="" />
                   <div>
                     <h3>{elem.institutename}</h3>
@@ -391,8 +452,8 @@ export default function ViewProfile() {
           {skills.length > 0 ? (
             <div className="profile-description">
               <h3>Skills</h3>
-              {skills.map((elem) => (
-                <a className="skills-btn">{elem}</a>
+              {skills.map((elem, idx) => (
+                <a key={idx} className="skills-btn">{elem}</a>
               ))}
             </div>
           ) : null}
@@ -400,8 +461,8 @@ export default function ViewProfile() {
           {language.length > 0 ? (
             <div className="profile-description">
               <h3>Language</h3>
-              {language.map((elem) => (
-                <a className="language-btn">{elem}</a>
+              {language.map((elem, idx) => (
+                <a key={idx} className="language-btn">{elem}</a>
               ))}
             </div>
           ) : null}
@@ -411,7 +472,7 @@ export default function ViewProfile() {
             <div className="sidebar-people">
               <h3>People you may know</h3>
               {topUsers.map((elem) => (
-                <>
+                <div key={elem._id}>
                   <div className="sidebar-people-row">
                     <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
                     <div>
@@ -433,7 +494,7 @@ export default function ViewProfile() {
                     </div>
                   </div>
                   <hr />
-                </>
+                </div>
               ))}
             </div>
           ) : null}

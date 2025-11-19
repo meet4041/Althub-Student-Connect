@@ -15,7 +15,6 @@ experience_route.post('/getExperience', experience_controller.getExperience);
 experience_route.delete('/deleteExperience/:id', experience_controller.deleteExperience);
 experience_route.post('/editExperience', experience_controller.editExperience);
 // upload company logo to GridFS
-// upload company logo to GridFS using multer-gridfs-storage
 experience_route.post('/uploadCompanyLogo', uploadSingle('companylogo'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });

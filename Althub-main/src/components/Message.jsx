@@ -168,7 +168,14 @@ export default function Message({ socket }) {
                   <i className="fa-solid fa-arrow-left"></i>
                 </div>
               </Link>
-              <img src={`${WEB_URL}${user.profilepic}`} alt="" />
+              <img
+                src={
+                  user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined"
+                    ? `${WEB_URL}${user.profilepic}`
+                    : "images/profile1.png"
+                }
+                alt={`${user && (user.fname || user.lname) ? `${user.fname} ${user.lname}` : "User"}`}
+              />
               <div className="chat-profile-name">{`${user.fname} ${user.lname}`}</div>
               <div className="chat-profile-option">
                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -207,7 +214,14 @@ export default function Message({ socket }) {
                   handleBack
                 }
               ></i>
-              <img src={`${WEB_URL}${profilepic}`} alt="" />
+              <img
+                src={
+                  profilepic && profilepic !== "" && profilepic !== "undefined"
+                    ? `${WEB_URL}${profilepic}`
+                    : "images/profile1.png"
+                }
+                alt={name || "User"}
+              />
               <div className="chat-name">{name}</div>
             </div>
             <div className="user-chat">
