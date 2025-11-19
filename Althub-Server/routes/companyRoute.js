@@ -8,6 +8,7 @@ company_route.use(bodyParser.json());
 company_route.use(bodyParser.urlencoded({ extended: true }));
 company_route.use(cookieParser());
 company_route.use(express.static('public'));
+
 const { uploadSingle } = require('../db/storage');
 const company_controller = require("../controllers/companyController");
 
@@ -15,8 +16,6 @@ const company_controller = require("../controllers/companyController");
 company_route.post('/addCompany', company_controller.addCompany);
 company_route.get('/getCompanies', company_controller.getCompanies);
 company_route.delete('/deleteCompany/:id', company_controller.deleteCompany);
-// upload company image to GridFS
-// upload company image to GridFS using multer-gridfs-storage
 company_route.post('/uploadCompanyImage', uploadSingle('image'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });

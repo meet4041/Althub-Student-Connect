@@ -6,13 +6,11 @@ post_route.use(bodyParser.urlencoded({ extended: true }));
 const multer = require("multer");
 const gridfs = require('../db/storage');
 
-// use memory storage so we can upload buffers to GridFS
 const storage = multer.memoryStorage();
 const upload = multer({ storage }).array('photos', 5);
 
 const { uploadArray } = require('../db/storage');
 
-// upload multiple files using multer-gridfs-storage and set req.images to array of /api/images/:id
 const uploadPic = (req, res, next) => {
     const uploadMiddleware = uploadArray('photos', 5);
     uploadMiddleware(req, res, (err) => {

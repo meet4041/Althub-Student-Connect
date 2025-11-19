@@ -3,7 +3,6 @@ const institute_route = express();
 const bodyParser = require("body-parser");
 institute_route.use(bodyParser.json());
 institute_route.use(bodyParser.urlencoded({ extended: true }));
-// use the centralized DB helper so uploads go directly into GridFS
 const { uploadSingle } = require('../db/storage');
 
 institute_route.use(express.static('public'));
@@ -20,11 +19,9 @@ institute_route.get('/getInstitutes', institute_controller.getInstitues);
 institute_route.get('/getInstituteById/:_id', institute_controller.searchInstituteById);
 institute_route.post('/inviteUser', institute_controller.inviteUser);
 
-// upload institute image to GridFS using multer-gridfs storage
 institute_route.post('/uploadInstituteImage', uploadSingle('image'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
-        // multer-gridfs-storage attaches file info on req.file; id may be in .id or ._id depending on storage
         const fileId = (req.file && (req.file.id || req.file._id)) ? (req.file.id || req.file._id).toString() : null;
         if (!fileId) return res.status(500).send({ success: false, msg: 'Uploaded but could not retrieve file id' });
         return res.status(200).send({ success: true, data: { url: `/api/images/${fileId}` } });

@@ -15,7 +15,6 @@ education_route.post('/addEducation', education_controller.addEducation);
 education_route.post('/getEducation', education_controller.getEducation);
 education_route.delete('/deleteEducation/:id', education_controller.deleteEducation);
 education_route.post('/editEducation', education_controller.editEducation);
-// upload collage logo to GridFS using multer-gridfs-storage
 education_route.post('/uploadCollageLogo', uploadSingle('collagelogo'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });

@@ -20,7 +20,6 @@ const notification_controller = require("../controllers/notificationController")
 //Company routes
 notification_route.post('/addNotification', notification_controller.addNotification);
 notification_route.post('/getnotifications', notification_controller.getnotifications);
-// upload notification sender image to GridFS
 notification_route.post('/uploadNotificationSenderImage', upload.single('senderimage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });

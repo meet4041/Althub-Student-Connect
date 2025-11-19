@@ -5,7 +5,6 @@ event_route.use(bodyParser.json());
 event_route.use(bodyParser.urlencoded({ extended: true }));
 const { uploadArray } = require('../db/storage');
 
-// upload multiple files using multer-gridfs-storage and set req.images to /api/images/:id
 const uploadPic = (req, res, next) => {
     const uploadMiddleware = uploadArray('photos', 5);
     uploadMiddleware(req, res, (err) => {

@@ -6,7 +6,6 @@ user_route.use(bodyParser.urlencoded({ extended: true }));
 const { uploadSingle } = require('../db/storage');
 const user_controller = require("../controllers/userController");
 
-// upload endpoint stores file to GridFS using multer-gridfs-storage and returns /api/images/:id URL
 user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });

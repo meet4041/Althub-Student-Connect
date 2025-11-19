@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 
 feedback_route.use(bodyParser.json());
 feedback_route.use(bodyParser.urlencoded({ extended: true }));
-
 feedback_route.use(cookieParser());
 feedback_route.use(express.static('public'));
 

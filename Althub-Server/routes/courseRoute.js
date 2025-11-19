@@ -6,9 +6,9 @@ const { requireAuth } = require("../middleware/authMiddleware");
 
 course_route.use(bodyParser.json());
 course_route.use(bodyParser.urlencoded({ extended: true }));
-
 course_route.use(cookieParser());
 course_route.use(express.static('public'));
+
 const course_controller = require("../controllers/courseController");
 
 //course routes

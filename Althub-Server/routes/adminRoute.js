@@ -22,7 +22,6 @@ admin_route.post('/forgetpassword', admin_controller.forgetPassword);
 admin_route.get('/resetpassword', admin_controller.resetpassword);
 admin_route.post('/adminUpdate', admin_controller.updateAdmin);
 admin_route.get('/adminLogout', admin_controller.adminLogout);
-// upload admin image to GridFS
 admin_route.post('/uploadAdminImage', upload.single('profilepic'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });

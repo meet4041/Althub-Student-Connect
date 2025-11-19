@@ -7,10 +7,7 @@ const cookieParser = require("cookie-parser");
 const port = 5001;
 const cors = require("cors");
 
-// Configure CORS dynamically for deployment
 const allowedOrigin = process.env.CLIENT_ORIGIN || "*";
-
-// Note: we'll initialize DB before starting the server further below to ensure GridFS is ready
 
 //routes
 const user_route = require("./routes/userRoute");
@@ -29,7 +26,6 @@ const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
-// Configure CORS robustly: if CLIENT_ORIGIN is set use it, otherwise allow all origins but disable credentials.
 if (allowedOrigin && allowedOrigin !== "*") {
   app.use(cors({
     origin: allowedOrigin,
@@ -38,7 +34,6 @@ if (allowedOrigin && allowedOrigin !== "*") {
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
   }));
 } else {
-  // Allow any origin but do not allow credentials when origin is '*'
   app.use(cors({
     origin: true,
     credentials: false,
@@ -47,14 +42,11 @@ if (allowedOrigin && allowedOrigin !== "*") {
   }));
 }
 
-// Ensure preflight (OPTIONS) requests are handled for all routes
 app.options('*', (req, res) => {
-  // If CLIENT_ORIGIN is configured, allow it; otherwise use request Origin
   const origin = (allowedOrigin && allowedOrigin !== '*') ? allowedOrigin : req.header('Origin') || '*';
   res.header('Access-Control-Allow-Origin', origin);
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', req.header('Access-Control-Request-Headers') || 'Content-Type, Authorization');
-  // Only allow credentials when a specific origin is configured
   if (allowedOrigin && allowedOrigin !== '*') res.header('Access-Control-Allow-Credentials', 'true');
   return res.sendStatus(204);
 });
@@ -80,10 +72,8 @@ app.get("/", (req, res) => {
   res.send("Althub Server is running!");
 });
 
-// Serve static files
 app.use(express.static("public"));
 
-// Error handling middleware (must be after routes, before 404)
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(err.status || 500).json({
@@ -92,12 +82,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler for undefined routes (must be last)
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Initialize Socket.IO
 const http = require("http");
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
@@ -110,7 +98,6 @@ const io = require("socket.io")(server, {
   transports: ["websocket", "polling"]
 });
 
-//socket server--------------------
 let users = [];
 
 const addUser = (userId, socketId) => {
@@ -127,7 +114,7 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-    console.log("✅ User connected via Socket.IO:", socket.id);
+    console.log("User connected via Socket.IO:", socket.id);
 
     socket.on("addUser", (userId) => {
       addUser(userId, socket.id);
@@ -135,7 +122,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-      console.log("👋 User disconnected:", socket.id);
+      console.log("User disconnected:", socket.id);
       removeUser(socket.id);
       io.emit("getUsers", users);
     });
@@ -148,8 +135,6 @@ io.on("connection", (socket) => {
           text,
           time,
         });
-      } else {
-        // console.log("Invalid user or socketId not found.");
       }
     });
 
@@ -161,32 +146,28 @@ io.on("connection", (socket) => {
           title,
           msg,
         });
-      } else {
-        // console.log("Invalid user or socketId not found.");
       }
     });
   });
 
-// Error handling for socket connection
 io.on("connect_error", (error) => {
-  console.error("❌ Socket.IO connection error:", error.message);
+  console.error("Socket.IO connection error:", error.message);
 });
 
 server.on("error", (err) => {
-  console.error("❌ Server error:", err.message);
+  console.error("Server error:", err.message);
 });
 
-// Start the server only after DB connection is ready so GridFS bucket is initialized
 connectToMongo()
   .then(() => {
     server.listen(port, function () {
-      console.log(`✅ Server is ready on port ${port}`);
-      console.log(`✅ Socket.IO listening on ws://localhost:${port}/socket.io/`);
-      console.log(`✅ API endpoint: http://localhost:${port}/api`);
+      console.log(`Server is ready on port ${port}`);
+      console.log(`Socket.IO listening on ws://localhost:${port}/socket.io/`);
+      console.log(`API endpoint: http://localhost:${port}/api`);
     });
   })
   .catch(err => {
-    console.error('❌ Failed to connect to MongoDB on startup:', err.message);
+    console.error('Failed to connect to MongoDB on startup:', err.message);
     console.error('Please ensure:');
     console.error('  - MongoDB is running');
     console.error('  - MONGO_URI in .env is correct');
