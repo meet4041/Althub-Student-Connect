@@ -4,11 +4,9 @@ const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 require("dotenv").config();
 
-// Cache the connection to reuse in serverless environments
 let cachedConnection = null;
 let gridFSBucket = null;
 
-// Initialize multer-gridfs storage (will fall back to memory storage on error)
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/althub';
 let storage;
 try {
@@ -43,30 +41,26 @@ function uploadArray(fieldName, maxCount) {
 
 const connectToMongo = async () => {
   try {
-    // If already connected, return the existing connection
     if (mongoose.connection.readyState === 1) {
       console.log("Using existing MongoDB connection");
       return mongoose.connection;
     }
 
-    // If connection is cached, return it
     if (cachedConnection) {
       return cachedConnection;
     }
 
-    // Configure mongoose for serverless
     mongoose.set("strictQuery", false);
 
     const connection = await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      serverSelectionTimeoutMS: 5000, 
+      socketTimeoutMS: 45000, 
     });
 
     cachedConnection = connection;
 
-    // Initialize GridFS Bucket immediately after successful connect
     try {
       const db = connection.connection ? connection.connection.db : mongoose.connection.db;
       gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
@@ -82,7 +76,6 @@ const connectToMongo = async () => {
   }
 };
 
-// Export GridFS bucket getter
 const getGridFSBucket = () => {
   if (!gridFSBucket) {
     throw new Error('GridFS Bucket not initialized. Ensure connectToMongo() was called first.');
@@ -90,7 +83,6 @@ const getGridFSBucket = () => {
   return gridFSBucket;
 };
 
-// GridFS helper functions
 async function uploadFromBuffer(buffer, filename, contentType) {
   const bucket = getGridFSBucket();
   return new Promise((resolve, reject) => {

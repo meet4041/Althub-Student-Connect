@@ -1,4 +1,3 @@
-// Central storage facade — forwards storage and GridFS helpers from conn.js
 const conn = require('./conn');
 
 module.exports = {
