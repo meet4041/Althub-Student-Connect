@@ -208,7 +208,7 @@ export default function Home({ socket }) {
     const options = {
       weekday: "short",
       year: "numeric",
-      month: "short", // Use short month name
+      month: "short",
       day: "numeric",
     };
     return date.toLocaleDateString("en-US", options);
@@ -236,7 +236,6 @@ export default function Home({ socket }) {
     }
   }
 
-  // Filter for upcoming events only
   const now = new Date();
   const upcomingEvents = events.filter(e => new Date(e.date) > now);
 

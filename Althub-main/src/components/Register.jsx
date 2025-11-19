@@ -260,7 +260,6 @@ export default function Register() {
       isValid = false;
       errors["cpassword_err"] = "Password not match";
     }
-    // No validation for profile picture
     if (!languages || languages.length === 0) {
       isValid = false;
       errors["languages_err"] = "Please select at least one language";
@@ -444,7 +443,6 @@ export default function Register() {
                 <div className="text-danger">{errors.dob_err}</div>
                 <div className="gender">
                   <div>Gender</div>
-                  {/* Option 1: Male */}
                   <div className="gender-option">
                     <label>
                       <input
@@ -460,7 +458,6 @@ export default function Register() {
                       <span>Male</span>
                     </label>
                   </div>
-                  {/* Option 2: Female */}
                   <div className="gender-option">
                     <label>
                       <input

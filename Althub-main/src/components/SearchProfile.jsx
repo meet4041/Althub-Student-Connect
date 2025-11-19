@@ -17,7 +17,6 @@ export default function SearchProfile({ socket }) {
   const userID = localStorage.getItem("Althub_Id");
   const [self, setSelf] = useState({});
 
-  // Fetch self info for follow logic
   useEffect(() => {
     if (userID) {
       axios({
@@ -28,11 +27,9 @@ export default function SearchProfile({ socket }) {
           setSelf(Response.data.data[0]);
         })
         .catch((error) => {
-          // ignore
         });
     }
   }, [userID]);
-  // Follow logic (like ViewSearchProfile)
   const handleFollow = (targetUser) => {
     if (!socket) return toast("Socket not connected");
     if (!self || !self.fname || !self.lname) {
@@ -52,9 +49,7 @@ export default function SearchProfile({ socket }) {
     })
       .then((Response) => {
         toast(Response.data);
-        // update local state to reflect follow
         setShowUsers((prev) => prev.map(u => u._id === targetUser._id ? { ...u, followers: [...(u.followers || []), userID] } : u));
-        // Optionally, send notification
         axios({
           url: `${WEB_URL}/api/addNotification`,
           method: "post",

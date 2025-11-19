@@ -29,7 +29,6 @@ function ChatMessage({ msg, own }) {
     }
   };
 
-  // Defensive handling: msg might be an unexpected object (e.g. {id:"", url:""})
   const text = msg && typeof msg === "object" && "text" in msg ? msg.text : "";
   const timeVal = msg && typeof msg === "object" && "time" in msg ? msg.time : null;
 

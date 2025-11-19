@@ -20,7 +20,6 @@ export default function Navbar({ socket }) {
   const [user, setUser] = useState({});
   const [navbar, setNavbar] = useState(true);
   const { pathname } = window.location;
-  // const pathname = window.location.pathname;
   const [mesDot, setMesDot] = useState(false);
   const [notDot, setNotDot] = useState(false);
 
@@ -48,7 +47,6 @@ export default function Navbar({ socket }) {
         }
       })
       .catch((error) => {
-        // Silently ignore errors during initial load
       });
   };
 
@@ -192,7 +190,6 @@ export default function Navbar({ socket }) {
   const nav = useNavigate();
 
   useEffect(() => {
-    // Load user on component mount
     getUser();
   }, []);
 

@@ -48,7 +48,6 @@ export default function ViewProfile() {
         }
       })
       .catch((error) => {
-        // Ignore aborted requests
         if (
           error?.code === "ERR_CANCELED" ||
           error?.message?.toLowerCase()?.includes("aborted") ||

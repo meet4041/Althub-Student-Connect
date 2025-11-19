@@ -4,7 +4,6 @@ import ChatUser from "./ChatUser";
 import ChatMessage from "./ChatMessage";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
-// import { io } from "socket.io-client";
 
 export default function Message({ socket }) {
   const userid = localStorage.getItem("Althub_Id");

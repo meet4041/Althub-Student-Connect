@@ -19,7 +19,6 @@ import Navbar from "./components/Navbar";
 import Scholarship from "./components/Scholarship";
 
 function App() {
-  // Use useMemo to prevent socket from being recreated on every render
   const socket = React.useMemo(() => io("http://localhost:5001", {
     reconnection: true,
     reconnectionDelay: 1000,
@@ -28,7 +27,6 @@ function App() {
     transports: ["websocket", "polling"]
   }), []);
   
-  // Cleanup socket connection on unmount
   React.useEffect(() => {
     return () => {
       socket.disconnect();

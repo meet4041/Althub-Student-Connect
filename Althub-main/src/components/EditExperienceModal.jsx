@@ -26,8 +26,6 @@ const EditExperienceModal = ({
     setModalType(modal);
   }, [experience,modal]);
 
-  // Company list dropdown removed; using free-text input for company name
-
   const handleChange = (e) => {
     setEx({ ...ex, [e.target.name]: e.target.value });
   };

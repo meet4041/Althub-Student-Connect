@@ -19,9 +19,6 @@ function Main() {
                 <div className="banner-left">
                     <img src="images/Logo1.jpeg" alt="logo" id="logo" />
                     <p>A Platform for Alumni and Student to Connect together.</p>
-                    {/* <div className="banner-btn">
-                        Register Institute
-                    </div> */}
                 </div>
                 <div className="banner-right">
                     <img src="images/connect.png" alt="" id="main-img" width="100%" height="100%" />
