@@ -31,11 +31,7 @@ function App() {
   // Cleanup socket connection on unmount
   React.useEffect(() => {
     return () => {
-      try {
-        socket.disconnect();
-      } catch (e) {
-        // ignore
-      }
+      socket.disconnect();
     };
   }, [socket]);
 
