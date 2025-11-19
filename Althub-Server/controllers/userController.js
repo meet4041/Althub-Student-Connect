@@ -6,7 +6,6 @@ const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const cookieParser = require("cookie-parser");
 
-//method for send mail for reset password
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -40,7 +39,6 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
-//method for generate jwt token
 const createtoken = async (id) => {
     try {
         const token = jwt.sign({ _id: id }, config.secret_jwt);
@@ -50,7 +48,6 @@ const createtoken = async (id) => {
     }
 }
 
-//method for password hashing
 const securePassword = async (password) => {
     try {
         const passwordhash = await bcryptjs.hash(password, 10);
@@ -60,7 +57,6 @@ const securePassword = async (password) => {
     }
 }
 
-//Register user
 const registerUser = async (req, res) => {
     try {
         const spassword = await securePassword(req.body.password);
@@ -118,7 +114,6 @@ const uploadUserImage = async (req, res) => {
     }
 }
 
-//Login user
 const userlogin = async (req, res) => {
     try {
         const email = req.body.email;
@@ -144,7 +139,6 @@ const userlogin = async (req, res) => {
                     portfolioweb: userData.portfolioweb,
                     skills: userData.skills,
                     role: userData.role,
-                    // token: tokenData
                 }
 
                 const response = {
@@ -168,7 +162,6 @@ const userlogin = async (req, res) => {
     }
 }
 
-//user update password
 const updatePassword = async (req, res) => {
     try {
         const user_id = req.body.user_id;
@@ -199,7 +192,6 @@ const updatePassword = async (req, res) => {
     }
 }
 
-//forget password
 const forgetPassword = async (req, res) => {
     try {
         const email = req.body.email;
@@ -246,7 +238,6 @@ const resetpassword = async (req, res) => {
     }
 }
 
-//user profile edit and update
 const userProfileEdit = async (req, res) => {
     try {
         var id = req.body.id;
@@ -276,7 +267,7 @@ const userProfileEdit = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-//delete user
+
 const deleteUser = async (req, res) => {
     try {
         const id = req.params.id;
@@ -287,7 +278,6 @@ const deleteUser = async (req, res) => {
     }
 }
 
-//search user
 const searchUser = async (req, res) => {
     try {
         var search = req.body.search;
@@ -308,12 +298,11 @@ const searchUser = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-//search user by id
+
 const searchUserById = async (req, res) => {
     try {
         const id = req.params._id;
         if (!id) return res.status(400).send({ success: false, msg: 'Missing user id' });
-        // validate ObjectId
         const mongoose = require('mongoose');
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).send({ success: false, msg: 'Invalid user id' });
@@ -326,7 +315,6 @@ const searchUserById = async (req, res) => {
     }
 }
 
-//Logout
 const userLogout = async (req, res) => {
     try {
         res.clearCookie("jwt_token");
@@ -336,7 +324,6 @@ const userLogout = async (req, res) => {
     }
 }
 
-//get all users
 const getUsers = async (req, res) => {
     try {
         const user_data = await User.find({});
@@ -346,7 +333,7 @@ const getUsers = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-//get newly registered users
+
 const getTopUsers = async (req, res) => {
     try {
         const user_data = await User.find({ institute: req.body.institute }).limit(5);
@@ -357,7 +344,6 @@ const getTopUsers = async (req, res) => {
     }
 }
 
-//get users of perticular institute
 const getUsersOfInstitute = async (req, res) => {
     try {
         const user_data = await User.find({ institute: req.params.institute });
@@ -368,7 +354,6 @@ const getUsersOfInstitute = async (req, res) => {
     }
 }
 
-//follow a user     =>  router.put("/:id/follow"
 const followUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
         try {
@@ -389,7 +374,6 @@ const followUser = async (req, res) => {
     }
 };
 
-//unfollow a user => router.put("/:id/unfollow")
 const unfollowUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
         try {

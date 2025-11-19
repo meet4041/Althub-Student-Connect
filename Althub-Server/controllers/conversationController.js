@@ -1,6 +1,5 @@
 const Conversation = require("../models/conversationModel");
 
-//new conversation
 const newConversation = async (req, res) => {
     const newconversation = new Conversation({
         members: [req.body.senderId, req.body.receiverId]
@@ -13,7 +12,6 @@ const newConversation = async (req, res) => {
     }
 };
 
-//get conversation of a user
 const getConversation = async (req, res) => {
     try {
         const conversation = await Conversation.find({
@@ -25,7 +23,6 @@ const getConversation = async (req, res) => {
     }
 }
 
-// Search Conversation
 const searchConversation = async (req, res) => {
     try {
         const conversation = await Conversation.find({

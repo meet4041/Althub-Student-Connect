@@ -6,7 +6,6 @@ const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const cookieParser = require("cookie-parser");
 
-//method for send mail for reset password
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -40,7 +39,6 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
-//method for generate jwt token
 const createtoken = async (id) => {
     try {
         const token = jwt.sign({ _id: id }, config.secret_jwt);
@@ -50,7 +48,6 @@ const createtoken = async (id) => {
     }
 }
 
-//method for password hashing
 const securePassword = async (password) => {
     try {
         const passwordhash = await bcryptjs.hash(password, 10);
@@ -60,12 +57,10 @@ const securePassword = async (password) => {
     }
 }
 
-//Register admin
 const registerAdmin = async (req, res) => {
     try {
 
         const spassword = await securePassword(req.body.password);
-
         const admin = new Admin({
             name: req.body.lname,
             phone: req.body.phone,
@@ -94,7 +89,6 @@ const registerAdmin = async (req, res) => {
     }
 }
 
-//image upload
 const uploadAdminImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
@@ -111,7 +105,6 @@ const uploadAdminImage = async (req, res) => {
     }
 }
 
-//Login admin
 const adminlogin = async (req, res) => {
     try {
         const email = req.body.email;
@@ -119,13 +112,8 @@ const adminlogin = async (req, res) => {
         const adminData = await Admin.findOne({ email: email });
 
         if (adminData) {
-            //const passwordMatch = await bcryptjs.compare(password, adminData.password);
             const passwordMatch = await (password === adminData.password);
-
-
             if (passwordMatch) {
-
-                //method1
                 const tokenData = await createtoken(adminData._id);
                 res.cookie('jwt_token', tokenData, { httpOnly: true, expires: new Date(Date.now() + 1 * 60 * 60 * 1000) });
 
@@ -136,7 +124,6 @@ const adminlogin = async (req, res) => {
                     email: adminData.email,
                     password: adminData.password,
                     profilepic: adminData.profilepic,
-                    // token: tokenData
                 }
 
                 const response = {
@@ -160,7 +147,6 @@ const adminlogin = async (req, res) => {
     }
 }
 
-//admin update password
 const updatePassword = async (req, res) => {
     try {
         const admin_id = req.body.admin_id;
@@ -191,7 +177,6 @@ const updatePassword = async (req, res) => {
     }
 }
 
-//forget password
 const forgetPassword = async (req, res) => {
     try {
         const email = req.body.email;
@@ -242,7 +227,6 @@ const resetpassword = async (req, res) => {
     }
 }
 
-//admin  edit and update
 const updateAdmin = async (req, res) => {
     try {
         var id = req.body.id;
@@ -259,11 +243,8 @@ const updateAdmin = async (req, res) => {
     }
 }
 
-
-//Logout
 const adminLogout = async (req, res) => {
     try {
-        // res.cookie('jwt_token', '');
         res.clearCookie("jwt_token");
         res.status(200).send({ success: true, msg: "successfully Loged Out" });
     } catch (error) {
@@ -271,7 +252,6 @@ const adminLogout = async (req, res) => {
     }
 }
 
-//get admin by id
 const getAdminById = async (req, res) => {
     try {
         const admin = await Admin.find({

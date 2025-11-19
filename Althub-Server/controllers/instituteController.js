@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 
-//method for password hashing
 const securePassword = async (password) => {
     try {
         const passwordhash = await bcryptjs.hash(password, 10);
@@ -16,7 +15,6 @@ const securePassword = async (password) => {
     }
 }
 
-//to generate token
 const create_token = async (id) => {
     try {
         const token = await jwt.sign({ _id: id }, config.secret_jwt);
@@ -26,7 +24,6 @@ const create_token = async (id) => {
     }
 }
 
-//method for send mail for reset password
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -56,7 +53,7 @@ const sendresetpasswordMail = async (name, email, token) => {
         console.log(error.message);
     }
 }
-//method for send mail for invitation
+
 const sendInvitationMail = async (name, email, tempPass) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -87,7 +84,6 @@ const sendInvitationMail = async (name, email, tempPass) => {
     }
 }
 
-//for register institute
 const registerInstitute = async (req, res) => {
     try {
         const spassword = await securePassword(req.body.password);
@@ -116,7 +112,7 @@ const registerInstitute = async (req, res) => {
         console.log("Error in Register Institute : " + error.message);
     }
 }
-//image upload
+
 const uploadInstituteImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
@@ -133,7 +129,6 @@ const uploadInstituteImage = async (req, res) => {
     }
 }
 
-//institute login 
 const instituteLogin = async (req, res) => {
     try {
         const email = req.body.email;
@@ -176,7 +171,6 @@ const instituteLogin = async (req, res) => {
     }
 }
 
-//user update password
 const instituteUpdatePassword = async (req, res) => {
     try {
         var institute_id = req.body.institute_id;
@@ -208,7 +202,6 @@ const instituteUpdatePassword = async (req, res) => {
     }
 }
 
-//forget password
 const instituteForgetPassword = async (req, res) => {
     try {
         const email = req.body.email;
@@ -255,7 +248,6 @@ const instituteResetPassword = async (req, res) => {
     }
 }
 
-//institute  edit and update
 const updateInstitute = async (req, res) => {
     try {
         var id = req.body.id;
@@ -275,7 +267,6 @@ const updateInstitute = async (req, res) => {
     }
 }
 
-//delete institute
 const deleteInstitute = async (req, res) => {
     try {
         const id = req.params.id;
@@ -286,7 +277,6 @@ const deleteInstitute = async (req, res) => {
     }
 }
 
-//view all institutes
 const getInstitues = async (req, res) => {
     try {
         const institute_data = await Institute.find({});
@@ -296,7 +286,6 @@ const getInstitues = async (req, res) => {
     }
 }
 
-//search institute by id
 const searchInstituteById = async (req, res) => {
     try {
         const institute = await Institute.findById({
@@ -308,7 +297,6 @@ const searchInstituteById = async (req, res) => {
     }
 }
 
-//invite user
 const inviteUser = async (req, res) => {
     try {
         const randpassword = randomstring.generate(5);

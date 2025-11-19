@@ -1,6 +1,5 @@
 const Event = require("../models/EventModel");
 
-//Add Events
 const addEvents = async (req, res) => {
     try {
         const event = new Event({
@@ -21,7 +20,6 @@ const addEvents = async (req, res) => {
     }
 }
 
-//view Events
 const getEvents = async (req, res) => {
     try {
         const evet_data = await Event.find({});
@@ -30,7 +28,7 @@ const getEvents = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-//view Events by institute
+
 const getEventsByInstitute = async (req, res) => {
     try {
         const evet_data = await Event.find({ organizerid: req.params.organizerid });
@@ -39,7 +37,7 @@ const getEventsByInstitute = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-//delete event
+
 const deleteEvent = async (req, res) => {
     try {
         const id = req.params.id;
@@ -50,11 +48,9 @@ const deleteEvent = async (req, res) => {
     }
 }
 
-//edit event
 const editEvent = async (req, res) => {
     try {
         if (req.images.length != '') {
-
             var id = req.body.id;
             var title = req.body.title;
             var description = req.body.description;
@@ -80,7 +76,6 @@ const editEvent = async (req, res) => {
     }
 }
 
-//search institute
 const searchEvent = async (req, res) => {
     try {
         var search = req.body.search;
@@ -97,7 +92,6 @@ const searchEvent = async (req, res) => {
     }
 }
 
-//get upcomming events
 const getUpcommingEvents = async (req, res) => {
     try {
         let start = Date.now();
@@ -108,11 +102,9 @@ const getUpcommingEvents = async (req, res) => {
     }
 }
 
-// participate in the event
 const participateInEvent = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
-        // res.status(200).json(req.params.id);
         if (!event.participants.includes(req.body.userId)) {
             await event.updateOne({ $push: { participants: req.body.userId } });
             res.status(200).json("Participated in this event Successfully");

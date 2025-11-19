@@ -2,7 +2,6 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
 
-//Add post
 const addPost = async (req, res) => {
     try {
         const post = new Post({
@@ -31,7 +30,6 @@ const addPost = async (req, res) => {
     }
 }
 
-//Add post for institute
 const instituteAddPost = async (req, res) => {
     try {
         const post = new Post({
@@ -57,7 +55,6 @@ const instituteAddPost = async (req, res) => {
     }
 }
 
-//get all post
 const getPosts = async (req, res) => {
     try {
         const post_data = await Post.find({}).limit(20);
@@ -67,7 +64,6 @@ const getPosts = async (req, res) => {
     }
 }
 
-//get post by userid
 const getPostById = async (req, res) => {
     try {
         const post_data = await Post.find({ userid: req.params.userid });
@@ -77,7 +73,6 @@ const getPostById = async (req, res) => {
     }
 }
 
-//delete post
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
@@ -88,7 +83,6 @@ const deletePost = async (req, res) => {
     }
 }
 
-//edit post
 const editPost = async (req, res) => {
     try {
         if (req.images.length != '') {
@@ -113,7 +107,6 @@ const editPost = async (req, res) => {
     }
 }
 
-//like / dislike a post
 const likeUnlikePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -129,7 +122,6 @@ const likeUnlikePost = async (req, res) => {
     }
 };
 
-//get timeline posts
 const getFriendsPost = async (req, res) => {
     try {
         const currentUser = await User.findById(req.body.userId);

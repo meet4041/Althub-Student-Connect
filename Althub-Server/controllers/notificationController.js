@@ -1,6 +1,5 @@
 const Notification = require("../models/notificationModel");
 
-//image upload
 const uploadNotificationSenderImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
@@ -17,7 +16,6 @@ const uploadNotificationSenderImage = async (req, res) => {
     }
 }
 
-//Add notification
 const addNotification = async (req, res) => {
     try {
         const notification = new Notification({
@@ -34,7 +32,6 @@ const addNotification = async (req, res) => {
     }
 }
 
-//view all notification
 const getnotifications = async (req, res) => {
     try {
         const notification_data = await Notification.find({ userid: req.body.userid }).limit(5);

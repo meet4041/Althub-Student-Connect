@@ -1,6 +1,5 @@
 const Education = require("../models/educationModel");
 
-//Add education
 const addEducation = async (req, res) => {
     try {
         const education = new Education({
@@ -17,7 +16,6 @@ const addEducation = async (req, res) => {
     }
 }
 
-//get education
 const getEducation = async (req, res) => {
     try {
         const education_data = await Education.find({ userid: req.body.userid });
@@ -27,7 +25,6 @@ const getEducation = async (req, res) => {
     }
 }
 
-//delete education
 const deleteEducation = async (req, res) => {
     try {
         const id = req.params.id;
@@ -38,7 +35,6 @@ const deleteEducation = async (req, res) => {
     }
 }
 
-//edit education
 const editEducation = async (req, res) => {
     try {
         var id = req.body.id;
@@ -55,7 +51,6 @@ const editEducation = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-//image upload
 const uploadEducationImage = async (req, res) => {
     try {
         if (req.file !== undefined) {

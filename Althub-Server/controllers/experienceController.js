@@ -1,6 +1,5 @@
 const Experience = require("../models/experienceModel");
 
-//Add experience
 const addExperience = async (req, res) => {
     try {
         const experience = new Experience({
@@ -19,7 +18,6 @@ const addExperience = async (req, res) => {
     }
 }
 
-//get experience
 const getExperience = async (req, res) => {
     try {
         const experience_data = await Experience.find({ userid: req.body.userid });
@@ -29,7 +27,6 @@ const getExperience = async (req, res) => {
     }
 }
 
-//delete experience
 const deleteExperience = async (req, res) => {
     try {
         const id = req.params.id;
@@ -40,10 +37,8 @@ const deleteExperience = async (req, res) => {
     }
 }
 
-//edit experience
 const editExperience = async (req, res) => {
     try {
-
         const experience_data = await Experience.findByIdAndUpdate({ _id: req.body._id }, { $set: req.body }, { new: true });
         res.status(200).send({ success: true, msg: 'experience Updated', data: experience_data });
 
@@ -52,7 +47,6 @@ const editExperience = async (req, res) => {
     }
 }
 
-//image upload
 const uploadExperienceImage = async (req, res) => {
     try {
         if (req.file !== undefined) {

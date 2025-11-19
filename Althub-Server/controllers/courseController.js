@@ -1,6 +1,5 @@
 const Course = require("../models/courseModel");
 
-//Add Course
 const addCourse = async (req, res) => {
     try {
         const course = new Course({
@@ -19,7 +18,6 @@ const addCourse = async (req, res) => {
     }
 }
 
-//view Course
 const getCourse = async (req, res) => {
     try {
         const course_data = await Course.find({});
@@ -38,7 +36,6 @@ const getCourseByInstitute = async (req, res) => {
     }
 }
 
-//delete Course
 const deleteCourse = async (req, res) => {
     try {
         const id = req.params.id;
@@ -49,7 +46,6 @@ const deleteCourse = async (req, res) => {
     }
 }
 
-//edit event
 const editCourse = async (req, res) => {
     try {
         var id = req.body.id;

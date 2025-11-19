@@ -1,6 +1,5 @@
 const Feedback = require("../models/feedbackModel");
 
-//Add feedback
 const addFeedback = async (req, res) => {
     try {
         const feedback = new Feedback({
@@ -15,7 +14,6 @@ const addFeedback = async (req, res) => {
     }
 }
 
-//view feedback
 const getFeedback = async (req, res) => {
     try {
         const feedback_data = await Feedback.find({});
@@ -25,7 +23,6 @@ const getFeedback = async (req, res) => {
     }
 }
 
-//delete feedback
 const deleteFeedback = async (req, res) => {
     try {
         const id = req.params.id;

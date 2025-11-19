@@ -1,6 +1,5 @@
 const Company = require("../models/companyModel");
 
-//image upload
 const uploadCompanyImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
@@ -17,7 +16,6 @@ const uploadCompanyImage = async (req, res) => {
     }
 }
 
-//Add Company
 const addCompany = async (req, res) => {
     try {
         const company = new Company({
@@ -43,7 +41,6 @@ const addCompany = async (req, res) => {
     }
 }
 
-//delete Company
 const deleteCompany = async (req, res) => {
     try {
         const id = req.params.id;
@@ -54,7 +51,6 @@ const deleteCompany = async (req, res) => {
     }
 }
 
-//view all Company
 const getCompanies = async (req, res) => {
     try {
         const company_data = await Company.find({});
@@ -64,7 +60,6 @@ const getCompanies = async (req, res) => {
     }
 }
 
-//search company by id
 const searchCompanyById = async (req, res) => {
     try {
         const company = await Company.findById({

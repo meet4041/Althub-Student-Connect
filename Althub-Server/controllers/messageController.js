@@ -1,6 +1,5 @@
 const Message = require("../models/messageModel");
 
-//new message
 const newMessage = async (req, res) => {
     const newMessage = new Message(req.body);
     try {
@@ -11,7 +10,6 @@ const newMessage = async (req, res) => {
     }
 };
 
-//get message
 const getMessages = async (req, res) => {
     try {
         const messages = await Message.find({
