@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { GridFSBucket, ObjectId } = require('mongodb');
 const multer = require('multer');
-const { GridFsStorage } = require('multer-gridfs-storage');
+const GridFsStorage = require('multer-gridfs-storage');
 require("dotenv").config();
 
 let cachedConnection = null;
