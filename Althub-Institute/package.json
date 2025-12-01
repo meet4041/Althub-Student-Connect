@@ -36,7 +36,12 @@
     "eject": "react-scripts eject"
   },
   "engines": {
-    "node": ">=18 <21"
+    "node": ">=18"
+  },
+  "overrides": {
+    "google-maps-react": {
+      "react": "$react"
+    }
   },
   "eslintConfig": {
     "extends": [
