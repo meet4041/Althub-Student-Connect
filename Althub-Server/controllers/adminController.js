@@ -44,7 +44,6 @@ const createtoken = async (id) => {
         const token = jwt.sign({ _id: id }, config.secret_jwt);
         return token;
     } catch (error) {
-        // Handle error internally or throw
         console.log(error.message);
         return null;
     }
@@ -55,7 +54,6 @@ const securePassword = async (password) => {
         const passwordhash = await bcryptjs.hash(password, 10);
         return passwordhash;
     } catch (error) {
-        // Handle error
         console.log(error.message);
         return null;
     }
@@ -63,7 +61,6 @@ const securePassword = async (password) => {
 
 const registerAdmin = async (req, res) => {
     try {
-
         const spassword = await securePassword(req.body.password);
         const admin = new Admin({
             name: req.body.lname,
@@ -81,11 +78,11 @@ const registerAdmin = async (req, res) => {
         else {
             const token = await createtoken();
             
-            // UPDATED: Added secure flags for deployment
+            // SECURITY UPDATE: Secure Cookie Settings for Deployment
             res.cookie('jwt_token', token, { 
                 httpOnly: true,
                 secure: true,       // Required for Vercel/Render (HTTPS)
-                sameSite: "none"    // Required for Cross-Site requests
+                sameSite: "none"    // Required for Cross-Site Requests
             });
             
             const admin_data = await admin.save();
@@ -121,12 +118,9 @@ const adminlogin = async (req, res) => {
         const adminData = await Admin.findOne({ email: email });
 
         if (adminData) {
-            // Fix: bcrypt compare should be used if password was hashed
-            // Assuming direct comparison based on your provided code, but bcrypt is safer
-            // If you used securePassword() to register, you MUST use bcrypt.compare here
-            // Checking if the stored password looks like a bcrypt hash (starts with $2a$ or similar)
+            // SECURITY UPDATE: Handle both hashed (bcrypt) and plain text passwords
             let passwordMatch = false;
-            if(adminData.password.startsWith('$2')) {
+            if(adminData.password && adminData.password.startsWith('$2')) {
                  passwordMatch = await bcryptjs.compare(password, adminData.password);
             } else {
                  passwordMatch = (password === adminData.password);
@@ -135,12 +129,12 @@ const adminlogin = async (req, res) => {
             if (passwordMatch) {
                 const tokenData = await createtoken(adminData._id);
                 
-                // UPDATED: Added secure flags for deployment
+                // SECURITY UPDATE: Secure Cookie Settings for Deployment
                 res.cookie('jwt_token', tokenData, { 
                     httpOnly: true, 
-                    expires: new Date(Date.now() + 25892000000), // Extended expiry (approx 30 days) to keep admin logged in
+                    expires: new Date(Date.now() + 25892000000), // ~30 days
                     secure: true,       // Required for Vercel/Render (HTTPS)
-                    sameSite: "none"    // Required for Cross-Site requests
+                    sameSite: "none"    // Required for Cross-Site Requests
                 });
 
                 const adminResult = {
@@ -148,7 +142,7 @@ const adminlogin = async (req, res) => {
                     name: adminData.name,
                     phone: adminData.phone,
                     email: adminData.email,
-                    password: adminData.password,
+                    // password field removed for security
                     profilepic: adminData.profilepic,
                 }
 
@@ -215,7 +209,7 @@ const forgetPassword = async (req, res) => {
                 }
             });
 
-            sendresetpasswordMail(adminData.fname, adminData.email, randomString);
+            sendresetpasswordMail(adminData.name, adminData.email, randomString);
 
             res.status(200).send({ success: true, msg: "Please Check your inbox of mail and reset your password" });
 
@@ -271,7 +265,7 @@ const updateAdmin = async (req, res) => {
 
 const adminLogout = async (req, res) => {
     try {
-        // UPDATED: Added options to match the login cookie settings
+        // SECURITY UPDATE: Clear cookie with matching secure settings
         res.clearCookie("jwt_token", { 
             httpOnly: true, 
             secure: true, 

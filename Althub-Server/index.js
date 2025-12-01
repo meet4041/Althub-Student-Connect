@@ -1,24 +1,23 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
 const { connectToMongo } = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5001;
 const cors = require("cors");
 
-// 1. ROBUST CORS SETUP
-// This configuration allows your Vercel frontend to communicate with the Render backend
-// and exchange cookies securely.
+// 1. ROBUST CORS CONFIGURATION
+// This tells the browser: "It is safe to send cookies to this backend from the frontend"
 app.use(cors({
-  origin: true, // Automatically reflects the request origin (allows your Vercel domains)
-  credentials: true, // Essential for cookies/login to work
+  origin: true, // Dynamically allow the origin of the request (e.g., your Vercel URL)
+  credentials: true, // Allow cookies to be sent/received
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
 app.options('*', cors()); // Enable pre-flight for all routes
 
-// ... (Rest of your routes remain exactly the same)
 const user_route = require("./routes/userRoute");
 const event_route = require("./routes/eventRoute");
 const institute_route = require("./routes/instituteRoute");
@@ -60,7 +59,6 @@ app.get("/", (req, res) => {
 
 app.use(express.static("public"));
 
-// Error handling
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(err.status || 500).json({
@@ -72,49 +70,63 @@ const http = require("http");
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: true, // Updated to match Express CORS
+    origin: true, // Update Socket.IO CORS as well
     methods: ["GET", "POST"],
     credentials: true
   },
   transports: ["websocket", "polling"]
 });
 
-// ... (Socket.IO logic remains exactly the same)
 let users = [];
+
 const addUser = (userId, socketId) => {
   !users.some((user) => user.userId === userId) &&
     users.push({ userId, socketId });
 };
+
 const removeUser = (socketId) => {
   users = users.filter((user) => user.socketId !== socketId);
 };
+
 const getUser = (userId) => {
   return users.find((user) => user.userId === userId);
 };
 
 io.on("connection", (socket) => {
     console.log("User connected via Socket.IO:", socket.id);
+
     socket.on("addUser", (userId) => {
       addUser(userId, socket.id);
       io.emit("getUsers", users);
     });
+
     socket.on("disconnect", () => {
       removeUser(socket.id);
       io.emit("getUsers", users);
     });
+
     socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
       const user = getUser(receiverId);
       if (user && user.socketId) {
-        io.to(user.socketId).emit("getMessage", { senderId, text, time });
+        io.to(user.socketId).emit("getMessage", {
+          senderId,
+          text,
+          time,
+        });
       }
     });
+
     socket.on("sendNotification", ({ receiverid, title, msg}) => {
       const user = getUser(receiverid);
+
       if (user && user.socketId) {
-        io.to(user.socketId).emit("getNotification", { title, msg });
+        io.to(user.socketId).emit("getNotification", {
+          title,
+          msg,
+        });
       }
     });
-});
+  });
 
 connectToMongo()
   .then(() => {
