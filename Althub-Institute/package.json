@@ -40,7 +40,8 @@
   },
   "overrides": {
     "google-maps-react": {
-      "react": "$react"
+      "react": "$react",
+      "react-dom": "$react-dom"
     }
   },
   "eslintConfig": {
