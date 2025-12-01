@@ -1,24 +1,23 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const mongoose = require("mongoose");
 const { connectToMongo } = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5001;
 const cors = require("cors");
 
-// --- CRITICAL DEPLOYMENT SETTINGS ---
-app.set("trust proxy", 1); // 1. Trusts Render's Load Balancer (Required for cookies)
+// --- FIX 1: REQUIRED FOR RENDER DEPLOYMENT ---
+app.set("trust proxy", 1); 
 
+// --- FIX 2: ALLOW COOKIES FROM VERCEL ---
 app.use(cors({
-  origin: true,      // 2. Allow Vercel Frontend
-  credentials: true, // 3. Allow Cookies
+  origin: true, 
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
 app.options('*', cors());
-// -------------------------------------
 
 const user_route = require("./routes/userRoute");
 const event_route = require("./routes/eventRoute");

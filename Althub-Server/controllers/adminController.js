@@ -3,7 +3,6 @@ const config = require("../config/config");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
-// Removed bcryptjs since you are using plain text passwords
 
 const sendresetpasswordMail = async (name, email, token) => {
     try {
@@ -47,10 +46,9 @@ const createtoken = async (id) => {
     }
 }
 
-// 1. REGISTER: Store Password as Plain Text (No Encryption)
 const registerAdmin = async (req, res) => {
     try {
-        // DIRECT ASSIGNMENT - NO HASHING
+        // FIX: Plain text password storage
         const spassword = req.body.password; 
         
         const admin = new Admin({
@@ -69,7 +67,7 @@ const registerAdmin = async (req, res) => {
         else {
             const token = await createtoken();
             
-            // SECURITY: Required for Vercel/Render
+            // FIX: Secure Cookie for Deployment
             res.cookie('jwt_token', token, { 
                 httpOnly: true,
                 secure: true, 
@@ -102,25 +100,24 @@ const uploadAdminImage = async (req, res) => {
     }
 }
 
-// 2. LOGIN: Compare Password as Plain Text
 const adminlogin = async (req, res) => {
     try {
         const email = req.body.email;
-        const password = req.body.password; // Password user typed
+        const password = req.body.password;
         const adminData = await Admin.findOne({ email: email });
 
         if (adminData) {
-            // DIRECT STRING COMPARISON (Matches your database)
+            // FIX: Plain text comparison for @Althub1212
             if (password === adminData.password) {
                 
                 const tokenData = await createtoken(adminData._id);
                 
-                // SECURITY: Required for Vercel/Render Deployment
+                // FIX: Secure Cookie for Deployment
                 res.cookie('jwt_token', tokenData, { 
                     httpOnly: true, 
                     expires: new Date(Date.now() + 25892000000), 
-                    secure: true,       // Must be true on HTTPS
-                    sameSite: "none"    // Must be "none" for Cross-Site
+                    secure: true,       // Required for Vercel/Render
+                    sameSite: "none"    // Required for Cross-Site
                 });
 
                 const adminResult = {
@@ -153,7 +150,6 @@ const adminlogin = async (req, res) => {
     }
 }
 
-// 3. UPDATE PASSWORD: No Encryption
 const updatePassword = async (req, res) => {
     try {
         const admin_id = req.body.admin_id;
@@ -162,12 +158,12 @@ const updatePassword = async (req, res) => {
 
         const data = await Admin.findOne({ _id: admin_id });
         if (data) {
-            // DIRECT COMPARISON
+            // FIX: Plain text comparison
             if (oldpassword === data.password) {
                 
                 const adminData = await Admin.findByIdAndUpdate({ _id: admin_id }, {
                     $set: {
-                        password: newpassword // SAVE AS PLAIN TEXT
+                        password: newpassword 
                     }
                 }, { new: true });
 
@@ -196,7 +192,7 @@ const forgetPassword = async (req, res) => {
                 }
             });
 
-            sendresetpasswordMail(adminData.fname, adminData.email, randomString);
+            sendresetpasswordMail(adminData.name, adminData.email, randomString);
 
             res.status(200).send({ success: true, msg: "Please Check your inbox of mail and reset your password" });
 
@@ -210,14 +206,13 @@ const forgetPassword = async (req, res) => {
     }
 }
 
-// 4. RESET PASSWORD: No Encryption
 const resetpassword = async (req, res) => {
     try {
         const token = req.query.token;
         const tokenData = await Admin.findOne({ token: token });
         if (tokenData) {
             const password = req.body.password;
-            // DIRECT SAVE
+            // FIX: Plain text storage
             const adminData = await Admin.findByIdAndUpdate({ _id: tokenData._id }, {
                 $set: {
                     password: password, 
@@ -253,7 +248,7 @@ const updateAdmin = async (req, res) => {
 
 const adminLogout = async (req, res) => {
     try {
-        // SECURITY: Match settings to clear cookie successfully
+        // FIX: Secure Cookie Clearing
         res.clearCookie("jwt_token", { 
             httpOnly: true, 
             secure: true, 
