@@ -3,31 +3,35 @@ import { ALTHUB_API_URL } from "../jsx/pages/baseURL";
 
 const axiosInstance = axios.create({
     baseURL: ALTHUB_API_URL,
-    withCredentials: true, // CRITICAL: This ensures cookies (jwt_token) are sent to your backend
+    withCredentials: true, // <--- CRITICAL: This allows the browser to send/receive the 'jwt_token' cookie
     headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
 });
 
-// Request Interceptor: (Optional) You don't need to manually attach the token 
-// because 'withCredentials: true' handles it automatically via cookies.
+// We do NOT need a request interceptor to add headers because 
+// the browser automatically handles the cookie for us.
 
-// Response Interceptor: Handles 401 errors (Session Expired/Unauthorized)
+// Response Interceptor: Handle Session Expiry / Logout
 axiosInstance.interceptors.response.use(
     response => response,
     error => {
-        // If the backend returns 401 (Unauthorized), log the user out
-        if (error.response && error.response.status === 401) {
-            console.warn("Session expired or unauthorized. Redirecting to login...");
+        // If the backend says "Login First" (400 or 401)
+        if (error.response && (error.response.status === 401 || error.response.status === 400)) {
+            const errorMsg = error.response.data.msg;
             
-            // Clear any user details stored in localStorage
-            localStorage.removeItem('AlmaPlus_admin_Id');
-            localStorage.removeItem('AlmaPlus_admin_Email');
-            
-            // Redirect to the login page
-            // Note: In React, it's often better to use useNavigate, but window.location works for a hard reset
-            window.location.href = '/';
+            if(errorMsg === "Login First" || error.response.status === 401) {
+                // Clear user details from local storage
+                // Note: We don't clear the token here because it's in a HttpOnly cookie (browser handles it)
+                localStorage.removeItem('AlmaPlus_admin_Id');
+                localStorage.removeItem('AlmaPlus_admin_Email');
+                
+                // Redirect to login if we aren't already there
+                if (window.location.pathname !== '/') {
+                    window.location.href = '/';
+                }
+            }
         }
         return Promise.reject(error);
     }
