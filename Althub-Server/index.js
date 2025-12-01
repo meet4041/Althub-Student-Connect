@@ -4,7 +4,7 @@ const app = express();
 const mongoose = require("mongoose");
 const { connectToMongo } = require("./db/conn");
 const cookieParser = require("cookie-parser");
-const port = 5001;
+const port = process.env.PORT || 5001;
 const cors = require("cors");
 
 const allowedOrigin = process.env.CLIENT_ORIGIN || "*";
@@ -161,17 +161,11 @@ server.on("error", (err) => {
 connectToMongo()
   .then(() => {
     server.listen(port, function () {
-      console.log(`Server is ready on port ${port}`);
-      console.log(`Socket.IO listening on ws://localhost:${port}/socket.io/`);
-      console.log(`API endpoint: http://localhost:${port}/api`);
+      console.log(`Server is running on port ${port}`);
     });
   })
   .catch(err => {
     console.error('Failed to connect to MongoDB on startup:', err.message);
-    console.error('Please ensure:');
-    console.error('  - MongoDB is running');
-    console.error('  - MONGO_URI in .env is correct');
-    console.error('  - Network/firewall allows MongoDB connection');
     process.exit(1);
   });
 
