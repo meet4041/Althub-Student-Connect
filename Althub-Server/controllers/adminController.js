@@ -142,7 +142,6 @@ const adminlogin = async (req, res) => {
                     name: adminData.name,
                     phone: adminData.phone,
                     email: adminData.email,
-                    // password field removed for security
                     profilepic: adminData.profilepic,
                 }
 

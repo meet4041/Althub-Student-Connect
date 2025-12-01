@@ -7,11 +7,11 @@ const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5001;
 const cors = require("cors");
 
-// 1. ROBUST CORS CONFIGURATION
-// This tells the browser: "It is safe to send cookies to this backend from the frontend"
+// 1. UPDATED CORS CONFIGURATION
+// Allows cookies to be shared between Vercel (Frontend) and Render (Backend)
 app.use(cors({
-  origin: true, // Dynamically allow the origin of the request (e.g., your Vercel URL)
-  credentials: true, // Allow cookies to be sent/received
+  origin: true, // Automatically reflect the requesting origin
+  credentials: true, // Allow cookies
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
@@ -70,7 +70,7 @@ const http = require("http");
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: true, // Update Socket.IO CORS as well
+    origin: true,
     methods: ["GET", "POST"],
     credentials: true
   },
