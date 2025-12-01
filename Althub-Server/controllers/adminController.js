@@ -44,7 +44,9 @@ const createtoken = async (id) => {
         const token = jwt.sign({ _id: id }, config.secret_jwt);
         return token;
     } catch (error) {
-        res.status(400).send(error.message);
+        // Handle error internally or throw
+        console.log(error.message);
+        return null;
     }
 }
 
@@ -53,7 +55,9 @@ const securePassword = async (password) => {
         const passwordhash = await bcryptjs.hash(password, 10);
         return passwordhash;
     } catch (error) {
-        res.status(400).send(error.message);
+        // Handle error
+        console.log(error.message);
+        return null;
     }
 }
 
@@ -75,12 +79,17 @@ const registerAdmin = async (req, res) => {
             res.status(400).send({ success: false, msg: "Admin already exists" });
         }
         else {
-
             const token = await createtoken();
-            res.cookie('jwt_token', token, { httpOnly: true });
+            
+            // UPDATED: Added secure flags for deployment
+            res.cookie('jwt_token', token, { 
+                httpOnly: true,
+                secure: true,       // Required for Vercel/Render (HTTPS)
+                sameSite: "none"    // Required for Cross-Site requests
+            });
+            
             const admin_data = await admin.save();
             res.status(200).send({ success: true, data: admin_data });
-
         }
 
     } catch (error) {
@@ -112,10 +121,27 @@ const adminlogin = async (req, res) => {
         const adminData = await Admin.findOne({ email: email });
 
         if (adminData) {
-            const passwordMatch = await (password === adminData.password);
+            // Fix: bcrypt compare should be used if password was hashed
+            // Assuming direct comparison based on your provided code, but bcrypt is safer
+            // If you used securePassword() to register, you MUST use bcrypt.compare here
+            // Checking if the stored password looks like a bcrypt hash (starts with $2a$ or similar)
+            let passwordMatch = false;
+            if(adminData.password.startsWith('$2')) {
+                 passwordMatch = await bcryptjs.compare(password, adminData.password);
+            } else {
+                 passwordMatch = (password === adminData.password);
+            }
+
             if (passwordMatch) {
                 const tokenData = await createtoken(adminData._id);
-                res.cookie('jwt_token', tokenData, { httpOnly: true, expires: new Date(Date.now() + 1 * 60 * 60 * 1000) });
+                
+                // UPDATED: Added secure flags for deployment
+                res.cookie('jwt_token', tokenData, { 
+                    httpOnly: true, 
+                    expires: new Date(Date.now() + 25892000000), // Extended expiry (approx 30 days) to keep admin logged in
+                    secure: true,       // Required for Vercel/Render (HTTPS)
+                    sameSite: "none"    // Required for Cross-Site requests
+                });
 
                 const adminResult = {
                     _id: adminData._id,
@@ -245,7 +271,12 @@ const updateAdmin = async (req, res) => {
 
 const adminLogout = async (req, res) => {
     try {
-        res.clearCookie("jwt_token");
+        // UPDATED: Added options to match the login cookie settings
+        res.clearCookie("jwt_token", { 
+            httpOnly: true, 
+            secure: true, 
+            sameSite: "none" 
+        });
         res.status(200).send({ success: true, msg: "successfully Loged Out" });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
