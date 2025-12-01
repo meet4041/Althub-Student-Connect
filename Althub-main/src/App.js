@@ -17,11 +17,9 @@ import ViewSearchProfile from "./components/ViewSearchProfile";
 import { io } from "socket.io-client";
 import Navbar from "./components/Navbar";
 import Scholarship from "./components/Scholarship";
-import { WEB_URL } from "./baseURL"; // Ensure this file exports WEB_URL correctly
 
 function App() {
-  // CHANGE MADE HERE: Replaced "http://localhost:5001" with WEB_URL
-  const socket = React.useMemo(() => io(WEB_URL, {
+  const socket = React.useMemo(() => io("http://localhost:5001", {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
