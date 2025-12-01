@@ -1,23 +1,26 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const mongoose = require("mongoose");
 const { connectToMongo } = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5001;
 const cors = require("cors");
 
-// 1. UPDATED CORS CONFIGURATION
-// Allows cookies to be shared between Vercel (Frontend) and Render (Backend)
+// 1. TRUST PROXY (REQUIRED FOR RENDER/HEROKU)
+// This tells Express to trust that the Load Balancer is handling HTTPS
+app.set("trust proxy", 1); 
+
+// 2. CORS CONFIGURATION
 app.use(cors({
-  origin: true, // Automatically reflect the requesting origin
-  credentials: true, // Allow cookies
+  origin: true, // This allows your Vercel frontend to connect
+  credentials: true, // This allows cookies to be sent
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
-app.options('*', cors()); // Enable pre-flight for all routes
+app.options('*', cors());
 
+// ... (Rest of your imports and routes remain the same)
 const user_route = require("./routes/userRoute");
 const event_route = require("./routes/eventRoute");
 const institute_route = require("./routes/instituteRoute");

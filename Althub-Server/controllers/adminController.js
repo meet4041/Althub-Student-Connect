@@ -79,10 +79,11 @@ const registerAdmin = async (req, res) => {
             const token = await createtoken();
             
             // SECURITY UPDATE: Secure Cookie Settings for Deployment
-            res.cookie('jwt_token', token, { 
-                httpOnly: true,
-                secure: true,       // Required for Vercel/Render (HTTPS)
-                sameSite: "none"    // Required for Cross-Site Requests
+            res.cookie('jwt_token', tokenData, { 
+                httpOnly: true, 
+                expires: new Date(Date.now() + 25892000000), 
+                secure: true,       // MUST BE TRUE
+                sameSite: "none"    // MUST BE "none"
             });
             
             const admin_data = await admin.save();
