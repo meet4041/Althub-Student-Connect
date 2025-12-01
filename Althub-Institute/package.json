@@ -42,6 +42,10 @@
     "google-maps-react": {
       "react": "$react",
       "react-dom": "$react-dom"
+    },
+    "material-table": {
+      "react": "$react",
+      "react-dom": "$react-dom"
     }
   },
   "eslintConfig": {
