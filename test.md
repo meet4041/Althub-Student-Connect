@@ -17,7 +17,7 @@ The testing strategy is divided into four main suites to ensure full stack relia
 
 ## 🛡️ Backend Tests (Server)
 <div align="center">
-  <img src="Althub-main/public/images/connect.png" alt="Server Architecture" width="150"/>
+  <img src="Althub-main/public/images/Server-Test.png" alt="Server Architecture" width="150"/>
 </div>
 
 **File:** `Althub-Server/tests/auth.test.js`
@@ -37,7 +37,7 @@ These tests verify the core security and data integrity of the platform using an
 
 ### 1. Student Portal (`Althub-Main`)
 <div align="center">
-  <img src="Althub-main/public/images/Logo1.jpeg" alt="Student Portal Logo" width="150"/>
+  <img src="Althub-main/public/images/Main-Test.png" alt="Student Portal Logo" width="150"/>
 </div>
 
 **File:** `src/components/__tests__/Login.test.js`
@@ -49,7 +49,7 @@ These tests verify the core security and data integrity of the platform using an
 
 ### 2. Institute Portal (`Althub-Institute`)
 <div align="center">
-  <img src="Althub-Institute/public/Logo1.jpeg" alt="Institute Portal Logo" width="150"/>
+  <img src="Althub-main/public/images/Institute-Test.png" alt="Institute Portal Logo" width="150"/>
 </div>
 
 **File:** `src/jsx/pages/__tests__/Login.test.js`
@@ -62,7 +62,7 @@ These tests verify the core security and data integrity of the platform using an
 
 ### 3. Admin Portal (`Althub-Admin`)
 <div align="center">
-  <img src="Althub-admin/public/Logo1.png" alt="Admin Panel Logo" width="150"/>
+  <img src="Althub-main/public/images/Admin-Test.png" alt="Admin Panel Logo" width="150"/>
 </div>
 
 **File:** `src/jsx/pages/__tests__/Login.test.js`
