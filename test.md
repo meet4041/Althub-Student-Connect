@@ -16,6 +16,10 @@ The testing strategy is divided into four main suites to ensure full stack relia
 ---
 
 ## 🛡️ Backend Tests (Server)
+<div align="center">
+  <img src="Althub-main/public/images/connect.png" alt="Server Architecture" width="150"/>
+</div>
+
 **File:** `Althub-Server/tests/auth.test.js`
 
 These tests verify the core security and data integrity of the platform using an in-memory MongoDB database to prevent polluting production data.
@@ -32,6 +36,10 @@ These tests verify the core security and data integrity of the platform using an
 ## 🖥️ Frontend Tests (React Clients)
 
 ### 1. Student Portal (`Althub-Main`)
+<div align="center">
+  <img src="Althub-main/public/images/Logo1.jpeg" alt="Student Portal Logo" width="150"/>
+</div>
+
 **File:** `src/components/__tests__/Login.test.js`
 
 * **User Interface:** Checks that the login form renders with all necessary fields (Email, Password).
@@ -40,6 +48,10 @@ These tests verify the core security and data integrity of the platform using an
 * **Navigation:** Verifies redirection to the `/home` dashboard upon successful login.
 
 ### 2. Institute Portal (`Althub-Institute`)
+<div align="center">
+  <img src="Althub-Institute/public/Logo1.jpeg" alt="Institute Portal Logo" width="150"/>
+</div>
+
 **File:** `src/jsx/pages/__tests__/Login.test.js`
 
 * **Target Audience:** Institutional User (Registrars/Faculty).
@@ -49,6 +61,10 @@ These tests verify the core security and data integrity of the platform using an
     * ✅ Verifies validation error messages appear for empty input fields.
 
 ### 3. Admin Portal (`Althub-Admin`)
+<div align="center">
+  <img src="Althub-admin/public/Logo1.png" alt="Admin Panel Logo" width="150"/>
+</div>
+
 **File:** `src/jsx/pages/__tests__/Login.test.js`
 
 * **Target Audience:** Super Admins.
