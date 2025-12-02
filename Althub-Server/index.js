@@ -7,11 +7,11 @@ const port = process.env.PORT || 5001;
 const cors = require("cors");
 
 // --- FIX 1: REQUIRED FOR RENDER DEPLOYMENT ---
-app.set("trust proxy", 1); 
+app.set("trust proxy", 1);
 
 // --- FIX 2: ALLOW COOKIES FROM VERCEL ---
 app.use(cors({
-  origin: true, 
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
@@ -94,49 +94,52 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-    console.log("User connected via Socket.IO:", socket.id);
+  console.log("User connected via Socket.IO:", socket.id);
 
-    socket.on("addUser", (userId) => {
-      addUser(userId, socket.id);
-      io.emit("getUsers", users);
-    });
-
-    socket.on("disconnect", () => {
-      removeUser(socket.id);
-      io.emit("getUsers", users);
-    });
-
-    socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
-      const user = getUser(receiverId);
-      if (user && user.socketId) {
-        io.to(user.socketId).emit("getMessage", {
-          senderId,
-          text,
-          time,
-        });
-      }
-    });
-
-    socket.on("sendNotification", ({ receiverid, title, msg}) => {
-      const user = getUser(receiverid);
-
-      if (user && user.socketId) {
-        io.to(user.socketId).emit("getNotification", {
-          title,
-          msg,
-        });
-      }
-    });
+  socket.on("addUser", (userId) => {
+    addUser(userId, socket.id);
+    io.emit("getUsers", users);
   });
 
-connectToMongo()
-  .then(() => {
-    server.listen(port, function () {
-      console.log(`Server is running on port ${port}`);
-    });
-  })
-  .catch(err => {
-    console.error('Failed to connect to MongoDB:', err.message);
+  socket.on("disconnect", () => {
+    removeUser(socket.id);
+    io.emit("getUsers", users);
   });
+
+  socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
+    const user = getUser(receiverId);
+    if (user && user.socketId) {
+      io.to(user.socketId).emit("getMessage", {
+        senderId,
+        text,
+        time,
+      });
+    }
+  });
+
+  socket.on("sendNotification", ({ receiverid, title, msg }) => {
+    const user = getUser(receiverid);
+
+    if (user && user.socketId) {
+      io.to(user.socketId).emit("getNotification", {
+        title,
+        msg,
+      });
+    }
+  });
+});
+
+if (require.main === module) {
+  // Only connect to DB and start server if this file is run directly
+  connectToMongo()
+    .then(() => {
+      server.listen(port, function () {
+        console.log(`Server is running on port ${port}`);
+      });
+    })
+    .catch(err => {
+      console.error('Failed to connect to MongoDB:', err.message);
+    });
+}
 
 module.exports = app;

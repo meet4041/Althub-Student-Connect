@@ -150,7 +150,7 @@ const userlogin = async (req, res) => {
                 res.status(200).send(response);
             }
             else {
-                res.status(400).send({ success: false, msg: "Login details are incorrect (password incorrect)", token: tokenData });
+                res.status(400).send({ success: false, msg: "Login details are incorrect (password incorrect)" });
             }
         } else {
             res.status(400).send({ success: false, msg: "Login details are incorrect (Register First)" });
@@ -283,10 +283,10 @@ const searchUser = async (req, res) => {
         var search = req.body.search;
         var user_data = await User.find({
             $or: [
-              { "fname": { $regex: new RegExp(".*" + search + ".*", "i") } },
-              { "lname": { $regex: new RegExp(".*" + search + ".*", "i") } }
+                { "fname": { $regex: new RegExp(".*" + search + ".*", "i") } },
+                { "lname": { $regex: new RegExp(".*" + search + ".*", "i") } }
             ]
-          });;
+        });;
         if (user_data.length > 0) {
             res.status(200).send({ success: true, msg: "User Details", data: user_data });
         }

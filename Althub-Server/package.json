@@ -4,8 +4,14 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --detectOpenHandles",
         "start": "node index.js"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "coveragePathIgnorePatterns": [
+            "/node_modules/"
+        ]
     },
     "keywords": [],
     "author": "Meet",
@@ -26,5 +32,11 @@
         "nodemon": "^3.0.1",
         "randomstring": "^1.2.3",
         "socket.io": "^4.6.1"
+    },
+    "devDependencies": {
+        "cross-env": "^10.1.0",
+        "jest": "^30.2.0",
+        "mongodb-memory-server": "^10.3.0",
+        "supertest": "^7.1.4"
     }
 }
