@@ -57,7 +57,8 @@ export default function Home({ socket }) {
       url: `${WEB_URL}/api/getPost`,
     })
       .then((Response) => {
-        setPost(Response.data.data.reverse());
+        // FIX: Removed .reverse() because backend now sorts by date desc
+        setPost(Response.data.data);
       })
       .catch((error) => {
         console.error("Error fetching posts:", error);
@@ -107,7 +108,8 @@ export default function Home({ socket }) {
     var body = new FormData();
     body.append("userid", localStorage.getItem("Althub_Id"));
     body.append("description", description);
-    body.append("date", new Date());
+    // FIX: Send ISO string for consistent date parsing
+    body.append("date", new Date().toISOString());
     files.forEach((file, i) => {
       body.append(`photos`, file, file.name);
     });

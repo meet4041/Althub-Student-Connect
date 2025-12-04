@@ -21,9 +21,8 @@ const post = new mongoose.Schema({
         type: String,
     },
     date: {
-        // --- FIX: Must be Date type for sorting to work ---
-        type: Date,
-        default: Date.now,
+        type: Date, // Changed to Date for proper sorting
+        default: Date.now, // Use Date.now to capture time of creation correctly
     },
     photos: {
         type: Array
