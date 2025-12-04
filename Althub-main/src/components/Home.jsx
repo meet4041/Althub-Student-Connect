@@ -100,6 +100,10 @@ export default function Home({ socket }) {
       toast.error("User data not loaded. Please refresh.");
       return;
     }
+    if ((!description || description.trim() === "") && files.length === 0) {
+      toast.error("Empty post not allowed!");
+      return;
+    }
     var body = new FormData();
     body.append("userid", localStorage.getItem("Althub_Id"));
     body.append("description", description);
@@ -372,7 +376,7 @@ export default function Home({ socket }) {
                             src={
                               !elem || elem.profilepic === "" ||
                                 (user && (user.profilepic === "undefined" ||
-                                user.profilepic === null))
+                                  user.profilepic === null))
                                 ? "images/profile1.png"
                                 : `${WEB_URL}${elem.profilepic}`
                             }

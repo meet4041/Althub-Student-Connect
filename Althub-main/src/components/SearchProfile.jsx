@@ -30,6 +30,7 @@ export default function SearchProfile({ socket }) {
         });
     }
   }, [userID]);
+
   const handleFollow = (targetUser) => {
     if (!socket) return toast("Socket not connected");
     if (!self || !self.fname || !self.lname) {
@@ -94,6 +95,29 @@ export default function SearchProfile({ socket }) {
     }));
   };
 
+  // --- DYNAMIC LINK GENERATOR ---
+  // This function runs for EVERY user card individually.
+  const getSocialLink = (input, platform) => {
+    if (!input) return "#";
+    const cleanInput = input.trim();
+    
+    // Case 1: User pasted a full link (http/https) -> Use it as is.
+    if (cleanInput.startsWith("http://") || cleanInput.startsWith("https://")) {
+      return cleanInput;
+    }
+    
+    // Case 2: User pasted a link starting with www. -> Add https://
+    if (cleanInput.startsWith("www.")) {
+      return `https://${cleanInput}`;
+    }
+    
+    // Case 3: User typed just a username -> Create the full URL dynamically based on platform
+    if (platform === 'linkedin') return `https://www.linkedin.com/in/${cleanInput}`;
+    if (platform === 'github') return `https://github.com/${cleanInput}`;
+    
+    return cleanInput;
+  };
+
   return (
     <>
       <div className="body1">
@@ -123,6 +147,8 @@ export default function SearchProfile({ socket }) {
             ></i> : null}
           </div>
         </div>
+        
+        {/* --- MAP LOOP: This iterates over your 100+ users --- */}
         {showUsers && showUsers.length > 0 ? (
           <div className="card-wrapper">
             {showUsers.map((elem) => (
@@ -133,7 +159,7 @@ export default function SearchProfile({ socket }) {
                     {elem.profilepic !== "" ? (
                       <img
                         src={`${WEB_URL}${elem.profilepic}`}
-                        alt="amir-esrafili"
+                        alt="profile"
                         className="card-img"
                       />
                     ) : (
@@ -153,32 +179,47 @@ export default function SearchProfile({ socket }) {
                     {elem.city && elem.city} {elem.state && elem.state}{" "}
                     {elem.nation ? `, ${elem.nation} ` : null}
                   </p>
+                  
+                  {/* --- DYNAMIC SOCIAL ICONS --- */}
                   <div className="nav">
                     <ul>
-                      <li>
-                        <a href={elem.linkedin.startsWith('http') ? elem.linkedin : `https://www.linkedin.com/in/${elem.linkedin}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ marginRight: '8px' }}>
-                          <i
-                            className="fa-brands fa-linkedin-in"
-                            style={{ color: "#7e7f81" }}
-                          ></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href={elem.github.startsWith('http') ? elem.github : `https://github.com/${elem.github}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ marginRight: '8px' }}>
-                          <i
-                            className="fa-brands fa-github"
-                            style={{ color: "#7e7f81" }}
-                          ></i>
-                        </a>
-                      </li>
+                      {/* Check if THIS specific user (elem) has a LinkedIn */}
+                      {elem.linkedin && elem.linkedin.trim() !== "" && (
+                        <li>
+                          <a 
+                            href={getSocialLink(elem.linkedin, 'linkedin')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ marginRight: '8px' }}
+                          >
+                            <i
+                              className="fa-brands fa-linkedin-in"
+                              style={{ color: "#7e7f81" }}
+                            ></i>
+                          </a>
+                        </li>
+                      )}
+                      
+                      {/* Check if THIS specific user (elem) has a GitHub */}
+                      {elem.github && elem.github.trim() !== "" && (
+                        <li>
+                          <a 
+                            href={getSocialLink(elem.github, 'github')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ marginRight: '8px' }}
+                          >
+                            <i
+                              className="fa-brands fa-github"
+                              style={{ color: "#7e7f81" }}
+                            ></i>
+                          </a>
+                        </li>
+                      )}
                     </ul>
                   </div>
+                  {/* ----------------------------- */}
+
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <button
                       className="btn-more"

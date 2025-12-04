@@ -22,6 +22,7 @@ export default function Navbar({ socket }) {
   const { pathname } = window.location;
   const [mesDot, setMesDot] = useState(false);
   const [notDot, setNotDot] = useState(false);
+  const nav = useNavigate();
 
   const toggleDrawer = (anchor, open) => (event) => {
     if (
@@ -36,7 +37,10 @@ export default function Navbar({ socket }) {
 
   const getUser = () => {
     const userID = localStorage.getItem("Althub_Id");
-    if (!userID) return;
+    if (!userID) {
+      setUser({}); // Clear user if logged out
+      return;
+    }
     axios({
       method: "get",
       url: `${WEB_URL}/api/searchUserById/${userID}`,
@@ -47,11 +51,13 @@ export default function Navbar({ socket }) {
         }
       })
       .catch((error) => {
+        console.error(error);
       });
   };
 
   const Logout = () => {
     localStorage.clear();
+    setUser({});
     nav("/");
   };
 
@@ -187,13 +193,10 @@ export default function Navbar({ socket }) {
     </Box>
   );
 
-  const nav = useNavigate();
-
   useEffect(() => {
+    // --- FIX: Fetch user on every route change to ensure profile loads after login ---
     getUser();
-  }, []);
 
-  useEffect(() => {
     if (
       pathname === "/register" ||
       pathname === "/login" ||
@@ -205,20 +208,32 @@ export default function Navbar({ socket }) {
     } else {
       setNavbar(true);
     }
+
     if (!socket) return;
-    socket.emit("addUser", localStorage.getItem("Althub_Id"));
-    socket.on("getMessage", (data) => {
+    
+    // Only register listeners if they haven't been registered (cleanup usually handles this but good to be safe)
+    const handleMessage = (data) => {
       setMesDot(true);
       if (pathname === "/message") {
         setMesDot(false);
       }
-    });
-    socket.on("getNotification", (data) => {
+    };
+
+    const handleNotification = (data) => {
       setNotDot(true);
       if (pathname === "/notification") {
         setNotDot(false);
       }
-    });
+    };
+
+    socket.emit("addUser", localStorage.getItem("Althub_Id"));
+    socket.on("getMessage", handleMessage);
+    socket.on("getNotification", handleNotification);
+
+    return () => {
+      socket.off("getMessage", handleMessage);
+      socket.off("getNotification", handleNotification);
+    };
   }, [pathname, socket]);
 
   return (

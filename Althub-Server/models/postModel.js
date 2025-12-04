@@ -21,8 +21,9 @@ const post = new mongoose.Schema({
         type: String,
     },
     date: {
-        type: String,
-        default: new Date(),
+        // --- FIX: Must be Date type for sorting to work ---
+        type: Date,
+        default: Date.now,
     },
     photos: {
         type: Array
@@ -32,6 +33,5 @@ const post = new mongoose.Schema({
         default: []
     },
 });
-
 
 module.exports = mongoose.model("PostTB", post);
