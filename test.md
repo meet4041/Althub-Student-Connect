@@ -1,97 +1,85 @@
-# 🧪 Althub Student Connect - Comprehensive Test Plan
+# Althub Student Connect - Full Stack Test Strategy
 
-This document summarizes the test coverage for the **Althub Student Connect** platform, spanning Backend, Student Portal, Institute Portal, and Admin Panel.
+This document outlines the comprehensive testing strategy employed to ensure the reliability of "Althub Student Connect". We utilize a mix of **Integration Tests** for the backend API and **Unit Tests** for the frontend interfaces.
 
-## 📂 Test Architecture
+## 📊 Test Coverage Overview
 
-The testing strategy is divided into four main suites to ensure full stack reliability:
-
-| Application | Test Type | Path | Focus |
+| Component | Type | Key Features Tested | Status |
 | :--- | :--- | :--- | :--- |
-| **Althub-Server** | Backend/Integration | `/Althub-Server/tests` | API Endpoints, Database Logic, Auth |
-| **Althub-Main** | Frontend Unit | `/src/components/__tests__` | Student/Alumni User Experience |
-| **Althub-Institute** | Frontend Unit | `/src/jsx/pages/__tests__` | Institutional Dashboard & Login |
-| **Althub-Admin** | Frontend Unit | `/src/jsx/pages/__tests__` | Super Admin Security & Login |
+| **Althub-Server** | Integration | Auth, Post CRUD, Database Integrity | 
+| **Althub-Main** | Unit (React) | Login, Registration, Feed Rendering | 
+| **Althub-Institute** | Unit (React) | Login, Event Management | 
+| **Althub-Admin** | Unit (React) | Admin Login, Route Protection | 
 
 ---
 
-## 🛡️ Backend Tests (Server)
-<div align="center">
-  <img src="Althub-main/public/images/Server-Test.png" alt="Server Architecture" width="150"/>
-</div>
+## 1. Backend API Tests (`Althub-Server`)
+**Tool:** Jest + Supertest + MongoDB Memory Server
 
-**File:** `Althub-Server/tests/auth.test.js`
+### Authentication (`auth.test.js`)
+* **POST /register:** Verifies user creation and handles duplicate emails.
+* **POST /login:** Verifies JWT token generation and credential validation.
 
-These tests verify the core security and data integrity of the platform using an in-memory MongoDB database to prevent polluting production data.
-
-* **Registration Logic:**
-    * ✅ Verifies that new students can register with valid data.
-    * ✅ Ensures duplicate emails are rejected (Preventing duplicate accounts).
-* **Authentication:**
-    * ✅ Verifies login returns a valid JWT token on success.
-    * ✅ Verifies login fails gracefully with incorrect passwords.
+### Post Management (`post.test.js`)
+* **POST /createPost:** Checks if a logged-in user can create a text/image post.
+* **GET /getPosts:** Ensures the feed retrieves data correctly.
+* **PUT /like:** Verifies the "Like" functionality updates the database.
 
 ---
 
-## 🖥️ Frontend Tests (React Clients)
+## 2. Student Portal Tests (`Althub-Main`)
+**Tool:** React Testing Library
 
-### 1. Student Portal (`Althub-Main`)
-<div align="center">
-  <img src="Althub-main/public/images/Main-Test.png" alt="Student Portal Logo" width="150"/>
-</div>
+### User Access
+* **Login.test.js:** Validates email/password inputs and redirection to Home.
+* **Register.test.js:** * Checks form validation (e.g., password mismatch).
+    * Verifies successful API call triggers navigation to Login.
 
-**File:** `src/components/__tests__/Login.test.js`
-
-* **User Interface:** Checks that the login form renders with all necessary fields (Email, Password).
-* **Interaction:** Simulates user typing into fields to ensure state updates correctly.
-* **API Integration:** Mocks `axios` to ensure the correct credentials are sent to `/api/userLogin`.
-* **Navigation:** Verifies redirection to the `/home` dashboard upon successful login.
-
-### 2. Institute Portal (`Althub-Institute`)
-<div align="center">
-  <img src="Althub-main/public/images/Institute-Test.png" alt="Institute Portal Logo" width="150"/>
-</div>
-
-**File:** `src/jsx/pages/__tests__/Login.test.js`
-
-* **Target Audience:** Institutional User (Registrars/Faculty).
-* **Key Checks:**
-    * ✅ Validates that the "Remember Me" functionality updates state correctly.
-    * ✅ Ensures `localStorage` is populated with `AlmaPlus_institute_Id` upon login.
-    * ✅ Verifies validation error messages appear for empty input fields.
-
-### 3. Admin Portal (`Althub-Admin`)
-<div align="center">
-  <img src="Althub-main/public/images/Admin-Test.png" alt="Admin Panel Logo" width="150"/>
-</div>
-
-**File:** `src/jsx/pages/__tests__/Login.test.js`
-
-* **Target Audience:** Super Admins.
-* **Key Checks:**
-    * ✅ Verifies the specific `auth_code` is correctly appended to the API request for admin verification.
-    * ✅ Checks that the **Authentication Token** is stored in `localStorage` for protected route access.
-    * ✅ Mocks `axios.defaults.headers` to ensure subsequent requests include the Bearer token.
+### Component Logic
+* **Mocks:** We mock `axios` to prevent real network calls during testing.
+* **Routing:** We test navigation paths using `react-router-dom` mocks.
 
 ---
 
-## 🚀 How to Execute Tests
+## 3. Institute Dashboard Tests (`Althub-Institute`)
 
-To run the full test suite, navigate to each directory and run the test script:
+### Access Control
+* **Login.test.js:** Ensures only valid institute credentials grant access to the dashboard.
+* **LocalStorage:** Verifies that the Institute ID is securely stored for session management.
 
+### Feature: Event Management
+* **AddEvent.test.js:**
+    * Simulates an institute admin typing event details.
+    * Verifies that the form data is correctly formatted and sent to the `/api/addEvent` endpoint.
+
+---
+
+## 4. Admin Panel Tests (`Althub-Admin`)
+
+### Security
+* **Login.test.js:** * Verifies the `auth_code` mechanism (Security Layer).
+    * Ensures the Admin JWT token is received and stored.
+* **Protected Routes:** Tests that unauthorized users are redirected back to login.
+
+---
+
+## How to Run All Tests
+
+To execute the full suite of tests, run these commands in separate terminals:
+
+### Backend
 ```bash
-# 1. Backend
 cd Althub-Server
 npm test
 
-# 2. Student Portal
+# Student App
 cd Althub-Main
 npm test
 
-# 3. Institute Portal
+# Institute App
 cd Althub-Institute
 npm test
 
-# 4. Admin Portal
-cd Althub-admin
+# Admin App
+cd Althub-Admin
 npm test
