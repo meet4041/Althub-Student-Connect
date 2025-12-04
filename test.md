@@ -4,12 +4,12 @@ This document outlines the comprehensive testing strategy employed to ensure the
 
 ## Test Coverage Overview
 
-| Component | Type | Key Features Tested | 
+| Component | Type | Key Features Tested | Status |
 | :--- | :--- | :--- | :--- |
-| **Althub-Server** | Integration | Auth, Post CRUD, Database Integrity | 
-| **Althub-Main** | Unit (React) | Login, Registration, Feed Rendering | 
-| **Althub-Institute** | Unit (React) | Login, Event Management | 
-| **Althub-Admin** | Unit (React) | Admin Login, Route Protection | 
+| **Althub-Server** | Integration | Auth, Post CRUD, Database Integrity | Covered |
+| **Althub-Main** | Unit (React) | Login, Registration, Feed Rendering | Covered |
+| **Althub-Institute** | Unit (React) | Login, Event Management | Covered |
+| **Althub-Admin** | Unit (React) | Admin Login, Route Protection | Covered |
 
 ---
 
