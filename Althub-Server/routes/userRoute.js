@@ -6,6 +6,7 @@ user_route.use(bodyParser.urlencoded({ extended: true }));
 const { uploadSingle } = require('../db/storage');
 const user_controller = require("../controllers/userController");
 
+// --- OLD ROUTE (Kept for compatibility) ---
 user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
@@ -18,7 +19,15 @@ user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
     }
 });
 
-//user routes
+// --- NEW CRUD ROUTES for PROFILE IMAGE ---
+// 1. Update: Expects form-data with key 'image' and 'userid'
+user_route.put('/updateProfilePic', uploadSingle('image'), user_controller.updateProfilePic);
+
+// 2. Delete: Expects user ID in the URL
+user_route.put('/deleteProfilePic/:id', user_controller.deleteProfilePic);
+
+
+// --- EXISTING ROUTES ---
 user_route.post('/register', user_controller.registerUser);
 user_route.post('/userLogin', user_controller.userlogin);
 user_route.post('/userUpdatePassword', user_controller.updatePassword);

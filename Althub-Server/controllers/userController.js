@@ -132,7 +132,6 @@ const userlogin = async (req, res) => {
                     profilepic: userData.profilepic,
                     phone: userData.phone,
                     email: userData.email,
-                    password: userData.password,
                     languages: userData.languages,
                     github: userData.github,
                     linkedin: userData.linkedin,
@@ -248,7 +247,7 @@ const userProfileEdit = async (req, res) => {
         var city = req.body.city;
         var state = req.body.state;
         var nation = req.body.nation;
-        var profilepic = req.body.profilepic;
+        // Profile pic handled separately by updateProfilePic
         var phone = req.body.phone;
         var email = req.body.email;
         var languages = req.body.languages;
@@ -259,7 +258,8 @@ const userProfileEdit = async (req, res) => {
         var institute = req.body.institute;
         var role = req.body.role
         var about = req.body.about
-        const new_data = await User.findByIdAndUpdate({ _id: id }, { $set: { fname: fname, lname: lname, gender: gender, dob: dob, city: city, state: state, nation: nation, profilepic: profilepic, phone: phone, email: email, languages: languages, github: github, linkedin: linkedin, portfolioweb: portfolioweb, skills: skills, role: role, institute: institute, about: about } }, { new: true });
+        
+        const new_data = await User.findByIdAndUpdate({ _id: id }, { $set: { fname: fname, lname: lname, gender: gender, dob: dob, city: city, state: state, nation: nation, phone: phone, email: email, languages: languages, github: github, linkedin: linkedin, portfolioweb: portfolioweb, skills: skills, role: role, institute: institute, about: about } }, { new: true });
 
         res.status(200).send({ success: true, msg: 'User Profile Updated', data: new_data });
     }
@@ -394,6 +394,72 @@ const unfollowUser = async (req, res) => {
     }
 };
 
+// --- NEW FUNCTION: Update Profile Picture ---
+const updateProfilePic = async (req, res) => {
+    try {
+        const userId = req.body.userid;
+        if (!userId) {
+            return res.status(400).send({ success: false, msg: "User ID is required" });
+        }
+        if (!req.file) {
+            return res.status(400).send({ success: false, msg: "No image provided" });
+        }
+
+        // Generate URL from the new file ID
+        const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
+        const imageUrl = `/api/images/${fileId}`;
+
+        // Update User
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: { profilepic: imageUrl } },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).send({ success: false, msg: "User not found" });
+        }
+
+        res.status(200).send({ 
+            success: true, 
+            msg: "Profile picture updated", 
+            data: updatedUser 
+        });
+
+    } catch (error) {
+        console.error("Error updating profile pic:", error);
+        res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
+// --- NEW FUNCTION: Delete Profile Picture ---
+const deleteProfilePic = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // Clear the profilepic field
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: { profilepic: "" } },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).send({ success: false, msg: "User not found" });
+        }
+
+        res.status(200).send({ 
+            success: true, 
+            msg: "Profile picture removed", 
+            data: updatedUser 
+        });
+
+    } catch (error) {
+        console.error("Error deleting profile pic:", error);
+        res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     userlogin,
@@ -410,5 +476,8 @@ module.exports = {
     searchUserById,
     deleteUser,
     getUsersOfInstitute,
-    getTopUsers
+    getTopUsers,
+    // --- EXPORT NEW FUNCTIONS ---
+    updateProfilePic,
+    deleteProfilePic
 }
