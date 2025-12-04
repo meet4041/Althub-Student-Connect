@@ -2,7 +2,7 @@
 
 This document outlines the comprehensive testing strategy employed to ensure the reliability of "Althub Student Connect". We utilize a mix of **Integration Tests** for the backend API and **Unit Tests** for the frontend interfaces.
 
-## 📊 Test Coverage Overview
+## Test Coverage Overview
 
 | Component | Type | Key Features Tested | Status |
 | :--- | :--- | :--- | :--- |
@@ -67,8 +67,9 @@ This document outlines the comprehensive testing strategy employed to ensure the
 
 To execute the full suite of tests, run these commands in separate terminals:
 
-### Backend
+### Testing
 ```bash
+# Backend
 cd Althub-Server
 npm test
 
