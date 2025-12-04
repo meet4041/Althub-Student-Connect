@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const cookieParser = require("cookie-parser");
 
+// --- HELPER: Send Email (Wrapped in Promise) ---
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -22,20 +23,26 @@ const sendresetpasswordMail = async (name, email, token) => {
             from: config.emailUser,
             to: email,
             subject: 'For Reset Password',
-            html: '<p>Hello ' + name + ', Please copy the link to<a href="http://localhost:3000/new-password?token=' + token + '"> reset your password</a></p>'
-        }
+            html: '<p>Hello ' + name + ', Please copy the link to <a href="http://localhost:3000/new-password?token=' + token + '">reset your password</a></p>'
+        };
 
-        transporter.sendMail(mailoptions, function (error, info) {
-            if (error) {
-                console.log("error while sending : ", error);
-            }
-            else {
-                console.log("Mail has been sent :- ", info.response);
-            }
-        })
+        // FIX: Wrap in Promise so we can await it in the controller
+        return new Promise((resolve, reject) => {
+            transporter.sendMail(mailoptions, function (error, info) {
+                if (error) {
+                    console.log("Error while sending email: ", error);
+                    reject(error);
+                }
+                else {
+                    console.log("Mail has been sent: ", info.response);
+                    resolve(info);
+                }
+            });
+        });
 
     } catch (error) {
-        console.log(error.message);
+        console.log("Nodemailer error:", error.message);
+        throw error; // Re-throw to be caught by the controller
     }
 }
 
@@ -44,7 +51,7 @@ const createtoken = async (id) => {
         const token = jwt.sign({ _id: id }, config.secret_jwt);
         return token;
     } catch (error) {
-        res.status(400).send(error.message);
+        throw new Error(error.message);
     }
 }
 
@@ -53,9 +60,11 @@ const securePassword = async (password) => {
         const passwordhash = await bcryptjs.hash(password, 10);
         return passwordhash;
     } catch (error) {
-        res.status(400).send(error.message);
+        throw new Error(error.message);
     }
 }
+
+// --- CONTROLLERS ---
 
 const registerUser = async (req, res) => {
     try {
@@ -122,31 +131,9 @@ const userlogin = async (req, res) => {
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                const userResult = {
-                    _id: userData._id,
-                    fname: userData.fname,
-                    lname: userData.lname,
-                    gender: userData.gender,
-                    dob: userData.dob,
-                    address: userData.address,
-                    profilepic: userData.profilepic,
-                    phone: userData.phone,
-                    email: userData.email,
-                    languages: userData.languages,
-                    github: userData.github,
-                    linkedin: userData.linkedin,
-                    portfolioweb: userData.portfolioweb,
-                    skills: userData.skills,
-                    role: userData.role,
-                }
-
-                const response = {
-                    success: true,
-                    msg: "user details",
-                    data: userResult,
-                }
-
-                res.status(200).send(response);
+                // Security: Don't send password back
+                const { password, ...userResult } = userData._doc;
+                res.status(200).send({ success: true, msg: "user details", data: userResult });
             }
             else {
                 res.status(400).send({ success: false, msg: "Login details are incorrect (password incorrect)" });
@@ -195,21 +182,29 @@ const forgetPassword = async (req, res) => {
     try {
         const email = req.body.email;
         const userData = await User.findOne({ email: email });
+        
         if (userData) {
             const randomString = randomstring.generate();
-            const data = await User.updateOne({ email: email }, {
+            
+            // 1. Update token in DB
+            await User.updateOne({ email: email }, {
                 $set: {
                     token: randomString
                 }
             });
-            sendresetpasswordMail(userData.fname, userData.email, randomString);
+
+            // 2. FIX: Await the email sending. If this fails, we go to catch()
+            await sendresetpasswordMail(userData.fname, userData.email, randomString);
+            
+            // 3. Send success ONLY if email actually sent
             res.status(200).send({ success: true, msg: "Please Check your inbox of mail and reset your password" });
         }
         else {
-            res.status(200).send({ success: true, msg: "This Email is not exists!" });
+            res.status(200).send({ success: false, msg: "This Email does not exist!" });
         }
     } catch (error) {
-        res.status(400).send({ success: false, msg: error.message });
+        console.error("Forget Password Error:", error);
+        res.status(500).send({ success: false, msg: "Failed to send reset email. Please check server logs." });
     }
 }
 
@@ -223,14 +218,14 @@ const resetpassword = async (req, res) => {
             const userData = await User.findByIdAndUpdate({ _id: tokenData._id }, {
                 $set: {
                     password: newpassword,
-                    token: ''
+                    token: '' // Clear token so it can't be reused
                 }
             }, { new: true });
 
-            res.status(200).send({ success: true, msg: "user password has been reset!", data: userData });
+            res.status(200).send({ success: true, msg: "User password has been reset!", data: userData });
         }
         else {
-            res.status(200).send({ success: true, msg: "This link has been expired!" });
+            res.status(200).send({ success: false, msg: "This link has expired or is invalid!" });
         }
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -247,7 +242,7 @@ const userProfileEdit = async (req, res) => {
         var city = req.body.city;
         var state = req.body.state;
         var nation = req.body.nation;
-        // Profile pic handled separately by updateProfilePic
+        // Profilepic is handled by updateProfilePic
         var phone = req.body.phone;
         var email = req.body.email;
         var languages = req.body.languages;
@@ -394,7 +389,7 @@ const unfollowUser = async (req, res) => {
     }
 };
 
-// --- NEW FUNCTION: Update Profile Picture ---
+// --- CRUD for Profile Picture ---
 const updateProfilePic = async (req, res) => {
     try {
         const userId = req.body.userid;
@@ -405,11 +400,9 @@ const updateProfilePic = async (req, res) => {
             return res.status(400).send({ success: false, msg: "No image provided" });
         }
 
-        // Generate URL from the new file ID
         const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
         const imageUrl = `/api/images/${fileId}`;
 
-        // Update User
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: { profilepic: imageUrl } },
@@ -420,11 +413,7 @@ const updateProfilePic = async (req, res) => {
             return res.status(404).send({ success: false, msg: "User not found" });
         }
 
-        res.status(200).send({ 
-            success: true, 
-            msg: "Profile picture updated", 
-            data: updatedUser 
-        });
+        res.status(200).send({ success: true, msg: "Profile picture updated", data: updatedUser });
 
     } catch (error) {
         console.error("Error updating profile pic:", error);
@@ -432,12 +421,9 @@ const updateProfilePic = async (req, res) => {
     }
 };
 
-// --- NEW FUNCTION: Delete Profile Picture ---
 const deleteProfilePic = async (req, res) => {
     try {
         const userId = req.params.id;
-
-        // Clear the profilepic field
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: { profilepic: "" } },
@@ -448,11 +434,7 @@ const deleteProfilePic = async (req, res) => {
             return res.status(404).send({ success: false, msg: "User not found" });
         }
 
-        res.status(200).send({ 
-            success: true, 
-            msg: "Profile picture removed", 
-            data: updatedUser 
-        });
+        res.status(200).send({ success: true, msg: "Profile picture removed", data: updatedUser });
 
     } catch (error) {
         console.error("Error deleting profile pic:", error);
@@ -477,7 +459,6 @@ module.exports = {
     deleteUser,
     getUsersOfInstitute,
     getTopUsers,
-    // --- EXPORT NEW FUNCTIONS ---
     updateProfilePic,
     deleteProfilePic
 }

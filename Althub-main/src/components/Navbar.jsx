@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // Added useLocation
 import * as React from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
@@ -11,7 +11,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
-import { toast } from "react-toastify"; // Ensure this is imported
+import { toast } from "react-toastify";
 
 export default function Navbar({ socket }) {
   const [state, setState] = React.useState({
@@ -19,9 +19,14 @@ export default function Navbar({ socket }) {
   });
   const [user, setUser] = useState({});
   const [navbar, setNavbar] = useState(true);
-  const { pathname } = window.location;
+  
+  // Use useLocation hook to track route changes correctly
+  const location = useLocation(); 
+  const pathname = location.pathname;
+
   const [mesDot, setMesDot] = useState(false);
   const [notDot, setNotDot] = useState(false);
+  const nav = useNavigate();
 
   const toggleDrawer = (anchor, open) => (event) => {
     if (
@@ -34,9 +39,13 @@ export default function Navbar({ socket }) {
     setState({ ...state, [anchor]: open });
   };
 
-  const getUser = () => {
+  // Wrap getUser in useCallback to prevent dependency warnings
+  const getUser = useCallback(() => {
     const userID = localStorage.getItem("Althub_Id");
-    if (!userID) return;
+    if (!userID) {
+      setUser({}); // Clear user if logged out
+      return;
+    }
     axios({
       method: "get",
       url: `${WEB_URL}/api/searchUserById/${userID}`,
@@ -47,11 +56,13 @@ export default function Navbar({ socket }) {
         }
       })
       .catch((error) => {
+        console.error("Navbar Error:", error);
       });
-  };
+  }, []);
 
   const Logout = () => {
     localStorage.clear();
+    setUser({}); // Clear local state immediately
     nav("/");
   };
 
@@ -187,13 +198,12 @@ export default function Navbar({ socket }) {
     </Box>
   );
 
-  const nav = useNavigate();
-
+  // --- Combined Effect: Handles Route Changes & Socket ---
   useEffect(() => {
+    // 1. Fetch user data whenever pathname changes (Fixes your bug)
     getUser();
-  }, []);
 
-  useEffect(() => {
+    // 2. Handle Navbar visibility based on route
     if (
       pathname === "/register" ||
       pathname === "/login" ||
@@ -205,7 +215,10 @@ export default function Navbar({ socket }) {
     } else {
       setNavbar(true);
     }
+
+    // 3. Socket Logic
     if (!socket) return;
+    
     socket.emit("addUser", localStorage.getItem("Althub_Id"));
     
     const handleMessage = (data) => {
@@ -218,7 +231,7 @@ export default function Navbar({ socket }) {
     const handleNotification = (data) => {
       setNotDot(true);
       
-      // --- FIX: Show Pop-up "Elite" style message ---
+      // Elite pop-up notification
       if(data && data.msg) {
           toast.info(data.msg, {
             position: "top-right",
@@ -243,7 +256,8 @@ export default function Navbar({ socket }) {
         socket.off("getMessage", handleMessage);
         socket.off("getNotification", handleNotification);
     }
-  }, [pathname, socket]);
+  }, [pathname, socket, getUser]); 
+  // ^ Added 'pathname' and 'getUser' to dependencies so it re-runs on navigation
 
   return (
     <>
