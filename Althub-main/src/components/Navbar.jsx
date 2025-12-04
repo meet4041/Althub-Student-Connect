@@ -11,7 +11,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
-import { toast } from "react-toastify";
+import { toast } from "react-toastify"; // Ensure this is imported
 
 export default function Navbar({ socket }) {
   const [state, setState] = React.useState({
@@ -22,7 +22,6 @@ export default function Navbar({ socket }) {
   const { pathname } = window.location;
   const [mesDot, setMesDot] = useState(false);
   const [notDot, setNotDot] = useState(false);
-  const nav = useNavigate();
 
   const toggleDrawer = (anchor, open) => (event) => {
     if (
@@ -37,10 +36,7 @@ export default function Navbar({ socket }) {
 
   const getUser = () => {
     const userID = localStorage.getItem("Althub_Id");
-    if (!userID) {
-      setUser({}); // Clear user if logged out
-      return;
-    }
+    if (!userID) return;
     axios({
       method: "get",
       url: `${WEB_URL}/api/searchUserById/${userID}`,
@@ -51,13 +47,11 @@ export default function Navbar({ socket }) {
         }
       })
       .catch((error) => {
-        console.error(error);
       });
   };
 
   const Logout = () => {
     localStorage.clear();
-    setUser({});
     nav("/");
   };
 
@@ -193,10 +187,13 @@ export default function Navbar({ socket }) {
     </Box>
   );
 
-  useEffect(() => {
-    // --- FIX: Fetch user on every route change to ensure profile loads after login ---
-    getUser();
+  const nav = useNavigate();
 
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  useEffect(() => {
     if (
       pathname === "/register" ||
       pathname === "/login" ||
@@ -208,10 +205,9 @@ export default function Navbar({ socket }) {
     } else {
       setNavbar(true);
     }
-
     if (!socket) return;
+    socket.emit("addUser", localStorage.getItem("Althub_Id"));
     
-    // Only register listeners if they haven't been registered (cleanup usually handles this but good to be safe)
     const handleMessage = (data) => {
       setMesDot(true);
       if (pathname === "/message") {
@@ -221,19 +217,32 @@ export default function Navbar({ socket }) {
 
     const handleNotification = (data) => {
       setNotDot(true);
+      
+      // --- FIX: Show Pop-up "Elite" style message ---
+      if(data && data.msg) {
+          toast.info(data.msg, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          });
+      }
+      
       if (pathname === "/notification") {
         setNotDot(false);
       }
     };
 
-    socket.emit("addUser", localStorage.getItem("Althub_Id"));
     socket.on("getMessage", handleMessage);
     socket.on("getNotification", handleNotification);
 
     return () => {
-      socket.off("getMessage", handleMessage);
-      socket.off("getNotification", handleNotification);
-    };
+        socket.off("getMessage", handleMessage);
+        socket.off("getNotification", handleNotification);
+    }
   }, [pathname, socket]);
 
   return (

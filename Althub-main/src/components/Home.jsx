@@ -57,7 +57,6 @@ export default function Home({ socket }) {
       url: `${WEB_URL}/api/getPost`,
     })
       .then((Response) => {
-        // FIX: Removed .reverse() because backend now sorts by date desc
         setPost(Response.data.data);
       })
       .catch((error) => {
@@ -96,6 +95,34 @@ export default function Home({ socket }) {
     setFileList(e.target.files);
   };
 
+  // --- NEW: Helper to send notifications to followers ---
+  const sendNewPostNotification = () => {
+    if (user && user.followers && user.followers.length > 0) {
+      user.followers.forEach((followerId) => {
+        // 1. Emit Socket Event for real-time pop-up
+        socket.emit("sendNotification", {
+          receiverid: followerId,
+          title: "New Post",
+          msg: `${user.fname} ${user.lname} added a new post`,
+        });
+
+        // 2. Save to Database
+        axios({
+          url: `${WEB_URL}/api/addNotification`,
+          method: "post",
+          data: {
+            userid: followerId,
+            msg: `${user.fname} ${user.lname} added a new post`,
+            image: user.profilepic || "",
+            title: "New Post",
+            date: new Date(),
+          },
+        }).catch((err) => console.log("Notification DB Error:", err));
+      });
+    }
+  };
+  // -----------------------------------------------------
+
   const addPost = () => {
     if (!user || !user.fname || !user.lname) {
       toast.error("User data not loaded. Please refresh.");
@@ -108,7 +135,6 @@ export default function Home({ socket }) {
     var body = new FormData();
     body.append("userid", localStorage.getItem("Althub_Id"));
     body.append("description", description);
-    // FIX: Send ISO string for consistent date parsing
     body.append("date", new Date().toISOString());
     files.forEach((file, i) => {
       body.append(`photos`, file, file.name);
@@ -116,6 +142,7 @@ export default function Home({ socket }) {
     body.append("fname", user.fname);
     body.append("lname", user.lname);
     body.append("profilepic", user.profilepic || "");
+    
     axios({
       url: `${WEB_URL}/api/addPost`,
       method: "post",
@@ -126,6 +153,11 @@ export default function Home({ socket }) {
     })
       .then((Response) => {
         toast.success("Post Uploaded!!");
+        
+        // --- Trigger Notification to Followers ---
+        sendNewPostNotification(); 
+        // -----------------------------------------
+
         setFileList(null);
         setDescription("");
         getPost();
@@ -145,7 +177,7 @@ export default function Home({ socket }) {
       socket.emit("sendNotification", {
         receiverid: elem.userid,
         title: "New Like",
-        msg: `${user.name} Liked Your Post`,
+        msg: `${user.fname} Liked Your Post`,
       });
     }
     await axios({

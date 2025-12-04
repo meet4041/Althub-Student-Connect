@@ -30,8 +30,12 @@ export default function Notidfication() {
       },
     })
       .then((Response) => {
-        console.log(Response);
-        setNotifications(Response.data.data);
+        // --- FIX: Filter only allowed notification types ---
+        const allowedTypes = ["New Follower", "New Like", "New Post"];
+        const filteredData = Response.data.data.filter((item) => 
+          allowedTypes.includes(item.title)
+        );
+        setNotifications(filteredData);
       })
       .catch((error) => {
         console.log(error);
@@ -144,9 +148,13 @@ export default function Notidfication() {
           {notifications.length > 0 ? (
             <div className="notification-box">
               {notifications.map((elem) => (
-                <div className="notification">
+                <div className="notification" key={elem._id || Math.random()}>
                   <div className="notifiction-img">
-                    <img src={`${WEB_URL}${elem.image}`} alt="" />
+                    {elem.image ? (
+                        <img src={`${WEB_URL}${elem.image}`} alt="" />
+                    ) : (
+                        <img src="images/profile1.png" alt="" />
+                    )}
                   </div>
                   <div className="notification-info">
                     <div className="notification-name">
