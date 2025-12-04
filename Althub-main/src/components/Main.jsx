@@ -102,43 +102,6 @@ function Main() {
                         <h2>About Althub</h2>
                         <p>Althub is a web application that allows college management to store the details of both current and former students of the college. It also enables communication between them, with new students being able to seek information on job vacancies, career advice, and subject details from alumni.</p>
                     </div>
-                    <div className="f-links">
-                        <h3>Links</h3>
-                        <ul>
-                            <li>
-                                Home
-                            </li><br />
-                            <li>
-                                About
-                            </li><br />
-                            <li>
-                                Services
-                            </li><br />
-                            <li>
-                                Portfolio
-                            </li><br />
-                            <li>
-                                Contact
-                            </li><br />
-                        </ul>
-                    </div>
-                    <div className="f-services">
-                        <h3>Services</h3>
-                        <ul>
-                            <li>
-                                Alumini
-                            </li><br />
-                            <li>
-                                Connections
-                            </li><br />
-                            <li>
-                                Institute
-                            </li><br />
-                            <li>
-                                Knowledge
-                            </li>
-                        </ul>
-                    </div>
                     <div className="address">
                         <h3>Contact</h3>
                         <ul>
