@@ -1,4 +1,7 @@
 const Event = require("../models/EventModel");
+const Notification = require("../models/notificationModel"); // Import Notification
+const User = require("../models/userModel"); // Import User to notify them
+const Institute = require("../models/instituteModel");
 
 const addEvents = async (req, res) => {
     try {
@@ -12,11 +15,28 @@ const addEvents = async (req, res) => {
         });
 
         const event_data = await event.save();
+
+        // --- NEW: Create Notifications for All Users (Broadcast) ---
+        const institute = await Institute.findById(req.body.organizerid);
+        const users = await User.find({}); // Fetch all users to notify
+        
+        const notifications = users.map(user => ({
+            userid: user._id,
+            senderid: req.body.organizerid,
+            image: institute ? institute.profilepic : '', // Use institute logo
+            title: "New Event",
+            msg: `New Event: ${req.body.title} has been added by ${institute ? institute.insname : 'Institute'}.`,
+            date: new Date()
+        }));
+        
+        await Notification.insertMany(notifications);
+        // -----------------------------------------------------------
+
         res.status(200).send({ success: true, data: event_data });
 
     } catch (error) {
         res.status(400).send(error.message);
-        console.log("Error in Register User : " + error.message);
+        console.log("Error in add event : " + error.message);
     }
 }
 

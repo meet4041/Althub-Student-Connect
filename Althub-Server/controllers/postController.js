@@ -1,6 +1,7 @@
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
+const Notification = require("../models/notificationModel");
 
 const addPost = async (req, res) => {
     try {
@@ -115,6 +116,22 @@ const likeUnlikePost = async (req, res) => {
         const post = await Post.findById(req.params.id);
         if (!post.likes.includes(req.body.userId)) {
             await post.updateOne({ $push: { likes: req.body.userId } });
+
+            // --- NEW: Create Notification for Like ---
+            const liker = await User.findById(req.body.userId);
+            if (liker && post.userid !== req.body.userId) { // Don't notify if user likes their own post
+                const notification = new Notification({
+                    userid: post.userid, // Post owner gets the notification
+                    senderid: req.body.userId,
+                    image: liker.profilepic,
+                    title: "New Like",
+                    msg: `${liker.fname} ${liker.lname} liked your photo.`,
+                    date: new Date()
+                });
+                await notification.save();
+            }
+            // ----------------------------------------
+
             res.status(200).send({ msg: "Like" });
         } else {
             await post.updateOne({ $pull: { likes: req.body.userId } });
@@ -135,7 +152,7 @@ const getFriendsPost = async (req, res) => {
             })
         );
         const allPosts = userPosts.concat(...friendPosts);
-        
+
         // Sort the combined array in Javascript
         allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
 

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
 
-export default function Notidfication() {
+export default function Notidfication() { // Keeping component name as per your file
   const [notifications, setNotifications] = useState([]);
   const [user, setUser] = useState({});
   const nav = useNavigate();
@@ -21,6 +21,7 @@ export default function Notidfication() {
         console.log(error);
       });
   };
+
   const getNotifications = () => {
     axios({
       url: `${WEB_URL}/api/getnotifications`,
@@ -30,8 +31,8 @@ export default function Notidfication() {
       },
     })
       .then((Response) => {
-        // --- FIX: Filter only allowed notification types ---
-        const allowedTypes = ["New Follower", "New Like", "New Post"];
+        // --- UPDATED: Included 'New Event' and 'New Message' ---
+        const allowedTypes = ["New Follower", "New Like", "New Event", "New Message"];
         const filteredData = Response.data.data.filter((item) => 
           allowedTypes.includes(item.title)
         );
@@ -170,7 +171,9 @@ export default function Notidfication() {
                 </div>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <div className="no-notification">No Notifications</div>
+          )}
         </div>
       </div>
     </>
