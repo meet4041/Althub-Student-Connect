@@ -110,7 +110,11 @@ export default function Message({ socket }) {
   }, [currentId, getMessages]);
 
   const sendMessage = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevents page reload/default behavior
+    
+    // Only proceed if there is a message
+    if (newMsg.trim() === "") return;
+
     socket.emit("sendMessage", {
       senderId: userid,
       receiverId: receiverId,
@@ -118,27 +122,34 @@ export default function Message({ socket }) {
       time: new Date()
     });
 
-    if (newMsg !== "") {
-      axios({
-        method: "post",
-        url: `${WEB_URL}/api/newMessage`,
-        data: {
-          conversationId: currentId,
-          sender: userid,
-          text: newMsg,
-          time: new Date(),
-        },
+    axios({
+      method: "post",
+      url: `${WEB_URL}/api/newMessage`,
+      data: {
+        conversationId: currentId,
+        sender: userid,
+        text: newMsg,
+        time: new Date(),
+        receiverId: receiverId // Added for notification logic
+      },
+    })
+      .then((response) => {
+        getMessages();
+        setNewMsg("");
+        scrollToEnd();
       })
-        .then((response) => {
-          getMessages();
-          setNewMsg("");
-          scrollToEnd();
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // --- NEW: Handle Enter Key Press ---
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      sendMessage(e);
     }
   };
+  // -----------------------------------
 
   const handleBack = () => {
     setCurrentId("");
@@ -245,6 +256,7 @@ export default function Message({ socket }) {
                     onChange={(e) => {
                       setNewMsg(e.target.value);
                     }}
+                    onKeyDown={handleKeyDown} // --- ADDED Event Listener ---
                     value={newMsg}
                   />
                 </div>
