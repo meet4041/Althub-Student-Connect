@@ -48,7 +48,10 @@ function ConnectionUser({ userid ,type, getUser}) {
     <>
       <div className="connection-user">
         <div>
-        {user && user.profilepic !== "" ? <img src={`${WEB_URL}${user.profilepic}`} alt="" /> : <img src="images/profile1.png" alt="" />}
+        {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" 
+            ? <img src={`${WEB_URL}${user.profilepic}`} alt="" /> 
+            : <img src="images/profile1.png" alt="" />
+        }
         <span className="chat-user-name">
           {user && user.fname ? `${user.fname} ${user.lname}` : "User"}
         </span>

@@ -48,7 +48,11 @@ function ChatUser({
       }}
     >
       <img
-        src={`${WEB_URL}${user.profilepic || "/default-profile.png"}`}
+        src={
+            user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" 
+            ? `${WEB_URL}${user.profilepic}` 
+            : "images/profile1.png"
+        }
         alt="Profile"
       />
       <span className="chat-user-name">

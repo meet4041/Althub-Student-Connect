@@ -198,7 +198,7 @@ export default function ViewProfile() {
             <div className="profile-cover"></div>
             <div className="profile-container-inner1">
               <div>
-                {user.profilepic !== "" ? (
+                {user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
                   <img
                     src={`${WEB_URL}${user.profilepic}`}
                     alt=""
@@ -473,7 +473,11 @@ export default function ViewProfile() {
               {topUsers.map((elem) => (
                 <div key={elem._id}>
                   <div className="sidebar-people-row">
-                    <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
+                    {elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? (
+                        <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
+                    ) : (
+                        <img src="images/profile1.png" alt="" />
+                    )}
                     <div>
                       <h2>
                         {elem.fname} {elem.lname}

@@ -310,7 +310,7 @@ export default function ViewSearchProfile({ socket }) {
             <div className="profile-cover"></div>
             <div className="profile-container-inner">
               <div>
-              {user.profilepic!==""?<img
+              {user.profilepic && user.profilepic!=="" && user.profilepic!=="undefined"?<img
                   src={`${WEB_URL}${user.profilepic}`}
                   alt=""
                   className="profile-pic"
@@ -479,7 +479,11 @@ export default function ViewSearchProfile({ socket }) {
               {topUsers.map((elem) => (
                 <div key={elem._id}>
                   <div className="sidebar-people-row">
-                    <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
+                    {elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? (
+                        <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
+                    ) : (
+                        <img src="images/profile1.png" alt="" />
+                    )}
                     <div>
                       <h2>{elem.fname} {elem.lname}</h2>
                       <p>{elem.city} {elem.state}, {elem.nation} </p>

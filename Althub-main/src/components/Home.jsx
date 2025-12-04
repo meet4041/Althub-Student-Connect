@@ -283,7 +283,7 @@ export default function Home({ socket }) {
         <div className="profile-card-main">
           <div className="profile-card">
             <div className="profile-card-imgbox">
-              {user && user.profilepic ? (
+              {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
                 <img
                   src={`${WEB_URL}${user.profilepic}`}
                   alt=""
@@ -348,7 +348,7 @@ export default function Home({ socket }) {
 
         <div className="home-post-main">
           <div className="new-post-box">
-            {user && user.profilepic ? (
+            {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
               <img src={`${WEB_URL}${user.profilepic}`} alt="" />
             ) : (
               <img src="images/profile1.png" alt="" />
@@ -408,11 +408,9 @@ export default function Home({ socket }) {
                         >
                           <img
                             src={
-                              !elem || elem.profilepic === "" ||
-                                (user && (user.profilepic === "undefined" ||
-                                  user.profilepic === null))
-                                ? "images/profile1.png"
-                                : `${WEB_URL}${elem.profilepic}`
+                              elem && elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined"
+                                ? `${WEB_URL}${elem.profilepic}`
+                                : "images/profile1.png"
                             }
                             alt=""
                             className="post-profile-img"
@@ -512,14 +510,14 @@ export default function Home({ socket }) {
               <h2>Scholership Progress</h2>
               {aids.map((elem) =>
                 <div key={elem._id} className="aid">
-                  {elem.image !== "" ?
+                  {elem.image && elem.image !== "" && elem.image !== "undefined" ?
                     <img
                       src={`${WEB_URL}${elem.image}`}
                       alt={elem.name ? `${elem.name} Profile Picture` : "User Profile Picture"}
                     />
                     :
                     <img
-                      src="images/user1.png"
+                      src="images/profile1.png"
                       alt="Default Profile"
                     />
                   }

@@ -326,7 +326,7 @@ export default function Navbar({ socket }) {
               nav("/view-profile");
             }}
           >
-            {user && user.profilepic ? (
+            {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
               <img
                 src={`${WEB_URL}${user.profilepic}`}
                 alt=""

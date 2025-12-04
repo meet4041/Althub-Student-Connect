@@ -156,7 +156,7 @@ export default function SearchProfile({ socket }) {
                 <div className="image-content">
                   <span className="overlay"></span>
                   <div className="card-image">
-                    {elem.profilepic !== "" ? (
+                    {elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? (
                       <img
                         src={`${WEB_URL}${elem.profilepic}`}
                         alt="profile"
