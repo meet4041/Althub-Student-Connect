@@ -563,15 +563,16 @@ export default function Register() {
                   </span>
                   {university.length > 0 ? (
                     <ul
-                      class={
+                      className={ // FIX: class -> className
                         universityShow === true
                           ? "prise-list-merge opened"
                           : "prise-list-merge"
                       }
                     >
-                      {university.map((elem) => (
+                      {university.map((elem, index) => ( // FIX: added index for key
                         <li
-                          class={
+                          key={index} // FIX: added key prop
+                          className={ // FIX: class -> className
                             user.institute === elem.name
                               ? "prise_list selected"
                               : "prise_list"

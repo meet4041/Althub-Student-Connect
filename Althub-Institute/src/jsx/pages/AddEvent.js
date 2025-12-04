@@ -168,7 +168,7 @@ const AddEvent = () => {
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
                                                     <label htmlFor="exampleInputfile">Upload Photos:</label>
-                                                    <input type='file' multiple="true" className="form-control" id="exampleInputfile" placeholder="Upload Event Photos" name="photos" value={data.photos} onChange={imgChange} />
+                                                    <input type='file' multiple className="form-control" id="exampleInputfile" placeholder="Upload Event Photos" name="photos" value={data.photos} onChange={imgChange} />
                                                     {files.length > 0 ?
                                                         <div className="selected-img row mt-2">
                                                             {files.map((elem) =>

@@ -16,8 +16,8 @@ const addPost = async (req, res) => {
         });
         const userData = await User.findOne({ _id: req.body.userid });
 
-        if (userData._id == '') {
-            res.status(400).send({ success: false, msg: "User not found..!" });
+        if (!userData) {
+            return res.status(400).send({ success: false, msg: "User not found..!" });
         }
         else {
             const post_data = await post.save();
