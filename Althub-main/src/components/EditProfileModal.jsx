@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import Select from "react-select";
+import { useNavigate } from "react-router-dom"; // Import for redirection
 
 const EditProfileModal = ({ closeModal, user, getUser }) => {
   const [errors, setErrors] = useState({});
@@ -10,8 +11,8 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
   const [dob, setDob] = useState("");
   const [languages, setLanguages] = useState([]);
   const [skills, setSkills] = useState([]);
+  const navigate = useNavigate(); 
 
-  // --- FIXED: Image Upload Function ---
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -20,21 +21,17 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
     formData.append("image", file);
     formData.append("userid", user._id);
 
-    // FIX: Do NOT manually set Content-Type. Axios/Browser does it automatically with the boundary.
     axios.put(`${WEB_URL}/api/updateProfilePic`, formData) 
       .then((res) => {
         toast.success("Profile picture updated!");
-        // Update local state immediately
         setUserData(prev => ({ ...prev, profilepic: res.data.data.profilepic }));
         getUser(); 
       })
       .catch((err) => {
         console.error("Upload error:", err);
-        // Show specific error from backend if available
         toast.error(err.response?.data?.msg || "Failed to update picture.");
       });
   };
-  // -------------------------------------
 
   const handleImageDelete = () => {
     if (!window.confirm("Are you sure you want to remove your profile picture?")) return;
@@ -50,6 +47,24 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
         toast.error("Failed to remove picture.");
       });
   };
+
+  // --- Delete Account Logic ---
+  const handleDeleteAccount = () => {
+    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      axios.delete(`${WEB_URL}/api/deleteUser/${user._id}`)
+        .then((response) => {
+          toast.success("Account Deleted Successfully");
+          localStorage.clear();
+          closeModal();
+          navigate("/"); 
+        })
+        .catch((error) => {
+          console.error("Delete Account Error:", error);
+          toast.error("Failed to delete account. Please try again.");
+        });
+    }
+  };
+  // ----------------------------
 
   const triggerFileInput = () => {
     document.getElementById("edit-modal-file-input").click();
@@ -142,11 +157,28 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
       isValid = false;
       errors["lname_err"] = "Please Enter Last Name";
     }
-    // ... validation ...
     if (!input["email"]) {
       isValid = false;
       errors["email_err"] = "Please Enter Email";
     }
+
+    // --- NEW VALIDATION: City (No Spaces) ---
+    if (input["city"]) {
+      if (input["city"].trim().includes(" ")) {
+        isValid = false;
+        errors["city_err"] = "City name must be a single word (no spaces allowed).";
+      }
+    }
+
+    // --- NEW VALIDATION: State (No Spaces) ---
+    if (input["state"]) {
+      if (input["state"].trim().includes(" ")) {
+        isValid = false;
+        errors["state_err"] = "State name must be a single word (no spaces allowed).";
+      }
+    }
+    // ----------------------------------------
+
     setErrors(errors);
     return isValid;
   };
@@ -210,7 +242,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
         
         <div className="edit-profile-details">
           
-          {/* --- Image Section UI --- */}
+          {/* Image Section */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
             <div style={{ position: "relative", width: "100px", height: "100px", marginBottom: "10px" }}>
               {userData.profilepic ? (
@@ -255,7 +287,6 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
               onChange={handleImageUpload}
             />
           </div>
-          {/* ----------------------- */}
 
           <span>First Name</span>
           <input type="text" name="fname" placeholder="First Name" value={userData.fname || ""} onChange={handleChange} />
@@ -321,10 +352,36 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
           <span>About</span>
           <input type="text" name="about" placeholder="About" value={userData.about || ""} onChange={handleChange} />
 
-          <div className="buttons">
+          <div className="buttons" style={{marginTop: '20px'}}>
             <input type="button" value="Cancel" className="action-button-cancel" onClick={handleCancel} />
             <input type="button" value="Update" className="action-button-confirm" onClick={handleUpdate} />
           </div>
+
+          {/* Delete Account Section */}
+          <div style={{ marginTop: "30px", borderTop: "1px solid #ddd", paddingTop: "20px" }}>
+            <h3 style={{ fontSize: "16px", color: "#d9534f", marginBottom: "10px" }}>Danger Zone</h3>
+            <button 
+                type="button" 
+                onClick={handleDeleteAccount}
+                style={{
+                    backgroundColor: "#d9534f",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    width: "100%",
+                    fontSize: "14px",
+                    fontWeight: "bold"
+                }}
+            >
+                Delete Account
+            </button>
+            <p style={{ fontSize: "12px", color: "#777", marginTop: "5px", textAlign: "center" }}>
+                This action is irreversible. All your data will be permanently removed.
+            </p>
+          </div>
+
         </div>
       </div>
     </>

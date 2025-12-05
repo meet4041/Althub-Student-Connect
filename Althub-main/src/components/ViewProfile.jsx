@@ -15,7 +15,7 @@ export default function ViewProfile() {
   const [language, setLanguage] = useState([]);
   const [skills, setSkills] = useState([]);
   const [education, setEducation] = useState([]);
-  // const [contactInfo, setContactInfo] = useState(false); 
+  // const [contactInfo, setContactInfo] = useState(false); // Removed
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [showModal3, setShowModal3] = useState(false);
@@ -34,6 +34,23 @@ export default function ViewProfile() {
   const [followerTab, setFollowerTab] = useState("Follower"); 
   
   const userID = localStorage.getItem("Althub_Id");
+
+  // --- NEW: Handle Delete Account ---
+  const handleDeleteAccount = () => {
+    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      axios.delete(`${WEB_URL}/api/deleteUser/${userID}`)
+        .then((response) => {
+          toast.success("Account Deleted Successfully");
+          localStorage.clear(); // Clear session
+          nav("/"); // Redirect to Login
+        })
+        .catch((error) => {
+          console.error("Delete Account Error:", error);
+          toast.error("Failed to delete account. Please try again.");
+        });
+    }
+  };
+  // ----------------------------------
 
   const getUser = useCallback((signal) => {
     return axios({
@@ -177,15 +194,11 @@ export default function ViewProfile() {
     }
   };
 
-  // --- NEW: Alumni Check Logic ---
+  // --- ALUMNI LOGIC ---
   const isAlumni = React.useMemo(() => {
     if (!education || education.length === 0) return false;
-
-    // 1. If any education is marked "Present" (null enddate), they are a student
     const isStudying = education.some(edu => !edu.enddate || edu.enddate === "");
     if (isStudying) return false;
-
-    // 2. Find the latest end year among all education entries
     let maxYear = 0;
     education.forEach(edu => {
         const d = new Date(edu.enddate);
@@ -193,14 +206,11 @@ export default function ViewProfile() {
             maxYear = d.getFullYear();
         }
     });
-
-    // 3. Logic: If current date > 15th May of that Max Year, they are Alumni
-    const cutoffDate = new Date(maxYear, 4, 15); // Month 4 is May
+    const cutoffDate = new Date(maxYear, 4, 15);
     const now = new Date();
-
     return now > cutoffDate;
   }, [education]);
-  // -------------------------------
+  // --------------------
 
   useEffect(() => {
     const controller = new AbortController();
@@ -240,7 +250,7 @@ export default function ViewProfile() {
                   <img src="images/profile1.png" className="profile-pic" alt="#" />
                 )}
                 
-                {/* --- UPDATED HEADER WITH ALUMNI TAG --- */}
+                {/* Name & Alumni Tag */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <h1>{user.fname} {user.lname}</h1>
                     {isAlumni && (
@@ -257,11 +267,10 @@ export default function ViewProfile() {
                         </span>
                     )}
                 </div>
-                {/* -------------------------------------- */}
 
                 <p>{user.institute && user.institute}</p>
 
-                {/* Followers & Following Counts */}
+                {/* Followers & Following */}
                 <div style={{ marginTop: '10px', display: 'flex', gap: '20px', fontSize: '14px', fontWeight: '500' }}>
                   <span 
                     onClick={() => openFollowModal("Follower")} 
@@ -269,15 +278,15 @@ export default function ViewProfile() {
                     onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
                     onMouseOut={(e) => e.target.style.textDecoration = 'none'}
                   >
-                    <b>{user.followers ? user.followers.length : 0}</b> Followers
-                  </span>
+                    <b>{user.followers ? user.followers.length : 0}</b> followers 
+                  </span> 
                   <span 
                     onClick={() => openFollowModal("Following")} 
                     style={{ cursor: "pointer", color: "#333" }}
                     onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
                     onMouseOut={(e) => e.target.style.textDecoration = 'none'}
                   >
-                    <b>{user.followings ? user.followings.length : 0}</b> Following
+                    <b>{user.followings ? user.followings.length : 0}</b> connections
                   </span>
                 </div>
 
@@ -304,6 +313,8 @@ export default function ViewProfile() {
                 </div>
 
               </div>
+              
+              {/* --- ACTION MENU --- */}
               <div className="edit-icon">
                 <i
                   className="fa-solid fa-pencil"
@@ -363,6 +374,21 @@ export default function ViewProfile() {
                     >
                       Change Password
                     </a>
+                    
+                    {/* --- NEW: Delete Account Link --- */}
+                    <hr style={{margin: "5px 0"}}/>
+                    <a
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setEditMenu(!editmenu);
+                        handleDeleteAccount();
+                      }}
+                      style={{ color: "red", fontWeight: "500" }}
+                    >
+                      Delete Account
+                    </a>
+                    {/* -------------------------------- */}
+
                   </div>
                 </div>
               </div>

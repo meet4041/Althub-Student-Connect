@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { WEB_URL } from "../baseURL";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; 
 
 function ChatUser({
   userid,
@@ -8,11 +9,13 @@ function ChatUser({
   setName,
   setProfilepic,
   setReceiverId,
+  searchQuery // --- ACCEPTED PROP ---
 }) {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState("");
   const [msgCount, setMsgCount] = useState(0);
   const myid = localStorage.getItem("Althub_Id");
+  const nav = useNavigate(); 
 
   useEffect(() => {
     if (userid?.members && myid) {
@@ -23,7 +26,6 @@ function ChatUser({
 
   useEffect(() => {
     if (userId !== "") {
-      // 1. Fetch User Info
       axios
         .get(`${WEB_URL}/api/searchUserById/${userId}`)
         .then((response) => {
@@ -33,7 +35,6 @@ function ChatUser({
           console.error("Error fetching user:", error);
         });
 
-      // 2. Fetch Unseen Count
       if (userid?._id) {
         axios
           .get(`${WEB_URL}/api/countMessages/${userid._id}/${userId}`)
@@ -47,34 +48,43 @@ function ChatUser({
     }
   }, [userId, userid]);
 
-  // --- CLICK HANDLER: Opens Chat & Clears Count ---
   const handleClick = () => {
-    // 1. Open the Chat
     setCurrentId(userid._id);
     if (user) {
         setName(`${user.fname} ${user.lname}`);
         setProfilepic(user.profilepic);
         setReceiverId(user._id);
     }
-
-    // 2. Clear badge locally (Immediate feedback)
     setMsgCount(0);
 
-    // 3. Update Database (Persistent fix)
     if (userid?._id && userId) {
         axios.put(`${WEB_URL}/api/markMessagesRead/${userid._id}/${userId}`)
         .catch(err => console.log("Error marking read:", err));
     }
   };
 
-  if (!user) {
+  const handleProfileClick = (e) => {
+    e.stopPropagation(); 
+    if (user && user._id) {
+        nav("/view-search-profile", { state: { id: user._id } });
+    }
+  };
+
+  // --- NEW: Search Filtering Logic ---
+  const fullName = user ? `${user.fname} ${user.lname}`.toLowerCase() : "";
+  const filter = searchQuery ? searchQuery.toLowerCase() : "";
+
+  // If user not loaded yet, or if search text exists and doesn't match name -> hide
+  if (!user || (filter && !fullName.includes(filter))) {
     return null;
   }
+  // -----------------------------------
 
   return (
     <div
       className="chat-user"
-      onClick={handleClick} // Attach the new handler
+      onClick={handleClick} 
+      style={{ cursor: "pointer" }}
     >
       <img
         src={
@@ -83,14 +93,20 @@ function ChatUser({
             : "images/profile1.png"
         }
         alt="Profile"
+        onClick={handleProfileClick} 
+        style={{ cursor: "pointer" }}
       />
       
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-        <span className="chat-user-name">
+        <span 
+            className="chat-user-name"
+            // onClick={handleProfileClick} 
+            // onMouseOver={(e) => e.target.style.textDecoration = "underline"} 
+            onMouseOut={(e) => e.target.style.textDecoration = "none"}
+        >
           {user.fname} {user.lname}
         </span>
         
-        {/* Only show badge if there are unseen messages */}
         {msgCount > 0 && (
           <span style={{
             backgroundColor: "#66bd9e",

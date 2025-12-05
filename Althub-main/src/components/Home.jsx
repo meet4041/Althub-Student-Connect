@@ -270,11 +270,6 @@ export default function Home({ socket }) {
 
   return (
     <>
-      {/* Updated Layout Styles: 
-        - justify-content: center (keeps columns together)
-        - align-items: flex-start (prevents stretching/floating)
-        - gap: 20px (reduced from 3rem)
-      */}
       <div 
         className="home-container" 
         style={{
@@ -282,18 +277,18 @@ export default function Home({ socket }) {
           justifyContent: "center", 
           alignItems: "flex-start", 
           gap: "20px", 
-          padding: "20px"
+          padding: "20px",
+          // --- FIX 1: Fixed Height & No Global Scroll ---
+          height: "calc(100vh - 85px)", 
+          overflow: "hidden"
+          // ----------------------------------------------
         }}
       >
         
-        {/* Left Sidebar: Fixed Width & Sticky */}
+        {/* Left Sidebar */}
         <div 
           className="profile-card-main" 
-          style={{ 
-            flex: "0 0 280px", 
-            position: "sticky", 
-            top: "80px" 
-          }}
+          style={{ flex: "0 0 280px" }}
         >
           <div className="profile-card">
             <div className="profile-card-imgbox">
@@ -360,7 +355,7 @@ export default function Home({ socket }) {
           </div>
         </div>
 
-        {/* Center Post Feed: Flexible Width */}
+        {/* Center Post Feed (Scrollable) */}
         <div 
           className="home-post-main" 
           style={{ 
@@ -369,7 +364,12 @@ export default function Home({ socket }) {
             minWidth: "0", 
             display: "flex", 
             flexDirection: "column", 
-            alignItems: "center" 
+            alignItems: "center",
+            // --- FIX 2: Individual Scroll ---
+            height: "100%", 
+            overflowY: "auto",
+            paddingBottom: "50px"
+            // --------------------------------
           }}
         >
           <div className="new-post-box" style={{ width: "100%" }}>
@@ -498,14 +498,10 @@ export default function Home({ socket }) {
           </div>
         </div>
 
-        {/* Right Sidebar: Fixed Width & Sticky */}
+        {/* Right Sidebar */}
         <div 
           className="home-right-main" 
-          style={{ 
-            flex: "0 0 300px", 
-            position: "sticky", 
-            top: "80px" 
-          }}
+          style={{ flex: "0 0 300px" }}
         >
           <div className="event-box">
             <span>Events</span>

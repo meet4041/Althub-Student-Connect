@@ -4,6 +4,7 @@ import ChatUser from "./ChatUser";
 import ChatMessage from "./ChatMessage";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
+import { toast } from "react-toastify";
 
 export default function Message({ socket }) {
   const userid = localStorage.getItem("Althub_Id");
@@ -74,9 +75,7 @@ export default function Message({ socket }) {
         time: data.time,
         createdAt: Date.now(),
       });
-      // --- UPDATE 1: Refresh sidebar when a message arrives ---
       getConversation(); 
-      // --------------------------------------------------------
     });
 
     if (location.state !== null) {
@@ -118,6 +117,13 @@ export default function Message({ socket }) {
     e.preventDefault();
     if (newMsg.trim() === "") return;
 
+    if (user && user.followings) {
+        if (!user.followings.includes(receiverId)) {
+            toast.error("First follow the user before messaging");
+            return; 
+        }
+    }
+
     socket.emit("sendMessage", {
       senderId: userid,
       receiverId: receiverId,
@@ -148,9 +154,7 @@ export default function Message({ socket }) {
         getMessages();
         setNewMsg("");
         scrollToEnd();
-        // --- UPDATE 2: Refresh sidebar after sending a message ---
         getConversation(); 
-        // ---------------------------------------------------------
       })
       .catch((error) => {
         console.log(error);
@@ -199,9 +203,6 @@ export default function Message({ socket }) {
                 alt={`${user && (user.fname || user.lname) ? `${user.fname} ${user.lname}` : "User"}`}
               />
               <div className="chat-profile-name">{`${user.fname} ${user.lname}`}</div>
-              {/* <div className="chat-profile-option">
-                <i className="fa-solid fa-ellipsis-vertical"></i>
-              </div> */}
             </div>
             <div className="chat-search-box">
               <i
@@ -220,6 +221,7 @@ export default function Message({ socket }) {
                     setName={setName}
                     setProfilepic={setProfilepic}
                     setReceiverId={setReceiverId}
+                    searchQuery={searchName} // --- PASSED SEARCH QUERY HERE ---
                   />
                 ))}
               </div>
