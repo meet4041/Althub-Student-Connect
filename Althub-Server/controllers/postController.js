@@ -39,7 +39,7 @@ const instituteAddPost = async (req, res) => {
             profilepic: req.body.profilepic,
             description: req.body.description,
             photos: req.images,
-            date: new Date() // Ensure date is set
+            date: new Date()
         });
         const instituteData = await Institute.findOne({ _id: req.body.userid });
 
@@ -59,7 +59,6 @@ const instituteAddPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
     try {
-        // Sort by date Descending (-1) so newest is first
         const post_data = await Post.find({}).sort({ date: -1 }).limit(20);
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
@@ -69,7 +68,6 @@ const getPosts = async (req, res) => {
 
 const getPostById = async (req, res) => {
     try {
-        // Sort by date Descending here as well
         const post_data = await Post.find({ userid: req.params.userid }).sort({ date: -1 });
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
@@ -87,25 +85,46 @@ const deletePost = async (req, res) => {
     }
 }
 
+// --- UPDATED EDIT POST FUNCTION ---
 const editPost = async (req, res) => {
     try {
+        const id = req.body.id;
+        const updateData = {};
+
+        // 1. Handle Text Update
+        if (req.body.description !== undefined) {
+            updateData.description = req.body.description;
+        }
+
+        // 2. Handle Photos
+        // If new files are uploaded (req.images exists), we replace/add them.
+        // If NO new files, we check for 'existingPhotos' which acts as our delete mechanism (we save only what is sent back).
         if (req.images && req.images.length > 0) {
-            var id = req.body.id;
-            var likes = req.body.likes;
-            var comments = req.body.comments;
-            var photos = req.images
-
-            const post_data = await Post.findByIdAndUpdate({ _id: id }, { $set: { likes: likes, comments: comments, photos: photos } }, { new: true });
-            res.status(200).send({ success: true, msg: 'Post Updated', data: post_data });
+            updateData.photos = req.images;
+        } else if (req.body.existingPhotos) {
+            // Ensure it's an array (if 1 item sent, it might be a string)
+            let photosToKeep = req.body.existingPhotos;
+            if (!Array.isArray(photosToKeep)) {
+                photosToKeep = [photosToKeep];
+            }
+            updateData.photos = photosToKeep;
+        } else if (req.body.photos === '[]' || (Array.isArray(req.body.photos) && req.body.photos.length ===0)){
+             // Explicitly cleared photos
+             updateData.photos = [];
         }
-        else {
-            var id = req.body.id;
-            var likes = req.body.likes;
-            var comments = req.body.comments;
 
-            const post_data = await Post.findByIdAndUpdate({ _id: id }, { $set: { likes: likes, comments: comments } }, { new: true });
-            res.status(200).send({ success: true, msg: 'Post Updated', data: post_data });
-        }
+        // 3. Handle Likes/Comments (Legacy support if passed)
+        if (req.body.likes) updateData.likes = req.body.likes;
+        if (req.body.comments) updateData.comments = req.body.comments;
+
+        const post_data = await Post.findByIdAndUpdate(
+            { _id: id },
+            { $set: updateData },
+            { new: true }
+        );
+
+        res.status(200).send({ success: true, msg: 'Post Updated Successfully', data: post_data });
+
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -117,11 +136,10 @@ const likeUnlikePost = async (req, res) => {
         if (!post.likes.includes(req.body.userId)) {
             await post.updateOne({ $push: { likes: req.body.userId } });
 
-            // --- NEW: Create Notification for Like ---
             const liker = await User.findById(req.body.userId);
-            if (liker && post.userid !== req.body.userId) { // Don't notify if user likes their own post
+            if (liker && post.userid !== req.body.userId) {
                 const notification = new Notification({
-                    userid: post.userid, // Post owner gets the notification
+                    userid: post.userid,
                     senderid: req.body.userId,
                     image: liker.profilepic,
                     title: "New Like",
@@ -130,8 +148,6 @@ const likeUnlikePost = async (req, res) => {
                 });
                 await notification.save();
             }
-            // ----------------------------------------
-
             res.status(200).send({ msg: "Like" });
         } else {
             await post.updateOne({ $pull: { likes: req.body.userId } });
@@ -152,10 +168,7 @@ const getFriendsPost = async (req, res) => {
             })
         );
         const allPosts = userPosts.concat(...friendPosts);
-
-        // Sort the combined array in Javascript
         allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-
         res.status(200).json(allPosts);
     } catch (err) {
         res.status(500).json(err);

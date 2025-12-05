@@ -101,6 +101,22 @@ export default function Navbar({ socket }) {
             <ListItemText primary={"Home"} />
           </ListItemButton>
         </ListItem>
+        
+        {/* --- ADDED MY POSTS TO DRAWER --- */}
+        <ListItem
+          key={"myposts"}
+          disablePadding
+          onClick={() => {
+            nav("/my-posts");
+          }}
+        >
+          <ListItemButton>
+            <i className="fa-solid fa-address-card" style={{ padding: "10px 15px" }}></i>
+            <ListItemText primary={"My Posts"} />
+          </ListItemButton>
+        </ListItem>
+        {/* -------------------------------- */}
+
         <ListItem
           key={"search"}
           disablePadding
@@ -114,21 +130,6 @@ export default function Navbar({ socket }) {
               style={{ padding: "10px 15px" }}
             ></i>
             <ListItemText primary={"search"} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem
-          key={"events"}
-          disablePadding
-          onClick={() => {
-            nav("/events");
-          }}
-        >
-          <ListItemButton>
-            <i
-              className="fa-solid fa-calendar"
-              style={{ padding: "10px 15px" }}
-            ></i>
-            <ListItemText primary={"Events"} />
           </ListItemButton>
         </ListItem>
         <ListItem
@@ -275,16 +276,20 @@ export default function Navbar({ socket }) {
                 <span>Home</span>
               </li>
             </Link>
+
+            {/* --- ADDED MY POSTS LINK --- */}
+            <Link to="/my-posts">
+              <li>
+                <i className="fa-solid fa-address-card"></i>
+                <span>My Posts</span>
+              </li>
+            </Link>
+            {/* --------------------------- */}
+
             <Link to="/search-profile">
               <li>
                 <i className="fa-solid fa-magnifying-glass"></i>
                 <span>Search</span>
-              </li>
-            </Link>
-            <Link to="/events">
-              <li>
-                <i className="fa-solid fa-calendar"></i>
-                <span>Events</span>
               </li>
             </Link>
             <Link to="/message">

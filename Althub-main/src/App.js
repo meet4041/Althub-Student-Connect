@@ -17,6 +17,7 @@ import ViewSearchProfile from "./components/ViewSearchProfile";
 import { io } from "socket.io-client";
 import Navbar from "./components/Navbar";
 import Scholarship from "./components/Scholarship";
+import MyPosts from "./components/MyPosts"; // IMPORT THIS
 
 function App() {
   const socket = React.useMemo(() => io("http://localhost:5001", {
@@ -52,6 +53,7 @@ function App() {
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/new-password" element={<NewPassword />} />
         <Route path="/scholarship" element={<Scholarship />} />
+        <Route path="/my-posts" element={<MyPosts />} />
       </Routes>
     </>
   );
