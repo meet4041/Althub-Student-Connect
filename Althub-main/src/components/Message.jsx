@@ -59,7 +59,9 @@ export default function Message({ socket }) {
           person2: userid,
         },
       }).then((Response) => {
-        setCurrentId(Response.data.data[0]._id);
+        if(Response.data.data && Response.data.data.length > 0){
+            setCurrentId(Response.data.data[0]._id);
+        }
       });
     }
   }, [location.state, userid]);
@@ -72,6 +74,9 @@ export default function Message({ socket }) {
         time: data.time,
         createdAt: Date.now(),
       });
+      // --- UPDATE 1: Refresh sidebar when a message arrives ---
+      getConversation(); 
+      // --------------------------------------------------------
     });
 
     if (location.state !== null) {
@@ -113,7 +118,6 @@ export default function Message({ socket }) {
     e.preventDefault();
     if (newMsg.trim() === "") return;
 
-    // 1. Existing: Send the actual message for the chat window
     socket.emit("sendMessage", {
       senderId: userid,
       receiverId: receiverId,
@@ -121,8 +125,6 @@ export default function Message({ socket }) {
       time: new Date()
     });
 
-    // 2. --- NEW: Send the Notification Alert for the Pop-up ---
-    // This ensures the receiver gets a "Toast" alert immediately
     if (user && user.fname) {
       socket.emit("sendNotification", {
         receiverid: receiverId,
@@ -130,7 +132,6 @@ export default function Message({ socket }) {
         msg: `${user.fname} ${user.lname} sent you a message`,
       });
     }
-    // -----------------------------------------------------------
 
     axios({
       method: "post",
@@ -140,26 +141,27 @@ export default function Message({ socket }) {
         sender: userid,
         text: newMsg,
         time: new Date(),
-        receiverId: receiverId
+        receiverId: receiverId 
       },
     })
       .then((response) => {
         getMessages();
         setNewMsg("");
         scrollToEnd();
+        // --- UPDATE 2: Refresh sidebar after sending a message ---
+        getConversation(); 
+        // ---------------------------------------------------------
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  // --- NEW: Handle Enter Key Press ---
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       sendMessage(e);
     }
   };
-  // -----------------------------------
 
   const handleBack = () => {
     setCurrentId("");
@@ -197,9 +199,9 @@ export default function Message({ socket }) {
                 alt={`${user && (user.fname || user.lname) ? `${user.fname} ${user.lname}` : "User"}`}
               />
               <div className="chat-profile-name">{`${user.fname} ${user.lname}`}</div>
-              <div className="chat-profile-option">
+              {/* <div className="chat-profile-option">
                 <i className="fa-solid fa-ellipsis-vertical"></i>
-              </div>
+              </div> */}
             </div>
             <div className="chat-search-box">
               <i
@@ -212,6 +214,7 @@ export default function Message({ socket }) {
               <div className="chat-user-list">
                 {conversationID.map((elem) => (
                   <ChatUser
+                    key={elem._id}
                     userid={elem}
                     setCurrentId={setCurrentId}
                     setName={setName}
@@ -230,9 +233,7 @@ export default function Message({ socket }) {
             <div className="chat-user-profile">
               <i
                 className="fa-solid fa-arrow-left"
-                onClick={
-                  handleBack
-                }
+                onClick={handleBack}
               ></i>
               <img
                 src={
@@ -249,6 +250,7 @@ export default function Message({ socket }) {
                 <div className="msg-box" ref={msgBoxRef}>
                   {messages.map((elem) => (
                     <ChatMessage
+                      key={elem._id || Math.random()}
                       msg={elem}
                       own={userid === elem.sender ? "send" : "received"}
                     />
@@ -266,7 +268,7 @@ export default function Message({ socket }) {
                     onChange={(e) => {
                       setNewMsg(e.target.value);
                     }}
-                    onKeyDown={handleKeyDown} // --- ADDED Event Listener ---
+                    onKeyDown={handleKeyDown} 
                     value={newMsg}
                   />
                 </div>

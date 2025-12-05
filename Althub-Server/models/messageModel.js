@@ -10,10 +10,16 @@ const message = new mongoose.Schema({
     text: {
         type: String,
     },
-    time:{
-        type: String,
-        default: new Date(),
+    // --- PERSISTENT READ STATUS ---
+    isRead: {
+        type: Boolean,
+        default: false
+    },
+    // -----------------------------
+    time: {
+        type: Date,
+        default: Date.now,
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("messageTB", message);

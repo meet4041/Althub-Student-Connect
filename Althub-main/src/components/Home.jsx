@@ -95,18 +95,15 @@ export default function Home({ socket }) {
     setFileList(e.target.files);
   };
 
-  // --- NEW: Helper to send notifications to followers ---
   const sendNewPostNotification = () => {
     if (user && user.followers && user.followers.length > 0) {
       user.followers.forEach((followerId) => {
-        // 1. Emit Socket Event for real-time pop-up
         socket.emit("sendNotification", {
           receiverid: followerId,
           title: "New Post",
           msg: `${user.fname} ${user.lname} added a new post`,
         });
 
-        // 2. Save to Database
         axios({
           url: `${WEB_URL}/api/addNotification`,
           method: "post",
@@ -121,7 +118,6 @@ export default function Home({ socket }) {
       });
     }
   };
-  // -----------------------------------------------------
 
   const addPost = () => {
     if (!user || !user.fname || !user.lname) {
@@ -153,11 +149,7 @@ export default function Home({ socket }) {
     })
       .then((Response) => {
         toast.success("Post Uploaded!!");
-        
-        // --- Trigger Notification to Followers ---
         sendNewPostNotification(); 
-        // -----------------------------------------
-
         setFileList(null);
         setDescription("");
         getPost();
@@ -257,7 +249,6 @@ export default function Home({ socket }) {
     const options = {
       hour: "numeric",
       minute: "numeric",
-      second: "numeric",
       timeZone: "Asia/Kolkata",
     };
 
@@ -279,8 +270,31 @@ export default function Home({ socket }) {
 
   return (
     <>
-      <div className="home-container">
-        <div className="profile-card-main">
+      {/* Updated Layout Styles: 
+        - justify-content: center (keeps columns together)
+        - align-items: flex-start (prevents stretching/floating)
+        - gap: 20px (reduced from 3rem)
+      */}
+      <div 
+        className="home-container" 
+        style={{
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "flex-start", 
+          gap: "20px", 
+          padding: "20px"
+        }}
+      >
+        
+        {/* Left Sidebar: Fixed Width & Sticky */}
+        <div 
+          className="profile-card-main" 
+          style={{ 
+            flex: "0 0 280px", 
+            position: "sticky", 
+            top: "80px" 
+          }}
+        >
           <div className="profile-card">
             <div className="profile-card-imgbox">
               {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
@@ -346,8 +360,19 @@ export default function Home({ socket }) {
           </div>
         </div>
 
-        <div className="home-post-main">
-          <div className="new-post-box">
+        {/* Center Post Feed: Flexible Width */}
+        <div 
+          className="home-post-main" 
+          style={{ 
+            flex: "1", 
+            maxWidth: "650px", 
+            minWidth: "0", 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center" 
+          }}
+        >
+          <div className="new-post-box" style={{ width: "100%" }}>
             {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
               <img src={`${WEB_URL}${user.profilepic}`} alt="" />
             ) : (
@@ -390,7 +415,7 @@ export default function Home({ socket }) {
             </button>
           </div>
 
-          <div className="post-box">
+          <div className="post-box" style={{ width: "100%" }}>
             {post.length > 0 ? (
               <>
                 {post.map((elem) => (
@@ -473,7 +498,15 @@ export default function Home({ socket }) {
           </div>
         </div>
 
-        <div className="home-right-main">
+        {/* Right Sidebar: Fixed Width & Sticky */}
+        <div 
+          className="home-right-main" 
+          style={{ 
+            flex: "0 0 300px", 
+            position: "sticky", 
+            top: "80px" 
+          }}
+        >
           <div className="event-box">
             <span>Events</span>
             <div className="upcoming-events">
