@@ -19,6 +19,8 @@ try {
         const fileInfo = {
           filename: filename,
           bucketName: 'uploads',
+          // --- FIX 1: Save correct Content-Type so browser knows it is a video ---
+          contentType: file.mimetype,
           metadata: { originalname: file.originalname }
         };
         resolve(fileInfo);
@@ -95,16 +97,28 @@ async function uploadFromBuffer(buffer, filename, contentType) {
 
 async function getFileInfo(id) {
   const bucket = getGridFSBucket();
+  if (!ObjectId.isValid(id)) return null;
   const _id = typeof id === 'string' ? new ObjectId(id) : id;
   const files = await bucket.find({ _id }).toArray();
   return files && files.length > 0 ? files[0] : null;
 }
 
-function streamToResponse(id, res) {
+// --- FIX 2: Support Range Options (start/end) for Video Streaming ---
+function streamToResponse(id, res, options = {}) {
   const bucket = getGridFSBucket();
+  if (!ObjectId.isValid(id)) return res.status(400).send('Invalid ID');
+
   const _id = typeof id === 'string' ? new ObjectId(id) : id;
-  const downloadStream = bucket.openDownloadStream(_id);
-  downloadStream.on('error', (err) => res.status(404).send({ success: false, msg: 'File not found' }));
+  
+  // Pass the range options (start, end) to the download stream
+  const downloadStream = bucket.openDownloadStream(_id, options);
+  
+  downloadStream.on('error', (err) => {
+    if (!res.headersSent) {
+      res.status(404).send({ success: false, msg: 'File not found' });
+    }
+  });
+  
   downloadStream.pipe(res);
 }
 

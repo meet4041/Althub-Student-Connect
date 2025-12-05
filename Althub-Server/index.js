@@ -5,7 +5,7 @@ const { connectToMongo } = require("./db/conn");
 const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5001;
 const cors = require("cors");
-const compression = require("compression"); // Import compression
+const compression = require("compression");
 
 // --- FIX 1: REQUIRED FOR RENDER DEPLOYMENT ---
 app.set("trust proxy", 1);
@@ -15,7 +15,7 @@ app.use(compression());
 
 // --- FIX 2: ALLOW COOKIES & CORS ---
 app.use(cors({
-  origin: true, // Reflects the request origin
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
@@ -68,15 +68,10 @@ app.use(express.static("public"));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  // 1. Ignore 'request aborted' errors (Fixes the console spam)
   if (err.type === 'request.aborted' || err.code === 'ECONNABORTED') {
     return;
   }
-
-  // 2. Log actual errors
   console.error("Error:", err);
-
-  // 3. Send response
   res.status(err.status || 500).json({
     error: err.message || "Internal Server Error"
   });
@@ -96,8 +91,9 @@ const io = require("socket.io")(server, {
 let users = [];
 
 const addUser = (userId, socketId) => {
-  !users.some((user) => user.userId === userId) &&
-    users.push({ userId, socketId });
+  // FIX: Remove any existing entry for this user first to ensure we store the freshest socketId
+  users = users.filter((user) => user.userId !== userId);
+  users.push({ userId, socketId });
 };
 
 const removeUser = (socketId) => {
@@ -146,7 +142,6 @@ io.on("connection", (socket) => {
 if (require.main === module) {
   connectToMongo()
     .then(() => {
-      // --- FIX APPLIED HERE: Bind to '0.0.0.0' ---
       server.listen(port, "0.0.0.0", function () {
         console.log(`Server is running on port ${port}`);
       });

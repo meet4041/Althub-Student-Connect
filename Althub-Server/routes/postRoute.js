@@ -25,7 +25,8 @@ const uploadPic = (req, res, next) => {
         try {
             req.images = req.files.map((f) => {
                 const fid = f.id || f._id || (f.fileId && f.fileId.toString());
-                return `/api/images/${fid}`;
+                // --- FIX 5: Append mime type query param to URL ---
+                return `/api/images/${fid}?mime=${f.mimetype}`;
             });
             return next();
         } catch (e) {
@@ -37,7 +38,6 @@ const uploadPic = (req, res, next) => {
 
 const post_controller = require("../controllers/postController");
 
-//event routes
 post_route.post('/addPost', uploadPic, post_controller.addPost);
 post_route.get('/getPost', post_controller.getPosts);
 post_route.delete('/deletePost/:id', post_controller.deletePost);
