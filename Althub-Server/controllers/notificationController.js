@@ -22,8 +22,8 @@ const addNotification = async (req, res) => {
             userid: req.body.userid,
             msg: req.body.msg,
             image: req.body.image,
-            title:req.body.title,
-            date:req.body.date,
+            title: req.body.title,
+            date: req.body.date || new Date().toISOString(), // Ensure date is saved
         });
         const notification_data = await notification.save();
         res.status(200).send({ success: true, data: notification_data });
@@ -34,7 +34,14 @@ const addNotification = async (req, res) => {
 
 const getnotifications = async (req, res) => {
     try {
-        const notification_data = await Notification.find({ userid: req.body.userid }).limit(5);
+        // FIX APPLIED HERE:
+        // 1. .sort({ _id: -1 }) -> Fetches NEWEST notifications first
+        // 2. .limit(20) -> Increased limit to ensure we get enough recent activity
+        
+        const notification_data = await Notification.find({ userid: req.body.userid })
+            .sort({ _id: -1 }) 
+            .limit(20);
+            
         res.status(200).send({ success: true, data: notification_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });

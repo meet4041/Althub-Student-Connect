@@ -22,8 +22,8 @@ export default function ViewSearchProfile({ socket }) {
   const [followerTab, setFollowerTab] = useState("Follower");
 
   useEffect(() => {
-    if(location.state && location.state.id) {
-        setUserID(location.state.id);
+    if (location.state && location.state.id) {
+      setUserID(location.state.id);
     }
   }, [location.state]);
 
@@ -131,11 +131,14 @@ export default function ViewSearchProfile({ socket }) {
   }, [userID]);
 
   const handleFollow = () => {
+    // 1. Emit Socket Event (Real-time)
     socket.emit("sendNotification", {
-      receiverid: userID,
+      receiverid: userID, // The ID of the person being followed
       title: "New Follower",
       msg: `${self.fname} ${self.lname} Started Following You`,
     });
+
+    // 2. Database Call (Persistent storage)
     axios({
       url: `${WEB_URL}/api/follow/${userID}`,
       data: {
@@ -259,7 +262,7 @@ export default function ViewSearchProfile({ socket }) {
         theme: "colored",
       });
     } else {
-      const url = link.startsWith('http') ? link : `https://${link}`; 
+      const url = link.startsWith('http') ? link : `https://${link}`;
       window.open(url, "_blank");
     }
   };
@@ -280,10 +283,10 @@ export default function ViewSearchProfile({ socket }) {
     // 2. Find the latest graduation year
     let maxYear = 0;
     education.forEach(edu => {
-        const d = new Date(edu.enddate);
-        if (d.getFullYear() > maxYear) {
-            maxYear = d.getFullYear();
-        }
+      const d = new Date(edu.enddate);
+      if (d.getFullYear() > maxYear) {
+        maxYear = d.getFullYear();
+      }
     });
 
     // 3. Compare with May 15th of that year
@@ -298,7 +301,7 @@ export default function ViewSearchProfile({ socket }) {
     const controller = new AbortController();
     const { signal } = controller;
 
-    if(userID) {
+    if (userID) {
       getSelf(signal);
       getUser(signal);
       getEducation(signal);
@@ -334,45 +337,45 @@ export default function ViewSearchProfile({ socket }) {
                 ) : (
                   <img src="images/profile1.png" className="profile-pic" alt="#" />
                 )}
-                
+
                 {/* --- NAME & ALUMNI TAG --- */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                    <h1>{user.fname} {user.lname}</h1>
-                    
-                    {/* Only show Alumni Tag if criteria met */}
-                    {isAlumni && (
-                        <span style={{
-                            backgroundColor: "#e3f2fd", // Light blue bg
-                            color: "#1976d2", // Dark blue text
-                            padding: "4px 10px", 
-                            borderRadius: "15px", 
-                            fontSize: "12px", 
-                            fontWeight: "600",
-                            border: "1px solid #90caf9",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px"
-                        }}>
-                            <i className="fa-solid fa-graduation-cap"></i> Alumni
-                        </span>
-                    )}
+                  <h1>{user.fname} {user.lname}</h1>
+
+                  {/* Only show Alumni Tag if criteria met */}
+                  {isAlumni && (
+                    <span style={{
+                      backgroundColor: "#e3f2fd", // Light blue bg
+                      color: "#1976d2", // Dark blue text
+                      padding: "4px 10px",
+                      borderRadius: "15px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      border: "1px solid #90caf9",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px"
+                    }}>
+                      <i className="fa-solid fa-graduation-cap"></i> Alumni
+                    </span>
+                  )}
                 </div>
                 {/* ------------------------- */}
 
                 <p>{user.institute && user.institute}</p>
-                
+
                 {/* Follower Counts */}
                 <div style={{ margin: '8px 0', display: 'flex', gap: '20px', fontSize: '14px', fontWeight: '500' }}>
-                  <span 
-                    onClick={() => openFollowModal("Follower")} 
+                  <span
+                    onClick={() => openFollowModal("Follower")}
                     style={{ cursor: "pointer", color: "#333" }}
                     onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
                     onMouseOut={(e) => e.target.style.textDecoration = 'none'}
                   >
                     <b>{user.followers ? user.followers.length : 0}</b> Followers
                   </span>
-                  <span 
-                    onClick={() => openFollowModal("Following")} 
+                  <span
+                    onClick={() => openFollowModal("Following")}
                     style={{ cursor: "pointer", color: "#333" }}
                     onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
                     onMouseOut={(e) => e.target.style.textDecoration = 'none'}
@@ -387,16 +390,16 @@ export default function ViewSearchProfile({ socket }) {
                     {user.city && user.city} {user.state && user.state}{" "}
                     {user.nation ? `, ${user.nation} ` : null}
                   </p>
-                  
-                  <i 
-                    className="fa-brands fa-github" 
+
+                  <i
+                    className="fa-brands fa-github"
                     title="GitHub"
                     style={{ fontSize: '24px', cursor: 'pointer', color: '#333' }}
                     onClick={() => handleSocialClick(user.github, "GitHub")}
                   ></i>
 
-                  <i 
-                    className="fa-brands fa-linkedin" 
+                  <i
+                    className="fa-brands fa-linkedin"
                     title="LinkedIn"
                     style={{ fontSize: '24px', cursor: 'pointer', color: '#0077b5' }}
                     onClick={() => handleSocialClick(user.linkedin, "LinkedIn")}
@@ -530,24 +533,24 @@ export default function ViewSearchProfile({ socket }) {
                 <div key={elem._id}>
                   <div className="sidebar-people-row">
                     {elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? (
-                        <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
+                      <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
                     ) : (
-                        <img src="images/profile1.png" alt="" />
+                      <img src="images/profile1.png" alt="" />
                     )}
                     <div>
                       <h2>{elem.fname} {elem.lname}</h2>
                       <p>{elem.city} {elem.state}, {elem.nation} </p>
-                      
+
                       <div style={{ fontSize: "13px", color: "grey", marginBottom: "5px" }}>
                         <span style={{ marginRight: "10px" }}>
-                            <b>{elem.followers ? elem.followers.length : 0}</b> Followers
+                          <b>{elem.followers ? elem.followers.length : 0}</b> Followers
                         </span>
                         <span>
-                            <b>{elem.followings ? elem.followings.length : 0}</b> Following
+                          <b>{elem.followings ? elem.followings.length : 0}</b> Following
                         </span>
                       </div>
 
-                      <a onClick={()=> { setUserID(elem._id); window.scrollTo(0,0); }}>View Profile</a>
+                      <a onClick={() => { setUserID(elem._id); window.scrollTo(0, 0); }}>View Profile</a>
                     </div>
                   </div>
                   <hr />
@@ -559,11 +562,11 @@ export default function ViewSearchProfile({ socket }) {
       </div>
 
       {showFollowerModal && (
-        <FollowerModal 
-          closeModal={() => setShowFollowerModal(false)} 
-          user={user} 
-          getUser={getUser} 
-          initialType={followerTab} 
+        <FollowerModal
+          closeModal={() => setShowFollowerModal(false)}
+          user={user}
+          getUser={getUser}
+          initialType={followerTab}
         />
       )}
     </>

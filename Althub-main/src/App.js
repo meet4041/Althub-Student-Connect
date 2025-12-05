@@ -27,7 +27,7 @@ function App() {
     reconnectionAttempts: 3,
     transports: ["websocket", "polling"]
   }), []);
-  
+
   React.useEffect(() => {
     return () => {
       socket.disconnect();
@@ -36,19 +36,19 @@ function App() {
 
   return (
     <>
-    <ToastContainer/>
-    <Navbar socket={socket}/>
+      <ToastContainer />
+      <Navbar socket={socket} />
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/home" element={<Home socket={socket}/>} />
         <Route path="/events" element={<Events />} />
+        <Route path="/home" element={<Home socket={socket} />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/view-profile" element={<ViewProfile />} />
-        <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket}/>} />
+        <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket} />} />
         <Route path="/search-profile" element={<SearchProfile />} />
-        <Route path="/message" element={<Message socket={socket}/>} />
+        <Route path="/message" element={<Message socket={socket} />} />
         <Route path="/notification" element={<Notidfication />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/new-password" element={<NewPassword />} />

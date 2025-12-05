@@ -3,9 +3,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
 
-export default function Notidfication() { // Keeping component name as per your file
+export default function Notidfication() {
   const [notifications, setNotifications] = useState([]);
   const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(true); // Added loading state
   const nav = useNavigate();
   const userid = localStorage.getItem("Althub_Id");
 
@@ -31,19 +32,24 @@ export default function Notidfication() { // Keeping component name as per your 
       },
     })
       .then((Response) => {
-        // --- UPDATED: Included 'New Event' and 'New Message' ---
-        const allowedTypes = ["New Follower", "New Like", "New Event", "New Message"];
-        const filteredData = Response.data.data.filter((item) => 
-          allowedTypes.includes(item.title)
-        );
-        setNotifications(filteredData);
+        // Ensure data exists before filtering
+        if (Response.data && Response.data.data) {
+          const allowedTypes = ["New Follower", "New Like", "New Event", "New Message"];
+          const filteredData = Response.data.data.filter((item) => 
+            allowedTypes.includes(item.title)
+          );
+          setNotifications(filteredData);
+        }
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
+        setLoading(false);
       });
   };
 
   const formatTime = (timestamp) => {
+    if (!timestamp) return "";
     const messageTime = new Date(timestamp);
     const now = new Date();
     const timeDiff = Math.abs(now - messageTime);
@@ -74,6 +80,7 @@ export default function Notidfication() { // Keeping component name as per your 
   useEffect(() => {
     getUser();
     getNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -82,7 +89,7 @@ export default function Notidfication() { // Keeping component name as per your 
         <div className="profile-card-main">
           <div className="profile-card">
             <div className="profile-card-imgbox">
-              {user.profilepic !== "" ? (
+              {user?.profilepic ? (
                 <img
                   src={`${WEB_URL}${user.profilepic}`}
                   alt=""
@@ -99,7 +106,7 @@ export default function Notidfication() { // Keeping component name as per your 
 
             <div className="profile-card-info">
               <span className="profile-card-name">
-                {user.fname} {user.lname}
+                {user?.fname} {user?.lname}
               </span>
             </div>
             <div
@@ -114,28 +121,13 @@ export default function Notidfication() { // Keeping component name as per your 
           </div>
 
           <div className="menu-container">
-            <div
-              className="menu"
-              onClick={() => {
-                nav("/events");
-              }}
-            >
+            <div className="menu" onClick={() => nav("/events")}>
               <i className="fa-solid fa-calendar"></i>Events
             </div>
-            <div
-              className="menu"
-              onClick={() => {
-                nav("/scholarship");
-              }}
-            >
+            <div className="menu" onClick={() => nav("/scholarship")}>
               <i className="fa-solid fa-handshake-angle"></i>Scholarship
             </div>
-            <div
-              className="menu"
-              onClick={() => {
-                nav("/feedback");
-              }}
-            >
+            <div className="menu" onClick={() => nav("/feedback")}>
               <i className="fa-solid fa-star"></i>FeedBack & Rating
             </div>
             <hr className="hr-line" />
@@ -146,10 +138,12 @@ export default function Notidfication() { // Keeping component name as per your 
         </div>
 
         <div className="notification-main">
-          {notifications.length > 0 ? (
+          {loading ? (
+             <div className="no-notification">Loading...</div>
+          ) : notifications.length > 0 ? (
             <div className="notification-box">
               {notifications.map((elem) => (
-                <div className="notification" key={elem._id || Math.random()}>
+                <div className="notification" key={elem._id}>
                   <div className="notifiction-img">
                     {elem.image ? (
                         <img src={`${WEB_URL}${elem.image}`} alt="" />
