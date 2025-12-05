@@ -50,7 +50,6 @@ export default function Events() {
     const options = {
       hour: "numeric",
       minute: "numeric",
-      second: "numeric",
       timeZone: "Asia/Kolkata",
     };
 

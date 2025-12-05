@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +30,7 @@ const styles = `
     flex: 1;
     background: #fff;
     border-radius: 50px;
-    padding: 12px 25px;
+    padding: 2px 25px;
     display: flex;
     align-items: center;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -304,43 +303,6 @@ export default function SearchProfile({ socket }) {
     }
   }, [userID]);
 
-  const handleFollow = (targetUser) => {
-    if (!socket) return toast("Socket not connected");
-    if (!self || !self.fname || !self.lname) {
-      return toast.error("User data not loaded. Please try again.");
-    }
-    socket.emit("sendNotification", {
-      receiverid: targetUser._id,
-      title: "New Follower",
-      msg: `${self.fname} ${self.lname} Started Following You`,
-    });
-    axios({
-      url: `${WEB_URL}/api/follow/${targetUser._id}`,
-      data: {
-        userId: userID,
-      },
-      method: "put",
-    })
-      .then((Response) => {
-        toast(Response.data);
-        setShowUsers((prev) => prev.map(u => u._id === targetUser._id ? { ...u, followers: [...(u.followers || []), userID] } : u));
-        axios({
-          url: `${WEB_URL}/api/addNotification`,
-          method: "post",
-          data: {
-            userid: targetUser._id,
-            msg: `${self.fname} ${self.lname} Started Following You`,
-            image: self.profilepic || "",
-            title: "New Follower",
-            date: new Date(),
-          },
-        });
-      })
-      .catch((error) => {
-        toast.error("Failed to follow");
-      });
-  };
-
   useEffect(() => {
     axios({
       url: `${WEB_URL}/api/searchUser`,
@@ -473,7 +435,6 @@ export default function SearchProfile({ socket }) {
                     {elem._id !== userID && (
                       <button
                         className="sp-btn sp-btn-follow"
-                        onClick={() => handleFollow(elem)}
                         disabled={elem.followers && elem.followers.includes(userID)}
                       >
                         {elem.followers && elem.followers.includes(userID) ? "Following" : "Follow"}

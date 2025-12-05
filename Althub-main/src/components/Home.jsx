@@ -278,10 +278,8 @@ export default function Home({ socket }) {
           alignItems: "flex-start", 
           gap: "20px", 
           padding: "20px",
-          // --- FIX 1: Fixed Height & No Global Scroll ---
           height: "calc(100vh - 85px)", 
           overflow: "hidden"
-          // ----------------------------------------------
         }}
       >
         
@@ -319,7 +317,7 @@ export default function Home({ socket }) {
                 window.scrollTo(0, 0);
               }}
             >
-              <button>View Profile</button>
+              <button>Go to Profile</button>
             </div>
           </div>
 
@@ -355,7 +353,7 @@ export default function Home({ socket }) {
           </div>
         </div>
 
-        {/* Center Post Feed (Scrollable) */}
+        {/* Center Post Feed */}
         <div 
           className="home-post-main" 
           style={{ 
@@ -365,11 +363,9 @@ export default function Home({ socket }) {
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center",
-            // --- FIX 2: Individual Scroll ---
             height: "100%", 
             overflowY: "auto",
             paddingBottom: "50px"
-            // --------------------------------
           }}
         >
           <div className="new-post-box" style={{ width: "100%" }}>
@@ -430,6 +426,7 @@ export default function Home({ socket }) {
                                 state: { id: elem.userid },
                               });
                           }}
+                          style={{ cursor: "pointer" }} 
                         >
                           <img
                             src={
@@ -441,7 +438,9 @@ export default function Home({ socket }) {
                             className="post-profile-img"
                           />
                         </div>
-                        <div className="post-info">
+                        
+                        {/* FIX: Added cursor: default to post info text */}
+                        <div className="post-info" style={{ cursor: "default" }}>
                           <span className="post-name">
                             {elem.fname} {elem.lname}
                           </span>
@@ -451,7 +450,12 @@ export default function Home({ socket }) {
                         </div>
                       </div>
                     </div>
-                    <div className="post-message">{elem.description}</div>
+                    
+                    {/* FIX: Added cursor: default to the message text */}
+                    <div className="post-message" style={{ cursor: "default" }}>
+                        {elem.description}
+                    </div>
+                    
                     {elem.photos.length > 0 ? (
                       <div className="post-images">
                         <Slider {...settings}>
@@ -464,6 +468,8 @@ export default function Home({ socket }) {
                               onDoubleClick={() => {
                                 handleLike(elem._id);
                               }}
+                              /* FIX: Added cursor: default to images */
+                              style={{ cursor: "default" }} 
                             />
                           ))}
                         </Slider>
@@ -482,12 +488,13 @@ export default function Home({ socket }) {
                             ? "#FF0000"
                             : "#000000"
                             }`,
+                          cursor: "pointer" // Ensure like button remains a pointer
                         }}
                         onClick={() => {
                           handleLike(elem);
                         }}
                       ></i>
-                      <span>{elem.likes.length}</span>
+                      <span style={{ cursor: "default" }}>{elem.likes.length}</span>
                     </div>
                   </div>
                 ))}

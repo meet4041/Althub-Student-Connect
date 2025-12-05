@@ -103,6 +103,15 @@ const EventModal = ({ closeModal, event, getEvents }) => {
               ></i>
               <span>{event.participants.length} Participants</span>
             </div>
+            <div>
+              <i
+                className="fa-solid fa-file-lines"
+                style={{ color: "#919090" }}
+              ></i>
+              <span>Description - {event.description}</span>
+              <div>
+              </div>
+            </div>
           </div>
           {new Date() < new Date(event.date) ? (
             <button className="action-button-confirm" onClick={handleJoin}>
