@@ -5,26 +5,27 @@ import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
+import { useNavigate } from "react-router-dom";
 
-// Modal Style
-const style = {
+// Standard Modal Style matched to your CSS theme
+const modalStyle = {
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: 500,
   bgcolor: "background.paper",
-  border: "2px solid #000",
   boxShadow: 24,
   p: 4,
-  display: "flex",
-  flexDirection: "column",
-  gap: "20px"
+  borderRadius: "16px",
+  outline: "none",
 };
 
 export default function MyPosts() {
+  const nav = useNavigate();
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({});
+  const [topUsers, setTopUsers] = useState([]); // Sidebar Data
   const userid = localStorage.getItem("Althub_Id");
 
   // Edit State
@@ -35,11 +36,14 @@ export default function MyPosts() {
 
   const settings = {
     dots: true,
+    infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
+    arrows: false,
   };
 
+  // --- 1. Fetch User Data ---
   const getUser = useCallback(() => {
     if (!userid) return;
     axios({
@@ -52,6 +56,7 @@ export default function MyPosts() {
     });
   }, [userid]);
 
+  // --- 2. Fetch My Posts ---
   const getMyPosts = useCallback(() => {
     axios({
       method: "get",
@@ -65,10 +70,26 @@ export default function MyPosts() {
       });
   }, [userid]);
 
+  // --- 3. Fetch Sidebar Users (People you may know) ---
+  const getNewUsers = useCallback(() => {
+    if (userid) {
+      axios({
+        url: `${WEB_URL}/api/getRandomUsers`,
+        method: "post",
+        data: { userid: userid },
+      })
+        .then((Response) => {
+          setTopUsers(Response.data.data);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [userid]);
+
   useEffect(() => {
     getUser();
     getMyPosts();
-  }, [getUser, getMyPosts]);
+    getNewUsers();
+  }, [getUser, getMyPosts, getNewUsers]);
 
   // --- DELETE POST ---
   const handleDelete = (id) => {
@@ -86,7 +107,7 @@ export default function MyPosts() {
   const handleOpenEdit = (post) => {
     setEditId(post._id);
     setEditDesc(post.description);
-    setEditImages(post.photos || []); // Load existing images
+    setEditImages(post.photos || []);
     setOpen(true);
   };
 
@@ -100,18 +121,9 @@ export default function MyPosts() {
     const formData = new FormData();
     formData.append("id", editId);
     formData.append("description", editDesc);
-    
-    // We send the REMAINING existing images back to server
-    // Note: We are NOT appending to 'photos' (which is for new files), 
-    // we use a specific key 'existingPhotos' or just handle it in backend logic.
-    // Based on my backend update above, let's append them individually.
     editImages.forEach(img => {
         formData.append("existingPhotos", img);
     });
-
-    // If no images left, we need to ensure backend knows to empty it.
-    // If editImages is empty, the loop above does nothing. 
-    // My backend logic handles empty existingPhotos if we don't send new files.
 
     axios({
       method: "post",
@@ -135,117 +147,173 @@ export default function MyPosts() {
   };
 
   return (
-    <div className="home-container" style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-      <h2 style={{marginTop:'20px'}}>My Posts</h2>
-      
-      <div className="home-post-main" style={{width: '600px'}}> 
+    <div className="container">
+      {/* --- LEFT SIDE: MAIN POST FEED --- */}
+      <div className="profile-main">
+        
+        {/* Header Card (Matches Profile Header Style) */}
+        <div className="profile-container" style={{ marginBottom: "20px", padding: "0" }}>
+            <div className="profile-container-inner1" style={{ alignItems: 'center' }}>
+                <div>
+                    <h1 style={{ fontSize: '24px', color: '#2c3e50' }}>My Posts</h1>
+                    <p style={{ color: '#6b7280' }}>Manage your shared content</p>
+                </div>
+                <div style={{ background: '#e0f2ec', padding: '10px 20px', borderRadius: '12px', color: '#4da385', fontWeight: '600' }}>
+                    {posts.length} Posts
+                </div>
+            </div>
+        </div>
+
+        {/* Posts List */}
         {posts.length > 0 ? (
           posts.map((elem) => (
-            <div key={elem._id} className="post" style={{position:'relative'}}>
-              {/* CRUD Actions */}
-              <div style={{position:'absolute', right:'10px', top:'10px', zIndex: 10}}>
-                <button 
-                    onClick={() => handleOpenEdit(elem)}
-                    style={{marginRight:'5px', padding:'5px 10px', cursor:'pointer', background:'#4CAF50', color:'white', border:'none', borderRadius:'4px'}}
-                >
-                    Edit
-                </button>
-                <button 
-                    onClick={() => handleDelete(elem._id)}
-                    style={{padding:'5px 10px', cursor:'pointer', background:'#f44336', color:'white', border:'none', borderRadius:'4px'}}
-                >
-                    Delete
-                </button>
-              </div>
-
-              <div className="post-header">
+            <div key={elem._id} className="post">
+              <div className="post-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div className="post-profile">
-                  <div>
-                    <img
-                      src={
-                        user && user.profilepic
-                          ? `${WEB_URL}${user.profilepic}`
-                          : "images/profile1.png"
-                      }
-                      alt=""
-                      className="post-profile-img"
-                    />
-                  </div>
+                  <img
+                    src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+                    alt=""
+                    className="post-profile-img"
+                  />
                   <div className="post-info">
-                    <span className="post-name">
-                      {user.fname} {user.lname}
-                    </span>
-                    <span className="post-description">
-                      {formatPostTime(elem.date)}
-                    </span>
+                    <span className="post-name">{user.fname} {user.lname}</span>
+                    <span className="post-description">{formatPostTime(elem.date)}</span>
                   </div>
                 </div>
+
+                {/* Modern Edit/Delete Icons */}
+                <div className="edit-icon" style={{ gap: '10px', marginTop: '0' }}>
+                    <i 
+                        className="fa-solid fa-pen-to-square" 
+                        title="Edit Post"
+                        onClick={() => handleOpenEdit(elem)}
+                        style={{ background: '#f3f4f6', color: '#66bd9e' }}
+                    ></i> <br></br>
+                    <i 
+                        className="fa-solid fa-trash" 
+                        title="Delete Post"
+                        onClick={() => handleDelete(elem._id)}
+                        style={{ background: '#fee2e2', color: '#ef4444' }}
+                    ></i>
+                </div>
               </div>
-              <div className="post-message">{elem.description}</div>
-              {elem.photos.length > 0 ? (
+
+              <div className="post-message" style={{ whiteSpace: "pre-wrap" }}>{elem.description}</div>
+              
+              {elem.photos.length > 0 && (
                 <div className="post-images">
                   <Slider {...settings}>
                     {elem.photos.map((el, idx) => (
-                      <img
-                        key={idx}
-                        src={`${WEB_URL}${el}`}
-                        alt=""
-                        className="post-image"
-                      />
+                      <div key={idx} style={{ outline: 'none' }}>
+                          <img src={`${WEB_URL}${el}`} alt="" className="post-image" />
+                      </div>
                     ))}
                   </Slider>
                 </div>
-              ) : null}
+              )}
+
+              <div className="likebar">
+                 <i className="fa-solid fa-heart" style={{ color: "#ef4444" }}></i> 
+                 <span style={{ marginLeft: "8px", fontSize: "14px", fontWeight: "500", color: "#555" }}>
+                    {elem.likes.length} Likes
+                 </span>
+              </div>
             </div>
           ))
         ) : (
-          <h3 style={{textAlign:'center', marginTop:'50px'}}>No posts found.</h3>
+          <div className="profile-description" style={{ textAlign: "center", padding: "50px" }}>
+             <i className="fa-regular fa-folder-open" style={{ fontSize: "40px", color: "#ccc", marginBottom: "15px" }}></i>
+             <h3 style={{ color: "#777" }}>You haven't posted anything yet.</h3>
+          </div>
         )}
       </div>
 
-      {/* Edit Modal */}
+      {/* --- RIGHT SIDE: SIDEBAR (Matches ViewProfile) --- */}
+      <div className="profile-sidebar">
+          <div className="sidebar-people">
+            <h3>People you may know</h3>
+            {topUsers.length > 0 ? (
+              topUsers.map((elem) => (
+                <div key={elem._id}>
+                  <div className="sidebar-people-row">
+                    {elem.profilepic ? (
+                        <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
+                    ) : (
+                        <img src="images/profile1.png" alt="" />
+                    )}
+                    <div>
+                      <h2>{elem.fname} {elem.lname}</h2>
+                      <p>{elem.city} {elem.state}</p>
+                      <a onClick={() => nav("/view-search-profile", { state: { id: elem._id } })}>
+                        View Profile
+                      </a>
+                    </div>
+                  </div>
+                  <hr />
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: "10px", color: "#666", fontSize: "14px" }}>No suggestions available</div>
+            )}
+          </div>
+      </div>
+
+      {/* --- EDIT MODAL --- */}
       <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <h3>Edit Post</h3>
+        <Box sx={modalStyle}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#333" }}>Edit Post</h2>
+            <i className="fa-solid fa-xmark" onClick={handleClose} style={{ cursor: "pointer", fontSize: "20px", color: "gray" }}></i>
+          </div>
           
-          <label>Update Description:</label>
-          <textarea 
-            rows="4" 
-            style={{width:'100%', padding:'5px'}}
-            value={editDesc}
-            onChange={(e) => setEditDesc(e.target.value)}
-          />
-
-          <label>Manage Images (Click X to delete):</label>
-          <div style={{display:'flex', gap:'10px', flexWrap:'wrap'}}>
-            {editImages.map((img, idx) => (
-                <div key={idx} style={{position:'relative', width:'80px', height:'80px'}}>
-                    <img src={`${WEB_URL}${img}`} alt="upload" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'5px'}} />
-                    <span 
-                        onClick={() => removeImage(idx)}
-                        style={{
-                            position:'absolute', top:-5, right:-5, 
-                            background:'red', color:'white', borderRadius:'50%', 
-                            width:'20px', height:'20px', textAlign:'center', 
-                            lineHeight:'20px', cursor:'pointer', fontSize:'12px'
-                        }}
-                    >X</span>
-                </div>
-            ))}
-            {editImages.length === 0 && <p style={{fontSize:'12px', color:'gray'}}>No images remaining.</p>}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: "600", color: "#666" }}>Description</label>
+            <textarea 
+              rows="4" 
+              className="txt-feedback" // Reusing your style.css class for consistency
+              style={{ width: "100%", margin: "0", borderColor: "#e5e7eb" }}
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+            />
           </div>
 
-          <button 
-            onClick={saveEdit}
-            style={{padding:'10px', background:'#2196F3', color:'white', border:'none', borderRadius:'5px', cursor:'pointer'}}
-          >
-            Save Changes
-          </button>
+          <div style={{ marginBottom: "25px" }}>
+             <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: "600", color: "#666" }}>Manage Images</label>
+             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                {editImages.map((img, idx) => (
+                    <div key={idx} style={{ position: "relative", width: "70px", height: "70px" }}>
+                        <img 
+                            src={`${WEB_URL}${img}`} 
+                            alt="post-content" 
+                            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px", border: "1px solid #eee" }} 
+                        />
+                        <div 
+                            onClick={() => removeImage(idx)}
+                            style={{
+                                position: "absolute", top: "-6px", right: "-6px", 
+                                background: "#ef4444", color: "white", borderRadius: "50%", 
+                                width: "20px", height: "20px", display: "flex", 
+                                alignItems: "center", justifyContent: "center", 
+                                cursor: "pointer", fontSize: "10px", border: "2px solid white", boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                            }}
+                        >
+                            <i className="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+                ))}
+                {editImages.length === 0 && <span style={{ fontSize: "13px", color: "gray", fontStyle: "italic" }}>No images to show.</span>}
+             </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <button className="action-button-cancel" style={{width: 'auto'}} onClick={handleClose}>Cancel</button>
+            <button className="action-button" style={{width: 'auto'}} onClick={saveEdit}>Save Changes</button>
+          </div>
         </Box>
       </Modal>
     </div>
