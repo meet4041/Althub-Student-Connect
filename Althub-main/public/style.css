@@ -340,8 +340,9 @@ a {
   margin-bottom: 12px;
   font-size: 12px;
   border-radius: 16px;
-  height: 410px;
-  overflow-y: hidden;
+  height: auto;          /* Allows box to grow with content */
+  max-height: 80vh;      /* Limits height so it doesn't get too long */
+  overflow-y: auto;      /* Adds scroll if list is very long */
 }
 
 .sidebar-people h3 {

@@ -133,23 +133,34 @@ const editPost = async (req, res) => {
 const likeUnlikePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
+        
+        // Check if the user has NOT liked it yet (i.e., this is a NEW LIKE)
         if (!post.likes.includes(req.body.userId)) {
+            
+            // Perform the Like
             await post.updateOne({ $push: { likes: req.body.userId } });
 
+            // --- START: NEW NOTIFICATION LOGIC ---
+            // Fetch the person who is liking the post
             const liker = await User.findById(req.body.userId);
-            if (liker && post.userid !== req.body.userId) {
+            
+            // Don't send notification if user likes their own post
+            if (liker && post.userid !== req.body.userId) { 
                 const notification = new Notification({
-                    userid: post.userid,
+                    userid: post.userid, // The owner of the post gets the alert
                     senderid: req.body.userId,
-                    image: liker.profilepic,
+                    image: liker.profilepic, // Show liker's face
                     title: "New Like",
                     msg: `${liker.fname} ${liker.lname} liked your photo.`,
                     date: new Date()
                 });
                 await notification.save();
             }
+            // --- END: NEW NOTIFICATION LOGIC ---
+
             res.status(200).send({ msg: "Like" });
         } else {
+            // This is the Unlike action
             await post.updateOne({ $pull: { likes: req.body.userId } });
             res.status(200).send({ msg: "disliked" });
         }

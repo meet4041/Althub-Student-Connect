@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import ConnectionUser from "./ConnectionUser";
 
-const FollowerModal = ({ closeModal, user, getUser }) => {
-    console.log(user);
-  const [type, setType] = useState("Follower");
+const FollowerModal = ({ closeModal, user, getUser, initialType = "Follower" }) => {
+  const [type, setType] = useState(initialType);
+  
+  // --- Check if the logged-in user owns this profile ---
+  const myID = localStorage.getItem("Althub_Id");
+  const isOwner = user._id === myID; 
+  // ----------------------------------------------------
+
   return (
     <>
       <div className="modal-wrapper" onClick={closeModal}></div>
@@ -29,7 +34,13 @@ const FollowerModal = ({ closeModal, user, getUser }) => {
         {type === "Follower" && user.followers && user.followers.length > 0 ? (
           <div className="peopleList">
             {user.followers.map((elem) => (
-              <ConnectionUser key={elem} userid={elem} type={type} getUser={getUser}/>
+              <ConnectionUser 
+                key={elem} 
+                userid={elem} 
+                type={type} 
+                getUser={getUser} 
+                isOwner={isOwner} // Pass ownership status
+              />
             ))}
           </div>
         ) : null}
@@ -38,7 +49,13 @@ const FollowerModal = ({ closeModal, user, getUser }) => {
         user.followings.length > 0 ? (
           <div className="peopleList">
             {user.followings.map((elem) => (
-              <ConnectionUser key={elem} userid={elem} type={type} getUser={getUser}/>
+              <ConnectionUser 
+                key={elem} 
+                userid={elem} 
+                type={type} 
+                getUser={getUser} 
+                isOwner={isOwner} // Pass ownership status
+              />
             ))}
           </div>
         ) : null}

@@ -110,17 +110,27 @@ export default function Message({ socket }) {
   }, [currentId, getMessages]);
 
   const sendMessage = (e) => {
-    e.preventDefault(); // Prevents page reload/default behavior
-    
-    // Only proceed if there is a message
+    e.preventDefault();
     if (newMsg.trim() === "") return;
 
+    // 1. Existing: Send the actual message for the chat window
     socket.emit("sendMessage", {
       senderId: userid,
       receiverId: receiverId,
       text: newMsg,
       time: new Date()
     });
+
+    // 2. --- NEW: Send the Notification Alert for the Pop-up ---
+    // This ensures the receiver gets a "Toast" alert immediately
+    if (user && user.fname) {
+      socket.emit("sendNotification", {
+        receiverid: receiverId,
+        title: "New Message",
+        msg: `${user.fname} ${user.lname} sent you a message`,
+      });
+    }
+    // -----------------------------------------------------------
 
     axios({
       method: "post",
@@ -130,7 +140,7 @@ export default function Message({ socket }) {
         sender: userid,
         text: newMsg,
         time: new Date(),
-        receiverId: receiverId // Added for notification logic
+        receiverId: receiverId
       },
     })
       .then((response) => {

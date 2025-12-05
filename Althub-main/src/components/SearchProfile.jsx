@@ -95,26 +95,17 @@ export default function SearchProfile({ socket }) {
     }));
   };
 
-  // --- DYNAMIC LINK GENERATOR ---
-  // This function runs for EVERY user card individually.
   const getSocialLink = (input, platform) => {
     if (!input) return "#";
     const cleanInput = input.trim();
-    
-    // Case 1: User pasted a full link (http/https) -> Use it as is.
     if (cleanInput.startsWith("http://") || cleanInput.startsWith("https://")) {
       return cleanInput;
     }
-    
-    // Case 2: User pasted a link starting with www. -> Add https://
     if (cleanInput.startsWith("www.")) {
       return `https://${cleanInput}`;
     }
-    
-    // Case 3: User typed just a username -> Create the full URL dynamically based on platform
     if (platform === 'linkedin') return `https://www.linkedin.com/in/${cleanInput}`;
     if (platform === 'github') return `https://github.com/${cleanInput}`;
-    
     return cleanInput;
   };
 
@@ -148,7 +139,6 @@ export default function SearchProfile({ socket }) {
           </div>
         </div>
         
-        {/* --- MAP LOOP: This iterates over your 100+ users --- */}
         {showUsers && showUsers.length > 0 ? (
           <div className="card-wrapper">
             {showUsers.map((elem) => (
@@ -168,22 +158,43 @@ export default function SearchProfile({ socket }) {
                   </div>
                 </div>
                 <div className="card-content">
-                  <h2 className="name"
-                    onClick={() => {
-                      elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
-                    }
-                    }>
-                    {elem.fname} {elem.lname}
-                  </h2>
+                  
+                  {/* --- NAME & ALUMNI TAG --- */}
+                  <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                    <h2 className="name"
+                        style={{cursor:'pointer', margin: 0}}
+                        onClick={() => {
+                        elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
+                        }
+                        }>
+                        {elem.fname} {elem.lname}
+                    </h2>
+                    
+                    {/* Alumni Tag Logic */}
+                    {elem.isAlumni && (
+                        <span style={{
+                            backgroundColor: "#e3f2fd", 
+                            color: "#1976d2", 
+                            padding: "2px 8px", 
+                            borderRadius: "10px", 
+                            fontSize: "10px", 
+                            fontWeight: "600",
+                            border: "1px solid #90caf9",
+                            marginTop: "4px"
+                        }}>
+                            Alumni
+                        </span>
+                    )}
+                  </div>
+                  {/* ------------------------- */}
+
                   <p>
                     {elem.city && elem.city} {elem.state && elem.state}{" "}
                     {elem.nation ? `, ${elem.nation} ` : null}
                   </p>
                   
-                  {/* --- DYNAMIC SOCIAL ICONS --- */}
                   <div className="nav">
                     <ul>
-                      {/* Check if THIS specific user (elem) has a LinkedIn */}
                       {elem.linkedin && elem.linkedin.trim() !== "" && (
                         <li>
                           <a 
@@ -200,7 +211,6 @@ export default function SearchProfile({ socket }) {
                         </li>
                       )}
                       
-                      {/* Check if THIS specific user (elem) has a GitHub */}
                       {elem.github && elem.github.trim() !== "" && (
                         <li>
                           <a 
@@ -218,7 +228,6 @@ export default function SearchProfile({ socket }) {
                       )}
                     </ul>
                   </div>
-                  {/* ----------------------------- */}
 
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <button

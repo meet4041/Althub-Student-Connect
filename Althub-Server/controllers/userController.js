@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Education = require("../models/educationModel"); // Ensure this is imported
 const bcryptjs = require("bcryptjs");
 const config = require("../config/config");
 const jwt = require("jsonwebtoken");
@@ -6,7 +7,8 @@ const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const cookieParser = require("cookie-parser");
 
-// --- HELPER: Send Email (Wrapped in Promise) ---
+// ... (Keep existing helper functions: sendresetpasswordMail, createtoken, securePassword)
+
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -26,7 +28,6 @@ const sendresetpasswordMail = async (name, email, token) => {
             html: '<p>Hello ' + name + ', Please copy the link to <a href="http://localhost:3000/new-password?token=' + token + '">reset your password</a></p>'
         };
 
-        // FIX: Wrap in Promise so we can await it in the controller
         return new Promise((resolve, reject) => {
             transporter.sendMail(mailoptions, function (error, info) {
                 if (error) {
@@ -42,7 +43,7 @@ const sendresetpasswordMail = async (name, email, token) => {
 
     } catch (error) {
         console.log("Nodemailer error:", error.message);
-        throw error; // Re-throw to be caught by the controller
+        throw error; 
     }
 }
 
@@ -64,7 +65,31 @@ const securePassword = async (password) => {
     }
 }
 
-// --- CONTROLLERS ---
+// --- HELPER: Alumni Check Logic ---
+const checkAlumniStatus = (educations) => {
+    if (!educations || educations.length === 0) return false;
+
+    // 1. If currently studying (no end date), not alumni
+    const isStudying = educations.some(edu => !edu.enddate || edu.enddate === "");
+    if (isStudying) return false;
+
+    // 2. Find latest graduation year
+    let maxYear = 0;
+    educations.forEach(edu => {
+        const d = new Date(edu.enddate);
+        if (!isNaN(d.getTime()) && d.getFullYear() > maxYear) {
+            maxYear = d.getFullYear();
+        }
+    });
+
+    // 3. Check if past May 15th of max year
+    const cutoffDate = new Date(maxYear, 4, 15); // Month 4 is May
+    const now = new Date();
+
+    return now > cutoffDate;
+};
+
+// ... (Keep existing controllers: registerUser, userlogin, updatePassword, etc.)
 
 const registerUser = async (req, res) => {
     try {
@@ -131,7 +156,6 @@ const userlogin = async (req, res) => {
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                // Security: Don't send password back
                 const { password, ...userResult } = userData._doc;
                 res.status(200).send({ success: true, msg: "user details", data: userResult });
             }
@@ -185,18 +209,8 @@ const forgetPassword = async (req, res) => {
         
         if (userData) {
             const randomString = randomstring.generate();
-            
-            // 1. Update token in DB
-            await User.updateOne({ email: email }, {
-                $set: {
-                    token: randomString
-                }
-            });
-
-            // 2. FIX: Await the email sending. If this fails, we go to catch()
+            await User.updateOne({ email: email }, { $set: { token: randomString } });
             await sendresetpasswordMail(userData.fname, userData.email, randomString);
-            
-            // 3. Send success ONLY if email actually sent
             res.status(200).send({ success: true, msg: "Please Check your inbox of mail and reset your password" });
         }
         else {
@@ -204,7 +218,7 @@ const forgetPassword = async (req, res) => {
         }
     } catch (error) {
         console.error("Forget Password Error:", error);
-        res.status(500).send({ success: false, msg: "Failed to send reset email. Please check server logs." });
+        res.status(500).send({ success: false, msg: "Failed to send reset email." });
     }
 }
 
@@ -216,10 +230,7 @@ const resetpassword = async (req, res) => {
             const password = req.body.password;
             const newpassword = await securePassword(password);
             const userData = await User.findByIdAndUpdate({ _id: tokenData._id }, {
-                $set: {
-                    password: newpassword,
-                    token: '' // Clear token so it can't be reused
-                }
+                $set: { password: newpassword, token: '' }
             }, { new: true });
 
             res.status(200).send({ success: true, msg: "User password has been reset!", data: userData });
@@ -235,27 +246,17 @@ const resetpassword = async (req, res) => {
 const userProfileEdit = async (req, res) => {
     try {
         var id = req.body.id;
-        var fname = req.body.fname;
-        var lname = req.body.lname;
-        var gender = req.body.gender;
-        var dob = req.body.dob;
-        var city = req.body.city;
-        var state = req.body.state;
-        var nation = req.body.nation;
-        // Profilepic is handled by updateProfilePic
-        var phone = req.body.phone;
-        var email = req.body.email;
-        var languages = req.body.languages;
-        var github = req.body.github;
-        var linkedin = req.body.linkedin;
-        var portfolioweb = req.body.portfolioweb;
-        var skills = req.body.skills;
-        var institute = req.body.institute;
-        var role = req.body.role
-        var about = req.body.about
+        const updateFields = { 
+            fname: req.body.fname, lname: req.body.lname, gender: req.body.gender, 
+            dob: req.body.dob, city: req.body.city, state: req.body.state, 
+            nation: req.body.nation, phone: req.body.phone, email: req.body.email, 
+            languages: req.body.languages, github: req.body.github, 
+            linkedin: req.body.linkedin, portfolioweb: req.body.portfolioweb, 
+            skills: req.body.skills, institute: req.body.institute, 
+            role: req.body.role, about: req.body.about 
+        };
         
-        const new_data = await User.findByIdAndUpdate({ _id: id }, { $set: { fname: fname, lname: lname, gender: gender, dob: dob, city: city, state: state, nation: nation, phone: phone, email: email, languages: languages, github: github, linkedin: linkedin, portfolioweb: portfolioweb, skills: skills, role: role, institute: institute, about: about } }, { new: true });
-
+        const new_data = await User.findByIdAndUpdate({ _id: id }, { $set: updateFields }, { new: true });
         res.status(200).send({ success: true, msg: 'User Profile Updated', data: new_data });
     }
     catch (error) {
@@ -266,24 +267,34 @@ const userProfileEdit = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const id = req.params.id;
-        const result = await User.deleteOne({ _id: id });
+        await User.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'user Deleted successfully' });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
 
+// --- UPDATED SEARCH USER (Fixing Alumni Check) ---
 const searchUser = async (req, res) => {
     try {
-        var search = req.body.search;
+        var search = req.body.search || "";
+        
         var user_data = await User.find({
             $or: [
                 { "fname": { $regex: new RegExp(".*" + search + ".*", "i") } },
                 { "lname": { $regex: new RegExp(".*" + search + ".*", "i") } }
             ]
-        });;
+        }).lean(); // Use lean() for performance and mutability
+
         if (user_data.length > 0) {
-            res.status(200).send({ success: true, msg: "User Details", data: user_data });
+            const usersWithStatus = await Promise.all(user_data.map(async (user) => {
+                // FIX: Convert ObjectId to String for the query
+                const educationList = await Education.find({ userid: user._id.toString() });
+                const isAlumni = checkAlumniStatus(educationList);
+                return { ...user, isAlumni };
+            }));
+
+            res.status(200).send({ success: true, msg: "User Details", data: usersWithStatus });
         }
         else {
             res.status(200).send({ success: true, msg: 'No User Found' });
@@ -389,7 +400,6 @@ const unfollowUser = async (req, res) => {
     }
 };
 
-// --- CRUD for Profile Picture ---
 const updateProfilePic = async (req, res) => {
     try {
         const userId = req.body.userid;
