@@ -67,7 +67,15 @@ app.use(express.static("public"));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // 1. Ignore 'request aborted' errors (Fixes the console spam)
+  if (err.type === 'request.aborted' || err.code === 'ECONNABORTED') {
+    return;
+  }
+
+  // 2. Log actual errors
   console.error("Error:", err);
+
+  // 3. Send response
   res.status(err.status || 500).json({
     error: err.message || "Internal Server Error"
   });

@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const cookieParser = require("cookie-parser");
+const mongoose = require('mongoose');
 
 // ... (Keep existing helper functions: sendresetpasswordMail, createtoken, securePassword)
 
@@ -43,7 +44,7 @@ const sendresetpasswordMail = async (name, email, token) => {
 
     } catch (error) {
         console.log("Nodemailer error:", error.message);
-        throw error; 
+        throw error;
     }
 }
 
@@ -206,7 +207,7 @@ const forgetPassword = async (req, res) => {
     try {
         const email = req.body.email;
         const userData = await User.findOne({ email: email });
-        
+
         if (userData) {
             const randomString = randomstring.generate();
             await User.updateOne({ email: email }, { $set: { token: randomString } });
@@ -246,16 +247,16 @@ const resetpassword = async (req, res) => {
 const userProfileEdit = async (req, res) => {
     try {
         var id = req.body.id;
-        const updateFields = { 
-            fname: req.body.fname, lname: req.body.lname, gender: req.body.gender, 
-            dob: req.body.dob, city: req.body.city, state: req.body.state, 
-            nation: req.body.nation, phone: req.body.phone, email: req.body.email, 
-            languages: req.body.languages, github: req.body.github, 
-            linkedin: req.body.linkedin, portfolioweb: req.body.portfolioweb, 
-            skills: req.body.skills, institute: req.body.institute, 
-            role: req.body.role, about: req.body.about 
+        const updateFields = {
+            fname: req.body.fname, lname: req.body.lname, gender: req.body.gender,
+            dob: req.body.dob, city: req.body.city, state: req.body.state,
+            nation: req.body.nation, phone: req.body.phone, email: req.body.email,
+            languages: req.body.languages, github: req.body.github,
+            linkedin: req.body.linkedin, portfolioweb: req.body.portfolioweb,
+            skills: req.body.skills, institute: req.body.institute,
+            role: req.body.role, about: req.body.about
         };
-        
+
         const new_data = await User.findByIdAndUpdate({ _id: id }, { $set: updateFields }, { new: true });
         res.status(200).send({ success: true, msg: 'User Profile Updated', data: new_data });
     }
@@ -278,7 +279,7 @@ const deleteUser = async (req, res) => {
 const searchUser = async (req, res) => {
     try {
         var search = req.body.search || "";
-        
+
         var user_data = await User.find({
             $or: [
                 { "fname": { $regex: new RegExp(".*" + search + ".*", "i") } },
@@ -452,6 +453,67 @@ const deleteProfilePic = async (req, res) => {
     }
 };
 
+const getRandomUsers = async (req, res) => {
+    try {
+        const currentUserId = req.body.userid;
+        let excludedIds = [];
+
+        // 1. If valid User ID, fetch the user to get their 'followings' list
+        if (currentUserId && mongoose.Types.ObjectId.isValid(currentUserId)) {
+            const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
+
+            // Add self to exclusion
+            excludedIds.push(currentUserObjectId);
+
+            // Fetch user to get followings
+            const currentUser = await User.findById(currentUserId);
+            if (currentUser && currentUser.followings && currentUser.followings.length > 0) {
+                // Add all followed IDs to exclusion (Convert to ObjectId if stored as strings)
+                const followingIds = currentUser.followings.map(id => new mongoose.Types.ObjectId(id));
+                excludedIds = excludedIds.concat(followingIds);
+            }
+        }
+
+        const pipeline = [];
+
+        // 2. Filter: Exclude Self AND Following
+        if (excludedIds.length > 0) {
+            pipeline.push({
+                $match: { _id: { $nin: excludedIds } }
+            });
+        }
+
+        // 3. Randomly select 4 users
+        pipeline.push({ $sample: { size: 4 } });
+
+        // 4. Project only necessary fields
+        pipeline.push({
+            $project: {
+                fname: 1,
+                lname: 1,
+                profilepic: 1,
+                city: 1,
+                state: 1,
+                nation: 1,
+                institute: 1,
+                followers: 1,
+                followings: 1
+            }
+        });
+
+        const user_data = await User.aggregate(pipeline);
+
+        res.status(200).send({ success: true, data: user_data });
+
+    } catch (error) {
+        console.error("Random Users Error:", error);
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
+// ... (Keep existing functions: registerUser, userlogin, etc.)
+
+// 3. UPDATE EXPORTS AT THE BOTTOM
 module.exports = {
     registerUser,
     userlogin,
@@ -470,5 +532,6 @@ module.exports = {
     getUsersOfInstitute,
     getTopUsers,
     updateProfilePic,
-    deleteProfilePic
+    deleteProfilePic,
+    getRandomUsers // <--- Don't forget to add this!
 }

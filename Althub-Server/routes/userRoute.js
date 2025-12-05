@@ -28,6 +28,7 @@ user_route.put('/deleteProfilePic/:id', user_controller.deleteProfilePic);
 
 
 // --- EXISTING ROUTES ---
+user_route.post('/getRandomUsers', user_controller.getRandomUsers);
 user_route.post('/register', user_controller.registerUser);
 user_route.post('/userLogin', user_controller.userlogin);
 user_route.post('/userUpdatePassword', user_controller.updatePassword);

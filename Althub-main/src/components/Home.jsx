@@ -138,7 +138,7 @@ export default function Home({ socket }) {
     body.append("fname", user.fname);
     body.append("lname", user.lname);
     body.append("profilepic", user.profilepic || "");
-
+    
     axios({
       url: `${WEB_URL}/api/addPost`,
       method: "post",
@@ -149,7 +149,7 @@ export default function Home({ socket }) {
     })
       .then((Response) => {
         toast.success("Post Uploaded!!");
-        sendNewPostNotification();
+        sendNewPostNotification(); 
         setFileList(null);
         setDescription("");
         getPost();
@@ -165,52 +165,37 @@ export default function Home({ socket }) {
   };
 
   const handleLike = async (elem) => {
-    // Check if user is liking someone else's post (don't notify self)
-    if (userid !== elem.userid) {
-      socket.emit("sendNotification", {
-        receiverid: elem.userid, // The owner of the post
-        title: "New Like",
-        msg: `${user.fname} Liked Your Post`,
-      });
-    }
-
-    // Database Call
+    // 1. Database Update (Toggle Like)
     await axios({
       method: "put",
       url: `${WEB_URL}/api/like/${elem._id}`,
-      data: {
-        userId: userid,
-      },
+      data: { userId: userid },
     })
-      .then((response) => {
-        handleNotification(elem, response.data.msg);
-        getPost();
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  const handleNotification = (elem, msg) => {
-    if (userid !== elem.userid && user && user.fname && user.lname) {
-      axios({
-        url: `${WEB_URL}/api/addNotification`,
-        method: "post",
-        data: {
-          userid: elem.userid,
-          msg: `${user.fname} ${user.lname} ${msg} your Post`,
-          image: user.profilepic || "",
+    .then((response) => {
+      // 2. ONLY Notify if liking someone else's post
+      if (userid !== elem.userid) {
+        const msg = `${user.fname} Liked Your Post`;
+  
+        // A. Save to Database (For Notification Page)
+        axios.post(`${WEB_URL}/api/addNotification`, {
+          userid: elem.userid, // Receiver
+          msg: msg,
+          image: user.profilepic || "", // Sender's Image
           title: "New Like",
-          date: new Date(),
-        },
-      })
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error);
+          date: new Date().toISOString()
         });
-    }
+        
+        // B. Socket Emission (Optional: If you want pop-up for likes, uncomment below)
+        socket.emit("sendNotification", {
+          receiverid: elem.userid,
+          title: "New Like",
+          msg: msg,
+        }); 
+        
+      }
+      getPost(); // Refresh posts
+    })
+    .catch((error) => console.error("Error:", error));
   };
 
   const formatPostTime = (timestamp) => {
@@ -273,22 +258,22 @@ export default function Home({ socket }) {
 
   return (
     <>
-      <div
-        className="home-container"
+      <div 
+        className="home-container" 
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "flex-start",
-          gap: "20px",
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "flex-start", 
+          gap: "20px", 
           padding: "20px",
-          height: "calc(100vh - 85px)",
+          height: "calc(100vh - 85px)", 
           overflow: "hidden"
         }}
       >
-
+        
         {/* Left Sidebar */}
-        <div
-          className="profile-card-main"
+        <div 
+          className="profile-card-main" 
           style={{ flex: "0 0 280px" }}
         >
           <div className="profile-card">
@@ -313,18 +298,22 @@ export default function Home({ socket }) {
                 {user.fname} {user.lname}
               </span>
             </div>
+            
+            {/* REMOVED: Old Go to Profile Button */}
+          </div>
+
+          <div className="menu-container">
+            {/* ADDED: New Profile Menu Item (Top of list) */}
             <div
-              className="profile-card-button"
+              className="menu"
               onClick={() => {
                 nav("/view-profile");
                 window.scrollTo(0, 0);
               }}
             >
-              <button>Go to Profile</button>
+              <i className="fa-solid fa-user"></i>Go to Profile
             </div>
-          </div>
 
-          <div className="menu-container">
             <div
               className="menu"
               onClick={() => {
@@ -357,16 +346,16 @@ export default function Home({ socket }) {
         </div>
 
         {/* Center Post Feed */}
-        <div
-          className="home-post-main"
-          style={{
-            flex: "1",
-            maxWidth: "650px",
-            minWidth: "0",
-            display: "flex",
-            flexDirection: "column",
+        <div 
+          className="home-post-main" 
+          style={{ 
+            flex: "1", 
+            maxWidth: "650px", 
+            minWidth: "0", 
+            display: "flex", 
+            flexDirection: "column", 
             alignItems: "center",
-            height: "100%",
+            height: "100%", 
             overflowY: "auto",
             paddingBottom: "50px"
           }}
@@ -429,7 +418,7 @@ export default function Home({ socket }) {
                                 state: { id: elem.userid },
                               });
                           }}
-                          style={{ cursor: "pointer" }}
+                          style={{ cursor: "pointer" }} 
                         >
                           <img
                             src={
@@ -441,8 +430,7 @@ export default function Home({ socket }) {
                             className="post-profile-img"
                           />
                         </div>
-
-                        {/* FIX: Added cursor: default to post info text */}
+                        
                         <div className="post-info" style={{ cursor: "default" }}>
                           <span className="post-name">
                             {elem.fname} {elem.lname}
@@ -453,12 +441,11 @@ export default function Home({ socket }) {
                         </div>
                       </div>
                     </div>
-
-                    {/* FIX: Added cursor: default to the message text */}
+                    
                     <div className="post-message" style={{ cursor: "default" }}>
-                      {elem.description}
+                        {elem.description}
                     </div>
-
+                    
                     {elem.photos.length > 0 ? (
                       <div className="post-images">
                         <Slider {...settings}>
@@ -469,10 +456,9 @@ export default function Home({ socket }) {
                               alt=""
                               className="post-image"
                               onDoubleClick={() => {
-                                handleLike(elem._id);
+                                handleLike(elem);
                               }}
-                              /* FIX: Added cursor: default to images */
-                              style={{ cursor: "default" }}
+                              style={{ cursor: "default" }} 
                             />
                           ))}
                         </Slider>
@@ -491,7 +477,7 @@ export default function Home({ socket }) {
                             ? "#FF0000"
                             : "#000000"
                             }`,
-                          cursor: "pointer" // Ensure like button remains a pointer
+                          cursor: "pointer" 
                         }}
                         onClick={() => {
                           handleLike(elem);
@@ -509,8 +495,8 @@ export default function Home({ socket }) {
         </div>
 
         {/* Right Sidebar */}
-        <div
-          className="home-right-main"
+        <div 
+          className="home-right-main" 
           style={{ flex: "0 0 300px" }}
         >
           <div className="event-box">

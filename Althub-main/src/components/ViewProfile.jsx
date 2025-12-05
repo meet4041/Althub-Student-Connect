@@ -15,14 +15,16 @@ export default function ViewProfile() {
   const [language, setLanguage] = useState([]);
   const [skills, setSkills] = useState([]);
   const [education, setEducation] = useState([]);
-  // const [contactInfo, setContactInfo] = useState(false); // Removed
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [showModal3, setShowModal3] = useState(false);
   const [showModal4, setShowModal4] = useState(false);
   const [showModal5, setShowModal5] = useState(false);
   const [experience, setExperience] = useState([]);
-  const [topUsers, setTopUsers] = useState([]);
+  
+  // 1. Define state for the list (Already existed, just confirmed)
+  const [topUsers, setTopUsers] = useState([]); 
+  
   const closeModal1 = () => setShowModal1(false);
   const closeModal2 = () => setShowModal2(false);
   const closeModal3 = () => setShowModal3(false);
@@ -35,14 +37,13 @@ export default function ViewProfile() {
   
   const userID = localStorage.getItem("Althub_Id");
 
-  // --- NEW: Handle Delete Account ---
   const handleDeleteAccount = () => {
     if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
       axios.delete(`${WEB_URL}/api/deleteUser/${userID}`)
         .then((response) => {
           toast.success("Account Deleted Successfully");
-          localStorage.clear(); // Clear session
-          nav("/"); // Redirect to Login
+          localStorage.clear();
+          nav("/");
         })
         .catch((error) => {
           console.error("Delete Account Error:", error);
@@ -50,7 +51,6 @@ export default function ViewProfile() {
         });
     }
   };
-  // ----------------------------------
 
   const getUser = useCallback((signal) => {
     return axios({
@@ -127,31 +127,27 @@ export default function ViewProfile() {
       });
   }, [userID]);
 
+  // 2. Define the Fetch Function (Replaced the old getTopUsers logic)
   const getNewUsers = useCallback((signal) => {
-    if (user && Object.keys(user).length > 0 && user.institute) {
+    if (userID) {
       return axios({
-        url: `${WEB_URL}/api/getTopUsers`,
+        url: `${WEB_URL}/api/getRandomUsers`, // Calls the new backend route
         method: "post",
         data: {
-          institute: user.institute,
+          userid: userID, // Pass ID to exclude self
         },
         signal,
       })
         .then((Response) => {
-          setTopUsers(Response.data.data.filter((elem) => elem._id !== user._id));
+          setTopUsers(Response.data.data); // Update state with random users
         })
         .catch((err) => {
-          if (
-            err?.code === "ERR_CANCELED" ||
-            err?.message?.toLowerCase()?.includes("aborted") ||
-            err?.name === "CanceledError"
-          ) {
-            return;
+          if (err?.code !== "ERR_CANCELED") {
+            console.error("Error fetching suggestions:", err);
           }
-          console.error("getTopUsers error:", err?.response?.data || err?.message);
         });
     }
-  }, [user]);
+  }, [userID]);
 
   const formatDate = (date) => {
     if (date === "" || date == null) {
@@ -194,7 +190,6 @@ export default function ViewProfile() {
     }
   };
 
-  // --- ALUMNI LOGIC ---
   const isAlumni = React.useMemo(() => {
     if (!education || education.length === 0) return false;
     const isStudying = education.some(edu => !edu.enddate || edu.enddate === "");
@@ -210,7 +205,6 @@ export default function ViewProfile() {
     const now = new Date();
     return now > cutoffDate;
   }, [education]);
-  // --------------------
 
   useEffect(() => {
     const controller = new AbortController();
@@ -223,11 +217,12 @@ export default function ViewProfile() {
     return () => controller.abort();
   }, [getUser, getEducation, getExperience]);
 
+  // 3. Trigger it on Mount (Refresh)
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
 
-    getNewUsers(signal);
+    getNewUsers(signal); // Fetch random users immediately
 
     return () => controller.abort();
   }, [getNewUsers]);
@@ -250,7 +245,6 @@ export default function ViewProfile() {
                   <img src="images/profile1.png" className="profile-pic" alt="#" />
                 )}
                 
-                {/* Name & Alumni Tag */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <h1>{user.fname} {user.lname}</h1>
                     {isAlumni && (
@@ -270,7 +264,6 @@ export default function ViewProfile() {
 
                 <p>{user.institute && user.institute}</p>
 
-                {/* Followers & Following */}
                 <div style={{ marginTop: '10px', display: 'flex', gap: '20px', fontSize: '14px', fontWeight: '500' }}>
                   <span 
                     onClick={() => openFollowModal("Follower")} 
@@ -290,7 +283,6 @@ export default function ViewProfile() {
                   </span>
                 </div>
 
-                {/* Location & Social Icons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
                   <p style={{ margin: 0 }}>
                     {user.city && user.city} {user.state && user.state}{" "}
@@ -314,7 +306,6 @@ export default function ViewProfile() {
 
               </div>
               
-              {/* --- ACTION MENU --- */}
               <div className="edit-icon">
                 <i
                   className="fa-solid fa-pencil"
@@ -375,7 +366,6 @@ export default function ViewProfile() {
                       Change Password
                     </a>
                     
-                    {/* --- NEW: Delete Account Link --- */}
                     <hr style={{margin: "5px 0"}}/>
                     <a
                       onClick={(e) => {
@@ -387,7 +377,6 @@ export default function ViewProfile() {
                     >
                       Delete Account
                     </a>
-                    {/* -------------------------------- */}
 
                   </div>
                 </div>
@@ -516,6 +505,8 @@ export default function ViewProfile() {
             </div>
           ) : null}
         </div>
+        
+        {/* --- Sidebar Section --- */}
         <div className="profile-sidebar">
           {topUsers.length > 0 ? (
             <div className="sidebar-people">
@@ -541,6 +532,7 @@ export default function ViewProfile() {
                             state: { id: elem._id },
                           })
                         }
+                        style={{ cursor: "pointer" }}
                       >
                         View Profile
                       </a>

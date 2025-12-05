@@ -6,7 +6,7 @@ import { WEB_URL } from "../baseURL";
 export default function Notidfication() {
   const [notifications, setNotifications] = useState([]);
   const [user, setUser] = useState({});
-  const [loading, setLoading] = useState(true); // Added loading state
+  const [loading, setLoading] = useState(true);
   const nav = useNavigate();
   const userid = localStorage.getItem("Althub_Id");
 
@@ -32,7 +32,6 @@ export default function Notidfication() {
       },
     })
       .then((Response) => {
-        // Ensure data exists before filtering
         if (Response.data && Response.data.data) {
           const allowedTypes = ["New Follower", "New Like", "New Event", "New Message"];
           const filteredData = Response.data.data.filter((item) => 
@@ -86,6 +85,7 @@ export default function Notidfication() {
   return (
     <>
       <div className="home-container">
+        {/* --- LEFT SIDEBAR UPDATED TO MATCH HOME --- */}
         <div className="profile-card-main">
           <div className="profile-card">
             <div className="profile-card-imgbox">
@@ -109,18 +109,21 @@ export default function Notidfication() {
                 {user?.fname} {user?.lname}
               </span>
             </div>
-            <div
-              className="profile-card-button"
+            {/* Button Removed from here */}
+          </div>
+
+          <div className="menu-container">
+            {/* Added Go to Profile here */}
+            <div 
+              className="menu" 
               onClick={() => {
                 nav("/view-profile");
                 window.scrollTo(0, 0);
               }}
             >
-              <button>View Profile</button>
+              <i className="fa-solid fa-user"></i>Go to Profile
             </div>
-          </div>
 
-          <div className="menu-container">
             <div className="menu" onClick={() => nav("/events")}>
               <i className="fa-solid fa-calendar"></i>Events
             </div>
@@ -136,6 +139,7 @@ export default function Notidfication() {
             </div>
           </div>
         </div>
+        {/* ------------------------------------------ */}
 
         <div className="notification-main">
           {loading ? (
@@ -143,7 +147,7 @@ export default function Notidfication() {
           ) : notifications.length > 0 ? (
             <div className="notification-box">
               {notifications.map((elem) => (
-                <div className="notification" key={elem._id}>
+                <div className="notification" key={elem._id || Math.random()}>
                   <div className="notifiction-img">
                     {elem.image ? (
                         <img src={`${WEB_URL}${elem.image}`} alt="" />

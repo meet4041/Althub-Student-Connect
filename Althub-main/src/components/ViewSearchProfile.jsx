@@ -13,9 +13,9 @@ export default function ViewSearchProfile({ socket }) {
   const [language, setLanguage] = useState([]);
   const [education, setEducation] = useState([]);
   const [experience, setExperience] = useState([]);
-  const myID = localStorage.getItem("Althub_Id");
-  const [userID, setUserID] = useState("");
-  const [topUsers, setTopUsers] = useState([]);
+  const myID = localStorage.getItem("Althub_Id"); // Current Logged In User
+  const [userID, setUserID] = useState(""); // User Profile being viewed
+  const [topUsers, setTopUsers] = useState([]); // Random Users
   const [self, setSelf] = useState({});
 
   const [showFollowerModal, setShowFollowerModal] = useState(false);
@@ -131,31 +131,35 @@ export default function ViewSearchProfile({ socket }) {
   }, [userID]);
 
   const handleFollow = () => {
-    // 1. Emit Socket Event (Real-time)
+    const msg = `${self.fname} ${self.lname} Started Following You`;
+
     socket.emit("sendNotification", {
-      receiverid: userID, // The ID of the person being followed
+      receiverid: userID,
       title: "New Follower",
-      msg: `${self.fname} ${self.lname} Started Following You`,
+      msg: msg,
     });
 
-    // 2. Database Call (Persistent storage)
+    axios.post(`${WEB_URL}/api/addNotification`, {
+      userid: userID,
+      msg: msg,
+      image: self.profilepic || "",
+      title: "New Follower",
+      date: new Date().toISOString()
+    }).catch(err => console.log(err));
+
     axios({
       url: `${WEB_URL}/api/follow/${userID}`,
-      data: {
-        userId: myID,
-      },
+      data: { userId: myID },
       method: "put",
     })
       .then((Response) => {
-        toast(Response.data);
+        toast.success(Response.data);
         getUser();
         if (!user.followings.includes(myID.toString())) {
           handleConversation();
         }
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch((error) => console.log(error));
   };
 
   const handleUnfollow = () => {
@@ -168,7 +172,7 @@ export default function ViewSearchProfile({ socket }) {
         method: "put",
       })
         .then((Response) => {
-          toast(Response.data);
+          toast.success(Response.data);
           getUser();
           handleConversation();
         })
@@ -205,31 +209,29 @@ export default function ViewSearchProfile({ socket }) {
     });
   };
 
+  // --- UPDATED: Random Users Logic ---
   const getNewUsers = useCallback((signal) => {
-    if (user && Object.keys(user).length > 0 && user.institute) {
+    if (myID) {
       return axios({
-        url: `${WEB_URL}/api/getTopUsers`,
+        url: `${WEB_URL}/api/getRandomUsers`, // Uses the Random API
         method: "post",
         data: {
-          institute: user.institute,
+          userid: myID, // Send myID to exclude self & my followings
         },
         signal,
       })
         .then((Response) => {
-          setTopUsers(Response.data.data.filter((elem) => elem._id !== myID && elem._id !== user._id));
+          // Additional filter: Remove the user we are currently viewing from suggestions
+          const filtered = Response.data.data.filter(u => u._id !== userID);
+          setTopUsers(filtered);
         })
         .catch((err) => {
-          if (
-            err?.code === "ERR_CANCELED" ||
-            err?.message?.toLowerCase()?.includes("aborted") ||
-            err?.name === "CanceledError"
-          ) {
-            return;
+          if (err?.code !== "ERR_CANCELED") {
+            console.error("getRandomUsers error:", err);
           }
-          console.error("getTopUsers error:", err?.response?.data || err?.message);
         });
     }
-  }, [user, myID]);
+  }, [myID, userID]);
 
   const formatDate = (date) => {
     if (date === "" || date === null) {
@@ -272,15 +274,10 @@ export default function ViewSearchProfile({ socket }) {
     setShowFollowerModal(true);
   };
 
-  // --- ALUMNI CALCULATION LOGIC ---
   const isAlumni = useMemo(() => {
     if (!education || education.length === 0) return false;
-
-    // 1. Check if user is currently studying (empty enddate)
     const isStudying = education.some(edu => !edu.enddate || edu.enddate === "");
     if (isStudying) return false;
-
-    // 2. Find the latest graduation year
     let maxYear = 0;
     education.forEach(edu => {
       const d = new Date(edu.enddate);
@@ -288,14 +285,10 @@ export default function ViewSearchProfile({ socket }) {
         maxYear = d.getFullYear();
       }
     });
-
-    // 3. Compare with May 15th of that year
-    const cutoffDate = new Date(maxYear, 4, 15); // Month 4 is May (0-indexed)
+    const cutoffDate = new Date(maxYear, 4, 15);
     const now = new Date();
-
     return now > cutoffDate;
   }, [education]);
-  // --------------------------------
 
   useEffect(() => {
     const controller = new AbortController();
@@ -338,15 +331,12 @@ export default function ViewSearchProfile({ socket }) {
                   <img src="images/profile1.png" className="profile-pic" alt="#" />
                 )}
 
-                {/* --- NAME & ALUMNI TAG --- */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                   <h1>{user.fname} {user.lname}</h1>
-
-                  {/* Only show Alumni Tag if criteria met */}
                   {isAlumni && (
                     <span style={{
-                      backgroundColor: "#e3f2fd", // Light blue bg
-                      color: "#1976d2", // Dark blue text
+                      backgroundColor: "#e3f2fd",
+                      color: "#1976d2",
                       padding: "4px 10px",
                       borderRadius: "15px",
                       fontSize: "12px",
@@ -360,11 +350,9 @@ export default function ViewSearchProfile({ socket }) {
                     </span>
                   )}
                 </div>
-                {/* ------------------------- */}
 
-                <p>{user.institute && user.institute}</p>
+                <p>{user.institute}</p>
 
-                {/* Follower Counts */}
                 <div style={{ margin: '8px 0', display: 'flex', gap: '20px', fontSize: '14px', fontWeight: '500' }}>
                   <span
                     onClick={() => openFollowModal("Follower")}
@@ -384,7 +372,6 @@ export default function ViewSearchProfile({ socket }) {
                   </span>
                 </div>
 
-                {/* Social Icons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
                   <p style={{ margin: 0 }}>
                     {user.city && user.city} {user.state && user.state}{" "}
@@ -525,11 +512,13 @@ export default function ViewSearchProfile({ socket }) {
             </div>
           ) : null}
         </div>
+
+        {/* --- RIGHT SIDEBAR: PEOPLE YOU MAY KNOW --- */}
         <div className="profile-sidebar">
-          {topUsers.length > 0 ? (
-            <div className="sidebar-people">
-              <h3>People you may know</h3>
-              {topUsers.map((elem) => (
+          <div className="sidebar-people">
+            <h3>People you may know</h3>
+            {topUsers.length > 0 ? (
+              topUsers.map((elem) => (
                 <div key={elem._id}>
                   <div className="sidebar-people-row">
                     {elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? (
@@ -540,24 +529,16 @@ export default function ViewSearchProfile({ socket }) {
                     <div>
                       <h2>{elem.fname} {elem.lname}</h2>
                       <p>{elem.city} {elem.state}, {elem.nation} </p>
-
-                      <div style={{ fontSize: "13px", color: "grey", marginBottom: "5px" }}>
-                        <span style={{ marginRight: "10px" }}>
-                          <b>{elem.followers ? elem.followers.length : 0}</b> Followers
-                        </span>
-                        <span>
-                          <b>{elem.followings ? elem.followings.length : 0}</b> Following
-                        </span>
-                      </div>
-
-                      <a onClick={() => { setUserID(elem._id); window.scrollTo(0, 0); }}>View Profile</a>
+                      <a onClick={() => { setUserID(elem._id); window.scrollTo(0, 0); }} style={{ cursor: "pointer" }}>View Profile</a>
                     </div>
                   </div>
                   <hr />
                 </div>
-              ))}
-            </div>
-          ) : null}
+              ))
+            ) : (
+              <div style={{ padding: "10px", color: "#666", fontSize: "14px" }}>No suggestions available</div>
+            )}
+          </div>
         </div>
       </div>
 
