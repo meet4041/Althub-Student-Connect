@@ -59,6 +59,7 @@ app.use("/api", notification_route);
 app.use("/api", financialaid_route);
 app.use("/api", images_route);
 
+// Health Check Route
 app.get("/", (req, res) => {
   res.send("Althub Server is running!");
 });
@@ -145,7 +146,8 @@ io.on("connection", (socket) => {
 if (require.main === module) {
   connectToMongo()
     .then(() => {
-      server.listen(port, function () {
+      // --- FIX APPLIED HERE: Bind to '0.0.0.0' ---
+      server.listen(port, "0.0.0.0", function () {
         console.log(`Server is running on port ${port}`);
       });
     })
