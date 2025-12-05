@@ -341,8 +341,8 @@ const styles = `
   }
 
   .event-thumb {
-    width: 60px;
-    height: 60px;
+    width: 135px;
+    height: 80px;
     border-radius: 12px;
     object-fit: cover;
     background: #eee;
