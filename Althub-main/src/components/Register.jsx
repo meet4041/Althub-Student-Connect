@@ -372,7 +372,6 @@ export default function Register() {
     password: "",
     cpassword: "",
     github: "",
-    linkedin: "",
     portfolioweb: "",
     role: "",
     institute: "",
@@ -466,7 +465,6 @@ export default function Register() {
         password: user.password,
         languages: JSON.stringify(lang),
         github: user.github,
-        linkedin: user.linkedin,
         portfolioweb: user.portfolioweb,
         skills: JSON.stringify(skill),
         institute: user.institute,
@@ -606,9 +604,6 @@ export default function Register() {
                     
                     <div className="form-group">
                         <input type="text" name="github" className="form-control" placeholder="GitHub Profile URL" value={user.github} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                        <input type="text" name="linkedin" className="form-control" placeholder="LinkedIn Profile URL" value={user.linkedin} onChange={handleChange} />
                     </div>
                     <div className="form-group">
                         <input type="text" name="portfolioweb" className="form-control" placeholder="Portfolio Website URL" value={user.portfolioweb} onChange={handleChange} />

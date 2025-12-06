@@ -9,6 +9,338 @@ import ChangePasswordModal from "./ChangePasswordModal";
 import { useNavigate } from "react-router-dom";
 import FollowerModal from "./FollowerModal";
 
+// --- INJECTED STYLES FOR FULL-SCREEN DENSE UI ---
+const styles = `
+  .profile-wrapper {
+    background-color: #f3f2ef;
+    min-height: 100vh;
+    padding: 20px 0;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .profile-content {
+    width: 98%; /* Cover almost full width */
+    max-width: 1920px; /* Allow layout to stretch on large monitors */
+    margin: 0 auto;
+    padding: 0 10px;
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+  }
+
+  /* --- MAIN COLUMN (Left) --- */
+  .profile-main {
+    flex: 1; /* Grow to fill all available space */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* Prevent flex overflow */
+  }
+
+  /* Header Card */
+  .profile-header-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: relative;
+    border: 1px solid #eee;
+  }
+
+  .header-cover {
+    height: 120px; /* Taller cover for wide screens */
+    background: linear-gradient(135deg, #66bd9e 0%, #26a69a 100%);
+    width: 100%;
+  }
+
+  .header-body {
+    padding: 0 40px 30px;
+    position: relative;
+  }
+
+  .header-avatar-wrapper {
+    margin-top: -75px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .header-avatar {
+    width: 160px; /* Larger Avatar */
+    height: 160px;
+    border-radius: 50%;
+    border: 6px solid #fff;
+    object-fit: cover;
+    background: #fff;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s;
+    position: relative;
+    font-size: 1rem;
+  }
+
+  .icon-btn:hover {
+    background: #f8f9fa;
+    color: #66bd9e;
+    border-color: #66bd9e;
+  }
+
+  /* Dropdown Menu */
+  .dropdown-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    padding: 10px 0;
+    width: 220px;
+    z-index: 100;
+    border: 1px solid #eee;
+    text-align: left;
+  }
+
+  .dropdown-item {
+    padding: 12px 20px;
+    display: block;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .dropdown-item:hover {
+    background: #f0f9f6;
+    color: #66bd9e;
+  }
+
+  .dropdown-divider {
+    border-top: 1px solid #eee;
+    margin: 5px 0;
+  }
+
+  /* User Info */
+  .user-details h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .alumni-badge {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    border: 1px solid #90caf9;
+  }
+
+  .user-headline {
+    font-size: 1.1rem;
+    color: #636e72;
+    margin: 5px 0 15px;
+  }
+
+  .user-stats {
+    display: flex;
+    gap: 30px;
+    font-size: 1rem;
+    color: #66bd9e;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .stat-link { cursor: pointer; }
+  .stat-link:hover { text-decoration: underline; }
+
+  .user-socials {
+    display: flex;
+    gap: 20px;
+  }
+
+  .user-socials i {
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .user-socials i:hover { transform: translateY(-2px); }
+
+  /* Section Cards */
+  .section-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin: 0;
+  }
+
+  .add-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #f0f9f6;
+    color: #66bd9e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 1rem;
+  }
+  .add-btn:hover { background: #66bd9e; color: #fff; }
+
+  /* List Items */
+  .list-item {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f9f9f9;
+    margin-bottom: 20px;
+  }
+  .list-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+
+  .item-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+
+  .item-content { flex: 1; }
+
+  .item-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+
+  .item-subtitle {
+    font-size: 0.95rem;
+    color: #555;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .item-meta {
+    font-size: 0.9rem;
+    color: #888;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .item-desc {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  /* --- SIDEBAR (Right) --- */
+  .profile-sidebar {
+    flex: 0 0 380px; /* Wider sidebar to fill space */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Skills/Lang Tags */
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .skill-tag {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #f8f9fa;
+    color: #555;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid #eee;
+  }
+
+  /* Suggestions Widget */
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f9f9f9;
+  }
+  .suggestion-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .suggestion-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .suggestion-info h5 { margin: 0; font-size: 1rem; color: #333; }
+  .suggestion-info p { margin: 0; font-size: 0.85rem; color: #888; }
+
+  .view-link {
+    font-size: 0.9rem;
+    color: #66bd9e;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 5px 15px;
+    background: #f0f9f6;
+    border-radius: 20px;
+  }
+  .view-link:hover { background: #66bd9e; color: #fff; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .profile-content { flex-direction: column; }
+    .profile-sidebar { width: 100%; }
+  }
+`;
+
 export default function ViewProfile() {
   const nav = useNavigate();
   const [user, setUser] = useState({});
@@ -21,9 +353,7 @@ export default function ViewProfile() {
   const [showModal4, setShowModal4] = useState(false);
   const [showModal5, setShowModal5] = useState(false);
   const [experience, setExperience] = useState([]);
-  
-  // 1. Define state for the list (Already existed, just confirmed)
-  const [topUsers, setTopUsers] = useState([]); 
+  const [topUsers, setTopUsers] = useState([]);
   
   const closeModal1 = () => setShowModal1(false);
   const closeModal2 = () => setShowModal2(false);
@@ -36,6 +366,14 @@ export default function ViewProfile() {
   const [followerTab, setFollowerTab] = useState("Follower"); 
   
   const userID = localStorage.getItem("Althub_Id");
+
+  // Inject Styles
+  useEffect(() => {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+    return () => document.head.removeChild(styleSheet);
+  }, []);
 
   const handleDeleteAccount = () => {
     if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
@@ -67,109 +405,50 @@ export default function ViewProfile() {
             setSkills(JSON.parse(Response.data.data[0].skills));
         }
       })
-      .catch((error) => {
-        if (
-          error?.code === "ERR_CANCELED" ||
-          error?.message?.toLowerCase()?.includes("aborted") ||
-          error?.name === "CanceledError"
-        ) {
-          return;
-        }
-        toast.error("Something Went Wrong");
-      });
+      .catch((error) => {});
   }, [userID]);
 
   const getEducation = useCallback((signal) => {
     return axios({
       method: "post",
       url: `${WEB_URL}/api/getEducation`,
-      data: {
-        userid: userID,
-      },
+      data: { userid: userID },
       signal,
-    })
-      .then((Response) => {
+    }).then((Response) => {
         setEducation(Response.data.data || []);
-      })
-      .catch((Error) => {
-        if (
-          Error?.code === "ERR_CANCELED" ||
-          Error?.message?.toLowerCase()?.includes("aborted") ||
-          Error?.name === "CanceledError"
-        ) {
-          return;
-        }
-        console.log(Error);
-      });
+    }).catch((Error) => {});
   }, [userID]);
 
   const getExperience = useCallback((signal) => {
     return axios({
       method: "post",
       url: `${WEB_URL}/api/getExperience`,
-      data: {
-        userid: userID,
-      },
+      data: { userid: userID },
       signal,
-    })
-      .then((Response) => {
+    }).then((Response) => {
         setExperience(Response.data.data || []);
-      })
-      .catch((Error) => {
-        if (
-          Error?.code === "ERR_CANCELED" ||
-          Error?.message?.toLowerCase()?.includes("aborted") ||
-          Error?.name === "CanceledError"
-        ) {
-          return;
-        }
-        console.log(Error);
-      });
+    }).catch((Error) => {});
   }, [userID]);
 
-  // 2. Define the Fetch Function (Replaced the old getTopUsers logic)
   const getNewUsers = useCallback((signal) => {
     if (userID) {
       return axios({
-        url: `${WEB_URL}/api/getRandomUsers`, // Calls the new backend route
+        url: `${WEB_URL}/api/getRandomUsers`,
         method: "post",
-        data: {
-          userid: userID, // Pass ID to exclude self
-        },
+        data: { userid: userID },
         signal,
-      })
-        .then((Response) => {
-          setTopUsers(Response.data.data); // Update state with random users
-        })
-        .catch((err) => {
-          if (err?.code !== "ERR_CANCELED") {
-            console.error("Error fetching suggestions:", err);
-          }
-        });
+      }).then((Response) => {
+          setTopUsers(Response.data.data);
+      }).catch((err) => {});
     }
   }, [userID]);
 
   const formatDate = (date) => {
-    if (date === "" || date == null) {
-      return "Present";
-    }
+    if (!date) return "Present";
     var year = date.split("-")[0];
     var month = date.split("-")[1];
-    switch (month) {
-      case "01": return `January ${year}`;
-      case "02": return `February ${year}`;
-      case "03": return `March ${year}`;
-      case "04": return `April ${year}`;
-      case "05": return `May ${year}`;
-      case "06": return `June ${year}`;
-      case "07": return `July ${year}`;
-      case "08": return `August ${year}`;
-      case "09": return `September ${year}`;
-      case "10": return `October ${year}`;
-      case "11": return `November ${year}`;
-      case "12": return `December ${year}`;
-      default: return "ok";
-    }
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${monthNames[parseInt(month) - 1]} ${year}`;
   };
 
   const openFollowModal = (type) => {
@@ -179,11 +458,7 @@ export default function ViewProfile() {
 
   const handleSocialClick = (link, platform) => {
     if (!link || link === "" || link === "undefined") {
-      toast.info(`${platform} Not Added`, {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
+      toast.info(`${platform} Not Added`, { position: "top-right", autoClose: 3000, theme: "colored" });
     } else {
       const url = link.startsWith('http') ? link : `https://${link}`; 
       window.open(url, "_blank");
@@ -197,379 +472,204 @@ export default function ViewProfile() {
     let maxYear = 0;
     education.forEach(edu => {
         const d = new Date(edu.enddate);
-        if (d.getFullYear() > maxYear) {
-            maxYear = d.getFullYear();
-        }
+        if (d.getFullYear() > maxYear) maxYear = d.getFullYear();
     });
     const cutoffDate = new Date(maxYear, 4, 15);
-    const now = new Date();
-    return now > cutoffDate;
+    return new Date() > cutoffDate;
   }, [education]);
 
   useEffect(() => {
     const controller = new AbortController();
-    const { signal } = controller;
-
-    getUser(signal);
-    getEducation(signal);
-    getExperience(signal);
-
+    getUser(controller.signal);
+    getEducation(controller.signal);
+    getExperience(controller.signal);
+    getNewUsers(controller.signal);
     return () => controller.abort();
-  }, [getUser, getEducation, getExperience]);
-
-  // 3. Trigger it on Mount (Refresh)
-  useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    getNewUsers(signal); // Fetch random users immediately
-
-    return () => controller.abort();
-  }, [getNewUsers]);
+  }, [getUser, getEducation, getExperience, getNewUsers]);
 
   return (
-    <>
-      <div className="container">
+    <div className="profile-wrapper">
+      <div className="profile-content">
+        
+        {/* --- LEFT COLUMN (MAIN PROFILE) --- */}
         <div className="profile-main">
-          <div className="profile-container">
-            <div className="profile-cover"></div>
-            <div className="profile-container-inner1">
-              <div>
-                {user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
-                  <img
-                    src={`${WEB_URL}${user.profilepic}`}
-                    alt=""
-                    className="profile-pic"
-                  />
-                ) : (
-                  <img src="images/profile1.png" className="profile-pic" alt="#" />
-                )}
-                
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <h1>{user.fname} {user.lname}</h1>
-                    {isAlumni && (
-                        <span style={{
-                            backgroundColor: "#e0e0e0", 
-                            color: "#555", 
-                            padding: "2px 8px", 
-                            borderRadius: "12px", 
-                            fontSize: "12px", 
-                            fontWeight: "bold",
-                            border: "1px solid #ccc"
-                        }}>
-                            Alumni
-                        </span>
+          
+          {/* Header Card */}
+          <div className="profile-header-card">
+            <div className="header-cover"></div>
+            <div className="header-body">
+              <div className="header-avatar-wrapper">
+                <img
+                  src={user.profilepic && user.profilepic !== "undefined" ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+                  alt="Profile"
+                  className="header-avatar"
+                />
+                <div className="header-actions">
+                  <button className="icon-btn" onClick={() => setShowModal1(true)} title="Edit Profile">
+                    <i className="fa-solid fa-pencil"></i>
+                  </button>
+                  <div style={{position: 'relative'}}>
+                    <button className="icon-btn" onClick={() => setEditMenu(!editmenu)} title="More Options">
+                        <i className="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    {editmenu && (
+                        <div className="dropdown-menu">
+                            <div className="dropdown-item" onClick={() => { setModal("Add"); setShowModal2(true); setEditMenu(false); }}>Add Experience</div>
+                            <div className="dropdown-item" onClick={() => { setModal("Add"); setShowModal3(true); setEditMenu(false); }}>Add Education</div>
+                            <div className="dropdown-divider"></div>
+                            <div className="dropdown-item" onClick={() => { setShowModal4(true); setEditMenu(false); }}>Change Password</div>
+                            <div className="dropdown-item" onClick={handleDeleteAccount} style={{color: '#ff4757'}}>Delete Account</div>
+                        </div>
                     )}
+                  </div>
                 </div>
+              </div>
 
-                <p>{user.institute && user.institute}</p>
+              <div className="user-details">
+                <h1>
+                  {user.fname} {user.lname}
+                  {isAlumni && <span className="alumni-badge">Alumni</span>}
+                </h1>
+                <p className="user-headline">{user.institute || "Student"}</p>
+                <p className="item-meta" style={{marginBottom: '15px'}}>
+                    {user.city ? `${user.city}, ` : ""}{user.state ? `${user.state}, ` : ""}{user.nation || ""}
+                </p>
 
-                <div style={{ marginTop: '10px', display: 'flex', gap: '20px', fontSize: '14px', fontWeight: '500' }}>
-                  <span 
-                    onClick={() => openFollowModal("Follower")} 
-                    style={{ cursor: "pointer", color: "#333" }}
-                    onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-                    onMouseOut={(e) => e.target.style.textDecoration = 'none'}
-                  >
-                    <b>{user.followers ? user.followers.length : 0}</b> followers 
-                  </span> 
-                  <span 
-                    onClick={() => openFollowModal("Following")} 
-                    style={{ cursor: "pointer", color: "#333" }}
-                    onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-                    onMouseOut={(e) => e.target.style.textDecoration = 'none'}
-                  >
-                    <b>{user.followings ? user.followings.length : 0}</b> connections
+                <div className="user-stats">
+                  <span className="stat-link" onClick={() => openFollowModal("Follower")}>
+                    {user.followers ? user.followers.length : 0} Followers
+                  </span>
+                  <span className="stat-link" onClick={() => openFollowModal("Following")}>
+                    {user.followings ? user.followings.length : 0} Connections
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
-                  <p style={{ margin: 0 }}>
-                    {user.city && user.city} {user.state && user.state}{" "}
-                    {user.nation ? `, ${user.nation} ` : null}
-                  </p>
-                  
-                  <i 
-                    className="fa-brands fa-github" 
-                    title="GitHub"
-                    style={{ fontSize: '24px', cursor: 'pointer', color: '#333' }}
-                    onClick={() => handleSocialClick(user.github, "GitHub")}
-                  ></i>
-
-                  <i 
-                    className="fa-brands fa-linkedin" 
-                    title="LinkedIn"
-                    style={{ fontSize: '24px', cursor: 'pointer', color: '#0077b5' }}
-                    onClick={() => handleSocialClick(user.linkedin, "LinkedIn")}
-                  ></i>
-                </div>
-
-              </div>
-              
-              <div className="edit-icon">
-                <i
-                  className="fa-solid fa-pencil"
-                  onClick={() => setShowModal1(true)}
-                ></i>
-                <div className="dropdown" style={{ marginLeft: "6px" }}>
-                  <i
-                    className="fa-solid fa-ellipsis-vertical dropbtn"
-                    onClick={() => {
-                      setEditMenu(!editmenu);
-                    }}
-                    style={{ padding: "0 10px", cursor: "pointer" }}
-                  ></i>
-                  <div
-                    className="dropdown-content"
-                    style={{ display: `${editmenu ? "block" : "none"}` }}
-                  >
-                    <b onClick={() => setEditMenu(!editmenu)}>Add Details</b>
-                    <hr />
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setShowModal1(true);
-                        setEditMenu(!editmenu);
-                      }}
-                    >
-                      Profile
-                    </a>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setModal("Add");
-                        setShowModal3(true);
-                        setEditMenu(!editmenu);
-                      }}
-                    >
-                      Education
-                    </a>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setModal("Add");
-                        setShowModal2(true);
-                        setEditMenu(!editmenu);
-                      }}
-                    >
-                      Experience
-                    </a>
-                    <a
-                      onClick={() => {
-                        setShowModal4(true);
-                        setEditMenu(!editmenu);
-                      }}
-                    >
-                      Change Password
-                    </a>
-                    
-                    <hr style={{margin: "5px 0"}}/>
-                    <a
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setEditMenu(!editmenu);
-                        handleDeleteAccount();
-                      }}
-                      style={{ color: "red", fontWeight: "500" }}
-                    >
-                      Delete Account
-                    </a>
-
-                  </div>
+                <div className="user-socials">
+                    <i className="fa-brands fa-github" style={{color: '#333'}} onClick={() => handleSocialClick(user.github, "GitHub")}></i>
+                    <i className="fa-solid fa-globe" style={{color: '#666'}} onClick={() => handleSocialClick(user.portfolioweb, "Website")}></i>
                 </div>
               </div>
             </div>
           </div>
 
-          {user.about !== "" ? (
-            <div className="profile-description">
-              <h2>About</h2>
-              <p>{user.about}</p>
-            </div>
-          ) : null}
-
-          {experience.length > 0 ? (
-            <div className="profile-description">
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <h2>Experience</h2>
-                <div className="edit-icon">
-                  <i
-                    className="fa-solid fa-plus"
-                    style={{ marginRight: "10px" }}
-                    onClick={() => {
-                      setModal("Add");
-                      setShowModal2(true);
-                    }}
-                  ></i>
-                  <i
-                    className="fa-solid fa-pencil"
-                    onClick={() => {
-                      setModal("Edit");
-                      setShowModal2(true);
-                    }}
-                  ></i>
+          {/* About Section */}
+          {user.about && (
+            <div className="section-card">
+              <div className="section-header">
+                <h3 className="section-title">About</h3>
+                <div className="add-btn" onClick={() => setShowModal1(true)}>
+                    <i className="fa-solid fa-pencil"></i>
                 </div>
               </div>
-              {experience.map((elem) => (
-                <div className="profile-desc-row" key={elem._id}>
-                  <img src={`${WEB_URL}${elem.companylogo}`} alt="" />
-                  <div>
-                    <h3>{elem.position}</h3>
-                    <b>{elem.companyname} &middot; Full-time</b>
-                    <b>
-                      {formatDate(elem.joindate)} - {formatDate(elem.enddate)}
-                    </b>
-                    {elem.description !== "" ? (
-                      <p>
-                        <strong>Description :</strong> {elem.description}
-                      </p>
-                    ) : (
-                      ""
-                    )}
-                    <hr />
-                  </div>
-                </div>
-              ))}
+              <p className="item-desc">{user.about}</p>
             </div>
-          ) : null}
+          )}
 
-          {education.length > 0 ? (
-            <div className="profile-description">
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <h2>Education</h2>
-                <div className="edit-icon">
-                  <i
-                    className="fa-solid fa-plus"
-                    style={{ marginRight: "10px" }}
-                    onClick={() => {
-                      setModal("Add");
-                      setShowModal3(true);
-                    }}
-                  ></i>
-                  <i
-                    className="fa-solid fa-pencil"
-                    onClick={() => {
-                      setModal("Edit");
-                      setShowModal3(true);
-                    }}
-                  ></i>
-                </div>
+          {/* Experience Section */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Experience</h3>
+              <div className="add-btn" onClick={() => { setModal("Add"); setShowModal2(true); }}>
+                <i className="fa-solid fa-plus"></i>
               </div>
-              {education.map((elem) => (
-                <div className="profile-desc-row" key={elem._id}>
-                  <img src={`${WEB_URL}${elem.collagelogo}`} alt="" />
-                  <div>
-                    <h3>{elem.institutename}</h3>
-                    <b>{elem.course}</b>
-                    <b>
-                      {elem.joindate.split("-")[0]} -{" "}
-                      {elem.enddate.split("-")[0]}
-                    </b>
-                    <hr />
-                  </div>
-                </div>
-              ))}
             </div>
-          ) : null}
-
-          {skills.length > 0 ? (
-            <div className="profile-description">
-              <h3>Skills</h3>
-              {skills.map((elem, idx) => (
-                <a key={idx} className="skills-btn">{elem}</a>
-              ))}
-            </div>
-          ) : null}
-
-          {language.length > 0 ? (
-            <div className="profile-description">
-              <h3>Language</h3>
-              {language.map((elem, idx) => (
-                <a key={idx} className="language-btn">{elem}</a>
-              ))}
-            </div>
-          ) : null}
-        </div>
-        
-        {/* --- Sidebar Section --- */}
-        <div className="profile-sidebar">
-          {topUsers.length > 0 ? (
-            <div className="sidebar-people">
-              <h3>People you may know</h3>
-              {topUsers.map((elem) => (
-                <div key={elem._id}>
-                  <div className="sidebar-people-row">
-                    {elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? (
-                        <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
-                    ) : (
-                        <img src="images/profile1.png" alt="" />
-                    )}
-                    <div>
-                      <h2>
-                        {elem.fname} {elem.lname}
-                      </h2>
-                      <p>
-                        {elem.city} {elem.state}, {elem.nation}{" "}
-                      </p>
-                      <a
-                        onClick={() =>
-                          nav("/view-search-profile", {
-                            state: { id: elem._id },
-                          })
-                        }
-                        style={{ cursor: "pointer" }}
-                      >
-                        View Profile
-                      </a>
+            {experience.length > 0 ? experience.map((elem) => (
+              <div className="list-item" key={elem._id}>
+                <img src={`${WEB_URL}${elem.companylogo}`} alt="" className="item-logo" />
+                <div className="item-content">
+                    <div style={{display:'flex', justifyContent:'space-between'}}>
+                        <h4 className="item-title">{elem.position}</h4>
+                        <i className="fa-solid fa-pencil" style={{cursor:'pointer', color:'#aaa', fontSize:'0.9rem'}} onClick={() => { setModal("Edit"); setShowModal2(true); }}></i>
                     </div>
-                  </div>
-                  <hr />
+                    <span className="item-subtitle">{elem.companyname}</span>
+                    <span className="item-meta">{formatDate(elem.joindate)} - {formatDate(elem.enddate)}</span>
+                    {elem.description && <p className="item-desc">{elem.description}</p>}
                 </div>
-              ))}
+              </div>
+            )) : (
+                <p style={{color: '#999', fontSize: '0.9rem'}}>No experience added yet.</p>
+            )}
+          </div>
+
+          {/* Education Section */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Education</h3>
+              <div className="add-btn" onClick={() => { setModal("Add"); setShowModal3(true); }}>
+                <i className="fa-solid fa-plus"></i>
+              </div>
             </div>
-          ) : null}
+            {education.length > 0 ? education.map((elem) => (
+              <div className="list-item" key={elem._id}>
+                <img src={`${WEB_URL}${elem.collagelogo}`} alt="" className="item-logo" />
+                <div className="item-content">
+                    <div style={{display:'flex', justifyContent:'space-between'}}>
+                        <h4 className="item-title">{elem.institutename}</h4>
+                        <i className="fa-solid fa-pencil" style={{cursor:'pointer', color:'#aaa', fontSize:'0.9rem'}} onClick={() => { setModal("Edit"); setShowModal3(true); }}></i>
+                    </div>
+                    <span className="item-subtitle">{elem.course}</span>
+                    <span className="item-meta">
+                        {elem.joindate ? elem.joindate.split("-")[0] : ""} - {elem.enddate ? elem.enddate.split("-")[0] : "Present"}
+                    </span>
+                </div>
+              </div>
+            )) : (
+              <p style={{color: '#999', fontSize: '0.9rem'}}>No education added yet.</p>
+            )}
+          </div>
+
         </div>
+
+        {/* --- RIGHT COLUMN (SIDEBAR) --- */}
+        <div className="profile-sidebar">
+          
+          {/* Skills */}
+          <div className="section-card">
+            <h3 className="section-title" style={{fontSize: '1.2rem', marginBottom: '20px'}}>Skills</h3>
+            <div className="tag-container">
+                {skills.length > 0 ? skills.map((skill, idx) => (
+                    <span key={idx} className="skill-tag">{skill}</span>
+                )) : <span style={{color: '#999', fontSize:'0.9rem'}}>No skills added</span>}
+            </div>
+          </div>
+
+          {/* Languages */}
+          <div className="section-card">
+            <h3 className="section-title" style={{fontSize: '1.2rem', marginBottom: '20px'}}>Languages</h3>
+            <div className="tag-container">
+                {language.length > 0 ? language.map((lang, idx) => (
+                    <span key={idx} className="skill-tag">{lang}</span>
+                )) : <span style={{color: '#999', fontSize:'0.9rem'}}>No languages added</span>}
+            </div>
+          </div>
+
+          {/* People you may know */}
+          <div className="section-card">
+            <h3 className="section-title" style={{fontSize: '1.2rem', marginBottom: '20px'}}>People you may know</h3>
+            {topUsers.map((elem) => (
+                <div key={elem._id} className="suggestion-item">
+                    <img src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} alt="" className="suggestion-img" />
+                    <div className="suggestion-info">
+                        <h5>{elem.fname} {elem.lname}</h5>
+                        <p>{elem.city ? elem.city : "Student"}</p>
+                    </div>
+                    <span className="view-link" onClick={() => nav("/view-search-profile", { state: { id: elem._id } })}>
+                        View
+                    </span>
+                </div>
+            ))}
+          </div>
+
+        </div>
+
       </div>
-      {showModal1 && (
-        <EditProfileModal
-          closeModal={closeModal1}
-          user={user}
-          getUser={getUser}
-        />
-      )}
-      {showModal2 && (
-        <EditExperienceModal
-          closeModal={closeModal2}
-          experience={experience}
-          getExperience={getExperience}
-          modal={modal}
-        />
-      )}
-      {showModal3 && (
-        <EditEducationModal
-          closeModal={closeModal3}
-          education={education}
-          getEducation={getEducation}
-          modal={modal}
-        />
-      )}
+
+      {/* Modals */}
+      {showModal1 && <EditProfileModal closeModal={closeModal1} user={user} getUser={() => getUser(new AbortController().signal)} />}
+      {showModal2 && <EditExperienceModal closeModal={closeModal2} experience={experience} getExperience={() => getExperience(new AbortController().signal)} modal={modal} />}
+      {showModal3 && <EditEducationModal closeModal={closeModal3} education={education} getEducation={() => getEducation(new AbortController().signal)} modal={modal} />}
       {showModal4 && <ChangePasswordModal closeModal={closeModal4} />}
-      {showModal5 && <FollowerModal closeModal={closeModal5} user={user} getUser={getUser} initialType={followerTab} />}
-    </>
+      {showModal5 && <FollowerModal closeModal={closeModal5} user={user} getUser={() => getUser(new AbortController().signal)} initialType={followerTab} />}
+    </div>
   );
 }

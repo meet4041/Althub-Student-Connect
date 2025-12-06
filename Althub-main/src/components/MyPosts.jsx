@@ -7,48 +7,50 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { useNavigate } from "react-router-dom";
 
-// --- INJECTED STYLES FOR MODERN UI ---
+// --- INJECTED STYLES FOR FULL-SCREEN DENSE UI ---
 const styles = `
   .myposts-wrapper {
     background-color: #f3f2ef;
     min-height: 100vh;
-    padding: 30px 0;
+    padding: 20px 0;
     font-family: 'Poppins', sans-serif;
   }
 
   .myposts-content {
     display: flex;
     justify-content: center;
-    gap: 30px;
-    max-width: 1100px;
+    gap: 25px;
+    width: 98%; /* Cover almost full width */
+    max-width: 1920px; /* Allow wide screens */
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 10px;
     align-items: flex-start;
   }
 
   /* --- LEFT FEED SECTION --- */
   .myposts-feed {
-    flex: 1;
-    max-width: 700px;
+    flex: 1; /* Grow to fill space */
     display: flex;
     flex-direction: column;
     gap: 20px;
+    min-width: 0; /* Prevent flex overflow */
   }
 
   /* Header Card */
   .myposts-header-card {
     background: #fff;
-    border-radius: 16px;
-    padding: 25px 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 20px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-left: 5px solid #66bd9e;
+    border: 1px solid #eee;
   }
 
   .header-info h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #2d3436;
     margin: 0 0 5px 0;
@@ -57,69 +59,72 @@ const styles = `
   .header-info p {
     color: #636e72;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .post-count-badge {
     background: #e3fdf5;
     color: #66bd9e;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 8px 20px;
+    border-radius: 25px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   /* Post Card */
   .post-card {
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     overflow: hidden;
     padding-bottom: 15px;
     position: relative;
+    border: 1px solid #eee;
   }
 
   .post-header {
-    padding: 15px 20px;
+    padding: 15px 25px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid #f9f9f9;
   }
 
   .post-user-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
   }
 
   .post-user-img {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid #eee;
   }
 
   .post-meta h4 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: #333;
   }
 
   .post-meta span {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #999;
   }
 
   /* Action Buttons (Edit/Delete) */
   .post-actions-top {
     display: flex;
-    gap: 10px;
+    gap: 12px;
   }
 
   .action-icon-btn {
-    width: 35px;
-    height: 35px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -127,7 +132,7 @@ const styles = `
     cursor: pointer;
     transition: all 0.2s;
     border: none;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .btn-edit { background: #f0f9f6; color: #66bd9e; }
@@ -138,38 +143,40 @@ const styles = `
 
   /* Post Body */
   .post-desc {
-    padding: 0 20px 15px;
-    font-size: 0.95rem;
+    padding: 15px 25px;
+    font-size: 1rem;
     color: #444;
     white-space: pre-wrap;
-    line-height: 1.5;
+    line-height: 1.6;
   }
 
   .post-media-container {
     margin-bottom: 15px;
-    background: #f8f9fa;
+    background: #000;
   }
 
   .post-img {
     width: 100%;
-    max-height: 500px;
+    max-height: 600px; /* Taller max height for large screens */
     object-fit: contain;
     display: block;
     margin: 0 auto;
+    background: #000;
   }
 
   .post-footer {
-    padding: 0 20px;
+    padding: 5px 25px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
+    gap: 10px;
+    font-size: 0.95rem;
     color: #555;
+    font-weight: 500;
   }
 
   /* --- RIGHT SIDEBAR --- */
   .myposts-sidebar {
-    flex: 0 0 320px;
+    flex: 0 0 380px; /* Wider Sidebar */
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -179,32 +186,34 @@ const styles = `
 
   .sidebar-widget {
     background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
   }
 
   .widget-title {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: #333;
     margin-bottom: 20px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
   }
 
   .suggestion-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
+    gap: 15px;
+    margin-bottom: 18px;
   }
 
   .suggestion-img {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid #eee;
   }
 
   .suggestion-info {
@@ -213,38 +222,43 @@ const styles = `
 
   .suggestion-info h5 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: #333;
+    font-weight: 600;
   }
 
   .suggestion-info p {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #888;
   }
 
   .suggestion-link {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #66bd9e;
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #f0f9f6;
   }
 
-  .suggestion-link:hover { text-decoration: underline; }
+  .suggestion-link:hover { background: #66bd9e; color: #fff; }
 
   /* Empty State */
   .no-posts {
     text-align: center;
-    padding: 60px;
+    padding: 80px;
     background: #fff;
-    border-radius: 16px;
+    border-radius: 12px;
     color: #999;
+    border: 2px dashed #eee;
   }
 
   .no-posts i {
-    font-size: 3rem;
-    margin-bottom: 15px;
+    font-size: 4rem;
+    margin-bottom: 20px;
     color: #eee;
   }
 
@@ -254,10 +268,10 @@ const styles = `
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 500px;
+    width: 600px;
     background-color: #fff;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    padding: 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    padding: 30px;
     border-radius: 16px;
     outline: none;
     font-family: 'Poppins', sans-serif;
@@ -267,57 +281,60 @@ const styles = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
   }
 
-  .modal-title { font-size: 1.2rem; font-weight: 600; color: #333; }
+  .modal-title { font-size: 1.4rem; font-weight: 700; color: #333; }
   
-  .modal-close { cursor: pointer; color: #888; font-size: 1.2rem; transition: color 0.2s; }
+  .modal-close { cursor: pointer; color: #888; font-size: 1.4rem; transition: color 0.2s; }
   .modal-close:hover { color: #333; }
 
-  .modal-input-group { margin-bottom: 20px; }
-  .modal-label { display: block; font-size: 0.85rem; font-weight: 600; color: #66bd9e; margin-bottom: 8px; }
+  .modal-input-group { margin-bottom: 25px; }
+  .modal-label { display: block; font-size: 0.9rem; font-weight: 600; color: #66bd9e; margin-bottom: 10px; }
   
   .modal-textarea {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
     border: 1px solid #eee;
-    border-radius: 8px;
+    border-radius: 10px;
     resize: vertical;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 1rem;
     outline: none;
     background: #fafafa;
+    min-height: 120px;
   }
   .modal-textarea:focus { border-color: #66bd9e; background: #fff; }
 
-  .modal-imgs { display: flex; gap: 10px; flex-wrap: wrap; }
-  .modal-img-wrapper { position: relative; width: 70px; height: 70px; }
+  .modal-imgs { display: flex; gap: 12px; flex-wrap: wrap; }
+  .modal-img-wrapper { position: relative; width: 80px; height: 80px; }
   .modal-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
   .modal-remove-img {
     position: absolute;
-    top: -5px; right: -5px;
+    top: -8px; right: -8px;
     background: #ff4757; color: #fff;
     border-radius: 50%;
-    width: 20px; height: 20px;
+    width: 24px; height: 24px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; cursor: pointer;
+    font-size: 0.8rem; cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 
-  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; }
   
-  .btn-modal { padding: 8px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; border: none; font-size: 0.9rem; }
+  .btn-modal { padding: 10px 25px; border-radius: 25px; font-weight: 600; cursor: pointer; border: none; font-size: 1rem; }
   .btn-cancel { background: #f1f2f6; color: #555; }
   .btn-save { background: #66bd9e; color: #fff; }
   .btn-save:hover { background: #479378; }
 
   /* Responsive */
-  @media (max-width: 900px) {
-    .home-content { flex-direction: column; }
+  @media (max-width: 1100px) {
     .myposts-sidebar { display: none; }
-    .myposts-feed { width: 100%; max-width: 100%; }
-    .modal-box { width: 90%; }
+  }
+  
+  @media (max-width: 768px) {
+    .myposts-content { padding: 0 10px; }
+    .modal-box { width: 95%; padding: 20px; }
   }
 `;
 
@@ -436,7 +453,7 @@ export default function MyPosts() {
     <div className="myposts-wrapper">
       <div className="myposts-content">
         
-        {/* --- LEFT: POST FEED --- */}
+        {/* --- LEFT: POST FEED (Expands to Fill Space) --- */}
         <div className="myposts-feed">
           
           {/* Header */}
@@ -514,7 +531,7 @@ export default function MyPosts() {
           )}
         </div>
 
-        {/* --- RIGHT: SIDEBAR --- */}
+        {/* --- RIGHT: SIDEBAR (Wider) --- */}
         <div className="myposts-sidebar">
             <div className="sidebar-widget">
                 <div className="widget-title">People you may know</div>

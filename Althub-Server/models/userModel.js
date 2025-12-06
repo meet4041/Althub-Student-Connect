@@ -38,9 +38,6 @@ const user = new mongoose.Schema({
     github: {
         type: String,
     },
-    linkedin: {
-        type: String,
-    },
     portfolioweb: {
         type: String,
     },

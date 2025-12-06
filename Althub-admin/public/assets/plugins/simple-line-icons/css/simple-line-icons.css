@@ -182,7 +182,6 @@
 .icon-social-twitter,
 .icon-social-facebook,
 .icon-social-instagram,
-.icon-social-linkedin,
 .icon-social-pinterest,
 .icon-social-github,
 .icon-social-google,
@@ -727,9 +726,6 @@
 }
 .icon-social-instagram:before {
   content: "\e609";
-}
-.icon-social-linkedin:before {
-  content: "\e60a";
 }
 .icon-social-pinterest:before {
   content: "\e60b";

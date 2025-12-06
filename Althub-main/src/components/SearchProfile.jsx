@@ -4,15 +4,16 @@ import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import FilterModal from "./FilterModal";
 
-// --- INLINE STYLES FOR QUICK SETUP (Or move these to style.css) ---
+// --- INJECTED STYLES FOR 4-COLUMN GRID UI ---
 const styles = `
   .sp-container {
-    padding: 30px;
+    padding: 30px 5%;
     background-color: #f8f9fa;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-family: 'Poppins', sans-serif;
   }
 
   /* Header Section */
@@ -23,30 +24,36 @@ const styles = `
     gap: 15px;
     margin-bottom: 40px;
     width: 100%;
-    max-width: 800px;
+    max-width: 1400px; /* Matched to grid width */
+    position: sticky;
+    top: 20px;
+    z-index: 100;
   }
 
   .sp-search-bar {
     flex: 1;
     background: #fff;
     border-radius: 50px;
-    padding: 2px 25px;
+    padding: 5px 25px;
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     transition: box-shadow 0.3s ease;
+    border: 1px solid #eee;
+    height: 55px;
   }
 
   .sp-search-bar:focus-within {
     box-shadow: 0 4px 20px rgba(102, 189, 158, 0.25);
+    border-color: #66bd9e;
   }
 
   .sp-search-bar input {
     border: none;
     outline: none;
     width: 100%;
-    margin-left: 10px;
-    font-size: 16px;
+    margin-left: 15px;
+    font-size: 1rem;
     color: #555;
   }
 
@@ -54,15 +61,15 @@ const styles = `
     background: #fff;
     border: none;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     color: #66bd9e;
-    font-size: 18px;
+    font-size: 1.2rem;
     transition: all 0.3s ease;
     position: relative;
   }
@@ -75,22 +82,45 @@ const styles = `
 
   .filter-active-dot {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 8px;
-    height: 8px;
+    top: 14px;
+    right: 14px;
+    width: 10px;
+    height: 10px;
     background-color: #ff4757;
     border-radius: 50%;
     border: 2px solid #fff;
   }
 
-  /* Grid Layout */
+  .back-btn {
+    padding: 0 25px;
+    height: 55px;
+    background: #fff;
+    border-radius: 30px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    color: #555;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover {
+    background: #f1f3f5;
+    color: #333;
+    transform: translateY(-2px);
+  }
+
+  /* Grid Layout - Adjusted for 4 Columns */
   .sp-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 30px;
+    /* minmax(250px) ensures 4 cards fit on typical screens (>1100px) */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px; /* Increased container width */
   }
 
   /* Card Design */
@@ -98,32 +128,34 @@ const styles = `
     background: #fff;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     position: relative;
+    border: 1px solid #f0f0f0;
   }
 
   .sp-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    border-color: #e0e0e0;
   }
 
   .sp-banner {
-    height: 90px;
+    height: 80px;
     background: linear-gradient(135deg, #66bd9e 0%, #479378 100%);
   }
 
   .sp-avatar-container {
     display: flex;
     justify-content: center;
-    margin-top: -50px;
+    margin-top: -45px;
   }
 
   .sp-avatar {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     border: 4px solid #fff;
     object-fit: cover;
@@ -140,8 +172,8 @@ const styles = `
   }
 
   .sp-name {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: #333;
     margin: 10px 0 5px;
     cursor: pointer;
@@ -149,8 +181,9 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
+    line-height: 1.3;
   }
 
   .sp-name:hover {
@@ -160,43 +193,21 @@ const styles = `
   .sp-alumni-badge {
     background-color: #e3f2fd;
     color: #1565c0;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #90caf9;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
   }
 
   .sp-location {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #777;
     margin-bottom: 15px;
     min-height: 20px;
-  }
-
-  .sp-stats {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    border-top: 1px solid #f0f0f0;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .sp-stat-item {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.85rem;
-    color: #555;
-  }
-
-  .sp-stat-item b {
-    font-size: 1.1rem;
-    color: #333;
   }
 
   .sp-socials {
@@ -207,12 +218,11 @@ const styles = `
   }
 
   .sp-social-icon {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: #bbb;
     transition: color 0.3s;
   }
 
-  .sp-social-icon.linkedin:hover { color: #0077b5; }
   .sp-social-icon.github:hover { color: #333; }
 
   .sp-actions {
@@ -224,21 +234,21 @@ const styles = `
   .sp-btn {
     flex: 1;
     padding: 10px 0;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     border: none;
   }
 
   .sp-btn-view {
-    background-color: #f0f2f5;
+    background-color: #f8f9fa;
     color: #333;
   }
 
   .sp-btn-view:hover {
-    background-color: #e4e6eb;
+    background-color: #e9ecef;
   }
 
   .sp-btn-follow {
@@ -257,14 +267,22 @@ const styles = `
 
   .sp-no-results {
     text-align: center;
-    margin-top: 50px;
+    margin-top: 80px;
     color: #888;
   }
   
   .sp-no-results img {
-    max-width: 300px;
+    max-width: 250px;
     margin-bottom: 20px;
-    opacity: 0.8;
+    opacity: 0.7;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sp-header { flex-direction: column; position: static; }
+    .sp-search-bar { width: 100%; }
+    .back-btn { width: 100%; justify-content: center; }
+    .sp-filter-btn { display: none; /* Optional: hide filter on mobile or reposition */ }
   }
 `;
 
@@ -281,7 +299,6 @@ export default function SearchProfile({ socket }) {
   const [self, setSelf] = useState({});
 
   useEffect(() => {
-    // Inject styles
     const styleSheet = document.createElement("style");
     styleSheet.innerText = styles;
     document.head.appendChild(styleSheet);
@@ -339,7 +356,6 @@ export default function SearchProfile({ socket }) {
     if (cleanInput.startsWith("www.")) {
       return `https://${cleanInput}`;
     }
-    if (platform === 'linkedin') return `https://www.linkedin.com/in/${cleanInput}`;
     if (platform === 'github') return `https://github.com/${cleanInput}`;
     return cleanInput;
   };
@@ -349,15 +365,21 @@ export default function SearchProfile({ socket }) {
       <div className="sp-container">
         {/* --- Header Section --- */}
         <div className="sp-header">
+          
+          <button className="back-btn" onClick={() => nav("/home")}>
+            <i className="fa-solid fa-arrow-left"></i> Back to Home
+          </button>
+
           <div className="sp-search-bar">
             <i className="fa-sharp fa-solid fa-magnifying-glass" style={{ color: "#aaa" }}></i>
             <input
               type="text"
-              placeholder="Search by name..."
+              placeholder="Search people by name..."
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+          
           <button className="sp-filter-btn" onClick={() => setModal(true)} title="Filters">
             <i className="fa-solid fa-sliders"></i>
             {(add || skill) && <div className="filter-active-dot"></div>}
@@ -388,7 +410,7 @@ export default function SearchProfile({ socket }) {
                 <div className="sp-content">
                   
                   {/* Name & Badge */}
-                  <h2 
+                  <div 
                     className="sp-name"
                     onClick={() => {
                       elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
@@ -400,21 +422,16 @@ export default function SearchProfile({ socket }) {
                         <i className="fa-solid fa-graduation-cap"></i> Alumni
                       </span>
                     )}
-                  </h2>
+                  </div>
 
                   {/* Location */}
                   <p className="sp-location">
                     {elem.city ? elem.city : ""}{elem.state ? `, ${elem.state}` : ""}
-                    {(!elem.city && !elem.state) ? "Location not added" : ""}
+                    {(!elem.city && !elem.state) ? "Student" : ""}
                   </p>
                   
                   {/* Social Icons */}
                   <div className="sp-socials">
-                    {elem.linkedin && elem.linkedin.trim() !== "" && (
-                      <a href={getSocialLink(elem.linkedin, 'linkedin')} target="_blank" rel="noopener noreferrer">
-                        <i className="fa-brands fa-linkedin-in sp-social-icon linkedin"></i>
-                      </a>
-                    )}
                     {elem.github && elem.github.trim() !== "" && (
                       <a href={getSocialLink(elem.github, 'github')} target="_blank" rel="noopener noreferrer">
                         <i className="fa-brands fa-github sp-social-icon github"></i>
@@ -430,7 +447,7 @@ export default function SearchProfile({ socket }) {
                         elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } })
                       }}
                     >
-                      View Profile
+                      View
                     </button>
                     {elem._id !== userID && (
                       <button
@@ -449,7 +466,7 @@ export default function SearchProfile({ socket }) {
           <div className="sp-no-results">
             <img src="images/search-bro.png" alt="No results"/>
             <h3>No users found</h3>
-            <p>Try adjusting your search or filters to find more people.</p>
+            <p>Try searching for a different name.</p>
           </div>
         )}
       </div>

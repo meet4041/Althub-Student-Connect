@@ -56,7 +56,7 @@ const styles = `
 
   .navbar-center ul {
     display: flex;
-    gap: 35px;
+    gap: -10px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -118,7 +118,6 @@ const styles = `
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: #66bd9e;
     transform: scaleX(0);
     transition: transform 0.3s ease;
     border-radius: 3px 3px 0 0;
@@ -186,6 +185,7 @@ const styles = `
   }
 
   .user-profile span {
+    margin-left:-7px;
     font-weight: 600;
     color: #2d3436;
     font-size: 0.9rem;

@@ -3,7 +3,290 @@ import React, { useEffect, useState } from "react";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import Select from "react-select";
-import { useNavigate } from "react-router-dom"; // Import for redirection
+import { useNavigate } from "react-router-dom";
+
+// --- INJECTED STYLES FOR MODERN MODAL ---
+const styles = `
+  /* Overlay */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* Modal Container */
+  .modal-card {
+    background: #fff;
+    width: 100%;
+    max-width: 700px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    font-family: 'Poppins', sans-serif;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Header */
+  .modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3436;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: #b2bec3;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .close-btn:hover { color: #2d3436; }
+
+  /* Scrollable Body */
+  .modal-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  /* Profile Image Section */
+  .avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 15px;
+    cursor: pointer;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #f8f9fa;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .upload-icon-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #66bd9e;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    border: 2px solid #fff;
+  }
+
+  .remove-photo-btn {
+    font-size: 0.8rem;
+    color: #ff4757;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .remove-photo-btn:hover { text-decoration: underline; }
+
+  /* Form Layout */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #636e72;
+    margin-bottom: 8px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #2d3436;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fcfcfc;
+  }
+
+  .form-input:focus {
+    border-color: #66bd9e;
+    background: #fff;
+  }
+
+  .error-msg {
+    color: #ff4757;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    display: block;
+  }
+
+  /* Radio Group */
+  .radio-group {
+    display: flex;
+    gap: 20px;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  /* Danger Zone */
+  .danger-zone {
+    margin-top: 40px;
+    padding: 20px;
+    border: 1px solid #ffeded;
+    background: #fff5f5;
+    border-radius: 12px;
+  }
+
+  .danger-title {
+    color: #c0392b;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .danger-desc {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+  }
+
+  .delete-btn {
+    background: #fff;
+    color: #c0392b;
+    border: 1px solid #c0392b;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .delete-btn:hover {
+    background: #c0392b;
+    color: #fff;
+  }
+
+  /* Footer */
+  .modal-footer {
+    padding: 20px 30px;
+    border-top: 1px solid #f0f0f0;
+    background: #fff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    flex-shrink: 0;
+  }
+
+  .btn-cancel {
+    background: #f1f2f6;
+    color: #636e72;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-save {
+    background: #66bd9e;
+    color: #fff;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(102, 189, 158, 0.3);
+  }
+
+  .btn-save:hover { background: #479378; }
+
+  /* Select Override */
+  .react-select-container { width: 100%; }
+`;
+
+// Options for Select
+const option1 = [
+    { value: "English", label: "English" }, { value: "Hindi", label: "Hindi" }, { value: "Gujarati", label: "Gujarati" },
+    { value: "Spanish", label: "Spanish" }, { value: "French", label: "French" }
+];
+const option2 = [
+    { value: "Python", label: "Python" }, { value: "Java", label: "Java" }, { value: "React.js", label: "React.js" },
+    { value: "JavaScript", label: "JavaScript" }, { value: "C++", label: "C++" }, { value: "SQL", label: "SQL" }
+];
+
+const colorStyle = {
+    control: (styles) => ({
+      ...styles,
+      padding: "2px",
+      border: "1px solid #e0e0e0",
+      borderRadius: "8px",
+      boxShadow: "none",
+      "&:hover": { borderColor: "#66bd9e" }
+    }),
+};
 
 const EditProfileModal = ({ closeModal, user, getUser }) => {
   const [errors, setErrors] = useState({});
@@ -13,178 +296,94 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
   const [skills, setSkills] = useState([]);
   const navigate = useNavigate(); 
 
+  // Inject Styles
+  useEffect(() => {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+    return () => document.head.removeChild(styleSheet);
+  }, []);
+
+  useEffect(() => {
+    if(user) {
+        setUserData(user);
+        let arr = [];
+        if(user.languages) JSON.parse(user.languages).forEach((elem) => arr.push({ value: elem, label: elem }));
+        setLanguages(arr);
+        arr = [];
+        if(user.skills) JSON.parse(user.skills).forEach((elem) => arr.push({ value: elem, label: elem }));
+        setSkills(arr);
+        setDob(user.dob ? user.dob.split("T")[0] : "");
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
+    setUserData({ ...userData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [`${e.target.name}_err`]: "" });
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("image", file);
     formData.append("userid", user._id);
 
     axios.put(`${WEB_URL}/api/updateProfilePic`, formData) 
       .then((res) => {
-        toast.success("Profile picture updated!");
+        toast.success("Picture updated!");
         setUserData(prev => ({ ...prev, profilepic: res.data.data.profilepic }));
         getUser(); 
       })
-      .catch((err) => {
-        console.error("Upload error:", err);
-        toast.error(err.response?.data?.msg || "Failed to update picture.");
-      });
+      .catch(() => toast.error("Upload failed."));
   };
 
   const handleImageDelete = () => {
-    if (!window.confirm("Are you sure you want to remove your profile picture?")) return;
-
+    if (!window.confirm("Remove profile picture?")) return;
     axios.put(`${WEB_URL}/api/deleteProfilePic/${user._id}`)
-      .then((res) => {
-        toast.success("Profile picture removed!");
+      .then(() => {
+        toast.success("Picture removed.");
         setUserData(prev => ({ ...prev, profilepic: "" }));
         getUser();
       })
-      .catch((err) => {
-        console.error(err);
-        toast.error("Failed to remove picture.");
-      });
+      .catch(() => toast.error("Failed to remove."));
   };
 
-  // --- Delete Account Logic ---
   const handleDeleteAccount = () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    if (window.confirm("Are you sure? This cannot be undone.")) {
       axios.delete(`${WEB_URL}/api/deleteUser/${user._id}`)
-        .then((response) => {
-          toast.success("Account Deleted Successfully");
+        .then(() => {
+          toast.success("Account Deleted");
           localStorage.clear();
           closeModal();
           navigate("/"); 
         })
-        .catch((error) => {
-          console.error("Delete Account Error:", error);
-          toast.error("Failed to delete account. Please try again.");
-        });
+        .catch(() => toast.error("Deletion failed."));
     }
   };
-  // ----------------------------
 
-  const triggerFileInput = () => {
-    document.getElementById("edit-modal-file-input").click();
-  };
-
-  const option1 = [
-    { value: "English", label: "English" },
-    { value: "Hindi", label: "Hindi" },
-    { value: "Gujarati", label: "Gujarati" },
-    { value: "Bahana Indonesia", label: "Bahana Indonesia" },
-    { value: "Bengali", label: "Bengali" },
-    { value: "Dansk", label: "Dansk" },
-    { value: "Deutsch", label: "Deutsch" },
-    { value: "Spanish", label: "Spanish" },
-    { value: "French", label: "French" },
-    { value: "Italian", label: "Italian" }
-  ];
-
-  const option2 = [
-    { value: "Machine Learning", label: "Machine Learning" },
-    { value: "Python", label: "Python" },
-    { value: "Java", label: "Java" },
-    { value: "SQL", label: "SQL" },
-    { value: "React.js", label: "React.js" },
-    { value: "Node", label: "Node" },
-    { value: "Git", label: "Git" },
-    { value: "Tailwind CSS", label: "Tailwind CSS" },
-    { value: "JavaScript", label: "JavaScript" },
-    { value: "C++", label: "C++" },
-    { value: "Management", label: "Management" },
-    { value: "Communication", label: "Communication" },
-    { value: "Analytical Skills", label: "Analytical Skills" },
-    { value: "Marketing", label: "Marketing" },
-    { value: "Finance", label: "Finance" },
-    { value: "Cloud Computing", label: "Cloud Computing" }
-  ];
-
-  const colorStyle = {
-    control: (styles) => ({
-      ...styles,
-      padding: "5px",
-      border: "1px solid #ACB4BA",
-      borderRadius: "16px",
-      outline: "none",
-      cursor: "pointer",
-      textAlign: "left",
-      fontSize: "14px",
-    }),
-  };
-
-  const handleSelect1 = (e) => {
-    setLanguages(e);
-  };
-
-  const handleSelect2 = (e) => {
-    setSkills(e);
-  };
-
-  useEffect(() => {
-    if(user) {
-        setUserData(user);
-        let arr = [];
-        user.languages && JSON.parse(user.languages).forEach((elem) => {
-        arr.push({ value: elem, label: elem });
-        })
-        setLanguages(arr);
-        arr = [];
-        user.skills && JSON.parse(user.skills).forEach((elem) => {
-        arr.push({ value: elem, label: elem });
-        })
-        setSkills(arr);
-        setDob(user.dob ? user.dob.split("T")[0] : "");
-    }
-    document.body.style.overflowY = "hidden";
-    return () => {
-      document.body.style.overflowY = "scroll";
-    };
-  }, [user]);
+  const triggerFileInput = () => document.getElementById("edit-modal-file-input").click();
 
   const validate = () => {
     let input = userData;
-    let errors = {};
+    let errs = {};
     let isValid = true;
 
-    if (!input["fname"]) {
-      isValid = false;
-      errors["fname_err"] = "Please Enter First Name";
-    }
-    if (!input["lname"]) {
-      isValid = false;
-      errors["lname_err"] = "Please Enter Last Name";
-    }
-    if (!input["email"]) {
-      isValid = false;
-      errors["email_err"] = "Please Enter Email";
-    }
-
-    // --- NEW VALIDATION: City (No Spaces) ---
-    if (input["city"]) {
-      if (input["city"].trim().includes(" ")) {
+    if (!input["fname"]) { isValid = false; errs["fname_err"] = "First Name is required"; }
+    if (!input["lname"]) { isValid = false; errs["lname_err"] = "Last Name is required"; }
+    if (!input["email"]) { isValid = false; errs["email_err"] = "Email is required"; }
+    
+    if (input["city"] && input["city"].trim().includes(" ")) {
         isValid = false;
-        errors["city_err"] = "City name must be a single word (no spaces allowed).";
-      }
+        errs["city_err"] = "City must be a single word (no spaces).";
     }
-
-    // --- NEW VALIDATION: State (No Spaces) ---
-    if (input["state"]) {
-      if (input["state"].trim().includes(" ")) {
+    if (input["state"] && input["state"].trim().includes(" ")) {
         isValid = false;
-        errors["state_err"] = "State name must be a single word (no spaces allowed).";
-      }
+        errs["state_err"] = "State must be a single word (no spaces).";
     }
-    // ----------------------------------------
 
-    setErrors(errors);
+    setErrors(errs);
     return isValid;
-  };
-
-  const handleChange = (e) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
   const handleUpdate = () => {
@@ -192,10 +391,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
       var lang = languages.map((elem) => elem.value);
       var skill = skills.map((elem) => elem.value);
       
-      axios({
-        url: `${WEB_URL}/api/userProfileEdit`,
-        method: "post",
-        data: {
+      axios.post(`${WEB_URL}/api/userProfileEdit`, {
           id: userData._id,
           fname: userData.fname,
           lname: userData.lname,
@@ -207,184 +403,163 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
           phone: userData.phone,
           email: userData.email,
           github: userData.github,
-          linkedin: userData.linkedin,
           portfolioweb: userData.portfolioweb,
           about: userData.about,
           languages: JSON.stringify(lang),
           skills: JSON.stringify(skill),
-        },
-      })
-        .then((response) => {
-          toast.success("Profile Updated!!");
+        })
+        .then(() => {
+          toast.success("Profile Updated!");
           getUser();
           closeModal();
         })
-        .catch((error) => {
-          console.log(error);
-          toast.error("Failed to update profile");
-        });
+        .catch(() => toast.error("Update failed"));
     }
   };
 
-  const handleCancel = () => {
-    setUserData(user);
-    closeModal();
-  };
-
   return (
-    <>
-      <div className="modal-wrapper" onClick={closeModal}></div>
-      <div className="modal-container">
-        <div className="edit-profile-header" onClick={closeModal}>
-          <h2>Edit Profile</h2>
-          <i className="fa-solid fa-xmark close-modal"></i>
+    <div className="modal-overlay" onClick={closeModal}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Header */}
+        <div className="modal-header">
+          <h2 className="modal-title">Edit Profile</h2>
+          <button className="close-btn" onClick={closeModal}>
+            <i className="fa-solid fa-xmark"></i>
+          </button>
         </div>
         
-        <div className="edit-profile-details">
+        {/* Body */}
+        <div className="modal-body">
           
-          {/* Image Section */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
-            <div style={{ position: "relative", width: "100px", height: "100px", marginBottom: "10px" }}>
-              {userData.profilepic ? (
+          {/* Avatar Upload */}
+          <div className="avatar-section">
+            <div className="avatar-wrapper" onClick={triggerFileInput}>
                 <img 
-                  src={`${WEB_URL}${userData.profilepic}`} 
-                  alt="Profile" 
-                  style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
+                  src={userData.profilepic ? `${WEB_URL}${userData.profilepic}` : "images/profile1.png"} 
+                  alt="Avatar" 
+                  className="avatar-img" 
                 />
-              ) : (
-                <img 
-                  src="images/profile1.png" 
-                  alt="Default" 
-                  style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
-                />
-              )}
+                <div className="upload-icon-overlay"><i className="fa-solid fa-camera"></i></div>
             </div>
-            
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button 
-                type="button" 
-                onClick={triggerFileInput}
-                style={{ padding: "5px 10px", borderRadius: "5px", border: "1px solid #ccc", background: "#fff", cursor: "pointer", fontSize: "12px" }}
-              >
-                Change Photo
-              </button>
-              
-              {userData.profilepic && (
-                <button 
-                  type="button" 
-                  onClick={handleImageDelete}
-                  style={{ padding: "5px 10px", borderRadius: "5px", border: "1px solid #ff4d4d", background: "#fff", color: "#ff4d4d", cursor: "pointer", fontSize: "12px" }}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-            <input 
-              type="file" 
-              id="edit-modal-file-input" 
-              accept="image/*" 
-              style={{ display: "none" }} 
-              onChange={handleImageUpload}
-            />
+            {userData.profilepic && (
+                <button className="remove-photo-btn" onClick={handleImageDelete}>Remove Photo</button>
+            )}
+            <input type="file" id="edit-modal-file-input" hidden onChange={handleImageUpload} />
           </div>
 
-          <span>First Name</span>
-          <input type="text" name="fname" placeholder="First Name" value={userData.fname || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.fname_err}</div>
-          <span>Last Name</span>
-          <input type="text" name="lname" placeholder="Last Name" value={userData.lname || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.lname_err}</div>
-          
-          <span>Date of Birth</span>
-          <div className="datefield">
-            <input type="date" name="dob" placeholder="Date of Birth" value={dob} onChange={(e) => setDob(e.target.value)} />
-          </div>
-          <div className="text-danger">{errors.dob_err}</div>
-          
-          <div className="gender">
-            <div>Gender</div>
-            <div>
-              <input type="radio" name="gender" onChange={(e) => setUserData({ ...userData, gender: e.target.value })} value="Male" checked={userData.gender === "Male"} />
-              <span>Male</span>
+          {/* Personal Info */}
+          <div className="form-grid">
+            <div className="form-group">
+                <label className="form-label">First Name</label>
+                <input className="form-input" name="fname" value={userData.fname || ""} onChange={handleChange} />
+                <span className="error-msg">{errors.fname_err}</span>
             </div>
-            <div>
-              <input type="radio" name="gender" onChange={(e) => setUserData({ ...userData, gender: e.target.value })} value="Female" checked={userData.gender === "Female"} />
-              <span>Female</span>
+            <div className="form-group">
+                <label className="form-label">Last Name</label>
+                <input className="form-input" name="lname" value={userData.lname || ""} onChange={handleChange} />
+                <span className="error-msg">{errors.lname_err}</span>
             </div>
           </div>
-          <div className="text-danger">{errors.gender_err}</div>
-          
-          <span>Phone</span>
-          <input type="text" name="phone" placeholder="Phone" value={userData.phone || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.phone_err}</div>
-          
-          <span>Email</span>
-          <input type="text" name="email" placeholder="Email" value={userData.email || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.email_err}</div>
-          
-          <span>Github</span>
-          <input type="text" name="github" placeholder="Github" value={userData.github || ""} onChange={handleChange} />
-          
-          <span>LinkedIn</span>
-          <input type="text" name="linkedin" placeholder="LinkedIn" value={userData.linkedin || ""} onChange={handleChange} />
-          
-          <span>Portfolio</span>
-          <input type="text" name="portfolioweb" placeholder="Portfolio Web" value={userData.portfolioweb || ""} onChange={handleChange} />
-          
-          <span>Languages</span>
-          <Select options={option1} isMulti onChange={handleSelect1} placeholder="Select Language" value={languages} styles={colorStyle} className="select"></Select>
-          
-          <span>Skills</span>
-          <Select options={option2} isMulti onChange={handleSelect2} placeholder="Select Skills" value={skills} styles={colorStyle} className="select"></Select>
-          
-          <span>Nation</span>
-          <input type="text" name="nation" placeholder="Nation" value={userData.nation || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.country_err}</div>
-          
-          <span>State</span>
-          <input type="text" name="state" placeholder="State" value={userData.state || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.state_err}</div>
-          
-          <span>City</span>
-          <input type="text" name="city" placeholder="City" value={userData.city || ""} onChange={handleChange} />
-          <div className="text-danger">{errors.city_err}</div>
-          
-          <span>About</span>
-          <input type="text" name="about" placeholder="About" value={userData.about || ""} onChange={handleChange} />
 
-          <div className="buttons" style={{marginTop: '20px'}}>
-            <input type="button" value="Cancel" className="action-button-cancel" onClick={handleCancel} />
-            <input type="button" value="Update" className="action-button-confirm" onClick={handleUpdate} />
+          <div className="form-grid">
+            <div className="form-group">
+                <label className="form-label">Date of Birth</label>
+                <input type="date" className="form-input" value={dob} onChange={(e) => setDob(e.target.value)} />
+            </div>
+            <div className="form-group">
+                <label className="form-label">Gender</label>
+                <div className="radio-group">
+                    <label className="radio-option">
+                        <input type="radio" name="gender" value="Male" checked={userData.gender === "Male"} onChange={handleChange} /> Male
+                    </label>
+                    <label className="radio-option">
+                        <input type="radio" name="gender" value="Female" checked={userData.gender === "Female"} onChange={handleChange} /> Female
+                    </label>
+                </div>
+            </div>
           </div>
 
-          {/* Delete Account Section */}
-          <div style={{ marginTop: "30px", borderTop: "1px solid #ddd", paddingTop: "20px" }}>
-            <h3 style={{ fontSize: "16px", color: "#d9534f", marginBottom: "10px" }}>Danger Zone</h3>
-            <button 
-                type="button" 
-                onClick={handleDeleteAccount}
-                style={{
-                    backgroundColor: "#d9534f",
-                    color: "white",
-                    border: "none",
-                    padding: "10px 20px",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                    width: "100%",
-                    fontSize: "14px",
-                    fontWeight: "bold"
-                }}
-            >
-                Delete Account
-            </button>
-            <p style={{ fontSize: "12px", color: "#777", marginTop: "5px", textAlign: "center" }}>
-                This action is irreversible. All your data will be permanently removed.
-            </p>
+          {/* Contact & Location */}
+          <div className="form-grid">
+             <div className="form-group">
+                <label className="form-label">Email</label>
+                <input className="form-input" name="email" value={userData.email || ""} onChange={handleChange} />
+                <span className="error-msg">{errors.email_err}</span>
+             </div>
+             <div className="form-group">
+                <label className="form-label">Phone</label>
+                <input className="form-input" name="phone" value={userData.phone || ""} onChange={handleChange} />
+             </div>
+          </div>
+
+          <div className="form-grid">
+             <div className="form-group">
+                <label className="form-label">City</label>
+                <input className="form-input" name="city" value={userData.city || ""} onChange={handleChange} />
+                <span className="error-msg">{errors.city_err}</span>
+             </div>
+             <div className="form-group">
+                <label className="form-label">State</label>
+                <input className="form-input" name="state" value={userData.state || ""} onChange={handleChange} />
+                <span className="error-msg">{errors.state_err}</span>
+             </div>
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Nation</label>
+            <input className="form-input" name="nation" value={userData.nation || ""} onChange={handleChange} />
+          </div>
+
+          {/* Socials */}
+          <div className="form-group">
+             <label className="form-label">GitHub URL</label>
+             <input className="form-input" name="github" value={userData.github || ""} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+             <label className="form-label">Portfolio URL</label>
+             <input className="form-input" name="portfolioweb" value={userData.portfolioweb || ""} onChange={handleChange} />
+          </div>
+
+          {/* Skills & Lang */}
+          <div className="form-group">
+             <label className="form-label">Languages</label>
+             <Select options={option1} isMulti onChange={setLanguages} value={languages} styles={colorStyle} />
+          </div>
+          <div className="form-group">
+             <label className="form-label">Skills</label>
+             <Select options={option2} isMulti onChange={setSkills} value={skills} styles={colorStyle} />
+          </div>
+
+          <div className="form-group">
+             <label className="form-label">About</label>
+             <textarea 
+                className="form-input" 
+                name="about" 
+                rows="3" 
+                value={userData.about || ""} 
+                onChange={handleChange}
+                style={{resize: 'none'}} 
+             />
+          </div>
+
+          {/* Danger Zone */}
+          <div className="danger-zone">
+            <div className="danger-title">Delete Account</div>
+            <p className="danger-desc">Permanently remove your account and all data.</p>
+            <button type="button" className="delete-btn" onClick={handleDeleteAccount}>Delete Account</button>
           </div>
 
         </div>
+
+        {/* Footer */}
+        <div className="modal-footer">
+          <button className="btn-cancel" onClick={closeModal}>Cancel</button>
+          <button className="btn-save" onClick={handleUpdate}>Save Changes</button>
+        </div>
+
       </div>
-    </>
+    </div>
   );
 };
 

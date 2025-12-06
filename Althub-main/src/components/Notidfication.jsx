@@ -3,33 +3,41 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
 
-// --- INJECTED STYLES FOR FULL-SCREEN BAR LAYOUT ---
+// --- INJECTED STYLES FOR CONSISTENT FULL-WIDTH UI ---
 const styles = `
   /* --- Page Layout --- */
   .notif-page-wrapper {
-    background-color: #ffffff;
+    background-color: #f3f2ef; /* Matching Home/Scholarship bg */
     min-height: 100vh;
+    padding: 20px 0;
     font-family: 'Poppins', sans-serif;
-    display: flex;
-    flex-direction: column;
   }
 
-  /* --- Sticky Header --- */
-  .notif-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(255, 255, 255, 0.98);
-    border-bottom: 1px solid #eaeaea;
-    padding: 20px 40px;
+  .notif-container {
+    width: 98%;
+    max-width: 1920px; /* Consistent max-width with Home */
+    margin: 0 auto;
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* --- Header Section --- */
+  .notif-header-card {
+    background: #fff;
+    padding: 25px 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    backdrop-filter: blur(5px);
+    border-left: 5px solid #66bd9e; /* Theme Accent */
+    border: 1px solid #eee;
   }
 
-  .header-left h1 {
-    font-size: 1.8rem;
+  .header-title h2 {
+    font-size: 1.6rem;
     font-weight: 700;
     color: #2d3436;
     margin: 0;
@@ -41,20 +49,20 @@ const styles = `
   .notif-badge {
     background: #ff4757;
     color: white;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     padding: 4px 12px;
-    border-radius: 50px;
+    border-radius: 20px;
     font-weight: 600;
     vertical-align: middle;
   }
 
   .back-btn {
     padding: 10px 24px;
-    border: 1px solid #e0e0e0;
-    background: transparent;
+    background: #f8f9fa;
+    border: 1px solid #eee;
     border-radius: 30px;
     color: #555;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -63,148 +71,137 @@ const styles = `
   }
 
   .back-btn:hover {
-    border-color: #333;
+    background: #e9ecef;
     color: #333;
-    background: #f9f9f9;
+    transform: translateX(-3px);
   }
 
   /* --- Notification List Container --- */
   .notif-list {
-    flex: 1;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
-    width: 100%;
+    gap: 10px; /* Gap between rows */
   }
 
   /* --- Notification Bar (Row) --- */
   .notif-row {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 30px;
     display: flex;
     align-items: center;
-    padding: 25px 40px;
-    border-bottom: 1px solid #f5f5f5;
-    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    border: 1px solid #eee;
+    transition: all 0.2s ease;
     width: 100%;
     box-sizing: border-box;
     cursor: default;
   }
 
   .notif-row:hover {
-    background-color: #fcfcfc;
-  }
-
-  /* Highlight Unread Items */
-  .notif-row.new-item {
-    background-color: #f0f9f6; /* Subtle Green Tint */
-  }
-  
-  .notif-row.new-item:hover {
-    background-color: #e8f5f1;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-color: #66bd9e;
   }
 
   /* Image Section */
   .notif-img-wrapper {
     flex-shrink: 0;
-    margin-right: 30px;
+    margin-right: 25px;
     cursor: pointer;
   }
 
   .notif-img {
-    width: 56px;
-    height: 56px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid #eee;
-    transition: transform 0.2s;
   }
 
-  .notif-img:hover {
-    transform: scale(1.05);
-    border-color: #66bd9e;
-  }
-
-  /* Text Content */
+  /* Content */
   .notif-content {
-    flex: 1; /* Takes all remaining space */
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
   .notif-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .notif-msg {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #666;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
-  /* Meta & Actions (Right Side) */
+  /* Meta & Actions */
   .notif-meta {
     display: flex;
     align-items: center;
-    gap: 40px;
+    gap: 30px;
     margin-left: 30px;
   }
 
   .notif-time {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #999;
     white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 6px;
+    font-weight: 500;
   }
 
   .delete-btn {
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: none;
-    background: transparent;
-    color: #ccc;
+    background: #fff0f1;
+    color: #ff4757;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .delete-btn:hover {
-    background: #fff0f1;
-    color: #ff4757;
+    background: #ff4757;
+    color: #fff;
+    transform: scale(1.1);
   }
 
   /* Empty/Loading State */
   .state-msg {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-    color: #b2bec3;
+    text-align: center;
+    padding: 60px;
+    background: #fff;
+    border-radius: 12px;
+    color: #999;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
   }
 
   .state-msg i {
-    font-size: 4rem;
-    margin-bottom: 20px;
+    font-size: 3rem;
+    margin-bottom: 15px;
     opacity: 0.5;
+    display: block;
   }
 
   /* Mobile Adjustments */
   @media (max-width: 768px) {
-    .notif-header { padding: 15px 20px; }
     .notif-row { 
-      padding: 20px; 
       flex-direction: column; 
       align-items: flex-start;
+      padding: 20px;
     }
     .notif-img-wrapper { margin-bottom: 15px; }
     .notif-meta { 
@@ -213,6 +210,7 @@ const styles = `
       width: 100%; 
       justify-content: space-between; 
     }
+    .notif-container { width: 100%; padding: 10px; }
   }
 `;
 
@@ -310,80 +308,81 @@ export default function Notidfication() {
 
   useEffect(() => {
     getNotifications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="notif-page-wrapper">
-      
-      {/* --- Sticky Header --- */}
-      <div className="notif-header">
-        <div className="header-left">
-          <h1>
-            Notifications
-            {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
-          </h1>
-        </div>
-        <button className="back-btn" onClick={() => nav("/home")}>
-          <i className="fa-solid fa-arrow-left"></i> Back to Home
-        </button>
-      </div>
-
-      {/* --- Full Width List --- */}
-      <div className="notif-list">
-        {loading ? (
-           <div className="state-msg">
-              <i className="fa-solid fa-spinner fa-spin"></i>
-              <p>Loading updates...</p>
-           </div>
-        ) : notifications.length > 0 ? (
-          notifications.map((elem) => (
-            <div 
-              className="notif-row" 
-              key={elem._id || Math.random()} 
-            >
-              {/* Image */}
-              <div 
-                className="notif-img-wrapper"
-                onClick={(e) => handleProfileRedirect(e, elem.senderId)}
-                title="View Profile"
-              >
-                {elem.image ? (
-                    <img src={`${WEB_URL}${elem.image}`} alt="" className="notif-img" />
-                ) : (
-                    <img src="images/profile1.png" alt="" className="notif-img" />
-                )}
-              </div>
-              
-              {/* Content */}
-              <div className="notif-content">
-                <div className="notif-title">{elem.title}</div>
-                <div className="notif-msg">{elem.msg}</div>
-              </div>
-
-              {/* Meta & Actions */}
-              <div className="notif-meta">
-                <div className="notif-time">
-                  <i className="fa-regular fa-clock"></i> {formatTime(elem.date)}
-                </div>
-                <button 
-                  className="delete-btn" 
-                  onClick={() => handleDelete(elem._id)}
-                  title="Remove"
-                >
-                  <i className="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="state-msg">
-              <i className="fa-regular fa-bell-slash"></i>
-              <p>You're all caught up! No new notifications.</p>
+      <div className="notif-container">
+        
+        {/* --- Header Card --- */}
+        <div className="notif-header-card">
+          <div className="header-title">
+            <h2>
+              Notifications
+              {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
+            </h2>
           </div>
-        )}
-      </div>
+          <button className="back-btn" onClick={() => nav("/home")}>
+            <i className="fa-solid fa-arrow-left"></i> Back to Home
+          </button>
+        </div>
 
+        {/* --- Notification List --- */}
+        <div className="notif-list">
+          {loading ? (
+             <div className="state-msg">
+                <i className="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading updates...</p>
+             </div>
+          ) : notifications.length > 0 ? (
+            notifications.map((elem) => (
+              <div 
+                className="notif-row" 
+                key={elem._id || Math.random()} 
+              >
+                {/* Image */}
+                <div 
+                  className="notif-img-wrapper"
+                  onClick={(e) => handleProfileRedirect(e, elem.senderId)}
+                  title="View Profile"
+                >
+                  {elem.image ? (
+                      <img src={`${WEB_URL}${elem.image}`} alt="" className="notif-img" />
+                  ) : (
+                      <img src="images/profile1.png" alt="" className="notif-img" />
+                  )}
+                </div>
+                
+                {/* Content */}
+                <div className="notif-content">
+                  <div className="notif-title">{elem.title}</div>
+                  <div className="notif-msg">{elem.msg}</div>
+                </div>
+
+                {/* Meta & Actions */}
+                <div className="notif-meta">
+                  <div className="notif-time">
+                    <i className="fa-regular fa-clock"></i> {formatTime(elem.date)}
+                  </div>
+                  <button 
+                    className="delete-btn" 
+                    onClick={() => handleDelete(elem._id)}
+                    title="Remove"
+                  >
+                    <i className="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="state-msg">
+                <i className="fa-regular fa-bell-slash"></i>
+                <p>You have no new notifications.</p>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 }

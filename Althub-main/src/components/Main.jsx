@@ -497,7 +497,7 @@ export default function Main() {
                         <ul className="social-list">
                             <li>
                                 <a href="https://www.linkedin.com/in/meetgandhi4041/" target="_blank" rel="noreferrer">
-                                    <i className="fa-brands fa-linkedin"></i> LinkedIn
+                                    <i className="fa-brands fa-linkedin"></i> Linkedin
                                 </a>
                             </li><br></br>
                             <li>

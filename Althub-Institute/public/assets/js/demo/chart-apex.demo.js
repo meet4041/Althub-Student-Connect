@@ -1150,7 +1150,7 @@ var handleRadialBarChart = function() {
 		},
 		colors: ['#1ab7ea', '#0084ff', '#39539E', '#0077B5'],
 		series: [76, 67, 61, 90],
-		labels: ['Vimeo', 'Messenger', 'Facebook', 'LinkedIn'],
+		labels: ['Vimeo', 'Messenger', 'Facebook'],
 		legend: {
 			show: true,
 			floating: true,

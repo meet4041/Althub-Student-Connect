@@ -109,7 +109,6 @@ const registerUser = async (req, res) => {
             password: spassword,
             languages: req.body.languages,
             github: req.body.github,
-            linkedin: req.body.linkedin,
             portfolioweb: req.body.portfolioweb,
             skills: req.body.skills,
             institute: req.body.institute,
@@ -252,7 +251,7 @@ const userProfileEdit = async (req, res) => {
             dob: req.body.dob, city: req.body.city, state: req.body.state,
             nation: req.body.nation, phone: req.body.phone, email: req.body.email,
             languages: req.body.languages, github: req.body.github,
-            linkedin: req.body.linkedin, portfolioweb: req.body.portfolioweb,
+            portfolioweb: req.body.portfolioweb,
             skills: req.body.skills, institute: req.body.institute,
             role: req.body.role, about: req.body.about
         };
