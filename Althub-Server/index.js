@@ -148,7 +148,7 @@ if (require.main === module) {
     })
     .catch(err => {
       console.error('Failed to connect to MongoDB:', err.message);
+      process.exit(1); // <--- Add this line to stop the process immediately on error
     });
 }
-
 module.exports = app;
