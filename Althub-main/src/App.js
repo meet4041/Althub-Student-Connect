@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import { socket } from "./socket"; // --- IMPORT FROM NEW FILE ---
+import { socket } from "./socket";
+import axios from "axios"; // Import Axios
 
 // Components
 import Navbar from "./components/Navbar";
@@ -20,36 +21,81 @@ import ForgetPassword from "./components/ForgetPassword";
 import NewPassword from "./components/NewPassword";
 import Scholarship from "./components/Scholarship";
 import MyPosts from "./components/MyPosts";
+import Loader from "./components/Loader"; // --- IMPORT LOADER ---
 
 function App() {
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    // Connect when App mounts
+    // --- AXIOS INTERCEPTORS FOR GLOBAL LOADER ---
+    let requestCount = 0;
+
+    const showLoader = () => {
+      requestCount++;
+      setIsLoading(true);
+    };
+
+    const hideLoader = () => {
+      requestCount--;
+      if (requestCount <= 0) {
+        requestCount = 0;
+        setIsLoading(false);
+      }
+    };
+
+    // Add a request interceptor
+    const reqInterceptor = axios.interceptors.request.use(
+      (config) => {
+        showLoader();
+        return config;
+      },
+      (error) => {
+        hideLoader();
+        return Promise.reject(error);
+      }
+    );
+
+    // Add a response interceptor
+    const resInterceptor = axios.interceptors.response.use(
+      (response) => {
+        hideLoader();
+        return response;
+      },
+      (error) => {
+        hideLoader();
+        return Promise.reject(error);
+      }
+    );
+
+    // --- SOCKET CONNECTION ---
     if (!socket.connected) {
       socket.connect();
     }
 
-    // Optional: Debug connection
     socket.on("connect", () => {
       console.log("Socket Connected:", socket.id);
     });
 
     socket.on("connect_error", (err) => {
-      // Suppress annoying console errors if server is down
       console.warn("Socket Connection Failed (Retrying...):", err.message);
     });
 
+    // Cleanup interceptors and socket on unmount
     return () => {
+      axios.interceptors.request.eject(reqInterceptor);
+      axios.interceptors.response.eject(resInterceptor);
       socket.off("connect");
       socket.off("connect_error");
-      // Keep socket open for navigation speed, or disconnect if strict:
-      // socket.disconnect(); 
     };
   }, []);
 
   return (
     <>
       <ToastContainer />
+      
+      {/* --- DISPLAY GLOBAL LOADER --- */}
+      {isLoading && <Loader />}
+
       <Navbar socket={socket} />
       <Routes>
         <Route path="/" element={<Main />} />

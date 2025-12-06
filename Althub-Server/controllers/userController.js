@@ -277,33 +277,79 @@ const deleteUser = async (req, res) => {
 // --- UPDATED SEARCH USER (Fixing Alumni Check) ---
 const searchUser = async (req, res) => {
     try {
-        var search = req.body.search || "";
+        const search = req.body.search || "";
+        const regex = new RegExp(search, "i"); // Simple regex, no .* wrapper needed
 
-        // --- OPTIMIZATION: .lean() added ---
-        var user_data = await User.find({
-            $or: [
-                { "fname": { $regex: new RegExp(".*" + search + ".*", "i") } },
-                { "lname": { $regex: new RegExp(".*" + search + ".*", "i") } }
-            ]
-        }).lean(); 
+        // Use Aggregation to fetch User + Education in ONE query
+        const user_data = await User.aggregate([
+            {
+                // 1. Filter Users first (Index usage if available)
+                $match: {
+                    $or: [
+                        { fname: { $regex: regex } },
+                        { lname: { $regex: regex } }
+                    ]
+                }
+            },
+            {
+                // 2. Limit results early to reduce processing load
+                $limit: 20 
+            },
+            {
+                // 3. Lookup Education data (Join)
+                $lookup: {
+                    from: "educations", // Ensure this matches your Education collection name in MongoDB (usually lowercase plural)
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { 
+                            $match: { 
+                                $expr: { 
+                                    // Match education.userid (string) with user._id (ObjectId)
+                                    // We convert ObjectId to string for comparison
+                                    $eq: ["$userid", { $toString: "$$userId" }] 
+                                } 
+                            }
+                        },
+                        { $project: { enddate: 1 } } // Only fetch enddate needed for logic
+                    ],
+                    as: "educationList"
+                }
+            },
+            {
+                // 4. Project only necessary fields + Calculate isAlumni
+                $project: {
+                    fname: 1,
+                    lname: 1,
+                    profilepic: 1,
+                    city: 1,
+                    state: 1,
+                    followers: 1,
+                    github: 1,
+                    skills: 1,
+                    // Determine Alumni Status directly in projection if possible, 
+                    // or pass educationList to frontend. 
+                    // For perfect accuracy with your specific JS logic, we can keep the JS map but now it's in-memory, not DB queries.
+                    educationList: 1 
+                }
+            }
+        ]);
 
-        if (user_data.length > 0) {
-            const usersWithStatus = await Promise.all(user_data.map(async (user) => {
-                // Ensure ID is string for query if user._id is an object
-                const educationList = await Education.find({ userid: user._id.toString() }).lean(); // .lean() here too
-                const isAlumni = checkAlumniStatus(educationList);
-                // Since user is lean (plain object), we can assign directly
-                user.isAlumni = isAlumni; 
-                return user;
-            }));
+        // 5. Lightweight In-Memory Calculation (No extra DB calls)
+        const finalData = user_data.map(user => {
+            const isAlumni = checkAlumniStatus(user.educationList);
+            // Remove the heavy education list from response
+            delete user.educationList; 
+            return { ...user, isAlumni };
+        });
 
-            res.status(200).send({ success: true, msg: "User Details", data: usersWithStatus });
-        }
-        else {
+        if (finalData.length > 0) {
+            res.status(200).send({ success: true, msg: "User Details", data: finalData });
+        } else {
             res.status(200).send({ success: true, msg: 'No User Found' });
         }
 
     } catch (error) {
+        console.error("Search Error:", error);
         res.status(400).send({ success: false, msg: error.message });
     }
 }

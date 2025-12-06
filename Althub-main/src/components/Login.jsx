@@ -143,12 +143,36 @@ const styles = `
     transition: all 0.3s;
     margin-top: 10px;
     box-shadow: 0 4px 15px rgba(102, 189, 158, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
   }
 
   .login-btn:hover {
     background: #479378;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 189, 158, 0.4);
+  }
+
+  .login-btn:disabled {
+    background: #a5d6c5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* --- SPINNER --- */
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   /* Links */
@@ -198,6 +222,8 @@ export default function Login() {
     email: "",
     password: "",
   });
+  // --- ADDED: Loading state ---
+  const [loading, setLoading] = useState(false);
 
   // Inject Styles
   useEffect(() => {
@@ -228,6 +254,7 @@ export default function Login() {
 
   const handleLogin = () => {
     if (validate()) {
+      setLoading(true); // Start loading
       axios({
         method: "post",
         data: {
@@ -238,10 +265,12 @@ export default function Login() {
       }).then((response) => {
         toast.success("Login Successful");
         localStorage.setItem("Althub_Id", response.data.data._id);
+        // We keep loading true here because we are navigating away immediately
         setTimeout(() => {
           nav("/home");
         })
       }).catch((err) => {
+        setLoading(false); // Stop loading on error
         toast.error("Invalid Credentials");
       })
     }
@@ -299,12 +328,21 @@ export default function Login() {
             />
           </div>
 
-          <input
-            type="submit"
+          {/* --- CHANGED: Replaced Input with Button to support Spinner --- */}
+          <button
             className="login-btn"
-            value="Login"
             onClick={handleLogin}
-          />
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <div className="spinner"></div>
+                Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
+          </button>
 
           <div className="login-options">
             <div className="forgot-link" onClick={() => nav("/forget-password")}>
