@@ -279,19 +279,22 @@ const searchUser = async (req, res) => {
     try {
         var search = req.body.search || "";
 
+        // --- OPTIMIZATION: .lean() added ---
         var user_data = await User.find({
             $or: [
                 { "fname": { $regex: new RegExp(".*" + search + ".*", "i") } },
                 { "lname": { $regex: new RegExp(".*" + search + ".*", "i") } }
             ]
-        }).lean(); // Use lean() for performance and mutability
+        }).lean(); 
 
         if (user_data.length > 0) {
             const usersWithStatus = await Promise.all(user_data.map(async (user) => {
-                // FIX: Convert ObjectId to String for the query
-                const educationList = await Education.find({ userid: user._id.toString() });
+                // Ensure ID is string for query if user._id is an object
+                const educationList = await Education.find({ userid: user._id.toString() }).lean(); // .lean() here too
                 const isAlumni = checkAlumniStatus(educationList);
-                return { ...user, isAlumni };
+                // Since user is lean (plain object), we can assign directly
+                user.isAlumni = isAlumni; 
+                return user;
             }));
 
             res.status(200).send({ success: true, msg: "User Details", data: usersWithStatus });
@@ -313,7 +316,8 @@ const searchUserById = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).send({ success: false, msg: 'Invalid user id' });
         }
-        const user = await User.find({ _id: id });
+        // --- OPTIMIZATION: .lean() ---
+        const user = await User.find({ _id: id }).lean();
         return res.status(200).send({ success: true, data: user });
     } catch (error) {
         console.error('Error in searchUserById:', error.message);
@@ -332,7 +336,8 @@ const userLogout = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const user_data = await User.find({});
+        // --- OPTIMIZATION: .lean() ---
+        const user_data = await User.find({}).lean();
         res.status(200).send({ success: true, data: user_data });
     }
     catch (error) {
@@ -352,7 +357,8 @@ const getTopUsers = async (req, res) => {
 
 const getUsersOfInstitute = async (req, res) => {
     try {
-        const user_data = await User.find({ institute: req.params.institute });
+        // --- OPTIMIZATION: .lean() ---
+        const user_data = await User.find({ institute: req.params.institute }).lean();
         res.status(200).send({ success: true, data: user_data });
     }
     catch (error) {

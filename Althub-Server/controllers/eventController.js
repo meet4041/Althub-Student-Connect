@@ -4,6 +4,7 @@ const User = require("../models/userModel"); // Import User to notify them
 const Institute = require("../models/instituteModel");
 
 const addEvents = async (req, res) => {
+    // ... (Keep existing logic)
     try {
         const event = new Event({
             organizerid: req.body.organizerid,
@@ -16,33 +17,30 @@ const addEvents = async (req, res) => {
 
         const event_data = await event.save();
 
-        // --- NEW: Create Notifications for All Users (Broadcast) ---
         const institute = await Institute.findById(req.body.organizerid);
-        const users = await User.find({}); // Fetch all users to notify
+        const users = await User.find({});
         
         const notifications = users.map(user => ({
             userid: user._id,
             senderid: req.body.organizerid,
-            image: institute ? institute.profilepic : '', // Use institute logo
+            image: institute ? institute.profilepic : '',
             title: "New Event",
             msg: `New Event: ${req.body.title} has been added by ${institute ? institute.insname : 'Institute'}.`,
             date: new Date()
         }));
         
         await Notification.insertMany(notifications);
-        // -----------------------------------------------------------
-
         res.status(200).send({ success: true, data: event_data });
 
     } catch (error) {
         res.status(400).send(error.message);
-        console.log("Error in add event : " + error.message);
     }
 }
 
 const getEvents = async (req, res) => {
     try {
-        const evet_data = await Event.find({});
+        // --- OPTIMIZATION: .lean() ---
+        const evet_data = await Event.find({}).lean();
         res.status(200).send({ success: true, data: evet_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -51,7 +49,8 @@ const getEvents = async (req, res) => {
 
 const getEventsByInstitute = async (req, res) => {
     try {
-        const evet_data = await Event.find({ organizerid: req.params.organizerid });
+        // --- OPTIMIZATION: .lean() ---
+        const evet_data = await Event.find({ organizerid: req.params.organizerid }).lean();
         res.status(200).send({ success: true, data: evet_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -115,7 +114,8 @@ const searchEvent = async (req, res) => {
 const getUpcommingEvents = async (req, res) => {
     try {
         let start = Date.now();
-        const event_data = await Event.find({ date: { $gte: start } });
+        // --- OPTIMIZATION: .lean() ---
+        const event_data = await Event.find({ date: { $gte: start } }).lean();
         res.status(200).send({ success: true, data: event_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });

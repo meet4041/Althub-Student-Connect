@@ -344,102 +344,45 @@ export default function Events() {
     <>
       <div className="events-page-wrapper">
         <div className="events-container">
-          
-          {/* --- HEADER --- */}
           <div className="events-header-card">
-            <div className="header-content">
-              <h1>Events</h1>
-              <p>Discover, Connect, and Experience</p>
-            </div>
-            
+            <div className="header-content"><h1>Events</h1><p>Discover, Connect, and Experience</p></div>
             <div className="header-actions">
-              <img src="/images/Events-amico.png" alt="Events Illustration" className="header-img" />
-              
-              {/* --- BACK BUTTON --- */}
-              <button className="back-btn" onClick={() => nav("/home")}>
-                <i className="fa-solid fa-arrow-left"></i> Back to Home
-              </button>
+              <img src="/images/Events-amico.png" alt="Events Illustration" className="header-img" loading="lazy" />
+              <button className="back-btn" onClick={() => nav("/home")}><i className="fa-solid fa-arrow-left"></i> Back to Home</button>
             </div>
           </div>
 
-          {/* --- TABS --- */}
           <div className="events-tabs">
-            <button 
-              className={`tab-btn ${type === "All" ? "active" : ""}`}
-              onClick={() => setType("All")}
-            >
-              All
-            </button>
-            <button 
-              className={`tab-btn ${type === "Upcomming" ? "active" : ""}`}
-              onClick={() => setType("Upcomming")}
-            >
-              Upcoming
-            </button>
-            <button 
-              className={`tab-btn ${type === "Past" ? "active" : ""}`}
-              onClick={() => setType("Past")}
-            >
-              Past
-            </button>
+            <button className={`tab-btn ${type === "All" ? "active" : ""}`} onClick={() => setType("All")}>All</button>
+            <button className={`tab-btn ${type === "Upcomming" ? "active" : ""}`} onClick={() => setType("Upcomming")}>Upcoming</button>
+            <button className={`tab-btn ${type === "Past" ? "active" : ""}`} onClick={() => setType("Past")}>Past</button>
           </div>
 
-          {/* --- GRID (4 Cols) --- */}
           <div className="events-grid">
             {showEvent.length > 0 ? (
               showEvent.map((elem) => (
                 <div key={elem._id} className="event-card">
                   <div className="card-img-wrapper">
-                    {elem.photos.length > 0 ? (
-                      <img src={`${WEB_URL}${elem.photos[0]}`} alt={elem.title} />
-                    ) : (
-                      <img src="images/event1.png" alt="Default Event" />
-                    )}
+                    {/* --- OPTIMIZATION: Lazy Load --- */}
+                    {elem.photos.length > 0 ? <img src={`${WEB_URL}${elem.photos[0]}`} alt={elem.title} loading="lazy" /> : <img src="images/event1.png" alt="Default Event" loading="lazy" />}
                   </div>
-                  
                   <div className="card-body">
                     <h2 className="card-title" title={elem.title}>{elem.title}</h2>
                     <ul className="info-list">
-                      <li className="info-item">
-                        <i className="fa-regular fa-calendar-days"></i>
-                        <span>{formatDate(elem.date)}</span>
-                      </li>
-                      <li className="info-item">
-                        <i className="fa-regular fa-clock"></i>
-                        <span>{formatTime(elem.date)}</span>
-                      </li>
-                      <li className="info-item">
-                        <i className="fa-solid fa-location-dot"></i>
-                        <span style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} title={elem.venue}>
-                            {elem.venue}
-                        </span>
-                      </li>
+                      <li className="info-item"><i className="fa-regular fa-calendar-days"></i><span>{formatDate(elem.date)}</span></li>
+                      <li className="info-item"><i className="fa-regular fa-clock"></i><span>{formatTime(elem.date)}</span></li>
+                      <li className="info-item"><i className="fa-solid fa-location-dot"></i><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={elem.venue}>{elem.venue}</span></li>
                     </ul>
-                    
-                    <button 
-                      className="view-btn"
-                      onClick={() => {
-                        setModal(true);
-                        setEvent(elem);
-                      }}
-                    >
-                      View
-                    </button>
+                    <button className="view-btn" onClick={() => { setModal(true); setEvent(elem); }}>View</button>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="no-events">
-                <i className="fa-regular fa-calendar-xmark"></i>
-                <h3>No Events Found</h3>
-                <p>Check back later.</p>
-              </div>
+              <div className="no-events"><i className="fa-regular fa-calendar-xmark"></i><h3>No Events Found</h3><p>Check back later.</p></div>
             )}
           </div>
-
         </div>
       </div>
-      
       {modal && <EventModal closeModal={closeModal} event={event} getEvents={getEvents} />}
     </>
   );

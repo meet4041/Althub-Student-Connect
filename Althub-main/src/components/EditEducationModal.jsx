@@ -30,7 +30,7 @@ const styles = `
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: 90vh; /* Limits height to viewport */
     font-family: 'Poppins', sans-serif;
     animation: slideUp 0.3s ease-out;
     overflow: hidden;
@@ -72,7 +72,7 @@ const styles = `
   /* Scrollable Body */
   .modal-body {
     padding: 30px;
-    overflow-y: auto;
+    overflow-y: auto; /* Only body scrolls */
     flex: 1;
   }
 
@@ -129,7 +129,7 @@ const styles = `
     margin-bottom: 8px;
   }
 
-  .form-input {
+  .form-input, .form-select {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #e0e0e0;
@@ -139,8 +139,9 @@ const styles = `
     outline: none;
     transition: border-color 0.2s;
     background: #fcfcfc;
+    appearance: none; /* Remove default arrow for selects to style custom if needed, but keeping standard here */
   }
-  .form-input:focus { border-color: #66bd9e; background: #fff; }
+  .form-input:focus, .form-select:focus { border-color: #66bd9e; background: #fff; }
 
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .error-text { color: #ff4757; font-size: 0.75rem; margin-top: 5px; display: block; }
@@ -190,7 +191,7 @@ const styles = `
   .dropdown-item:hover { background: #f0f9f6; }
   .dropdown-item img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
 
-  /* Footer */
+  /* Footer - Fixed at bottom */
   .modal-footer {
     padding: 20px 30px;
     border-top: 1px solid #f0f0f0;
@@ -232,6 +233,10 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
   const [university, setUniversity] = useState([]);
   const [universityShow, setUniversityShow] = useState(false);
 
+  // Generate years for dropdown
+  const currentYear = new Date().getFullYear();
+  const years = Array.from(new Array(60), (val, index) => currentYear + 5 - index);
+
   // Inject Styles
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -244,7 +249,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
     setEducations(education);
     setModalType(modal);
     getUniversity();
-  }, [education , modal]);
+  }, [education, modal]);
 
   const handleChange = (e) => {
     setEx({ ...ex, [e.target.name]: e.target.value });
@@ -257,9 +262,9 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
     setEndDate("");
     setUniversityShow(false);
     if (modalType === "AddEdit") {
-        setModalType("Edit"); 
+      setModalType("Edit");
     } else {
-        closeModal();
+      closeModal();
     }
   };
 
@@ -273,12 +278,12 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
       errs["course_err"] = "Course Name is required";
     }
     if (!input["institutename"]) {
-        isValid = false;
-        errs["institute_err"] = "Institute is required";
+      isValid = false;
+      errs["institute_err"] = "Institute is required";
     }
     if (!joindate) {
       isValid = false;
-      errs["joindate_err"] = "Start Date is required";
+      errs["joindate_err"] = "Start Year is required";
     }
     setErrors(errs);
     return isValid;
@@ -287,13 +292,13 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
   const handleUpdate = () => {
     if (validate()) {
       axios.post(`${WEB_URL}/api/editEducation`, {
-          id: ex._id,
-          institutename: ex.institutename,
-          course: ex.course,
-          joindate: joindate,
-          enddate: enddate,
-          collagelogo: ex.collagelogo,
-        })
+        id: ex._id,
+        institutename: ex.institutename,
+        course: ex.course,
+        joindate: joindate, // Sending Year String
+        enddate: enddate,   // Sending Year String
+        collagelogo: ex.collagelogo,
+      })
         .then(() => {
           toast.success("Education Updated!");
           getEducation();
@@ -307,13 +312,13 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
     const userID = localStorage.getItem("Althub_Id");
     if (validate()) {
       axios.post(`${WEB_URL}/api/addEducation`, {
-          userid: userID,
-          institutename: ex.institutename,
-          course: ex.course,
-          joindate: joindate,
-          enddate: enddate,
-          collagelogo: ex.collagelogo,
-        })
+        userid: userID,
+        institutename: ex.institutename,
+        course: ex.course,
+        joindate: joindate, // Sending Year String
+        enddate: enddate,   // Sending Year String
+        collagelogo: ex.collagelogo,
+      })
         .then(() => {
           toast.success("Education Added!");
           getEducation();
@@ -329,31 +334,43 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
     });
   };
 
-  const formatDate = (date) => {
+  // Helper to extract year from date string if it was stored as full date
+  const getYearFromDate = (dateStr) => {
+    if (!dateStr) return "";
+    // Check if it's a full ISO date (contains T or -)
+    if (dateStr.includes("-") || dateStr.includes("T")) {
+      return new Date(dateStr).getFullYear().toString();
+    }
+    return dateStr; // Assume it's already just the year
+  };
+
+  const formatDateDisplay = (date) => {
     if (!date) return "";
+    // If it's just a year, return it
+    if (!date.includes("-") && !date.includes("T") && date.length === 4) return date;
     const d = new Date(date);
-    return d.toLocaleDateString("en-US", { month: 'short', year: 'numeric' });
+    return d.toLocaleDateString("en-US", { year: 'numeric' }); // Just display year
   };
 
   const handleDelete = () => {
-    if(window.confirm("Delete this education record?")){
+    if (window.confirm("Delete this education record?")) {
       axios.delete(`${WEB_URL}/api/deleteEducation/${ex._id}`)
-      .then(() => {
-        toast.success("Deleted!");
-        getEducation();
-        handleCancel();
-      });
+        .then(() => {
+          toast.success("Deleted!");
+          getEducation();
+          handleCancel();
+        });
     }
   };
 
   return (
     <div className="modal-overlay" onClick={closeModal}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        
+
         {/* Header */}
         <div className="modal-header">
           <h2 className="modal-title">
-             {modalType === "Edit" ? "Education History" : (ex._id ? "Edit Education" : "Add Education")}
+            {modalType === "Edit" ? "Education History" : (ex._id ? "Edit Education" : "Add Education")}
           </h2>
           <button className="close-btn" onClick={closeModal}>
             <i className="fa-solid fa-xmark"></i>
@@ -362,7 +379,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
 
         {/* Body */}
         <div className="modal-body">
-          
+
           {modalType === "Edit" ? (
             /* --- LIST VIEW --- */
             <div className="edu-list">
@@ -378,123 +395,126 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
                       <h4 className="edu-course">{elem.course}</h4>
                       <p className="edu-institute">{elem.institutename}</p>
                       <span className="edu-date">
-                        {formatDate(elem.joindate)} - {elem.enddate ? formatDate(elem.enddate) : "Present"}
+                        {formatDateDisplay(elem.joindate)} - {elem.enddate ? formatDateDisplay(elem.enddate) : "Present"}
                       </span>
                     </div>
-                    <button 
-                        className="edit-icon-btn" 
-                        onClick={() => {
-                          setEx(elem);
-                          setJoinDate(elem.joindate ? elem.joindate.split("T")[0] : "");
-                          setEndDate(elem.enddate ? elem.enddate.split("T")[0] : "");
-                          setModalType("AddEdit");
-                        }}
+                    <button
+                      className="edit-icon-btn"
+                      onClick={() => {
+                        setEx(elem);
+                        setJoinDate(getYearFromDate(elem.joindate));
+                        setEndDate(getYearFromDate(elem.enddate));
+                        setModalType("AddEdit");
+                      }}
                     >
-                        <i className="fa-solid fa-pencil"></i>
+                      <i className="fa-solid fa-pencil"></i>
                     </button>
                   </div>
                 ))
               ) : (
-                <div style={{textAlign: 'center', color: '#999', padding: '40px'}}>
-                    <i className="fa-solid fa-graduation-cap" style={{fontSize: '2rem', marginBottom: '10px'}}></i>
-                    <p>No education added yet.</p>
+                <div style={{ textAlign: 'center', color: '#999', padding: '40px' }}>
+                  <i className="fa-solid fa-graduation-cap" style={{ fontSize: '2rem', marginBottom: '10px' }}></i>
+                  <p>No education added yet.</p>
                 </div>
               )}
-              
-              <div style={{textAlign: 'center', marginTop: '20px'}}>
-                 <button className="btn-save" onClick={() => { setEx({}); setJoinDate(""); setEndDate(""); setModalType("AddEdit"); }}>
-                    <i className="fa-solid fa-plus"></i> Add New
-                 </button>
+
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <button className="btn-save" onClick={() => { setEx({}); setJoinDate(""); setEndDate(""); setModalType("AddEdit"); }}>
+                  <i className="fa-solid fa-plus"></i> Add New
+                </button>
               </div>
             </div>
           ) : (
             /* --- ADD/EDIT FORM --- */
             <div className="edu-form">
-              
+
               {/* Institute Dropdown */}
               <div className="form-group institute-dropdown">
                 <label className="form-label">Institute</label>
-                <div 
-                    className="dropdown-trigger" 
-                    onClick={() => setUniversityShow(!universityShow)}
+                <div
+                  className="dropdown-trigger"
+                  onClick={() => setUniversityShow(!universityShow)}
                 >
-                    <span>{ex.institutename || "Select Institute"}</span>
-                    <i className="fa-solid fa-chevron-down"></i>
+                  <span>{ex.institutename || "Select Institute"}</span>
+                  <i className="fa-solid fa-chevron-down"></i>
                 </div>
                 {universityShow && (
-                    <div className="dropdown-list">
-                        {university.map((elem, idx) => (
-                            <div 
-                                key={idx} 
-                                className="dropdown-item"
-                                onClick={() => {
-                                    setEx({ ...ex, institutename: elem.name, collagelogo: elem.image });
-                                    setUniversityShow(false);
-                                    setErrors({...errors, institute_err: ""});
-                                }}
-                            >
-                                {elem.image && <img src={`${WEB_URL}${elem.image}`} alt="" />}
-                                <span>{elem.name}</span>
-                            </div>
-                        ))}
-                    </div>
+                  <div className="dropdown-list">
+                    {university.map((elem, idx) => (
+                      <div
+                        key={idx}
+                        className="dropdown-item"
+                        onClick={() => {
+                          setEx({ ...ex, institutename: elem.name, collagelogo: elem.image });
+                          setUniversityShow(false);
+                          setErrors({ ...errors, institute_err: "" });
+                        }}
+                      >
+                        {elem.image && <img src={`${WEB_URL}${elem.image}`} alt="" />}
+                        <span>{elem.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
                 <span className="error-text">{errors.institute_err}</span>
               </div>
 
               <div className="form-group">
                 <label className="form-label">Course / Degree</label>
-                <input 
-                    type="text" 
-                    name="course" 
-                    className="form-input" 
-                    placeholder="e.g. B.Tech Computer Science" 
-                    value={ex.course || ""} 
-                    onChange={handleChange} 
+                <input
+                  type="text"
+                  name="course"
+                  className="form-input"
+                  placeholder="e.g. B.Tech Computer Science"
+                  value={ex.course || ""}
+                  onChange={handleChange}
                 />
                 <span className="error-text">{errors.course_err}</span>
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                    <label className="form-label">Start Date</label>
-                    <input 
-                        type="date" 
-                        className="form-input" 
-                        value={joindate} 
-                        onChange={(e) => setJoinDate(e.target.value)} 
-                    />
-                    <span className="error-text">{errors.joindate_err}</span>
+                  <label className="form-label">Start Year</label>
+                  <select
+                    className="form-select"
+                    value={joindate}
+                    onChange={(e) => setJoinDate(e.target.value)}
+                  >
+                    <option value="">Select Year</option>
+                    {years.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                  <span className="error-text">{errors.joindate_err}</span>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">End Date</label>
-                    <input 
-                        type="date" 
-                        className="form-input" 
-                        value={enddate} 
-                        onChange={(e) => setEndDate(e.target.value)} 
-                    />
+                  <label className="form-label">End Year (or Expected)</label>
+                  <select
+                    className="form-select"
+                    value={enddate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  >
+                    <option value="">Present / Select Year</option>
+                    {years.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
+                <div className="modal-footer">
+                  {ex._id && (
+                    <button className="btn-delete" onClick={handleDelete}>Delete</button>
+                  )}
+                  <button className="btn-cancel" onClick={handleCancel}>Cancel</button>
+                  <button className="btn-save" onClick={ex._id ? handleUpdate : handleInsert}>
+                    {ex._id ? "Update Changes" : "Save Education"}
+                  </button>
+                </div>
+
               </div>
 
             </div>
           )}
-
         </div>
-
-        {/* Footer (Form View Only) */}
-        {modalType === "AddEdit" && (
-            <div className="modal-footer">
-                {ex._id && (
-                    <button className="btn-delete" onClick={handleDelete}>Delete</button>
-                )}
-                <button className="btn-cancel" onClick={handleCancel}>Cancel</button>
-                <button className="btn-save" onClick={ex._id ? handleUpdate : handleInsert}>
-                    {ex._id ? "Update Changes" : "Save Education"}
-                </button>
-            </div>
-        )}
-
       </div>
     </div>
   );

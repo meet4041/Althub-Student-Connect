@@ -36,22 +36,22 @@ const newMessage = async (req, res) => {
 
 const getMessages = async (req, res) => {
     try {
+        // --- OPTIMIZATION: .lean() added ---
         const messages = await Message.find({
             conversationId: req.params.conversationId
-        });
+        }).lean();
         res.status(200).send({ success: true, data: messages });
     } catch (error) {
         res.status(500).send({ success: false, msg: error.message });
     }
 }
 
-// --- 1. ROBUST COUNT (Counts anything NOT read) ---
 const countMessages = async (req, res) => {
     try {
         const count = await Message.countDocuments({
             conversationId: req.params.conversationId,
             sender: req.params.senderId,
-            isRead: { $ne: true } // Counts 'false' AND 'undefined' (legacy messages)
+            isRead: { $ne: true } 
         });
         res.status(200).send({ success: true, count: count });
     } catch (error) {
@@ -59,10 +59,8 @@ const countMessages = async (req, res) => {
     }
 }
 
-// --- 2. FORCE MARK AS READ ---
 const markMessagesRead = async (req, res) => {
     try {
-        // Update ALL messages from this sender in this chat to true
         await Message.updateMany(
             { 
                 conversationId: req.params.conversationId, 

@@ -6,281 +6,38 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 
-// --- INJECTED STYLES: FULL SCREEN UNIFIED UI ---
+// --- STYLES REMAIN SAME ---
 const styles = `
-  /* --- RESET & LAYOUT --- */
-  .msg-page-container {
-    /* Calculate exact height: 100vh - Navbar Height (70px) */
-    height: calc(100vh - 70px);
-    width: 100%;
-    background: #fff;
-    display: flex;
-    overflow: hidden;
-    font-family: 'Poppins', sans-serif;
-    /* Remove borders and margins to connect with Navbar */
-    margin: 0;
-    border: none;
-    border-radius: 0; 
-  }
-
-  /* --- SIDEBAR (Left) --- */
-  .msg-sidebar {
-    width: 350px;
-    background: #fff;
-    border-right: 1px solid #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    z-index: 2;
-  }
-
-  .msg-sidebar-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .msg-sidebar-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #2d3436;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .msg-search-bar {
-    background: #f8f9fa;
-    border-radius: 8px; /* Slightly squarer for professional look */
-    padding: 10px 15px;
-    display: flex;
-    align-items: center;
-    transition: all 0.3s ease;
-    border: 1px solid #eee;
-  }
-
-  .msg-search-bar:focus-within {
-    background: #fff;
-    border-color: #66bd9e;
-    box-shadow: 0 2px 8px rgba(102, 189, 158, 0.1);
-  }
-
-  .msg-search-bar input {
-    border: none;
-    background: transparent;
-    width: 100%;
-    margin-left: 10px;
-    outline: none;
-    color: #333;
-    font-size: 0.95rem;
-  }
-
-  .msg-user-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0; /* Flush list */
-  }
-
-  /* ChatUser Item Styling */
-  .chat-user {
-    padding: 15px 25px;
-    border-bottom: 1px solid #f9f9f9;
-    cursor: pointer;
-    transition: background 0.2s;
-    border-radius: 0; /* Remove rounded corners for list items */
-    margin: 0;
-  }
-
-  .chat-user:hover {
-    background-color: #f9fbfd;
-  }
-
-  .chat-user.active {
-    background-color: #f0f9f6;
-    border-right: 4px solid #66bd9e;
-  }
-
-  /* --- CHAT AREA (Right) --- */
-  .msg-chat-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    position: relative;
-    height: 100%;
-  }
-
-  .msg-chat-header {
-    height: 70px;
-    padding: 0 30px;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-  }
-
-  .msg-header-user {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-
-  .msg-header-img {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid #eee;
-  }
-
-  .msg-header-info h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #2d3436;
-    margin: 0;
-  }
-
-  /* Messages Body */
-  .msg-body {
-    flex: 1;
-    padding: 20px 30px;
-    overflow-y: auto;
-    background-color: #f4f6f8; /* Slight contrast to separate from white sidebar */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  /* Custom Scrollbar */
-  .msg-user-list::-webkit-scrollbar,
-  .msg-body::-webkit-scrollbar {
-    width: 6px;
-  }
-  .msg-user-list::-webkit-scrollbar-thumb,
-  .msg-body::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 3px;
-  }
-
-  /* --- BUBBLES --- */
-  .msg-received {
-    align-self: flex-start;
-    background: #fff;
-    color: #333;
-    padding: 12px 18px;
-    border-radius: 0 12px 12px 12px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    max-width: 60%;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    position: relative;
-  }
-
-  .msg-send {
-    align-self: flex-end;
-    background: #66bd9e;
-    color: #fff;
-    padding: 12px 18px;
-    border-radius: 12px 12px 0 12px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    max-width: 60%;
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-
-  .msg-time {
-    font-size: 0.7rem;
-    margin-top: 4px;
-    opacity: 0.7;
-    text-align: right;
-    display: block;
-  }
-
-  /* Footer */
-  .msg-footer {
-    padding: 15px 30px;
-    background: #fff;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-
-  .msg-input-wrapper {
-    flex: 1;
-    background: #f0f2f5;
-    border-radius: 20px;
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-  }
-
-  .msg-input-wrapper input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 0.95rem;
-    color: #333;
-  }
-
-  .msg-send-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: #66bd9e;
-    color: #fff;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .msg-send-btn:hover {
-    background: #479378;
-    transform: scale(1.05);
-  }
-
-  /* Empty State */
-  .msg-empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f8f9fa;
-    color: #b2bec3;
-    height: 100%;
-  }
-
-  .msg-empty-state img {
-    width: 250px;
-    margin-bottom: 20px;
-    opacity: 0.6;
-    filter: grayscale(100%);
-  }
-
-  /* Mobile */
-  @media (max-width: 900px) {
-    .msg-sidebar {
-      width: 100%;
-      display: ${props => props.currentId ? 'none' : 'flex'};
-    }
-    .msg-chat-area {
-      display: ${props => props.currentId ? 'flex' : 'none'};
-    }
-    .msg-back-btn {
-      display: block;
-      margin-right: 15px;
-      font-size: 1.2rem;
-      color: #333;
-      cursor: pointer;
-    }
-  }
+  .msg-page-container { height: calc(100vh - 70px); width: 100%; background: #fff; display: flex; overflow: hidden; font-family: 'Poppins', sans-serif; margin: 0; border: none; border-radius: 0; }
+  .msg-sidebar { width: 350px; background: #fff; border-right: 1px solid #f0f0f0; display: flex; flex-direction: column; height: 100%; z-index: 2; }
+  .msg-sidebar-header { padding: 20px 25px; border-bottom: 1px solid #f0f0f0; }
+  .msg-sidebar-title { font-size: 1.4rem; font-weight: 700; color: #2d3436; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; }
+  .msg-search-bar { background: #f8f9fa; border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; transition: all 0.3s ease; border: 1px solid #eee; }
+  .msg-search-bar:focus-within { background: #fff; border-color: #66bd9e; box-shadow: 0 2px 8px rgba(102, 189, 158, 0.1); }
+  .msg-search-bar input { border: none; background: transparent; width: 100%; margin-left: 10px; outline: none; color: #333; font-size: 0.95rem; }
+  .msg-user-list { flex: 1; overflow-y: auto; padding: 0; }
+  .chat-user { padding: 15px 25px; border-bottom: 1px solid #f9f9f9; cursor: pointer; transition: background 0.2s; border-radius: 0; margin: 0; }
+  .chat-user:hover { background-color: #f9fbfd; }
+  .chat-user.active { background-color: #f0f9f6; border-right: 4px solid #66bd9e; }
+  .msg-chat-area { flex: 1; display: flex; flex-direction: column; background: #ffffff; position: relative; height: 100%; }
+  .msg-chat-header { height: 70px; padding: 0 30px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; background: #fff; }
+  .msg-header-user { display: flex; align-items: center; gap: 15px; }
+  .msg-header-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; }
+  .msg-header-info h3 { font-size: 1.1rem; font-weight: 600; color: #2d3436; margin: 0; }
+  .msg-body { flex: 1; padding: 20px 30px; overflow-y: auto; background-color: #f4f6f8; display: flex; flex-direction: column; gap: 10px; }
+  .msg-user-list::-webkit-scrollbar, .msg-body::-webkit-scrollbar { width: 6px; }
+  .msg-user-list::-webkit-scrollbar-thumb, .msg-body::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
+  .msg-received { align-self: flex-start; background: #fff; color: #333; padding: 12px 18px; border-radius: 0 12px 12px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); max-width: 60%; font-size: 0.95rem; line-height: 1.5; position: relative; }
+  .msg-send { align-self: flex-end; background: #66bd9e; color: #fff; padding: 12px 18px; border-radius: 12px 12px 0 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 60%; font-size: 0.95rem; line-height: 1.5; }
+  .msg-time { font-size: 0.7rem; margin-top: 4px; opacity: 0.7; text-align: right; display: block; }
+  .msg-footer { padding: 15px 30px; background: #fff; border-top: 1px solid #f0f0f0; display: flex; align-items: center; gap: 15px; }
+  .msg-input-wrapper { flex: 1; background: #f0f2f5; border-radius: 20px; padding: 12px 20px; display: flex; align-items: center; }
+  .msg-input-wrapper input { width: 100%; background: transparent; border: none; outline: none; font-size: 0.95rem; color: #333; }
+  .msg-send-btn { width: 45px; height: 45px; border-radius: 50%; background: #66bd9e; color: #fff; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; }
+  .msg-send-btn:hover { background: #479378; transform: scale(1.05); }
+  .msg-empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8f9fa; color: #b2bec3; height: 100%; }
+  .msg-empty-state img { width: 250px; margin-bottom: 20px; opacity: 0.6; filter: grayscale(100%); }
+  @media (max-width: 900px) { .msg-sidebar { width: 100%; display: ${props => props.currentId ? 'none' : 'flex'}; } .msg-chat-area { display: ${props => props.currentId ? 'flex' : 'none'}; } .msg-back-btn { display: block; margin-right: 15px; font-size: 1.2rem; color: #333; cursor: pointer; } }
 `;
 
 export default function Message({ socket }) {
@@ -299,7 +56,6 @@ export default function Message({ socket }) {
   const msgBoxRef = useRef(null);
   const [searchName, setSearchName] = useState("");
 
-  // Inject Styles
   useEffect(() => {
     const styleSheet = document.createElement("style");
     const css = styles.replace(/\${props => props.currentId \? 'none' : 'flex'}/g, currentId ? 'none' : 'flex')
@@ -309,7 +65,6 @@ export default function Message({ socket }) {
     return () => document.head.removeChild(styleSheet);
   }, [currentId]);
 
-  // Listen for online users
   useEffect(() => {
     if (socket) {
         socket.on("getUsers", (users) => {
@@ -371,6 +126,8 @@ export default function Message({ socket }) {
         time: data.time,
         createdAt: Date.now(),
       });
+      // OPTIMIZATION: Don't refresh whole conversation list on every msg, maybe just reorder in state if needed
+      // but keeping it for consistency for now, speedup comes from backend.
       getConversation(); 
     });
 
@@ -479,13 +236,10 @@ export default function Message({ socket }) {
     }
   }
 
-  // --- CHECK ONLINE STATUS ---
   const isReceiverOnline = onlineUsers.some((u) => u.userId === receiverId);
 
   return (
     <div className="msg-page-container">
-      
-      {/* --- SIDEBAR LIST --- */}
       <div className="msg-sidebar">
         <div className="msg-sidebar-header">
           <div className="msg-sidebar-title">
@@ -504,7 +258,6 @@ export default function Message({ socket }) {
             />
           </div>
         </div>
-        
         <div className="msg-user-list">
           {conversationID.length > 0 ? (
             conversationID.map((elem) => (
@@ -519,20 +272,17 @@ export default function Message({ socket }) {
               />
             ))
           ) : (
-            <div style={{textAlign: 'center', padding: '30px', color: '#999', fontSize: '0.9rem'}}>
-                No recent conversations
-            </div>
+            <div style={{textAlign: 'center', padding: '30px', color: '#999', fontSize: '0.9rem'}}>No recent conversations</div>
           )}
         </div>
       </div>
 
-      {/* --- MAIN CHAT AREA --- */}
       {currentId !== "" ? (
         <div className="msg-chat-area">
-          {/* Chat Header */}
           <div className="msg-chat-header">
             <div className="msg-header-user">
               <i className="fa-solid fa-arrow-left msg-back-btn" onClick={handleBack}></i>
+              {/* --- OPTIMIZATION: loading="lazy" --- */}
               <img
                 src={
                   profilepic && profilepic !== "" && profilepic !== "undefined"
@@ -541,6 +291,7 @@ export default function Message({ socket }) {
                 }
                 alt="User"
                 className="msg-header-img"
+                loading="lazy"
               />
               <div className="msg-header-info">
                 <h3>{name}</h3>
@@ -548,7 +299,6 @@ export default function Message({ socket }) {
             </div>
           </div>
 
-          {/* Messages Body */}
           <div className="msg-body" ref={msgBoxRef}>
             {messages.length > 0 ? (
               messages.map((elem) => (
@@ -559,21 +309,13 @@ export default function Message({ socket }) {
                 />
               ))
             ) : (
-              <div style={{
-                  flex: 1, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  color: '#ccc'
-              }}>
+              <div style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#ccc'}}>
                 <i className="fa-regular fa-comments" style={{fontSize: '3rem', marginBottom: '10px'}}></i>
                 <p>Say hello to {name}!</p>
               </div>
             )}
           </div>
 
-          {/* Footer Input */}
           <div className="msg-footer">
             <div className="msg-input-wrapper">
               <input
@@ -584,15 +326,12 @@ export default function Message({ socket }) {
                 value={newMsg}
               />
             </div>
-            <button className="msg-send-btn" onClick={sendMessage}>
-                <i className="fa-solid fa-paper-plane"></i>
-            </button>
+            <button className="msg-send-btn" onClick={sendMessage}><i className="fa-solid fa-paper-plane"></i></button>
           </div>
         </div>
       ) : (
-        /* Empty State */
         <div className="msg-empty-state">
-          <img src="images/Messaging-bro.png" alt="No Chat Selected" />
+          <img src="images/Messaging-bro.png" alt="No Chat Selected" loading="lazy"/>
           <h2>Welcome to Messages</h2>
           <p>Select a conversation from the left to start chatting.</p>
         </div>

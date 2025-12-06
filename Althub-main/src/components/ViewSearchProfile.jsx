@@ -463,166 +463,91 @@ export default function ViewSearchProfile({ socket }) {
   return (
     <div className="profile-wrapper">
       <div className="profile-content">
-
-        {/* --- LEFT COLUMN (MAIN PROFILE) --- */}
         <div className="profile-main">
-
-          {/* Header Card */}
           <div className="profile-header-card">
             <div className="header-cover"></div>
             <div className="header-body">
               <div className="header-left">
-                <img
-                  src={user.profilepic && user.profilepic !== "undefined" ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
-                  alt="Profile"
-                  className="header-avatar"
-                />
-
+                <img src={user.profilepic && user.profilepic !== "undefined" ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} alt="Profile" className="header-avatar" loading="lazy" />
                 <div className="user-details">
-                  <h1>
-                    {user.fname} {user.lname}
-                    {isAlumni && <span className="alumni-badge">Alumni</span>}
-                  </h1>
+                  <h1>{user.fname} {user.lname} {isAlumni && <span className="alumni-badge">Alumni</span>}</h1>
                   <p className="user-headline">{user.institute || "Student"}</p>
-                  <p className="user-location">
-                    {user.city ? `${user.city}, ` : ""}{user.state ? `${user.state}, ` : ""}{user.nation || ""}
-                  </p>
-
+                  <p className="user-location">{user.city ? `${user.city}, ` : ""}{user.state ? `${user.state}, ` : ""}{user.nation || ""}</p>
                   <div className="user-stats">
-                    <span className="stat-link" onClick={() => openFollowModal("Follower")}>
-                      {user.followers ? user.followers.length : 0} Followers
-                    </span>
-                    <span className="stat-link" onClick={() => openFollowModal("Following")}>
-                      {user.followings ? user.followings.length : 0} Connections
-                    </span>
+                    <span className="stat-link" onClick={() => openFollowModal("Follower")}>{user.followers ? user.followers.length : 0} Followers</span>
+                    <span className="stat-link" onClick={() => openFollowModal("Following")}>{user.followings ? user.followings.length : 0} Connections</span>
                   </div>
-
                   <div className="user-socials">
                     <i className="fa-brands fa-github" style={{ color: '#333' }} onClick={() => handleSocialClick(user.github, "GitHub")}></i>
                     <i className="fa-solid fa-globe" style={{ color: '#666' }} onClick={() => handleSocialClick(user.portfolioweb, "Website")}></i>
                   </div>
                 </div>
               </div>
-
               <div className="header-actions">
                 {user.followers && user.followers.includes(myID.toString()) ? (
-                  <button className="action-btn btn-secondary" onClick={handleUnfollow}>
-                    Following
-                  </button>
+                  <button className="action-btn btn-secondary" onClick={handleUnfollow}>Following</button>
                 ) : (
-                  <button className="action-btn btn-primary" onClick={handleFollow}>
-                    <i className="fa-solid fa-plus"></i> Follow
-                  </button>
+                  <button className="action-btn btn-primary" onClick={handleFollow}><i className="fa-solid fa-plus"></i> Follow</button>
                 )}
-
-                <button className="action-btn btn-outline" onClick={() => nav("/message", { state: user })}>
-                  <i className="fa-regular fa-message"></i> Message
-                </button>
+                <button className="action-btn btn-outline" onClick={() => nav("/message", { state: user })}><i className="fa-regular fa-message"></i> Message</button>
               </div>
             </div>
           </div>
 
-          {/* About Section */}
-          {user.about && (
-            <div className="section-card">
-              <h3 className="section-title">About</h3>
-              <p className="item-desc">{user.about}</p>
-            </div>
-          )}
+          {user.about && ( <div className="section-card"> <h3 className="section-title">About</h3> <p className="item-desc">{user.about}</p> </div> )}
 
-          {/* Experience Section */}
           <div className="section-card">
             <h3 className="section-title">Experience</h3>
             {experience.length > 0 ? experience.map((elem) => (
               <div key={elem._id} className="list-item">
-                <img src={`${WEB_URL}${elem.companylogo}`} alt="" className="item-logo" />
+                <img src={`${WEB_URL}${elem.companylogo}`} alt="" className="item-logo" loading="lazy" />
                 <div className="item-content">
                   <h4 className="item-title">{elem.position}</h4>
                   <span className="item-subtitle">{elem.companyname} &middot; Full-time</span>
-                  <span className="item-meta">
-                    {formatDate(elem.joindate)} - {formatDate(elem.enddate)}
-                  </span>
+                  <span className="item-meta">{formatDate(elem.joindate)} - {formatDate(elem.enddate)}</span>
                   {elem.description && <p className="item-desc">{elem.description}</p>}
                 </div>
               </div>
-            )) : (
-              <p style={{ color: '#999', fontSize: '0.9rem' }}>No experience details available.</p>
-            )}
+            )) : <p style={{ color: '#999', fontSize: '0.9rem' }}>No experience details available.</p>}
           </div>
 
-          {/* Education Section */}
           <div className="section-card">
             <h3 className="section-title">Education</h3>
             {education.length > 0 ? education.map((elem) => (
               <div key={elem._id} className="list-item">
-                <img src={`${WEB_URL}${elem.collagelogo}`} alt="" className="item-logo" />
+                <img src={`${WEB_URL}${elem.collagelogo}`} alt="" className="item-logo" loading="lazy" />
                 <div className="item-content">
                   <h4 className="item-title">{elem.institutename}</h4>
                   <span className="item-subtitle">{elem.course}</span>
-                  <span className="item-meta">
-                    {elem.joindate ? elem.joindate.split("-")[0] : ""} - {elem.enddate ? elem.enddate.split("-")[0] : "Present"}
-                  </span>
+                  <span className="item-meta">{elem.joindate ? elem.joindate.split("-")[0] : ""} - {elem.enddate ? elem.enddate.split("-")[0] : "Present"}</span>
                 </div>
               </div>
-            )) : (
-              <p style={{ color: '#999', fontSize: '0.9rem' }}>No education details available.</p>
-            )}
+            )) : <p style={{ color: '#999', fontSize: '0.9rem' }}>No education details available.</p>}
           </div>
-
         </div>
 
-        {/* --- RIGHT COLUMN (SIDEBAR) --- */}
         <div className="profile-sidebar">
-
-          {/* Skills */}
           <div className="section-card">
             <h3 className="section-title" style={{ marginBottom: '15px' }}>Skills</h3>
-            <div className="tag-container">
-              {skills.length > 0 ? skills.map((skill, idx) => (
-                <span key={idx} className="skill-tag">{skill}</span>
-              )) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No skills listed</span>}
-            </div>
+            <div className="tag-container">{skills.length > 0 ? skills.map((skill, idx) => (<span key={idx} className="skill-tag">{skill}</span>)) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No skills listed</span>}</div>
           </div>
-
-          {/* Languages */}
           <div className="section-card">
             <h3 className="section-title" style={{ marginBottom: '15px' }}>Languages</h3>
-            <div className="tag-container">
-              {language.length > 0 ? language.map((lang, idx) => (
-                <span key={idx} className="skill-tag">{lang}</span>
-              )) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No languages listed</span>}
-            </div>
+            <div className="tag-container">{language.length > 0 ? language.map((lang, idx) => (<span key={idx} className="skill-tag">{lang}</span>)) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No languages listed</span>}</div>
           </div>
-
-          {/* People you may know */}
           <div className="section-card">
             <h3 className="section-title" style={{ marginBottom: '15px' }}>People you may know</h3>
             {topUsers.map((elem) => (
               <div key={elem._id} className="suggestion-item">
-                <img src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} alt="" className="suggestion-img" />
-                <div className="suggestion-info">
-                  <h5>{elem.fname} {elem.lname}</h5>
-                  <p>{elem.city ? elem.city : "Student"}</p>
-                </div>
-                <span className="view-link" onClick={() => { setUserID(elem._id); window.scrollTo(0, 0); }}>
-                  View
-                </span>
+                <img src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} alt="" className="suggestion-img" loading="lazy" />
+                <div className="suggestion-info"><h5>{elem.fname} {elem.lname}</h5><p>{elem.city ? elem.city : "Student"}</p></div>
+                <span className="view-link" onClick={() => { setUserID(elem._id); window.scrollTo(0, 0); }}>View</span>
               </div>
             ))}
           </div>
-
         </div>
-
       </div>
-
-      {showFollowerModal && (
-        <FollowerModal
-          closeModal={() => setShowFollowerModal(false)}
-          user={user}
-          getUser={getUser}
-          initialType={followerTab}
-        />
-      )}
+      {showFollowerModal && <FollowerModal closeModal={() => setShowFollowerModal(false)} user={user} getUser={getUser} initialType={followerTab} />}
     </div>
   );
 }
