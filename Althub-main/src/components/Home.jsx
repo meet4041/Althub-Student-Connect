@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
-import EditEducationModal from "./EditEducationModal"; // --- NEW IMPORT ---
+import EditEducationModal from "./EditEducationModal";
 
-// --- STYLES REMAIN UNCHANGED ---
+// ... (Paste your styles string here, unchanged) ...
 const styles = `
   .home-wrapper { background-color: #f3f2ef; min-height: 100vh; padding: 15px 0; font-family: 'Poppins', sans-serif; }
   .home-content { display: flex; justify-content: center; gap: 20px; width: 98%; max-width: 1920px; margin: 0 auto; padding: 0 10px; align-items: flex-start; }
@@ -64,50 +64,18 @@ const styles = `
   .aid-progress-bg { height: 8px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
   .aid-progress-fill { height: 100%; background: #66bd9e; border-radius: 10px; }
   .aid-amounts { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px; font-weight: 500; }
-  
-  /* --- NEW ALERT STYLES --- */
-  .education-alert {
-    background: #fff3cd;
-    border: 1px solid #ffeeba;
-    color: #856404;
-    padding: 15px 20px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
+  .education-alert { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
   .alert-content { display: flex; align-items: center; gap: 12px; }
   .alert-content i { font-size: 1.5rem; }
-  .alert-btn {
-    background: #856404;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
-  }
+  .alert-btn { background: #856404; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
   .alert-btn:hover { background: #6d5203; }
-
   @media (max-width: 1400px) { .sidebar-right { flex: 0 0 320px; } .sidebar-left { flex: 0 0 260px; } }
   @media (max-width: 1100px) { .sidebar-right { display: none; } .feed-center { flex: 1; } }
   @media (max-width: 850px) { .sidebar-left { display: none; } .home-content { padding: 0 10px; } }
 `;
 
 export default function Home({ socket }) {
-  const settings = {
-    dots: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: false,
-    lazyLoad: 'ondemand'
-  };
-
+  const settings = { dots: true, speed: 500, slidesToShow: 1, slidesToScroll: 1, arrows: false, lazyLoad: 'ondemand' };
   const nav = useNavigate();
   const [user, setUser] = useState({});
   const [post, setPost] = useState([]);
@@ -117,8 +85,11 @@ export default function Home({ socket }) {
   const [fileList, setFileList] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [hasEducation, setHasEducation] = useState(true); 
-  const [showEduModal, setShowEduModal] = useState(false); // --- NEW: Modal State ---
+  const [showEduModal, setShowEduModal] = useState(false); 
   const userid = localStorage.getItem("Althub_Id");
+  
+  // Stable empty list reference to avoid re-renders
+  const emptyEducationList = useMemo(() => [], []);
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -139,20 +110,12 @@ export default function Home({ socket }) {
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 1280;
           const scaleSize = MAX_WIDTH / img.width;
-          if (scaleSize < 1) {
-              canvas.width = MAX_WIDTH;
-              canvas.height = img.height * scaleSize;
-          } else {
-              canvas.width = img.width;
-              canvas.height = img.height;
-          }
+          if (scaleSize < 1) { canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; } 
+          else { canvas.width = img.width; canvas.height = img.height; }
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           ctx.canvas.toBlob((blob) => {
-            const newFile = new File([blob], file.name, {
-              type: 'image/jpeg',
-              lastModified: Date.now(),
-            });
+            const newFile = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
             resolve(newFile);
           }, 'image/jpeg', 0.7); 
         };
@@ -182,10 +145,8 @@ export default function Home({ socket }) {
       .catch((error) => console.error("Error fetching user:", error));
   }, [userid]);
 
-  // --- UPDATED: Check Education Status ---
   const checkEducation = useCallback(() => {
-    if (!userid) return;
-    // We return the promise so the modal can await it if needed
+    if (!userid) return Promise.resolve();
     return axios.post(`${WEB_URL}/api/getEducation`, { userid: userid })
       .then((Response) => {
         if (Response.data.data && Response.data.data.length === 0) {
@@ -198,47 +159,25 @@ export default function Home({ socket }) {
   }, [userid]);
 
   const getAids = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getFinancialAid`)
-      .then((Response) => setAids(Response.data.data))
-      .catch((error) => console.error("Error fetching financial aids:", error));
+    axios.get(`${WEB_URL}/api/getFinancialAid`).then((Response) => setAids(Response.data.data)).catch((error) => console.error("Error fetching aids:", error));
   }, []);
 
   const getPost = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getPost`)
-      .then((Response) => setPost(Response.data.data))
-      .catch((error) => console.error("Error fetching posts:", error));
+    axios.get(`${WEB_URL}/api/getPost`).then((Response) => setPost(Response.data.data)).catch((error) => console.error("Error fetching posts:", error));
   }, []);
 
   const getEvents = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getEvents`)
-      .then((Response) => setEvents(Response.data.data))
-      .catch((error) => console.error("Error fetching events:", error));
+    axios.get(`${WEB_URL}/api/getEvents`).then((Response) => setEvents(Response.data.data)).catch((error) => console.error("Error fetching events:", error));
   }, []);
 
-  useEffect(() => {
-    getUser();
-    getPost();
-    getEvents();
-    getAids();
-    checkEducation(); 
-  }, [getUser, getPost, getEvents, getAids, checkEducation]);
+  useEffect(() => { getUser(); getPost(); getEvents(); getAids(); checkEducation(); }, [getUser, getPost, getEvents, getAids, checkEducation]);
 
-  const imgChange = (e) => {
-    setFileList(e.target.files);
-  };
+  const imgChange = (e) => { setFileList(e.target.files); };
 
   const addPost = async () => {
-    if (!user || !user.fname || !user.lname) {
-      toast.error("User data not loaded. Please refresh.");
-      return;
-    }
-    if ((!description || description.trim() === "") && (!fileList || fileList.length === 0)) {
-      toast.error("Empty post not allowed!");
-      return;
-    }
-
+    if (!user || !user.fname || !user.lname) { toast.error("User data not loaded. Please refresh."); return; }
+    if ((!description || description.trim() === "") && (!fileList || fileList.length === 0)) { toast.error("Empty post not allowed!"); return; }
     setUploading(true);
-
     var body = new FormData();
     body.append("userid", localStorage.getItem("Althub_Id"));
     body.append("description", description);
@@ -246,41 +185,22 @@ export default function Home({ socket }) {
     body.append("fname", user.fname);
     body.append("lname", user.lname);
     body.append("profilepic", user.profilepic || "");
-
     if (fileList) {
         const filesArray = Array.from(fileList);
         const compressedFiles = await Promise.all(filesArray.map(file => compressImage(file)));
-        compressedFiles.forEach((file) => {
-            body.append(`photos`, file, file.name);
-        });
+        compressedFiles.forEach((file) => { body.append(`photos`, file, file.name); });
     }
-    
-    axios({
-      url: `${WEB_URL}/api/addPost`,
-      method: "post",
-      headers: { "Content-type": "multipart/form-data" },
-      data: body,
-    })
+    axios({ url: `${WEB_URL}/api/addPost`, method: "post", headers: { "Content-type": "multipart/form-data" }, data: body })
       .then((Response) => {
         toast.success("Post Uploaded!!");
         if (user && user.followers && user.followers.length > 0) {
             user.followers.forEach((followerId) => {
-                socket.emit("sendNotification", {
-                    receiverid: followerId,
-                    title: "New Post",
-                    msg: `${user.fname} ${user.lname} added a new post`,
-                });
+                socket.emit("sendNotification", { receiverid: followerId, title: "New Post", msg: `${user.fname} ${user.lname} added a new post` });
             });
         }
-        setFileList(null);
-        setDescription("");
-        setUploading(false);
-        getPost();
+        setFileList(null); setDescription(""); setUploading(false); getPost();
       })
-      .catch((error) => {
-        toast.error("Something went wrong!!");
-        setUploading(false);
-      });
+      .catch((error) => { toast.error("Something went wrong!!"); setUploading(false); });
   };
 
   const Logout = () => { localStorage.clear(); nav("/"); };
@@ -289,15 +209,10 @@ export default function Home({ socket }) {
     await axios.put(`${WEB_URL}/api/like/${elem._id}`, { userId: userid })
     .then((response) => {
       if (userid !== elem.userid && response.data.msg === "Like") {
-        socket.emit("sendNotification", {
-          receiverid: elem.userid,
-          title: "New Like",
-          msg: `${user.fname} Liked Your Post`,
-        }); 
+        socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` }); 
       }
       getPost(); 
-    })
-    .catch((error) => console.error("Error:", error));
+    }).catch((error) => console.error("Error:", error));
   };
 
   const formatPostTime = (timestamp) => {
@@ -320,18 +235,11 @@ export default function Home({ socket }) {
   return (
     <div className="home-wrapper">
       <div className="home-content">
-        
-        {/* --- LEFT SIDEBAR --- */}
         <div className="sidebar-left">
           <div className="profile-mini-card">
             <div className="profile-bg"></div>
-            <div className="profile-img-wrapper">
-              <img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} alt="Profile" loading="lazy" />
-            </div>
-            <div className="profile-info">
-              <span className="profile-name">{user.fname} {user.lname}</span>
-              <span style={{ fontSize: '0.9rem', color: '#777' }}>{user.designation || "Student"}</span>
-            </div>
+            <div className="profile-img-wrapper"><img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} alt="Profile" loading="lazy" /></div>
+            <div className="profile-info"><span className="profile-name">{user.fname} {user.lname}</span><span style={{ fontSize: '0.9rem', color: '#777' }}>{user.designation || "Student"}</span></div>
           </div>
           <div className="menu-box">
             <div className="menu-item" onClick={() => { nav("/view-profile"); window.scrollTo(0, 0); }}><i className="fa-solid fa-user"></i> Profile</div>
@@ -343,30 +251,21 @@ export default function Home({ socket }) {
           </div>
         </div>
 
-        {/* --- CENTER FEED --- */}
         <div className="feed-center">
-          
-          {/* --- EDUCATION WARNING ALERT --- */}
           {!hasEducation && (
             <div className="education-alert">
               <div className="alert-content">
                 <i className="fa-solid fa-triangle-exclamation"></i>
-                <div>
-                  <strong>Complete Your Profile</strong>
-                  <div style={{fontSize: '0.9rem'}}>Please add your education details to help us connect you better.</div>
-                </div>
+                <div><strong>Complete Your Profile</strong><div style={{fontSize: '0.9rem'}}>Please add your education details to help us connect you better.</div></div>
               </div>
-              {/* --- CHANGED: Button now opens modal --- */}
-              <button className="alert-btn" onClick={() => setShowEduModal(true)}>
-                Add Education
-              </button>
+              <button className="alert-btn" onClick={() => setShowEduModal(true)}>Add Education</button>
             </div>
           )}
 
           <div className="create-post-card">
             <div className="cp-top">
               <img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} className="cp-avatar" alt="" loading="lazy"/>
-              <input type="text" className="cp-input" placeholder={`What's on your mind, ${user.fname}?`} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <input type="text" className="cp-input" placeholder={`What's on your mind, ${user.fname || 'User'}?`} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             {fileList && fileList.length > 0 && (
               <div className="preview-grid">
@@ -378,13 +277,8 @@ export default function Home({ socket }) {
               </div>
             )}
             <div className="cp-actions">
-              <label className="cp-upload-btn">
-                <i className="fa-regular fa-image"></i> Media
-                <input type="file" onChange={imgChange} id="myFileInput" hidden multiple accept="image/*,video/*" />
-              </label>
-              <button className="cp-post-btn" onClick={addPost} disabled={uploading}>
-                {uploading ? "Posting..." : "Post"}
-              </button>
+              <label className="cp-upload-btn"><i className="fa-regular fa-image"></i> Media<input type="file" onChange={imgChange} id="myFileInput" hidden multiple accept="image/*,video/*" /></label>
+              <button className="cp-post-btn" onClick={addPost} disabled={uploading}>{uploading ? "Posting..." : "Post"}</button>
             </div>
           </div>
 
@@ -392,10 +286,7 @@ export default function Home({ socket }) {
             <div key={elem._id} className="post-card">
               <div className="post-header">
                 <img src={elem?.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} alt="" onClick={() => { elem.userid === userid ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem.userid } }); }} loading="lazy" />
-                <div className="post-meta">
-                  <h4>{elem.fname} {elem.lname}</h4>
-                  <span>{formatPostTime(elem.date)}</span>
-                </div>
+                <div className="post-meta"><h4>{elem.fname} {elem.lname}</h4><span>{formatPostTime(elem.date)}</span></div>
               </div>
               <div className="post-content">{elem.description}</div>
               {elem.photos.length > 0 && (
@@ -403,11 +294,7 @@ export default function Home({ socket }) {
                   <Slider {...settings}>
                     {elem.photos.map((el, idx) => (
                       <div key={idx} style={{ outline: 'none' }}>
-                        {isVideo(el) ? (
-                            <video src={`${WEB_URL}${el}`} className="post-media-item" controls playsInline preload="metadata" />
-                        ) : (
-                            <img src={`${WEB_URL}${el}`} alt="Post Content" className="post-media-item" onDoubleClick={() => handleLike(elem)} loading="lazy" />
-                        )}
+                        {isVideo(el) ? <video src={`${WEB_URL}${el}`} className="post-media-item" controls playsInline preload="metadata" /> : <img src={`${WEB_URL}${el}`} alt="Post Content" className="post-media-item" onDoubleClick={() => handleLike(elem)} loading="lazy" />}
                       </div>
                     ))}
                   </Slider>
@@ -421,17 +308,13 @@ export default function Home({ socket }) {
           ))}
         </div>
 
-        {/* --- RIGHT SIDEBAR --- */}
         <div className="sidebar-right">
           <div className="widget-card">
             <div className="widget-title"><i className="fa-solid fa-calendar-day" style={{color: '#66bd9e'}}></i> Upcoming Events</div>
             {upcomingEvents.length > 0 ? upcomingEvents.map((elem) => (
               <div key={elem._id} className="event-item">
                 <img src={elem.photos && elem.photos.length > 0 ? `${WEB_URL}${elem.photos[0]}` : "images/event1.png"} className="event-thumb" alt="" loading="lazy"/>
-                <div className="event-details">
-                  <div className="event-title">{elem.title}</div>
-                  <div className="event-meta"><span>{formatDate(elem.date)}</span><span>{formatTime(elem.date)}</span></div>
-                </div>
+                <div className="event-details"><div className="event-title">{elem.title}</div><div className="event-meta"><span>{formatDate(elem.date)}</span><span>{formatTime(elem.date)}</span></div></div>
               </div>
             )) : <span style={{color:'#999', fontSize:'0.9rem'}}>No upcoming events</span>}
           </div>
@@ -452,16 +335,7 @@ export default function Home({ socket }) {
           )}
         </div>
       </div>
-
-      {/* --- ADDED: EditEducationModal Component --- */}
-      {showEduModal && (
-        <EditEducationModal
-          closeModal={() => setShowEduModal(false)}
-          education={[]} // Empty list since we are just adding new
-          getEducation={checkEducation} // Pass checkEducation to refresh status after add
-          modal="Add"
-        />
-      )}
+      {showEduModal && <EditEducationModal closeModal={() => setShowEduModal(false)} education={emptyEducationList} getEducation={checkEducation} modal="Add" />}
     </div>
   );
 }

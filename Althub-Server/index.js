@@ -81,10 +81,11 @@ const http = require("http");
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: true,
+    origin: true, // or ["http://localhost:3000"]
     methods: ["GET", "POST"],
     credentials: true
   },
+  // Server must allow websocket transport
   transports: ["websocket", "polling"]
 });
 
@@ -150,6 +151,6 @@ if (require.main === module) {
       console.error('Failed to connect to MongoDB:', err.message);
       process.exit(1); // <--- Add this line to stop the process immediately on error
     });
-    
+
 }
 module.exports = app;

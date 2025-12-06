@@ -1,38 +1,51 @@
-import React from "react";
-import Events from "./components/Events";
-import Feedback from "./components/Feedback";
-import Home from "./components/Home";
+import React, { useEffect } from "react";
+import { Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { socket } from "./socket"; // --- IMPORT FROM NEW FILE ---
+
+// Components
+import Navbar from "./components/Navbar";
+import Main from "./components/Main";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Home from "./components/Home";
+import Events from "./components/Events";
+import Feedback from "./components/Feedback";
+import ViewProfile from "./components/ViewProfile";
+import ViewSearchProfile from "./components/ViewSearchProfile";
 import SearchProfile from "./components/SearchProfile";
 import Message from "./components/Message";
-import { Route, Routes } from "react-router-dom";
-import ViewProfile from "./components/ViewProfile";
 import Notidfication from "./components/Notidfication";
-import Main from "./components/Main";
 import ForgetPassword from "./components/ForgetPassword";
-import { ToastContainer } from "react-toastify";
 import NewPassword from "./components/NewPassword";
-import ViewSearchProfile from "./components/ViewSearchProfile";
-import { io } from "socket.io-client";
-import Navbar from "./components/Navbar";
 import Scholarship from "./components/Scholarship";
-import MyPosts from "./components/MyPosts"; // IMPORT THIS
+import MyPosts from "./components/MyPosts";
 
 function App() {
-  const socket = React.useMemo(() => io("http://localhost:5001", {
-    reconnection: true,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
-    reconnectionAttempts: 3,
-    transports: ["websocket", "polling"]
-  }), []);
+  
+  useEffect(() => {
+    // Connect when App mounts
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-  React.useEffect(() => {
+    // Optional: Debug connection
+    socket.on("connect", () => {
+      console.log("Socket Connected:", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      // Suppress annoying console errors if server is down
+      console.warn("Socket Connection Failed (Retrying...):", err.message);
+    });
+
     return () => {
-      socket.disconnect();
+      socket.off("connect");
+      socket.off("connect_error");
+      // Keep socket open for navigation speed, or disconnect if strict:
+      // socket.disconnect(); 
     };
-  }, [socket]);
+  }, []);
 
   return (
     <>
