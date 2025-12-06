@@ -3,184 +3,221 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
 
-// --- INJECTED STYLES FOR FULL-WIDTH GRID UI ---
+// --- INJECTED STYLES FOR FULL-SCREEN BAR LAYOUT ---
 const styles = `
-  /* --- Layout & Container --- */
-  .home-container {
+  /* --- Page Layout --- */
+  .notif-page-wrapper {
+    background-color: #ffffff;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
     display: flex;
-    gap: 15px; /* Reduced gap between sidebar and main content */
-    align-items: flex-start;
-    padding: 20px;
-    width: 100%;
-    box-sizing: border-box;
+    flex-direction: column;
   }
 
-  .notification-main {
-    flex: 1;
-    width: 100%; /* Forces it to take remaining width */
-    min-width: 0; /* Prevents flex overflow */
-  }
-
-  /* --- Header Section --- */
-  .notif-page-header {
-    background: #fff;
-    padding: 15px 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    margin-bottom: 15px;
+  /* --- Sticky Header --- */
+  .notif-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid #eaeaea;
+    padding: 20px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #eaeaea;
+    backdrop-filter: blur(5px);
   }
 
-  .notif-page-header h2 {
+  .header-left h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2d3436;
     margin: 0;
-    font-size: 1.4rem;
-    color: #333;
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 15px;
   }
 
   .notif-badge {
-    background: #66bd9e;
+    background: #ff4757;
     color: white;
-    padding: 3px 10px;
-    border-radius: 12px;
     font-size: 0.85rem;
+    padding: 4px 12px;
+    border-radius: 50px;
     font-weight: 600;
+    vertical-align: middle;
   }
 
-  /* --- GRID LAYOUT FOR CARDS --- */
-  .notification-box {
-    display: grid;
-    /* This creates columns that fill the space. Adjust 350px if you want smaller/larger cards */
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 15px; /* Space between cards */
+  .back-btn {
+    padding: 10px 24px;
+    border: 1px solid #e0e0e0;
+    background: transparent;
+    border-radius: 30px;
+    color: #555;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .back-btn:hover {
+    border-color: #333;
+    color: #333;
+    background: #f9f9f9;
+  }
+
+  /* --- Notification List Container --- */
+  .notif-list {
+    flex: 1;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
     width: 100%;
   }
 
-  /* --- Individual Card Styling --- */
-  .notification-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 15px;
+  /* --- Notification Bar (Row) --- */
+  .notif-row {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid #f0f0f0;
-    height: 100%; /* Ensures all cards in a row are same height */
+    padding: 25px 40px;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background-color 0.2s ease;
+    width: 100%;
     box-sizing: border-box;
+    cursor: default;
   }
 
-  .notification-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  .notif-row:hover {
+    background-color: #fcfcfc;
+  }
+
+  /* Highlight Unread Items */
+  .notif-row.new-item {
+    background-color: #f0f9f6; /* Subtle Green Tint */
+  }
+  
+  .notif-row.new-item:hover {
+    background-color: #e8f5f1;
+  }
+
+  /* Image Section */
+  .notif-img-wrapper {
+    flex-shrink: 0;
+    margin-right: 30px;
+    cursor: pointer;
+  }
+
+  .notif-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+    transition: transform 0.2s;
+  }
+
+  .notif-img:hover {
+    transform: scale(1.05);
     border-color: #66bd9e;
   }
 
-  /* --- Image Section --- */
-  .notif-img-wrapper {
-    margin-right: 15px;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .notif-img-wrapper img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #f5f5f5;
-  }
-
-  /* --- Content Section --- */
+  /* Text Content */
   .notif-content {
-    flex: 1;
+    flex: 1; /* Takes all remaining space */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden; /* Prevents text spill */
   }
 
   .notif-title {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: #333;
+    margin-bottom: 6px;
   }
 
-  .notif-desc {
-    font-size: 0.9rem;
+  .notif-msg {
+    font-size: 1rem;
     color: #666;
-    margin-bottom: 5px;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limits text to 2 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    line-height: 1.5;
+  }
+
+  /* Meta & Actions (Right Side) */
+  .notif-meta {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin-left: 30px;
   }
 
   .notif-time {
-    font-size: 0.75rem;
-    color: #aaa;
-    font-weight: 500;
+    font-size: 0.9rem;
+    color: #999;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  /* --- Delete Button --- */
-  .notif-delete-btn {
-    width: 30px;
-    height: 30px;
+  .delete-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #ccc;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    color: #e0e0e0;
     cursor: pointer;
-    background: transparent;
-    margin-left: 10px;
-    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 1.1rem;
   }
 
-  .notif-delete-btn:hover {
-    background: #ffe5e5;
-    color: #ff4d4d;
+  .delete-btn:hover {
+    background: #fff0f1;
+    color: #ff4757;
   }
 
-  /* --- Empty/Loading State --- */
+  /* Empty/Loading State */
   .state-msg {
-    text-align: center;
-    padding: 40px;
-    color: #888;
-    background: #fff;
-    border-radius: 12px;
-    width: 100%;
-    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    color: #b2bec3;
+  }
+
+  .state-msg i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
   }
 
   /* Mobile Adjustments */
   @media (max-width: 768px) {
-    .home-container {
-      flex-direction: column;
-      padding: 10px;
+    .notif-header { padding: 15px 20px; }
+    .notif-row { 
+      padding: 20px; 
+      flex-direction: column; 
+      align-items: flex-start;
     }
-    .profile-card-main {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    .notification-box {
-      grid-template-columns: 1fr; /* Stack vertically on mobile */
+    .notif-img-wrapper { margin-bottom: 15px; }
+    .notif-meta { 
+      margin-left: 0; 
+      margin-top: 15px; 
+      width: 100%; 
+      justify-content: space-between; 
     }
   }
 `;
 
 export default function Notidfication() {
   const [notifications, setNotifications] = useState([]);
-  const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
   const nav = useNavigate();
   const userid = localStorage.getItem("Althub_Id");
@@ -192,19 +229,6 @@ export default function Notidfication() {
     document.head.appendChild(styleSheet);
     return () => document.head.removeChild(styleSheet);
   }, []);
-
-  const getUser = () => {
-    axios({
-      method: "get",
-      url: `${WEB_URL}/api/searchUserById/${userid}`,
-    })
-      .then((Response) => {
-        setUser(Response.data.data[0]);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   const getNotifications = () => {
     axios({
@@ -269,10 +293,10 @@ export default function Notidfication() {
     if (minutesDiff < 1) {
       return "Just now";
     } else if (minutesDiff < 60) {
-      return `${minutesDiff} minute${minutesDiff === 1 ? "" : "s"} ago`;
+      return `${minutesDiff} min ago`;
     } else if (messageTime.toDateString() === now.toDateString()) {
       const options = { hour: "numeric", minute: "numeric" };
-      return `Today at ${messageTime.toLocaleTimeString("en-US", options)}`;
+      return `Today, ${messageTime.toLocaleTimeString("en-US", options)}`;
     } else {
       const options = {
         month: "short",
@@ -284,134 +308,82 @@ export default function Notidfication() {
     }
   };
 
-  const Logout = () => {
-    localStorage.clear();
-    nav("/");
-  };
-
   useEffect(() => {
-    getUser();
     getNotifications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <>
-      <div className="home-container">
-        {/* --- LEFT SIDEBAR (Unchanged Logic) --- */}
-        <div className="profile-card-main">
-          <div className="profile-card">
-            <div className="profile-card-imgbox">
-              {user?.profilepic ? (
-                <img
-                  src={`${WEB_URL}${user.profilepic}`}
-                  alt=""
-                  className="profile-card-img"
-                />
-              ) : (
-                <img
-                  src="images/profile1.png"
-                  className="profile-card-img"
-                  alt="#"
-                ></img>
-              )}
-            </div>
-
-            <div className="profile-card-info">
-              <span className="profile-card-name">
-                {user?.fname} {user?.lname}
-              </span>
-            </div>
-          </div>
-
-          <div className="menu-container">
-            <div 
-              className="menu" 
-              onClick={() => {
-                nav("/view-profile");
-                window.scrollTo(0, 0);
-              }}
-            >
-              <i className="fa-solid fa-user"></i>Go to Profile
-            </div>
-
-            <div className="menu" onClick={() => nav("/events")}>
-              <i className="fa-solid fa-calendar"></i>Events
-            </div>
-            <div className="menu" onClick={() => nav("/scholarship")}>
-              <i className="fa-solid fa-handshake-angle"></i>Scholarship
-            </div>
-            <div className="menu" onClick={() => nav("/feedback")}>
-              <i className="fa-solid fa-star"></i>FeedBack & Rating
-            </div>
-            <hr className="hr-line" />
-            <div className="menu" onClick={Logout}>
-              <i className="fa-solid fa-right-from-bracket"></i>Logout
-            </div>
-          </div>
+    <div className="notif-page-wrapper">
+      
+      {/* --- Sticky Header --- */}
+      <div className="notif-header">
+        <div className="header-left">
+          <h1>
+            Notifications
+            {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
+          </h1>
         </div>
-        
-        {/* --- RIGHT SIDE: NOTIFICATIONS (Full Width Grid) --- */}
-        <div className="notification-main">
-          
-          <div className="notif-page-header">
-            <h2>Notifications</h2>
-            {notifications.length > 0 && <span className="notif-badge">{notifications.length} New</span>}
-          </div>
-
-          {loading ? (
-             <div className="state-msg">
-                <i className="fa-solid fa-spinner fa-spin" style={{marginRight: '10px'}}></i> Loading...
-             </div>
-          ) : notifications.length > 0 ? (
-            <div className="notification-box">
-              {notifications.map((elem) => (
-                <div 
-                  className="notification-card" 
-                  key={elem._id || Math.random()} 
-                >
-                  <div 
-                    className="notif-img-wrapper"
-                    onClick={(e) => handleProfileRedirect(e, elem.senderId)}
-                    title="View Profile"
-                  >
-                    {elem.image ? (
-                        <img src={`${WEB_URL}${elem.image}`} alt="" />
-                    ) : (
-                        <img src="images/profile1.png" alt="" />
-                    )}
-                  </div>
-                  
-                  <div className="notif-content">
-                    <div className="notif-title">
-                      {elem.title}
-                    </div>
-                    <div className="notif-desc">
-                      {elem.msg}
-                    </div>
-                    <div className="notif-time">
-                      <i className="fa-regular fa-clock" style={{fontSize: '0.8em', marginRight:'4px'}}></i> {formatTime(elem.date)}
-                    </div>
-                  </div>
-
-                  <div 
-                    className="notif-delete-btn" 
-                    onClick={() => handleDelete(elem._id)}
-                    title="Delete Notification"
-                  >
-                    <i className="fa-solid fa-trash-can"></i>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="state-msg">
-                <img src="images/search-bro.png" alt="No Data" style={{width: '120px', marginBottom: '15px', opacity: 0.6}} />
-                <p>No new notifications found.</p>
-            </div>
-          )}
-        </div>
+        <button className="back-btn" onClick={() => nav("/home")}>
+          <i className="fa-solid fa-arrow-left"></i> Back to Home
+        </button>
       </div>
-    </>
+
+      {/* --- Full Width List --- */}
+      <div className="notif-list">
+        {loading ? (
+           <div className="state-msg">
+              <i className="fa-solid fa-spinner fa-spin"></i>
+              <p>Loading updates...</p>
+           </div>
+        ) : notifications.length > 0 ? (
+          notifications.map((elem) => (
+            <div 
+              className="notif-row" 
+              key={elem._id || Math.random()} 
+            >
+              {/* Image */}
+              <div 
+                className="notif-img-wrapper"
+                onClick={(e) => handleProfileRedirect(e, elem.senderId)}
+                title="View Profile"
+              >
+                {elem.image ? (
+                    <img src={`${WEB_URL}${elem.image}`} alt="" className="notif-img" />
+                ) : (
+                    <img src="images/profile1.png" alt="" className="notif-img" />
+                )}
+              </div>
+              
+              {/* Content */}
+              <div className="notif-content">
+                <div className="notif-title">{elem.title}</div>
+                <div className="notif-msg">{elem.msg}</div>
+              </div>
+
+              {/* Meta & Actions */}
+              <div className="notif-meta">
+                <div className="notif-time">
+                  <i className="fa-regular fa-clock"></i> {formatTime(elem.date)}
+                </div>
+                <button 
+                  className="delete-btn" 
+                  onClick={() => handleDelete(elem._id)}
+                  title="Remove"
+                >
+                  <i className="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="state-msg">
+              <i className="fa-regular fa-bell-slash"></i>
+              <p>You're all caught up! No new notifications.</p>
+          </div>
+        )}
+      </div>
+
+    </div>
   );
 }

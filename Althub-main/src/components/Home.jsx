@@ -5,61 +5,64 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 
-// --- INJECTED STYLES FOR MODERN UI ---
+// --- INJECTED STYLES FOR FULL-SCREEN DENSE UI ---
 const styles = `
   /* General Layout */
   .home-wrapper {
     background-color: #f3f2ef;
     min-height: 100vh;
-    padding: 20px 0;
+    padding: 15px 0; /* Reduced top padding */
     font-family: 'Poppins', sans-serif;
   }
 
   .home-content {
     display: flex;
     justify-content: center;
-    gap: 25px;
-    max-width: 1300px;
+    gap: 20px; /* Tighter gap between columns */
+    width: 98%; /* Cover almost full screen width */
+    max-width: 1920px; /* Allow it to span wide monitors */
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 10px;
     align-items: flex-start;
   }
 
   /* --- LEFT SIDEBAR (Profile & Menu) --- */
   .sidebar-left {
-    flex: 0 0 260px;
+    flex: 0 0 320px; /* Wider Sidebar */
     position: sticky;
     top: 90px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Reduced vertical gap */
   }
 
   .profile-mini-card {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     text-align: center;
     position: relative;
+    border: 1px solid #e5e7eb;
   }
 
   .profile-bg {
     background: linear-gradient(135deg, #66bd9e 0%, #479378 100%);
-    height: 70px;
+    height: 90px; /* Taller banner */
   }
 
   .profile-img-wrapper {
-    margin-top: -35px;
+    margin-top: -45px;
     display: inline-block;
     padding: 4px;
     background: #fff;
     border-radius: 50%;
+    width:100px;
   }
 
   .profile-img-wrapper img {
-    width: 70px;
-    height: 70px;
+    width: 90px; /* Larger Image */
+    height: 90px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid #eee;
@@ -70,25 +73,26 @@ const styles = `
   }
 
   .profile-name {
-    font-weight: 600;
-    font-size: 1.1rem;
+    font-weight: 700;
+    font-size: 1.2rem;
     color: #333;
     display: block;
   }
 
   .menu-box {
     background: #fff;
-    border-radius: 16px;
-    padding: 10px 0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 8px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
   }
 
   .menu-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 25px;
     color: #555;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -102,8 +106,8 @@ const styles = `
   }
 
   .menu-item i {
-    width: 25px;
-    font-size: 1.1rem;
+    width: 30px;
+    font-size: 1.2rem;
     margin-right: 10px;
   }
 
@@ -115,19 +119,21 @@ const styles = `
 
   /* --- CENTER FEED --- */
   .feed-center {
-    flex: 1;
-    max-width: 600px;
+    flex: 1; /* Grow to fill space */
+    /* Removed max-width restriction to fill screen */
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Tighter gap between posts */
+    min-width: 0; /* Prevent flex overflow */
   }
 
   /* Create Post Box */
   .create-post-card {
     background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
   }
 
   .cp-top {
@@ -138,25 +144,26 @@ const styles = `
   }
 
   .cp-avatar {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
   }
 
   .cp-input {
     flex: 1;
-    background: #f0f2f5;
-    border: none;
+    background: #f8f9fa;
+    border: 1px solid #eee;
     border-radius: 50px;
     padding: 12px 20px;
     outline: none;
-    font-size: 0.95rem;
+    font-size: 1rem;
     transition: background 0.2s;
   }
 
   .cp-input:focus {
-    background: #e4e6eb;
+    background: #fff;
+    border-color: #66bd9e;
   }
 
   .cp-actions {
@@ -173,9 +180,9 @@ const styles = `
     gap: 8px;
     color: #666;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    padding: 8px 12px;
+    padding: 8px 15px;
     border-radius: 8px;
     transition: background 0.2s;
   }
@@ -186,14 +193,14 @@ const styles = `
 
   .cp-upload-btn i {
     color: #66bd9e;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 
   .cp-post-btn {
     background: #66bd9e;
     color: #fff;
     border: none;
-    padding: 8px 24px;
+    padding: 8px 30px;
     border-radius: 20px;
     font-weight: 600;
     cursor: pointer;
@@ -212,8 +219,9 @@ const styles = `
   }
   
   .preview-media {
-    height: 80px;
-    width: 80px;
+    height: 120px; /* Larger preview */
+    width: auto;
+    max-width: 200px;
     border-radius: 8px;
     object-fit: cover;
     border: 1px solid #eee;
@@ -222,54 +230,58 @@ const styles = `
   /* Post Card */
   .post-card {
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     overflow: hidden;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
+    border: 1px solid #e5e7eb;
   }
 
   .post-header {
-    padding: 15px;
+    padding: 15px 20px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
   }
 
   .post-header img {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
     cursor: pointer;
+    border: 1px solid #eee;
   }
 
   .post-meta h4 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: #333;
   }
 
   .post-meta span {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #999;
   }
 
   .post-content {
-    padding: 0 15px 15px;
-    font-size: 0.95rem;
+    padding: 5px 20px 15px;
+    font-size: 1rem;
     color: #333;
     white-space: pre-wrap;
+    line-height: 1.5;
   }
 
   .post-media {
     margin-bottom: 10px;
+    background: #000;
   }
 
-  /* Universal Media Style for Img/Video inside Slider */
+  /* Media fills the card width */
   .post-media-item {
     width: 100%;
-    max-height: 500px;
+    max-height: 600px; /* Taller max height */
     object-fit: contain;
     background: #000;
     display: block;
@@ -277,15 +289,17 @@ const styles = `
   }
 
   .post-actions {
-    padding: 0 15px;
+    padding: 5px 20px 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 15px;
+    border-top: 1px solid #f5f5f5;
+    padding-top: 12px;
   }
 
   .like-btn {
     cursor: pointer;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     transition: transform 0.2s;
   }
 
@@ -296,42 +310,45 @@ const styles = `
   .like-count {
     font-weight: 600;
     color: #555;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   /* --- RIGHT SIDEBAR (Widgets) --- */
   .sidebar-right {
-    flex: 0 0 340px;
+    flex: 0 0 380px; /* Wider Sidebar */
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     position: sticky;
     top: 90px;
   }
 
   .widget-card {
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    padding: 20px;
+    border: 1px solid #e5e7eb;
   }
 
   .widget-title {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 700;
     color: #333;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
   }
 
   .event-item {
     display: flex;
     gap: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border-bottom: 1px solid #f9f9f9;
-    padding-bottom: 15px;
+    padding-bottom: 12px;
   }
 
   .event-item:last-child {
@@ -341,9 +358,9 @@ const styles = `
   }
 
   .event-thumb {
-    width: 135px;
+    width: 95px; /* Larger Thumb */
     height: 80px;
-    border-radius: 12px;
+    border-radius: 10px;
     object-fit: cover;
     background: #eee;
   }
@@ -357,7 +374,7 @@ const styles = `
   }
 
   .event-title {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #333;
     white-space: nowrap;
@@ -367,8 +384,8 @@ const styles = `
   }
 
   .event-meta {
-    font-size: 0.8rem;
-    color: #888;
+    font-size: 0.85rem;
+    color: #777;
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -378,15 +395,16 @@ const styles = `
   .aid-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     margin-bottom: 18px;
   }
 
   .aid-img {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid #eee;
   }
 
   .aid-content {
@@ -396,8 +414,8 @@ const styles = `
   .aid-header {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
     margin-bottom: 6px;
   }
 
@@ -417,21 +435,26 @@ const styles = `
   .aid-amounts {
     display: flex;
     justify-content: space-between;
-    font-size: 0.75rem;
-    color: #999;
+    font-size: 0.8rem;
+    color: #888;
     margin-top: 4px;
+    font-weight: 500;
   }
 
   /* Responsive */
-  @media (max-width: 1200px) {
-    .sidebar-right { display: none; }
+  @media (max-width: 1400px) {
+    .sidebar-right { flex: 0 0 320px; }
+    .sidebar-left { flex: 0 0 260px; }
   }
 
-  @media (max-width: 768px) {
-    .home-content { flex-direction: column; padding: 0 10px; }
-    .sidebar-left { position: static; width: 100%; flex: auto; }
-    .feed-center { max-width: 100%; width: 100%; }
-    .menu-box { display: none; }
+  @media (max-width: 1100px) {
+    .sidebar-right { display: none; }
+    .feed-center { flex: 1; }
+  }
+
+  @media (max-width: 850px) {
+    .sidebar-left { display: none; }
+    .home-content { padding: 0 10px; }
   }
 `;
 
@@ -710,7 +733,7 @@ export default function Home({ socket }) {
               <span className="profile-name">
                 {user.fname} {user.lname}
               </span>
-              <span style={{ fontSize: '0.85rem', color: '#777' }}>
+              <span style={{ fontSize: '0.9rem', color: '#777' }}>
                 {user.designation || "Student"}
               </span>
             </div>
@@ -778,7 +801,7 @@ export default function Home({ socket }) {
             <div className="cp-actions">
               <label className="cp-upload-btn">
                 <i className="fa-regular fa-image"></i>
-                Photo/Video
+                Media
                 <input
                   type="file"
                   onChange={imgChange}

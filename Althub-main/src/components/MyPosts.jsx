@@ -7,25 +7,325 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { useNavigate } from "react-router-dom";
 
-// Standard Modal Style matched to your CSS theme
-const modalStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 500,
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  p: 4,
-  borderRadius: "16px",
-  outline: "none",
-};
+// --- INJECTED STYLES FOR MODERN UI ---
+const styles = `
+  .myposts-wrapper {
+    background-color: #f3f2ef;
+    min-height: 100vh;
+    padding: 30px 0;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .myposts-content {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    align-items: flex-start;
+  }
+
+  /* --- LEFT FEED SECTION --- */
+  .myposts-feed {
+    flex: 1;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Header Card */
+  .myposts-header-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #66bd9e;
+  }
+
+  .header-info h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin: 0 0 5px 0;
+  }
+
+  .header-info p {
+    color: #636e72;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .post-count-badge {
+    background: #e3fdf5;
+    color: #66bd9e;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Post Card */
+  .post-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+    padding-bottom: 15px;
+    position: relative;
+  }
+
+  .post-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .post-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .post-user-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .post-meta h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .post-meta span {
+    font-size: 0.75rem;
+    color: #999;
+  }
+
+  /* Action Buttons (Edit/Delete) */
+  .post-actions-top {
+    display: flex;
+    gap: 10px;
+  }
+
+  .action-icon-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-size: 0.9rem;
+  }
+
+  .btn-edit { background: #f0f9f6; color: #66bd9e; }
+  .btn-edit:hover { background: #66bd9e; color: #fff; }
+
+  .btn-delete { background: #fff0f1; color: #ff4757; }
+  .btn-delete:hover { background: #ff4757; color: #fff; }
+
+  /* Post Body */
+  .post-desc {
+    padding: 0 20px 15px;
+    font-size: 0.95rem;
+    color: #444;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  .post-media-container {
+    margin-bottom: 15px;
+    background: #f8f9fa;
+  }
+
+  .post-img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .post-footer {
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  /* --- RIGHT SIDEBAR --- */
+  .myposts-sidebar {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 90px;
+  }
+
+  .sidebar-widget {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  .widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .suggestion-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .suggestion-info {
+    flex: 1;
+  }
+
+  .suggestion-info h5 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .suggestion-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  .suggestion-link {
+    font-size: 0.8rem;
+    color: #66bd9e;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .suggestion-link:hover { text-decoration: underline; }
+
+  /* Empty State */
+  .no-posts {
+    text-align: center;
+    padding: 60px;
+    background: #fff;
+    border-radius: 16px;
+    color: #999;
+  }
+
+  .no-posts i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #eee;
+  }
+
+  /* --- MODAL STYLES --- */
+  .modal-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    padding: 25px;
+    border-radius: 16px;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-title { font-size: 1.2rem; font-weight: 600; color: #333; }
+  
+  .modal-close { cursor: pointer; color: #888; font-size: 1.2rem; transition: color 0.2s; }
+  .modal-close:hover { color: #333; }
+
+  .modal-input-group { margin-bottom: 20px; }
+  .modal-label { display: block; font-size: 0.85rem; font-weight: 600; color: #66bd9e; margin-bottom: 8px; }
+  
+  .modal-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    background: #fafafa;
+  }
+  .modal-textarea:focus { border-color: #66bd9e; background: #fff; }
+
+  .modal-imgs { display: flex; gap: 10px; flex-wrap: wrap; }
+  .modal-img-wrapper { position: relative; width: 70px; height: 70px; }
+  .modal-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+  .modal-remove-img {
+    position: absolute;
+    top: -5px; right: -5px;
+    background: #ff4757; color: #fff;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+  
+  .btn-modal { padding: 8px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; border: none; font-size: 0.9rem; }
+  .btn-cancel { background: #f1f2f6; color: #555; }
+  .btn-save { background: #66bd9e; color: #fff; }
+  .btn-save:hover { background: #479378; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .home-content { flex-direction: column; }
+    .myposts-sidebar { display: none; }
+    .myposts-feed { width: 100%; max-width: 100%; }
+    .modal-box { width: 90%; }
+  }
+`;
 
 export default function MyPosts() {
   const nav = useNavigate();
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({});
-  const [topUsers, setTopUsers] = useState([]); // Sidebar Data
+  const [topUsers, setTopUsers] = useState([]);
   const userid = localStorage.getItem("Althub_Id");
 
   // Edit State
@@ -43,41 +343,35 @@ export default function MyPosts() {
     arrows: false,
   };
 
-  // --- 1. Fetch User Data ---
+  // Inject Styles
+  useEffect(() => {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+    return () => document.head.removeChild(styleSheet);
+  }, []);
+
+  // --- Fetch Data ---
   const getUser = useCallback(() => {
     if (!userid) return;
-    axios({
-      method: "get",
-      url: `${WEB_URL}/api/searchUserById/${userid}`,
-    }).then((Response) => {
+    axios.get(`${WEB_URL}/api/searchUserById/${userid}`).then((Response) => {
       if (Response.data && Response.data.data && Response.data.data[0]) {
         setUser(Response.data.data[0]);
       }
     });
   }, [userid]);
 
-  // --- 2. Fetch My Posts ---
   const getMyPosts = useCallback(() => {
-    axios({
-      method: "get",
-      url: `${WEB_URL}/api/getPostById/${userid}`,
-    })
+    axios.get(`${WEB_URL}/api/getPostById/${userid}`)
       .then((Response) => {
         setPosts(Response.data.data);
       })
-      .catch((error) => {
-        console.error("Error fetching my posts:", error);
-      });
+      .catch((error) => console.error("Error:", error));
   }, [userid]);
 
-  // --- 3. Fetch Sidebar Users (People you may know) ---
   const getNewUsers = useCallback(() => {
     if (userid) {
-      axios({
-        url: `${WEB_URL}/api/getRandomUsers`,
-        method: "post",
-        data: { userid: userid },
-      })
+      axios.post(`${WEB_URL}/api/getRandomUsers`, { userid: userid })
         .then((Response) => {
           setTopUsers(Response.data.data);
         })
@@ -91,19 +385,18 @@ export default function MyPosts() {
     getNewUsers();
   }, [getUser, getMyPosts, getNewUsers]);
 
-  // --- DELETE POST ---
+  // --- Actions ---
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       axios.delete(`${WEB_URL}/api/deletePost/${id}`)
         .then(() => {
-          toast.success("Post deleted successfully");
+          toast.success("Post deleted");
           getMyPosts();
         })
-        .catch(() => toast.error("Failed to delete post"));
+        .catch(() => toast.error("Failed to delete"));
     }
   };
 
-  // --- EDIT HANDLERS ---
   const handleOpenEdit = (post) => {
     setEditId(post._id);
     setEditDesc(post.description);
@@ -125,137 +418,132 @@ export default function MyPosts() {
         formData.append("existingPhotos", img);
     });
 
-    axios({
-      method: "post",
-      url: `${WEB_URL}/api/editPost`,
-      data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-      .then((res) => {
+    axios.post(`${WEB_URL}/api/editPost`, formData, { headers: { "Content-Type": "multipart/form-data" } })
+      .then(() => {
         toast.success("Post updated!");
         handleClose();
         getMyPosts();
       })
-      .catch((err) => toast.error("Update failed"));
+      .catch(() => toast.error("Update failed"));
   };
 
   const formatPostTime = (timestamp) => {
-    const messageTime = new Date(timestamp);
-    return messageTime.toLocaleDateString("en-US", {
-      year: "numeric", month: "short", day: "numeric"
-    });
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
   return (
-    <div className="container">
-      {/* --- LEFT SIDE: MAIN POST FEED --- */}
-      <div className="profile-main">
+    <div className="myposts-wrapper">
+      <div className="myposts-content">
         
-        {/* Header Card (Matches Profile Header Style) */}
-        <div className="profile-container" style={{ marginBottom: "20px", padding: "0" }}>
-            <div className="profile-container-inner1" style={{ alignItems: 'center' }}>
-                <div>
-                    <h1 style={{ fontSize: '24px', color: '#2c3e50' }}>My Posts</h1>
-                    <p style={{ color: '#6b7280' }}>Manage your shared content</p>
+        {/* --- LEFT: POST FEED --- */}
+        <div className="myposts-feed">
+          
+          {/* Header */}
+          <div className="myposts-header-card">
+            <div className="header-info">
+                <h1>My Posts</h1>
+                <p>Manage and view your shared moments</p>
+            </div>
+            <div className="post-count-badge">
+                {posts.length} Posts
+            </div>
+          </div>
+
+          {/* Posts List */}
+          {posts.length > 0 ? (
+            posts.map((elem) => (
+              <div key={elem._id} className="post-card">
+                
+                <div className="post-header">
+                  <div className="post-user-info">
+                    <img
+                      src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+                      alt=""
+                      className="post-user-img"
+                    />
+                    <div className="post-meta">
+                      <h4>{user.fname} {user.lname}</h4>
+                      <span>{formatPostTime(elem.date)}</span>
+                    </div>
+                  </div>
+
+                  <div className="post-actions-top">
+                    <button 
+                        className="action-icon-btn btn-edit" 
+                        onClick={() => handleOpenEdit(elem)}
+                        title="Edit"
+                    >
+                        <i className="fa-solid fa-pen"></i>
+                    </button>
+                    <button 
+                        className="action-icon-btn btn-delete" 
+                        onClick={() => handleDelete(elem._id)}
+                        title="Delete"
+                    >
+                        <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
-                <div style={{ background: '#e0f2ec', padding: '10px 20px', borderRadius: '12px', color: '#4da385', fontWeight: '600' }}>
-                    {posts.length} Posts
+
+                <div className="post-desc">{elem.description}</div>
+                
+                {elem.photos.length > 0 && (
+                  <div className="post-media-container">
+                    <Slider {...settings}>
+                      {elem.photos.map((el, idx) => (
+                        <div key={idx} style={{ outline: 'none' }}>
+                            <img src={`${WEB_URL}${el}`} alt="" className="post-img" />
+                        </div>
+                      ))}
+                    </Slider>
+                  </div>
+                )}
+
+                <div className="post-footer">
+                   <i className="fa-solid fa-heart" style={{ color: "#ef4444" }}></i> 
+                   <span>{elem.likes.length} Likes</span>
                 </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-posts">
+               <i className="fa-regular fa-folder-open"></i>
+               <h3>You haven't posted anything yet.</h3>
+            </div>
+          )}
+        </div>
+
+        {/* --- RIGHT: SIDEBAR --- */}
+        <div className="myposts-sidebar">
+            <div className="sidebar-widget">
+                <div className="widget-title">People you may know</div>
+                {topUsers.length > 0 ? (
+                    topUsers.map((elem) => (
+                        <div key={elem._id} className="suggestion-item">
+                            <img 
+                                src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} 
+                                alt="" 
+                                className="suggestion-img"
+                            />
+                            <div className="suggestion-info">
+                                <h5>{elem.fname} {elem.lname}</h5>
+                                <p>{elem.city ? elem.city : "Student"}</p>
+                            </div>
+                            <span 
+                                className="suggestion-link"
+                                onClick={() => nav("/view-search-profile", { state: { id: elem._id } })}
+                            >
+                                View
+                            </span>
+                        </div>
+                    ))
+                ) : (
+                    <div style={{color: '#999', fontSize: '0.9rem'}}>No new suggestions</div>
+                )}
             </div>
         </div>
 
-        {/* Posts List */}
-        {posts.length > 0 ? (
-          posts.map((elem) => (
-            <div key={elem._id} className="post">
-              <div className="post-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div className="post-profile">
-                  <img
-                    src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
-                    alt=""
-                    className="post-profile-img"
-                  />
-                  <div className="post-info">
-                    <span className="post-name">{user.fname} {user.lname}</span>
-                    <span className="post-description">{formatPostTime(elem.date)}</span>
-                  </div>
-                </div>
-
-                {/* Modern Edit/Delete Icons */}
-                <div className="edit-icon" style={{ gap: '10px', marginTop: '0' }}>
-                    <i 
-                        className="fa-solid fa-pen-to-square" 
-                        title="Edit Post"
-                        onClick={() => handleOpenEdit(elem)}
-                        style={{ background: '#f3f4f6', color: '#66bd9e' }}
-                    ></i> <br></br>
-                    <i 
-                        className="fa-solid fa-trash" 
-                        title="Delete Post"
-                        onClick={() => handleDelete(elem._id)}
-                        style={{ background: '#fee2e2', color: '#ef4444' }}
-                    ></i>
-                </div>
-              </div>
-
-              <div className="post-message" style={{ whiteSpace: "pre-wrap" }}>{elem.description}</div>
-              
-              {elem.photos.length > 0 && (
-                <div className="post-images">
-                  <Slider {...settings}>
-                    {elem.photos.map((el, idx) => (
-                      <div key={idx} style={{ outline: 'none' }}>
-                          <img src={`${WEB_URL}${el}`} alt="" className="post-image" />
-                      </div>
-                    ))}
-                  </Slider>
-                </div>
-              )}
-
-              <div className="likebar">
-                 <i className="fa-solid fa-heart" style={{ color: "#ef4444" }}></i> 
-                 <span style={{ marginLeft: "8px", fontSize: "14px", fontWeight: "500", color: "#555" }}>
-                    {elem.likes.length} Likes
-                 </span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="profile-description" style={{ textAlign: "center", padding: "50px" }}>
-             <i className="fa-regular fa-folder-open" style={{ fontSize: "40px", color: "#ccc", marginBottom: "15px" }}></i>
-             <h3 style={{ color: "#777" }}>You haven't posted anything yet.</h3>
-          </div>
-        )}
-      </div>
-
-      {/* --- RIGHT SIDE: SIDEBAR (Matches ViewProfile) --- */}
-      <div className="profile-sidebar">
-          <div className="sidebar-people">
-            <h3>People you may know</h3>
-            {topUsers.length > 0 ? (
-              topUsers.map((elem) => (
-                <div key={elem._id}>
-                  <div className="sidebar-people-row">
-                    {elem.profilepic ? (
-                        <img src={`${WEB_URL}${elem.profilepic}`} alt="" />
-                    ) : (
-                        <img src="images/profile1.png" alt="" />
-                    )}
-                    <div>
-                      <h2>{elem.fname} {elem.lname}</h2>
-                      <p>{elem.city} {elem.state}</p>
-                      <a onClick={() => nav("/view-search-profile", { state: { id: elem._id } })}>
-                        View Profile
-                      </a>
-                    </div>
-                  </div>
-                  <hr />
-                </div>
-              ))
-            ) : (
-              <div style={{ padding: "10px", color: "#666", fontSize: "14px" }}>No suggestions available</div>
-            )}
-          </div>
       </div>
 
       {/* --- EDIT MODAL --- */}
@@ -265,56 +553,46 @@ export default function MyPosts() {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={modalStyle}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#333" }}>Edit Post</h2>
-            <i className="fa-solid fa-xmark" onClick={handleClose} style={{ cursor: "pointer", fontSize: "20px", color: "gray" }}></i>
+        <div className="modal-box">
+          <div className="modal-header">
+            <span className="modal-title">Edit Post</span>
+            <i className="fa-solid fa-xmark modal-close" onClick={handleClose}></i>
           </div>
           
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: "600", color: "#666" }}>Description</label>
+          <div className="modal-input-group">
+            <label className="modal-label">Description</label>
             <textarea 
               rows="4" 
-              className="txt-feedback" // Reusing your style.css class for consistency
-              style={{ width: "100%", margin: "0", borderColor: "#e5e7eb" }}
+              className="modal-textarea"
               value={editDesc}
               onChange={(e) => setEditDesc(e.target.value)}
             />
           </div>
 
-          <div style={{ marginBottom: "25px" }}>
-             <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: "600", color: "#666" }}>Manage Images</label>
-             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <div className="modal-input-group">
+             <label className="modal-label">Manage Images</label>
+             <div className="modal-imgs">
                 {editImages.map((img, idx) => (
-                    <div key={idx} style={{ position: "relative", width: "70px", height: "70px" }}>
+                    <div key={idx} className="modal-img-wrapper">
                         <img 
                             src={`${WEB_URL}${img}`} 
                             alt="post-content" 
-                            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px", border: "1px solid #eee" }} 
+                            className="modal-img"
                         />
-                        <div 
-                            onClick={() => removeImage(idx)}
-                            style={{
-                                position: "absolute", top: "-6px", right: "-6px", 
-                                background: "#ef4444", color: "white", borderRadius: "50%", 
-                                width: "20px", height: "20px", display: "flex", 
-                                alignItems: "center", justifyContent: "center", 
-                                cursor: "pointer", fontSize: "10px", border: "2px solid white", boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-                            }}
-                        >
+                        <div className="modal-remove-img" onClick={() => removeImage(idx)}>
                             <i className="fa-solid fa-xmark"></i>
                         </div>
                     </div>
                 ))}
-                {editImages.length === 0 && <span style={{ fontSize: "13px", color: "gray", fontStyle: "italic" }}>No images to show.</span>}
+                {editImages.length === 0 && <span style={{fontSize: '0.85rem', color: '#999'}}>No images.</span>}
              </div>
           </div>
 
-          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-            <button className="action-button-cancel" style={{width: 'auto'}} onClick={handleClose}>Cancel</button>
-            <button className="action-button" style={{width: 'auto'}} onClick={saveEdit}>Save Changes</button>
+          <div className="modal-actions">
+            <button className="btn-modal btn-cancel" onClick={handleClose}>Cancel</button>
+            <button className="btn-modal btn-save" onClick={saveEdit}>Save Changes</button>
           </div>
-        </Box>
+        </div>
       </Modal>
     </div>
   );

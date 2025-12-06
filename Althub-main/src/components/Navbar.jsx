@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom"; // Added useLocation
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import * as React from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
@@ -13,14 +13,215 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 
+// --- INJECTED STYLES FOR MODERN FULL-WIDTH NAVBAR ---
+const styles = `
+  /* Navbar Container */
+  .navbar {
+    width: 100%;
+    height: 80px;
+    background: #ffffff;
+    border-bottom: 1px solid #eaeaea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  }
+
+  .navbar-content {
+    width: 100%;
+    max-width: 1400px; /* Matches Home/Events width */
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+  }
+
+  /* Left: Logo */
+  .navbar-left .logo img {
+    height: auto;
+    width: 140px;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Center: Navigation Links */
+  .navbar-center {
+    height: 100%;
+  }
+
+  .navbar-center ul {
+    display: flex;
+    gap: 35px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  .nav-link-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    height: 100%;
+    padding: 0 5px;
+    position: relative;
+    gap: 4px;
+  }
+
+  .nav-item i {
+    font-size: 1.3rem;
+    color: #b2bec3;
+    transition: color 0.2s ease;
+  }
+
+  /* Hover & Active States */
+  .nav-item:hover {
+    color: #66bd9e;
+  }
+  
+  .nav-item:hover i {
+    color: #66bd9e;
+  }
+
+  .nav-item.active {
+    color: #66bd9e;
+  }
+
+  .nav-item.active i {
+    color: #66bd9e;
+  }
+
+  /* Active Bottom Border Indicator */
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #66bd9e;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    border-radius: 3px 3px 0 0;
+  }
+
+  .nav-item.active::after {
+    transform: scaleX(1);
+  }
+
+  /* Notification Dot */
+  .notif-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .notif-dot {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    width: 9px;
+    height: 9px;
+    background-color: #ff4757;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+
+  /* Right Side: Profile */
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 50px;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .nav-profile:hover {
+    background-color: #f8f9fa;
+    border-color: #eee;
+  }
+
+  .nav-profile-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .user-profile {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .user-profile span {
+    font-weight: 600;
+    color: #2d3436;
+    font-size: 0.9rem;
+  }
+  
+  .user-role {
+    font-size: 0.75rem;
+    color: #999;
+  }
+
+  /* Mobile Menu Button */
+  .nav-search-bar button {
+    color: #666;
+    min-width: 40px;
+  }
+  .nav-search-bar i {
+    font-size: 1.5rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .navbar-center { display: none; }
+    .nav-profile { display: none; }
+    .nav-search-bar { display: block; }
+    .navbar-content { padding: 0 20px; }
+  }
+  @media (min-width: 1101px) {
+    .nav-search-bar { display: none; }
+  }
+`;
+
 export default function Navbar({ socket }) {
-  const [state, setState] = React.useState({
-    right: false,
-  });
+  const [state, setState] = React.useState({ right: false });
   const [user, setUser] = useState({});
   const [navbar, setNavbar] = useState(true);
   
-  // Use useLocation hook to track route changes correctly
   const location = useLocation(); 
   const pathname = location.pathname;
 
@@ -28,22 +229,25 @@ export default function Navbar({ socket }) {
   const [notDot, setNotDot] = useState(false);
   const nav = useNavigate();
 
+  // Inject Styles
+  useEffect(() => {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+    return () => document.head.removeChild(styleSheet);
+  }, []);
+
   const toggleDrawer = (anchor, open) => (event) => {
-    if (
-      event &&
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
+    if (event && event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
       return;
     }
     setState({ ...state, [anchor]: open });
   };
 
-  // Wrap getUser in useCallback to prevent dependency warnings
   const getUser = useCallback(() => {
     const userID = localStorage.getItem("Althub_Id");
     if (!userID) {
-      setUser({}); // Clear user if logged out
+      setUser({});
       return;
     }
     axios({
@@ -55,198 +259,75 @@ export default function Navbar({ socket }) {
           setUser(Response.data.data[0]);
         }
       })
-      .catch((error) => {
-        console.error("Navbar Error:", error);
-      });
+      .catch((error) => console.error("Navbar Error:", error));
   }, []);
 
   const Logout = () => {
     localStorage.clear();
-    setUser({}); // Clear local state immediately
+    setUser({});
     nav("/");
   };
 
+  // --- Mobile Drawer Content ---
   const list = (anchor) => (
     <Box
-      sx={{ width: anchor === "top" || anchor === "bottom" ? "auto" : 250 }}
+      sx={{ width: 280 }}
       role="presentation"
       onClick={toggleDrawer(anchor, false)}
       onKeyDown={toggleDrawer(anchor, false)}
-      style={{ color: "#7e7f81" }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          padding: "10px",
-          alignItems: "center",
-          fontSize: "30px",
-          color: "black",
-        }}
-      >
-        <i className="fa-solid fa-xmark"></i>
-        <h4>Menubar</h4>
+      <div style={{ padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #eee" }}>
+        <h3 style={{ margin: 0, color: "#2d3436", fontWeight: "600" }}>Menu</h3>
+        <i className="fa-solid fa-xmark" style={{ fontSize: "1.2rem", cursor: "pointer", color: "#888" }}></i>
       </div>
-      <Divider />
+      
       <List>
-        <ListItem
-          key={"home"}
-          disablePadding
-          onClick={() => {
-            nav("/home");
-          }}
-        >
-          <ListItemButton>
-            <i className="fa-solid fa-house" style={{ padding: "10px 15px" }}></i>
-            <ListItemText primary={"Home"} />
-          </ListItemButton>
-        </ListItem>
-        
-        {/* --- ADDED MY POSTS TO DRAWER --- */}
-        <ListItem
-          key={"myposts"}
-          disablePadding
-          onClick={() => {
-            nav("/my-posts");
-          }}
-        >
-          <ListItemButton>
-            <i className="fa-solid fa-address-card" style={{ padding: "10px 15px" }}></i>
-            <ListItemText primary={"My Posts"} />
-          </ListItemButton>
-        </ListItem>
-        {/* -------------------------------- */}
-
-        <ListItem
-          key={"search"}
-          disablePadding
-          onClick={() => {
-            nav("/search-profile");
-          }}
-        >
-          <ListItemButton>
-            <i
-              className="fa-solid fa-magnifying-glass"
-              style={{ padding: "10px 15px" }}
-            ></i>
-            <ListItemText primary={"search"} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem
-          key={"message"}
-          disablePadding
-          onClick={() => {
-            nav("/message");
-          }}
-        >
-          <ListItemButton>
-            <i className="fa-solid fa-message" style={{ padding: "10px 15px" }}></i>
-            <ListItemText primary={"Message"} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem
-          key={"scholarship"}
-          disablePadding
-          onClick={() => {
-            nav("/scholarship");
-          }}
-        >
-          <ListItemButton>
-            <i className="fa-solid fa-handshake-angle" style={{ padding: "10px 15px" }}></i>
-            <ListItemText primary={"Scholarship"} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem
-          key={"notification"}
-          disablePadding
-          onClick={() => {
-            nav("/notification");
-          }}
-        >
-          <ListItemButton>
-            <i className="fa-solid fa-bell" style={{ padding: "10px 15px" }}></i>
-            <ListItemText primary={"Notification"} />
-          </ListItemButton>
-        </ListItem>
+        {[
+          { text: "Home", icon: "fa-house", path: "/home" },
+          { text: "My Posts", icon: "fa-address-card", path: "/my-posts" },
+          { text: "Search", icon: "fa-magnifying-glass", path: "/search-profile" },
+          { text: "Message", icon: "fa-message", path: "/message" },
+          { text: "Scholarship", icon: "fa-handshake-angle", path: "/scholarship" },
+          { text: "Notification", icon: "fa-bell", path: "/notification" },
+          { text: "Feedback", icon: "fa-star", path: "/feedback" },
+        ].map((item) => (
+          <ListItem key={item.text} disablePadding onClick={() => nav(item.path)}>
+            <ListItemButton>
+              <i className={`fa-solid ${item.icon}`} style={{ width: "35px", color: "#66bd9e", fontSize: "1.1rem" }}></i>
+              <ListItemText primary={item.text} primaryTypographyProps={{fontSize: '0.95rem', fontWeight: '500', color: '#444'}} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
       <Divider />
       <List>
-        <ListItem
-          key={"feedback"}
-          disablePadding
-          onClick={() => {
-            nav("/feedback");
-          }}
-        >
+        <ListItem disablePadding onClick={Logout}>
           <ListItemButton>
-            <i
-              className="fa-solid fa-star"
-              style={{ padding: "10px 15px" }}
-            ></i>
-            <ListItemText primary={"Feedback"} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key={"logout"} onClick={Logout} disablePadding>
-          <ListItemButton>
-            <i
-              className="fa-solid fa-right-from-bracket"
-              style={{ padding: "10px 15px" }}
-            ></i>
-            <ListItemText primary={"Logout"} />
+            <i className="fa-solid fa-right-from-bracket" style={{ width: "35px", color: "#ff4757", fontSize: "1.1rem" }}></i>
+            <ListItemText primary="Logout" sx={{ color: "#ff4757" }} primaryTypographyProps={{fontSize: '0.95rem', fontWeight: '600'}} />
           </ListItemButton>
         </ListItem>
       </List>
     </Box>
   );
 
-  // --- Combined Effect: Handles Route Changes & Socket ---
   useEffect(() => {
-    // 1. Fetch user data whenever pathname changes (Fixes your bug)
     getUser();
 
-    // 2. Handle Navbar visibility based on route
-    if (
-      pathname === "/register" ||
-      pathname === "/login" ||
-      pathname === "/" ||
-      pathname === "/forget-password" ||
-      pathname === "/new-password"
-    ) {
+    if (["/register", "/login", "/", "/forget-password", "/new-password"].includes(pathname)) {
       setNavbar(false);
     } else {
       setNavbar(true);
     }
 
-    // 3. Socket Logic
     if (!socket) return;
-    
     socket.emit("addUser", localStorage.getItem("Althub_Id"));
     
-    const handleMessage = (data) => {
-      setMesDot(true);
-      if (pathname === "/message") {
-        setMesDot(false);
-      }
-    };
-
+    const handleMessage = () => { if (pathname !== "/message") setMesDot(true); };
     const handleNotification = (data) => {
-      setNotDot(true);
-      
-      // Elite pop-up notification
+      if (pathname !== "/notification") setNotDot(true);
       if(data && data.msg) {
-          toast.info(data.msg, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "light",
-          });
-      }
-      
-      if (pathname === "/notification") {
-        setNotDot(false);
+          toast.info(data.msg, { position: "top-right", theme: "light" });
       }
     };
 
@@ -257,100 +338,87 @@ export default function Navbar({ socket }) {
         socket.off("getMessage", handleMessage);
         socket.off("getNotification", handleNotification);
     }
-  }, [pathname, socket, getUser]); 
-  // ^ Added 'pathname' and 'getUser' to dependencies so it re-runs on navigation
+  }, [pathname, socket, getUser]);
+
+  useEffect(() => {
+    if (pathname === "/message") setMesDot(false);
+    if (pathname === "/notification") setNotDot(false);
+  }, [pathname]);
+
+  if (!navbar) return null;
 
   return (
-    <>
-      <nav className="navbar" style={{ display: navbar ? "flex" : "none" }}>
+    <nav className="navbar">
+      <div className="navbar-content">
+        
+        {/* Left: Logo */}
         <div className="navbar-left">
           <Link to="/home" className="logo">
-            <img src="/images/Logo1.jpeg" alt="#" />
+            <img src="/images/Logo1.jpeg" alt="AltHub" />
           </Link>
         </div>
+
+        {/* Center: Navigation Links */}
         <div className="navbar-center">
           <ul>
-            <Link to="/home">
-              <li>
+            <li className="nav-link-wrapper">
+              <Link to="/home" className={`nav-item ${pathname === '/home' ? 'active' : ''}`}>
                 <i className="fa-solid fa-house"></i>
                 <span>Home</span>
-              </li>
-            </Link>
+              </Link>
+            </li>
 
-            {/* --- ADDED MY POSTS LINK --- */}
-            <Link to="/my-posts">
-              <li>
+            <li className="nav-link-wrapper">
+              <Link to="/my-posts" className={`nav-item ${pathname === '/my-posts' ? 'active' : ''}`}>
                 <i className="fa-solid fa-address-card"></i>
                 <span>My Posts</span>
-              </li>
-            </Link>
-            {/* --------------------------- */}
+              </Link>
+            </li>
 
-            <Link to="/search-profile">
-              <li>
+            <li className="nav-link-wrapper">
+              <Link to="/search-profile" className={`nav-item ${pathname === '/search-profile' ? 'active' : ''}`}>
                 <i className="fa-solid fa-magnifying-glass"></i>
                 <span>Search</span>
-              </li>
-            </Link>
-            <Link to="/message">
-              <li onClick={() => { setMesDot(false) }}>
-                {mesDot ? <i
-                  className="fa-solid fa-circle"
-                  style={{
-                    color: "#ff0000",
-                    fontSize: "6px",
-                    position: "absolute",
-                    marginLeft: "20px",
-                  }}
-                ></i> : null}
-                <i className="fa-solid fa-message"></i>
+              </Link>
+            </li>
+
+            <li className="nav-link-wrapper">
+              <Link to="/message" className={`nav-item ${pathname === '/message' ? 'active' : ''}`}>
+                <div className="notif-wrapper">
+                  <i className="fa-solid fa-message"></i>
+                  {mesDot && <div className="notif-dot"></div>}
+                </div>
                 <span>Message</span>
-              </li>
-            </Link>
-            <Link to="/notification">
-              <li onClick={() => { setNotDot(false) }}>
-                {notDot ? <i
-                  className="fa-solid fa-circle"
-                  style={{
-                    color: "#ff0000",
-                    fontSize: "6px",
-                    position: "absolute",
-                    marginLeft: "16px",
-                  }}
-                ></i> : null}
-                <i className="fa-solid fa-bell"></i>
+              </Link>
+            </li>
+
+            <li className="nav-link-wrapper">
+              <Link to="/notification" className={`nav-item ${pathname === '/notification' ? 'active' : ''}`}>
+                <div className="notif-wrapper">
+                  <i className="fa-solid fa-bell"></i>
+                  {notDot && <div className="notif-dot"></div>}
+                </div>
                 <span>Notification</span>
-              </li>
-            </Link>
+              </Link>
+            </li>
           </ul>
         </div>
+
+        {/* Right: Profile */}
         <div className="navbar-right">
-          <div
-            className="nav-profile"
-            onClick={() => {
-              nav("/view-profile");
-            }}
-          >
-            {user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" ? (
-              <img
-                src={`${WEB_URL}${user.profilepic}`}
-                alt=""
-                className="nav-profile-img"
-              />
-            ) : (
-              <img src="images/profile1.png" className="nav-profile-img" alt="#" />
-            )}
+          <div className="nav-profile" onClick={() => nav("/view-profile")}>
+            <img
+              src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+              alt="User"
+              className="nav-profile-img"
+            />
             <div className="user-profile">
-              {user && user.fname ? (
-                <span>
-                  {user.fname} {user.lname}
-                </span>
-              ) : (
-                <span>USER</span>
-              )}
+              <span>{user.fname || "User"}</span>
+              <span></span>
             </div>
           </div>
 
+          {/* Mobile Toggle */}
           <div className="nav-search-bar">
             <React.Fragment>
               <Button onClick={toggleDrawer("right", true)}>
@@ -366,9 +434,9 @@ export default function Navbar({ socket }) {
               </SwipeableDrawer>
             </React.Fragment>
           </div>
-          <div></div>
         </div>
-      </nav>
-    </>
+
+      </div>
+    </nav>
   );
 }
