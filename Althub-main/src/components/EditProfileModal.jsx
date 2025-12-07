@@ -325,6 +325,14 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // --- NEW: Check Size Limit (3MB) ---
+    if (file.size > 3 * 1024 * 1024) { // 3MB in bytes
+        toast.error("Profile photo size cannot exceed 3MB");
+        e.target.value = ""; // Clear file input
+        return;
+    }
+
     const formData = new FormData();
     formData.append("image", file);
     formData.append("userid", user._id);

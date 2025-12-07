@@ -320,14 +320,37 @@ export default function Navbar({ socket }) {
       setNavbar(true);
     }
 
+    // --- NEW: Request Notification Permission ---
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
     if (!socket) return;
     socket.emit("addUser", localStorage.getItem("Althub_Id"));
     
     const handleMessage = () => { if (pathname !== "/message") setMesDot(true); };
+    
+    // --- UPDATED: Notification Handler ---
     const handleNotification = (data) => {
       if (pathname !== "/notification") setNotDot(true);
       if(data && data.msg) {
+          // 1. Show In-App Toast
           toast.info(data.msg, { position: "top-right", theme: "light" });
+
+          // 2. Show System Pop-up Notification
+          if ("Notification" in window && Notification.permission === "granted") {
+            const notification = new Notification(data.title || "New Notification", {
+              body: data.msg,
+              icon: "/images/Logo1.jpeg", // Using your logo as icon
+              // silent: false
+            });
+            
+            // Optional: Click to focus window
+            notification.onclick = () => {
+              window.focus();
+              nav("/notification");
+            };
+          }
       }
     };
 
@@ -338,7 +361,7 @@ export default function Navbar({ socket }) {
         socket.off("getMessage", handleMessage);
         socket.off("getNotification", handleNotification);
     }
-  }, [pathname, socket, getUser]);
+  }, [pathname, socket, getUser, nav]);
 
   useEffect(() => {
     if (pathname === "/message") setMesDot(false);

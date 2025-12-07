@@ -6,7 +6,7 @@ import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import EditEducationModal from "./EditEducationModal";
 
-// ... (Paste your styles string here, unchanged) ...
+// --- STYLES REMAIN UNCHANGED ---
 const styles = `
   .home-wrapper { background-color: #f3f2ef; min-height: 100vh; padding: 15px 0; font-family: 'Poppins', sans-serif; }
   .home-content { display: flex; justify-content: center; gap: 20px; width: 98%; max-width: 1920px; margin: 0 auto; padding: 0 10px; align-items: flex-start; }
@@ -88,7 +88,6 @@ export default function Home({ socket }) {
   const [showEduModal, setShowEduModal] = useState(false); 
   const userid = localStorage.getItem("Althub_Id");
   
-  // Stable empty list reference to avoid re-renders
   const emptyEducationList = useMemo(() => [], []);
 
   useEffect(() => {
@@ -172,7 +171,39 @@ export default function Home({ socket }) {
 
   useEffect(() => { getUser(); getPost(); getEvents(); getAids(); checkEducation(); }, [getUser, getPost, getEvents, getAids, checkEducation]);
 
-  const imgChange = (e) => { setFileList(e.target.files); };
+  // --- UPDATED FILE SELECTION HANDLER ---
+  const imgChange = (e) => {
+    const files = e.target.files;
+    
+    // Check if any file was selected
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // 1. Check Image Size (Limit: 3MB)
+        if (file.type.startsWith("image/")) {
+            if (file.size > 3 * 1024 * 1024) { // 3MB in bytes
+                toast.error("Image size cannot exceed 3MB");
+                e.target.value = ""; // Clear file input
+                setFileList(null);
+                return;
+            }
+        }
+        
+        // 2. Check Video Size (Limit: 20MB)
+        else if (file.type.startsWith("video/")) {
+            if (file.size > 20 * 1024 * 1024) { // 20MB in bytes
+                toast.error("Video size cannot exceed 20MB");
+                e.target.value = ""; // Clear file input
+                setFileList(null);
+                return;
+            }
+        }
+    }
+
+    setFileList(files);
+  };
 
   const addPost = async () => {
     if (!user || !user.fname || !user.lname) { toast.error("User data not loaded. Please refresh."); return; }
@@ -199,6 +230,9 @@ export default function Home({ socket }) {
             });
         }
         setFileList(null); setDescription(""); setUploading(false); getPost();
+        // Clear input element manually
+        const fileInput = document.getElementById("myFileInput");
+        if(fileInput) fileInput.value = "";
       })
       .catch((error) => { toast.error("Something went wrong!!"); setUploading(false); });
   };
