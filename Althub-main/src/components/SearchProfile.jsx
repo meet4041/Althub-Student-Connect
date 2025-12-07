@@ -4,7 +4,7 @@ import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import FilterModal from "./FilterModal";
 
-// --- INJECTED STYLES REMAIN SAME ---
+// --- INJECTED STYLES ---
 const styles = `
   .sp-container { padding: 30px 5%; background-color: #f8f9fa; min-height: 100vh; display: flex; flex-direction: column; align-items: center; font-family: 'Poppins', sans-serif; }
   .sp-header { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 40px; width: 100%; max-width: 1400px; position: sticky; top: 20px; z-index: 100; }
@@ -26,10 +26,12 @@ const styles = `
   .sp-name { font-size: 1.1rem; font-weight: 700; color: #333; margin: 10px 0 5px; cursor: pointer; transition: color 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; line-height: 1.3; }
   .sp-name:hover { color: #66bd9e; }
   .sp-alumni-badge { background-color: #e3f2fd; color: #1565c0; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; border: 1px solid #90caf9; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
-  .sp-location { font-size: 0.85rem; color: #777; margin-bottom: 15px; min-height: 20px; }
+  .sp-location { font-size: 0.85rem; color: #777; margin-bottom: 5px; min-height: 20px; }
+  .sp-education { font-size: 0.8rem; color: #66bd9e; font-weight: 500; margin-bottom: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sp-socials { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
   .sp-social-icon { font-size: 1.2rem; color: #bbb; transition: color 0.3s; }
   .sp-social-icon.github:hover { color: #333; }
+  .sp-social-icon.website:hover { color: #66bd9e; }
   .sp-actions { margin-top: auto; display: flex; gap: 10px; }
   .sp-btn { flex: 1; padding: 10px 0; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
   .sp-btn-view { background-color: #f8f9fa; color: #333; }
@@ -46,11 +48,17 @@ export default function SearchProfile({ socket }) {
   const [name, setName] = useState("");
   const [users, setUsers] = useState([]);
   const [showUsers, setShowUsers] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const nav = useNavigate();
   const [modal, setModal] = useState(false);
   const closeModal = () => setModal(false);
+  
+  // Filters
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
+  const [degree, setDegree] = useState("");
+  const [year, setYear] = useState("");
+
   const userID = localStorage.getItem("Althub_Id");
   const [self, setSelf] = useState({});
 
@@ -63,35 +71,61 @@ export default function SearchProfile({ socket }) {
 
   useEffect(() => {
     if (userID) {
-      axios({ method: "get", url: `${WEB_URL}/api/searchUserById/${userID}` })
+      axios.get(`${WEB_URL}/api/searchUserById/${userID}`)
         .then((Response) => { setSelf(Response.data.data[0]); })
         .catch((error) => {});
     }
   }, [userID]);
 
-  useEffect(() => {
-    axios({ url: `${WEB_URL}/api/searchUser`, method: "post", data: { search: name } })
-      .then((Response) => { setUsers(Response.data.data); setShowUsers(Response.data.data); })
-      .catch((error) => { console.log(error); });
-  }, [name]);
+  // --- REUSABLE SEARCH FUNCTION ---
+  const performSearch = (overrideParams = {}) => {
+    setIsSearching(true);
+    
+    // Combine current state with any overrides (e.g. name search)
+    const payload = {
+        search: overrideParams.name !== undefined ? overrideParams.name : name,
+        location: overrideParams.add !== undefined ? overrideParams.add : add,
+        skill: overrideParams.skill !== undefined ? overrideParams.skill : skill,
+        degree: overrideParams.degree !== undefined ? overrideParams.degree : degree,
+        year: overrideParams.year !== undefined ? overrideParams.year : year
+    };
 
+    axios.post(`${WEB_URL}/api/searchUser`, payload)
+      .then((Response) => {
+        const data = Response.data.data || [];
+        setUsers(data);
+        setShowUsers(data);
+        setIsSearching(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setIsSearching(false);
+        // Optional: clear results on error
+        setUsers([]);
+        setShowUsers([]);
+      });
+  };
+
+  // Debounced Name Search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+        performSearch({ name: name }); // Search with current filters + new name
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [name]); 
+
+  // --- UPDATED: Apply Filters via API ---
   const handleFilter = () => {
     closeModal();
-    setShowUsers(users.filter((elem) => {
-      const cityMatch = elem.city && elem.city.toLowerCase().includes(add.toLowerCase())
-      const skillreg = new RegExp(skill, "i");
-      const skillsMatch = elem.skills && skillreg.test(elem.skills);
-      return cityMatch && skillsMatch;
-    }));
+    performSearch(); // Trigger search with all current filter states (add, skill, degree, year)
   };
 
   const getSocialLink = (input, platform) => {
     if (!input) return "#";
-    const cleanInput = input.trim();
+    let cleanInput = input.trim();
     if (cleanInput.startsWith("http://") || cleanInput.startsWith("https://")) return cleanInput;
-    if (cleanInput.startsWith("www.")) return `https://${cleanInput}`;
     if (platform === 'github') return `https://github.com/${cleanInput}`;
-    return cleanInput;
+    return `https://${cleanInput}`;
   };
 
   return (
@@ -103,9 +137,15 @@ export default function SearchProfile({ socket }) {
             <i className="fa-sharp fa-solid fa-magnifying-glass" style={{ color: "#aaa" }}></i>
             <input type="text" placeholder="Search people by name..." value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-          <button className="sp-filter-btn" onClick={() => setModal(true)} title="Filters"><i className="fa-solid fa-sliders"></i>{(add || skill) && <div className="filter-active-dot"></div>}</button>
+          <button className="sp-filter-btn" onClick={() => setModal(true)} title="Filters">
+            <i className="fa-solid fa-sliders"></i>
+            {/* Show dot if any filter is active */}
+            {(add || skill || degree || year) && <div className="filter-active-dot"></div>}
+          </button>
         </div>
         
+        {isSearching && <div style={{width:'100%', textAlign:'center', marginBottom: '20px', color:'#66bd9e'}}>Searching...</div>}
+
         {showUsers && showUsers.length > 0 ? (
           <div className="sp-grid">
             {showUsers.map((elem) => (
@@ -116,7 +156,7 @@ export default function SearchProfile({ socket }) {
                     src={ elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png" }
                     alt="profile"
                     className="sp-avatar"
-                    loading="lazy" // --- OPTIMIZATION: Lazy Loading ---
+                    loading="lazy"
                   />
                 </div>
                 <div className="sp-content">
@@ -124,12 +164,28 @@ export default function SearchProfile({ socket }) {
                     {elem.fname} {elem.lname}
                     {elem.isAlumni && ( <span className="sp-alumni-badge" title="Alumni"><i className="fa-solid fa-graduation-cap"></i> Alumni</span> )}
                   </div>
+                  
                   <p className="sp-location">{elem.city ? elem.city : ""}{elem.state ? `, ${elem.state}` : ""}{(!elem.city && !elem.state) ? "Student" : ""}</p>
+
+                  {/* --- NEW: Education Info --- */}
+                  <div className="sp-education">
+                    {elem.latestCourse && (
+                      <span>
+                        <i className="fa-solid fa-book-open"></i> {elem.latestCourse}
+                        {elem.latestYear && ` • ${elem.latestYear}`}
+                      </span>
+                    )}
+                  </div>
+
                   <div className="sp-socials">
                     {elem.github && elem.github.trim() !== "" && (
                       <a href={getSocialLink(elem.github, 'github')} target="_blank" rel="noopener noreferrer"><i className="fa-brands fa-github sp-social-icon github"></i></a>
                     )}
+                    {elem.portfolioweb && elem.portfolioweb.trim() !== "" && (
+                      <a href={getSocialLink(elem.portfolioweb, 'website')} target="_blank" rel="noopener noreferrer"><i className="fa-solid fa-globe sp-social-icon website"></i></a>
+                    )}
                   </div>
+
                   <div className="sp-actions">
                     <button className="sp-btn sp-btn-view" onClick={() => { elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } }) }}>View</button>
                     {elem._id !== userID && (
@@ -143,14 +199,26 @@ export default function SearchProfile({ socket }) {
             ))}
           </div>
         ) : (
-          <div className="sp-no-results">
-            <img src="images/search-bro.png" alt="No results" loading="lazy" />
-            <h3>No users found</h3>
-            <p>Try searching for a different name.</p>
-          </div>
+          !isSearching && (
+            <div className="sp-no-results">
+                <img src="images/search-bro.png" alt="No results" loading="lazy" />
+                <h3>No users found</h3>
+                <p>Try searching for a different name.</p>
+            </div>
+          )
         )}
       </div>
-      {modal && ( <FilterModal closeModal={closeModal} add={add} setAdd={setAdd} skill={skill} setSkill={setSkill} handleFilter={handleFilter} /> )}
+      
+      {modal && ( 
+        <FilterModal 
+            closeModal={closeModal} 
+            add={add} setAdd={setAdd} 
+            skill={skill} setSkill={setSkill} 
+            degree={degree} setDegree={setDegree} // Pass New Props
+            year={year} setYear={setYear}         // Pass New Props
+            handleFilter={handleFilter} 
+        /> 
+      )}
     </>
   );
 }

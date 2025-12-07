@@ -6,8 +6,7 @@ require("dotenv").config();
 
 let cachedConnection = null;
 let gridFSBucket = null;
-
-const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/althub';
+const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/althub';
 let storage;
 try {
   storage = new GridFsStorage({

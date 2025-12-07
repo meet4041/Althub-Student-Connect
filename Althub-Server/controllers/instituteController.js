@@ -11,7 +11,7 @@ const securePassword = async (password) => {
         const passwordhash = await bcryptjs.hash(password, 10);
         return passwordhash;
     } catch (error) {
-        res.status(400).send(error.message);
+        console.log(error.message);
     }
 }
 
@@ -20,7 +20,7 @@ const create_token = async (id) => {
         const token = await jwt.sign({ _id: id }, config.secret_jwt);
         return token;
     } catch (error) {
-        res.status(400).send(error.message);
+        console.log(error.message);
     }
 }
 
@@ -277,9 +277,17 @@ const deleteInstitute = async (req, res) => {
     }
 }
 
+// --- OPTIMIZED GET INSTITUTES ---
 const getInstitues = async (req, res) => {
     try {
-        const institute_data = await Institute.find({});
+        // Optimization: 
+        // 1. .select("name image") -> Only fetch what's needed for the dropdown
+        // 2. .lean() -> Return plain JSON objects (much faster)
+        // 3. Optional: Add { active: true } if you only want active institutes
+        const institute_data = await Institute.find({}) 
+            .select("name image")
+            .lean();
+            
         res.status(200).send({ success: true, data: institute_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -288,9 +296,7 @@ const getInstitues = async (req, res) => {
 
 const searchInstituteById = async (req, res) => {
     try {
-        const institute = await Institute.findById({
-            _id: req.params._id
-        });
+        const institute = await Institute.findById(req.params._id).lean();
         res.status(200).send({ success: true, data: institute });
     } catch (error) {
         res.status(500).send({ success: false, msg: error.message });

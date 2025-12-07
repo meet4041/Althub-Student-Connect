@@ -102,8 +102,16 @@ export default function Register() {
   const handleImgChange = async (e) => {
     if (!e.target.files[0]) return;
     
-    setUploading(true); // Start loading UI
     const originalFile = e.target.files[0];
+
+    // --- NEW: Check Size Limit (3MB) ---
+    if (originalFile.size > 3 * 1024 * 1024) { // 3MB in bytes
+        toast.error("Image size cannot be more than 3MB");
+        e.target.value = ""; // Clear file input to allow re-selection
+        return;
+    }
+    
+    setUploading(true); // Start loading UI
     
     // Compress
     const compressedFile = await compressImage(originalFile);
