@@ -270,81 +270,109 @@ const styles = `
     max-width: 500px;
   }
 
-  /* --- FOOTER --- */
+  /* --- UPDATED FOOTER STYLES --- */
   .modern-footer {
     background: #2d3436;
     color: #fff;
-    padding: 60px 5% 20px;
+    padding: 70px 5% 20px;
+    margin-top: 50px;
   }
 
   .footer-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 50px;
     max-width: 1200px;
-    margin: 0 auto 40px;
+    margin: 0 auto 50px;
+    align-items: flex-start; /* Key fix for alignment */
   }
 
   .footer-col h3 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 25px;
     color: #66bd9e;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  
+  .footer-col h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    background-color: #66bd9e;
+    border-radius: 2px;
   }
 
   .footer-col p {
     color: #b2bec3;
-    line-height: 1.6;
+    line-height: 1.7;
+    font-size: 0.95rem;
   }
 
+  /* List Styling - Removes default bullets and padding */
   .contact-list, .social-list {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
 
-  .contact-list li {
-    margin-bottom: 15px;
+  /* List Items - Aligns icons and text */
+  .contact-list li, .social-list li {
+    margin-bottom: 18px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: center; /* Vertically aligns icon with text */
+    gap: 12px;
     color: #dfe6e9;
+    font-size: 0.95rem;
+  }
+
+  .contact-list li i, .social-list li i {
+    width: 20px; /* Fixed width for icons ensures text lines up */
+    text-align: center;
+    color: #66bd9e;
+    font-size: 1.1rem;
   }
 
   .contact-list a, .social-list a {
     color: #dfe6e9;
     text-decoration: none;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .contact-list a:hover, .social-list a:hover {
     color: #66bd9e;
-  }
-
-  .social-list li {
-    margin-bottom: 10px;
-  }
-
-  .social-list a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1rem;
+    padding-left: 5px; /* Subtle hover effect */
   }
 
   .footer-bottom {
     text-align: center;
-    border-top: 1px solid #4a4a4a;
-    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 25px;
     color: #636e72;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
-  /* Responsive */
+  /* Responsive Footer */
   @media (max-width: 900px) {
-    .hero-section { flex-direction: column-reverse; padding-top: 100px; text-align: center; }
-    .hero-text h1 { font-size: 2.5rem; }
-    .info-split { flex-direction: column; text-align: center; gap: 30px; }
-    .info-split.reverse { flex-direction: column; }
-    .info-list li { justify-content: center; text-align: left; }
+    .footer-grid {
+      grid-template-columns: 1fr;
+      text-align: center;
+      gap: 40px;
+    }
+    .footer-col h3::after {
+      left: 50%;
+      transform: translateX(-50%); /* Centers the underline */
+    }
+    .contact-list li, .social-list li, .social-list a {
+      justify-content: center;
+    }
   }
 `;
 
@@ -469,9 +497,10 @@ export default function Main() {
                 </div>
             </section>
 
-            {/* --- FOOTER --- */}
+            {/* --- UPDATED FOOTER --- */}
             <footer className="modern-footer">
                 <div className="footer-grid">
+                    {/* Column 1: About */}
                     <div className="footer-col">
                         <h3>About Althub</h3>
                         <p>
@@ -479,6 +508,8 @@ export default function Main() {
                             It enables seamless communication for job vacancies, career advice, and mentorship.
                         </p>
                     </div>
+
+                    {/* Column 2: Contact */}
                     <div className="footer-col">
                         <h3>Contact Us</h3>
                         <ul className="contact-list">
@@ -492,17 +523,19 @@ export default function Main() {
                             </li>
                         </ul>
                     </div>
+
+                    {/* Column 3: Socials */}
                     <div className="footer-col">
                         <h3>Follow Us</h3>
                         <ul className="social-list">
                             <li>
                                 <a href="https://www.linkedin.com/in/meetgandhi4041/" target="_blank" rel="noreferrer">
-                                    <i className="fa-brands fa-linkedin"></i> Linkedin
+                                    <i className="fa-brands fa-linkedin"></i> LinkedIn
                                 </a>
-                            </li><br></br>
+                            </li>
                             <li>
                                 <a href="https://github.com/meet4041" target="_blank" rel="noreferrer">
-                                    <i className="fa-brands fa-github"></i> Github
+                                    <i className="fa-brands fa-github"></i> GitHub
                                 </a>
                             </li>
                         </ul>
