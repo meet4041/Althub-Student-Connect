@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const Education = require("../models/educationModel"); // Ensure this is imported
+const Education = require("../models/educationModel"); 
 const bcryptjs = require("bcryptjs");
 const config = require("../config/config");
 const jwt = require("jsonwebtoken");
@@ -62,6 +62,7 @@ const checkAlumniStatus = (educations) => {
 
 const getLatestEducation = (educations) => {
     if (!educations || educations.length === 0) return { course: "", year: "" };
+    // Sort by enddate descending (latest first)
     const sorted = educations.sort((a, b) => {
         const dateA = new Date(a.enddate || "1900-01-01");
         const dateB = new Date(b.enddate || "1900-01-01");
@@ -72,15 +73,9 @@ const getLatestEducation = (educations) => {
     return { course: latest.course, year: year.toString() };
 };
 
-// --- POWERFUL REGEX GENERATOR ---
-// Input: "mscit"
-// Output: /m[\W_]*s[\W_]*c[\W_]*i[\W_]*t/i
-// Matches: "M.Sc.IT", "M Sc IT", "M.S.C.I.T", "msc it"
 const createFlexibleRegex = (text) => {
     if (!text) return null;
-    // 1. Remove all non-alphanumeric chars to get raw base
     const clean = text.replace(/[\W_]+/g, ""); 
-    // 2. Insert pattern to allow 0 or more non-word chars between letters
     const pattern = clean.split('').join('[\\W_]*');
     return new RegExp(pattern, "i");
 };
@@ -123,7 +118,6 @@ const userlogin = async (req, res) => {
     } catch (error) { res.status(400).send(error.message); }
 }
 
-// ... (Other controllers: updatePassword, forgetPassword, resetpassword, userProfileEdit, deleteUser, uploadUserImage - keep as is) ...
 const uploadUserImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
@@ -187,45 +181,31 @@ const searchUser = async (req, res) => {
     try {
         const { search, location, skill, degree, year } = req.body;
 
-        // --- STEP 1: PRE-FILTER BY EDUCATION (If Degree/Year requested) ---
-        // This is crucial. Instead of searching users then checking degree (which limits results),
-        // we first find ALL user IDs that match the degree, then search within that list.
-        
         let educationUserIds = null;
 
         if (degree || year) {
             const eduQuery = {};
-            
             if (degree) {
-                // Use the flexible regex on course
                 eduQuery.course = { $regex: createFlexibleRegex(degree) };
             }
             if (year) {
-                // Check if year string exists in enddate field
                 eduQuery.enddate = { $regex: new RegExp(year.toString()) };
             }
-
-            // Get distinct User IDs that match this education criteria
             educationUserIds = await Education.find(eduQuery).distinct('userid');
             
-            // If we are filtering by degree but found no records, return empty immediately
             if (educationUserIds.length === 0) {
                 return res.status(200).send({ success: true, msg: 'No User Found', data: [] });
             }
         }
 
-        // --- STEP 2: BUILD USER QUERY ---
         const pipeline = [];
         const matchStage = {};
 
-        // Apply Education IDs filter if valid
         if (educationUserIds !== null) {
-            // Convert string IDs (from Education) to ObjectIds (for User)
             const objectIds = educationUserIds.map(id => new mongoose.Types.ObjectId(id));
             matchStage._id = { $in: objectIds };
         }
 
-        // Name Search
         if (search) {
             const nameRegex = new RegExp(search, "i");
             matchStage.$or = [
@@ -234,11 +214,9 @@ const searchUser = async (req, res) => {
             ];
         }
 
-        // Location Filter
         if (location) {
             const locRegex = new RegExp(location, "i");
             const locQuery = { $or: [{ city: { $regex: locRegex } }, { state: { $regex: locRegex } }] };
-            // If name search exists, use $and to combine. Else just assign.
             if (matchStage.$or) {
                 matchStage.$and = [ { $or: matchStage.$or }, locQuery ];
                 delete matchStage.$or; 
@@ -247,7 +225,6 @@ const searchUser = async (req, res) => {
             }
         }
 
-        // Skill Filter
         if (skill) {
             matchStage.skills = { $regex: new RegExp(skill, "i") };
         }
@@ -256,12 +233,12 @@ const searchUser = async (req, res) => {
             pipeline.push({ $match: matchStage });
         }
 
-        // --- STEP 3: LIMIT & JOIN ---
-        pipeline.push({ $limit: 50 }); // Limit users fetched
+        pipeline.push({ $limit: 50 });
 
+        // --- FIXED LOOKUP: Uses the correct collection name dynamically ---
         pipeline.push({
             $lookup: {
-                from: "educations",
+                from: Education.collection.name, // Dynamically gets 'educationtbs' (or whatever it is)
                 let: { userId: "$_id" },
                 pipeline: [
                     { 
@@ -275,7 +252,6 @@ const searchUser = async (req, res) => {
             }
         });
 
-        // Final Projection
         pipeline.push({
             $project: {
                 fname: 1, lname: 1, profilepic: 1, city: 1, state: 1,
@@ -286,11 +262,11 @@ const searchUser = async (req, res) => {
 
         const user_data = await User.aggregate(pipeline);
 
-        // --- STEP 4: FORMAT DATA ---
+        // --- FORMAT DATA ---
         const finalData = user_data.map(user => {
             const isAlumni = checkAlumniStatus(user.educationList);
             const latestEdu = getLatestEducation(user.educationList);
-            delete user.educationList; // cleanup
+            delete user.educationList;
             
             return { 
                 ...user, 
@@ -312,7 +288,6 @@ const searchUser = async (req, res) => {
     }
 }
 
-// ... (Other controllers: searchUserById, userLogout, getUsers, etc. - keep as is) ...
 const searchUserById = async (req, res) => {
     try {
         const id = req.params._id;

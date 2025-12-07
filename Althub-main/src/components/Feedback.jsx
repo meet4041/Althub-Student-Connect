@@ -4,258 +4,184 @@ import { WEB_URL } from '../baseURL';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
-// --- INJECTED STYLES FOR CENTERED CARD UI ---
+// --- NEW UI STYLES ---
 const styles = `
-  /* Full Screen Centered Layout */
-  .feedback-page-wrapper {
-    height: 100vh;
-    width: 100vw;
-    background-color: #f3f2ef; /* Matches Home/Events bg */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+  .fb-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background-color: #f8f9fa; /* Matches SearchProfile bg */
+    background-image: radial-gradient(#e0e7ff 1px, transparent 1px);
+    background-size: 24px 24px;
     font-family: 'Poppins', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow: hidden; /* Prevents scroll */
   }
 
-  /* --- MAIN CARD --- */
-  .feedback-card {
-    background: #fff;
+  .fb-card {
+    margin-top:-30px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     width: 100%;
-    max-width: 1100px;
-    height: 90vh; /* Occupies most of the screen */
-    max-height: 700px;
+    max-width: 550px;
     border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.05);
-    display: flex;
-    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.03);
+    padding: 40px;
+    text-align: center;
     position: relative;
+    border: 1px solid #fff;
   }
 
-  /* --- LEFT SIDE (Form) --- */
-  .fb-left {
-    flex: 1.2;
-    padding: 40px 50px;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto; /* Allow scroll inside form if needed on small screens */
-  }
-
-  /* Header Area inside Card */
-  .fb-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+  .fb-header {
     margin-bottom: 30px;
   }
 
-  .header-text h1 {
-    font-size: 2rem;
+  .fb-title {
+    font-size: 1.8rem;
     font-weight: 700;
     color: #2d3436;
-    margin: 0 0 5px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    margin-bottom: 8px;
   }
 
-  .header-text p {
-    color: #b2bec3;
-    font-size: 0.95rem;
-    margin: 0;
-  }
-
-  .back-btn {
-    padding: 8px 16px;
-    background: #f8f9fa;
-    border: 1px solid #eee;
-    border-radius: 20px;
-    color: #555;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-  }
-
-  .back-btn:hover {
-    background: #e9ecef;
-    color: #333;
-    transform: translateX(-2px);
-  }
-
-  /* Rating Section */
-  .rating-container {
-    margin-bottom: 30px;
-    text-align: center;
-    background: #fcfcfc;
-    padding: 20px;
-    border-radius: 16px;
-    border: 1px solid #f1f2f6;
-  }
-
-  .rating-title {
-    font-size: 1rem;
-    font-weight: 600;
+  .fb-subtitle {
     color: #636e72;
-    margin-bottom: 15px;
-    display: block;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 
-  .star-row {
+  /* Star Rating */
+  .fb-rating-group {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 12px;
+    margin-bottom: 30px;
+    background: #f1f3f5;
+    padding: 15px;
+    border-radius: 50px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .star-btn {
-    background: transparent;
+    background: none;
     border: none;
     cursor: pointer;
-    font-size: 2.5rem;
-    color: #e0e0e0;
-    transition: transform 0.2s, color 0.2s;
-    padding: 0;
+    font-size: 2rem;
+    color: #dcdde1;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0 5px;
   }
 
+  .star-btn:hover,
   .star-btn.active {
-    color: #ffca28; /* Gold */
-  }
-
-  .star-btn:hover {
+    color: #f1c40f;
     transform: scale(1.2);
-    color: #ffca28;
   }
 
-  /* Input Area */
-  .input-group {
+  /* Text Area */
+  .fb-input-group {
+    position: relative;
     margin-bottom: 25px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    text-align: left;
   }
 
   .fb-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #2d3436;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    display: block;
+    margin-left: 5px;
   }
 
   .fb-textarea {
-    flex: 1;
     width: 100%;
-    padding: 20px;
-    font-size: 1rem;
-    border: 2px solid #f1f2f6;
+    min-height: 140px;
+    padding: 16px;
     border-radius: 16px;
-    background-color: #fff;
+    border: 2px solid #f1f2f6;
+    background: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    color: #2d3436;
     resize: none;
-    font-family: inherit;
-    transition: all 0.3s;
     outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .fb-textarea::placeholder {
+    color: #b2bec3;
   }
 
   .fb-textarea:focus {
     border-color: #66bd9e;
-    background-color: #fff;
-    box-shadow: 0 4px 20px rgba(102, 189, 158, 0.1);
+    box-shadow: 0 0 0 4px rgba(102, 189, 158, 0.15);
   }
 
-  /* Submit Button */
-  .submit-btn {
-    width: 100%;
-    padding: 15px;
-    background: #66bd9e;
-    color: #fff;
-    border: none;
+  /* Actions */
+  .fb-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px;
     border-radius: 12px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 8px 20px rgba(102, 189, 158, 0.3);
+    border: none;
+    transition: all 0.2s ease;
   }
 
-  .submit-btn:hover {
-    background: #479378;
+  .btn-submit {
+    background-color: #66bd9e;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(102, 189, 158, 0.3);
+  }
+
+  .btn-submit:hover {
+    background-color: #57a88a;
     transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(102, 189, 158, 0.4);
+    box-shadow: 0 8px 20px rgba(102, 189, 158, 0.4);
   }
 
-  /* --- RIGHT SIDE (Image) --- */
-  .fb-right {
-    flex: 1;
-    background: linear-gradient(135deg, #f0f9f6 0%, #d4efe7 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+  .btn-cancel {
+    background-color: #fff;
+    color: #636e72;
+    border: 1px solid #dfe6e9;
   }
 
-  /* Decorative Shapes */
-  .fb-right::before {
-    content: '';
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    background: #fff;
-    opacity: 0.4;
-    border-radius: 50%;
-    top: -100px;
-    right: -100px;
+  .btn-cancel:hover {
+    background-color: #f8f9fa;
+    color: #2d3436;
   }
 
-  .fb-right::after {
-    content: '';
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    background: #66bd9e;
-    opacity: 0.1;
-    border-radius: 50%;
-    bottom: 50px;
-    left: 50px;
+  /* Success Animation Placeholder */
+  .success-message {
+    color: #66bd9e;
+    font-weight: 600;
+    margin-top: 15px;
+    display: block;
   }
 
-  .fb-img {
-    width: 85%;
-    max-width: 400px;
-    height: auto;
-    z-index: 2;
-    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.08));
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .feedback-page-wrapper {
-      height: auto;
-      overflow-y: auto;
-    }
-    .feedback-card {
-      flex-direction: column-reverse;
-      height: auto;
-      max-height: none;
-    }
-    .fb-right {
-      height: 250px;
-    }
-    .fb-img {
-      max-width: 200px;
-    }
-    .fb-left {
-      padding: 30px 20px;
-    }
+  @media (max-width: 480px) {
+    .fb-card { padding: 25px; }
+    .fb-title { font-size: 1.5rem; }
+    .star-btn { font-size: 1.6rem; }
   }
 `;
 
 export default function Feedback() {
     const [feedback, setFeedback] = useState("");
     const [rate, setRate] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const nav = useNavigate();
 
     // Inject Styles
@@ -270,9 +196,11 @@ export default function Feedback() {
         const userID = localStorage.getItem("Althub_Id");
         
         if (!feedback && rate === 0) {
-            toast.error("Please provide a rating or description!");
+            toast.error("Please provide a rating or message!");
             return;
         }
+
+        setIsSubmitting(true);
 
         axios({
             url: `${WEB_URL}/api/addFeedback`,
@@ -283,77 +211,70 @@ export default function Feedback() {
                 rate: rate
             }
         }).then((Response) => {
+            setIsSubmitting(false);
             toast.success("Thank you for your feedback!");
-            setFeedback("");
-            setRate(0);
-            nav("/home");
+            // Optional: Delay navigation to show success state
+            setTimeout(() => nav("/home"), 1000); 
         }).catch((error) => {
-            toast.error("Submission Failed");
+            setIsSubmitting(false);
+            toast.error("Submission Failed. Please try again.");
         })
     }
 
     return (
-        <div className="feedback-page-wrapper">
-            <div className="feedback-card">
+        <div className="fb-wrapper">
+            <div className="fb-card">
                 
-                {/* Left: Form Content */}
-                <div className="fb-left">
-                    
-                    {/* Header inside card */}
-                    <div className="fb-header-row">
-                        <div className="header-text">
-                            <h1>Feedback</h1>
-                            <p>We'd love to hear your thoughts.</p>
-                        </div>
-                        <button className="back-btn" onClick={() => nav("/home")}>
-                            <i className="fa-solid fa-arrow-left"></i> Back to Home
-                        </button>
-                    </div>
-
-                    {/* Rating */}
-                    <div className="rating-container">
-                        <label className="rating-title">Rate your experience</label>
-                        <div className="star-row">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <button 
-                                    key={star} 
-                                    className={`star-btn ${rate >= star ? 'active' : ''}`}
-                                    onClick={() => setRate(star)}
-                                    type="button"
-                                >
-                                    <i className={rate >= star ? "fa-solid fa-star" : "fa-regular fa-star"}></i>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Text Area */}
-                    <div className="input-group">
-                        <label className="fb-label">Tell us more</label>
-                        <textarea
-                            className="fb-textarea"
-                            placeholder="What did you like? What can we improve?"
-                            value={feedback}
-                            onChange={(e) => setFeedback(e.target.value)}
-                        />
-                    </div>
-
-                    {/* Submit */}
-                    <button className="submit-btn" onClick={handleFeedBack}>
-                        Submit Feedback
-                    </button>
+                <div className="fb-header">
+                    <img src="/images/Logo1.jpeg" alt="Logo" style={{width: '150px', marginBottom:'15px'}} />
+                    <h1 className="fb-title">Your opinion matters</h1>
+                    <p className="fb-subtitle">
+                        How was your experience with Student Connect? <br/>
+                        Your feedback helps us improve.
+                    </p>
                 </div>
 
-                {/* Right: Visual */}
-                <div className="fb-right">
-                    <img 
-                        src="images/feedback-animate.svg" 
-                        alt="Feedback Illustration" 
-                        className="fb-img" 
+                {/* Star Rating Section */}
+                <div className="fb-rating-group">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <button 
+                            key={star} 
+                            type="button"
+                            className={`star-btn ${rate >= star ? 'active' : ''}`}
+                            onClick={() => setRate(star)}
+                            title={`${star} stars`}
+                        >
+                            <i className={rate >= star ? "fa-solid fa-star" : "fa-regular fa-star"}></i>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Text Area Section */}
+                <div className="fb-input-group">
+                    <label className="fb-label">Additional Feedback (Optional)</label>
+                    <textarea
+                        className="fb-textarea"
+                        placeholder="Tell us what you liked or what we can do better..."
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
                     />
+                </div>
+
+                {/* Buttons */}
+                <div className="fb-actions">
+                    <button className="btn btn-cancel" onClick={() => nav("/home")}>
+                        Cancel
+                    </button>
+                    <button 
+                        className="btn btn-submit" 
+                        onClick={handleFeedBack}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Sending..." : "Submit Feedback"}
+                    </button>
                 </div>
 
             </div>
         </div>
-    )
+    );
 }

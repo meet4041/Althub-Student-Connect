@@ -37,7 +37,7 @@ const styles = `
   .preview-grid { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
   .preview-media { height: 120px; width: auto; max-width: 200px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
   .post-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; padding-bottom: 10px; border: 1px solid #e5e7eb; }
-  .post-header { padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
+  .post-header { margin-right:435px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
   .post-header img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
   .post-meta h4 { margin: 0; font-size: 1.05rem; font-weight: 600; color: #333; }
   .post-meta span { font-size: 0.85rem; color: #999; }
@@ -84,10 +84,10 @@ export default function Home({ socket }) {
   const [aids, setAids] = useState([]);
   const [fileList, setFileList] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [hasEducation, setHasEducation] = useState(true); 
-  const [showEduModal, setShowEduModal] = useState(false); 
+  const [hasEducation, setHasEducation] = useState(true);
+  const [showEduModal, setShowEduModal] = useState(false);
   const userid = localStorage.getItem("Althub_Id");
-  
+
   const emptyEducationList = useMemo(() => [], []);
 
   useEffect(() => {
@@ -109,14 +109,14 @@ export default function Home({ socket }) {
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 1280;
           const scaleSize = MAX_WIDTH / img.width;
-          if (scaleSize < 1) { canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; } 
+          if (scaleSize < 1) { canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; }
           else { canvas.width = img.width; canvas.height = img.height; }
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           ctx.canvas.toBlob((blob) => {
             const newFile = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
             resolve(newFile);
-          }, 'image/jpeg', 0.7); 
+          }, 'image/jpeg', 0.7);
         };
       };
     });
@@ -149,9 +149,9 @@ export default function Home({ socket }) {
     return axios.post(`${WEB_URL}/api/getEducation`, { userid: userid })
       .then((Response) => {
         if (Response.data.data && Response.data.data.length === 0) {
-            setHasEducation(false);
+          setHasEducation(false);
         } else {
-            setHasEducation(true);
+          setHasEducation(true);
         }
       })
       .catch((error) => console.error("Error checking education:", error));
@@ -174,32 +174,32 @@ export default function Home({ socket }) {
   // --- UPDATED FILE SELECTION HANDLER ---
   const imgChange = (e) => {
     const files = e.target.files;
-    
+
     // Check if any file was selected
     if (!files || files.length === 0) return;
 
     for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // 1. Check Image Size (Limit: 3MB)
-        if (file.type.startsWith("image/")) {
-            if (file.size > 3 * 1024 * 1024) { // 3MB in bytes
-                toast.error("Image size cannot exceed 3MB");
-                e.target.value = ""; // Clear file input
-                setFileList(null);
-                return;
-            }
+      const file = files[i];
+
+      // 1. Check Image Size (Limit: 3MB)
+      if (file.type.startsWith("image/")) {
+        if (file.size > 3 * 1024 * 1024) { // 3MB in bytes
+          toast.error("Image size cannot exceed 3MB");
+          e.target.value = ""; // Clear file input
+          setFileList(null);
+          return;
         }
-        
-        // 2. Check Video Size (Limit: 20MB)
-        else if (file.type.startsWith("video/")) {
-            if (file.size > 20 * 1024 * 1024) { // 20MB in bytes
-                toast.error("Video size cannot exceed 20MB");
-                e.target.value = ""; // Clear file input
-                setFileList(null);
-                return;
-            }
+      }
+
+      // 2. Check Video Size (Limit: 20MB)
+      else if (file.type.startsWith("video/")) {
+        if (file.size > 20 * 1024 * 1024) { // 20MB in bytes
+          toast.error("Video size cannot exceed 20MB");
+          e.target.value = ""; // Clear file input
+          setFileList(null);
+          return;
         }
+      }
     }
 
     setFileList(files);
@@ -217,22 +217,22 @@ export default function Home({ socket }) {
     body.append("lname", user.lname);
     body.append("profilepic", user.profilepic || "");
     if (fileList) {
-        const filesArray = Array.from(fileList);
-        const compressedFiles = await Promise.all(filesArray.map(file => compressImage(file)));
-        compressedFiles.forEach((file) => { body.append(`photos`, file, file.name); });
+      const filesArray = Array.from(fileList);
+      const compressedFiles = await Promise.all(filesArray.map(file => compressImage(file)));
+      compressedFiles.forEach((file) => { body.append(`photos`, file, file.name); });
     }
     axios({ url: `${WEB_URL}/api/addPost`, method: "post", headers: { "Content-type": "multipart/form-data" }, data: body })
       .then((Response) => {
         toast.success("Post Uploaded!!");
         if (user && user.followers && user.followers.length > 0) {
-            user.followers.forEach((followerId) => {
-                socket.emit("sendNotification", { receiverid: followerId, title: "New Post", msg: `${user.fname} ${user.lname} added a new post` });
-            });
+          user.followers.forEach((followerId) => {
+            socket.emit("sendNotification", { receiverid: followerId, title: "New Post", msg: `${user.fname} ${user.lname} added a new post` });
+          });
         }
         setFileList(null); setDescription(""); setUploading(false); getPost();
         // Clear input element manually
         const fileInput = document.getElementById("myFileInput");
-        if(fileInput) fileInput.value = "";
+        if (fileInput) fileInput.value = "";
       })
       .catch((error) => { toast.error("Something went wrong!!"); setUploading(false); });
   };
@@ -241,12 +241,12 @@ export default function Home({ socket }) {
 
   const handleLike = async (elem) => {
     await axios.put(`${WEB_URL}/api/like/${elem._id}`, { userId: userid })
-    .then((response) => {
-      if (userid !== elem.userid && response.data.msg === "Like") {
-        socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` }); 
-      }
-      getPost(); 
-    }).catch((error) => console.error("Error:", error));
+      .then((response) => {
+        if (userid !== elem.userid && response.data.msg === "Like") {
+          socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` });
+        }
+        getPost();
+      }).catch((error) => console.error("Error:", error));
   };
 
   const formatPostTime = (timestamp) => {
@@ -264,7 +264,7 @@ export default function Home({ socket }) {
   const calWidth = (aid, claimed) => { const ans = Number(claimed) / Number(aid) * 100; return ans > 100 ? "100%" : `${ans.toFixed(2)}%`; }
 
   const now = new Date();
-  const upcomingEvents = events.filter(e => new Date(e.date) > now).slice(0, 3); 
+  const upcomingEvents = events.filter(e => new Date(e.date) > now).slice(0, 3);
 
   return (
     <div className="home-wrapper">
@@ -290,7 +290,7 @@ export default function Home({ socket }) {
             <div className="education-alert">
               <div className="alert-content">
                 <i className="fa-solid fa-triangle-exclamation"></i>
-                <div><strong>Complete Your Profile</strong><div style={{fontSize: '0.9rem'}}>Please add your education details to help us connect you better.</div></div>
+                <div><strong>Complete Your Profile</strong><div style={{ fontSize: '0.9rem' }}>Please add your education details to help us connect you better.</div></div>
               </div>
               <button className="alert-btn" onClick={() => setShowEduModal(true)}>Add Education</button>
             </div>
@@ -298,13 +298,13 @@ export default function Home({ socket }) {
 
           <div className="create-post-card">
             <div className="cp-top">
-              <img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} className="cp-avatar" alt="" loading="lazy"/>
+              <img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} className="cp-avatar" alt="" loading="lazy" />
               <input type="text" className="cp-input" placeholder={`What's on your mind, ${user.fname || 'User'}?`} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             {fileList && fileList.length > 0 && (
               <div className="preview-grid">
                 {Array.from(fileList).map((elem, index) => (
-                  <div key={index} style={{position: 'relative'}}>
+                  <div key={index} style={{ position: 'relative' }}>
                     {isVideo(elem) ? <video src={window.URL.createObjectURL(elem)} className="preview-media" muted /> : <img src={window.URL.createObjectURL(elem)} alt="" className="preview-media" />}
                   </div>
                 ))}
@@ -344,20 +344,20 @@ export default function Home({ socket }) {
 
         <div className="sidebar-right">
           <div className="widget-card">
-            <div className="widget-title"><i className="fa-solid fa-calendar-day" style={{color: '#66bd9e'}}></i> Upcoming Events</div>
+            <div className="widget-title"><i className="fa-solid fa-calendar-day" style={{ color: '#66bd9e' }}></i> Upcoming Events</div>
             {upcomingEvents.length > 0 ? upcomingEvents.map((elem) => (
               <div key={elem._id} className="event-item">
-                <img src={elem.photos && elem.photos.length > 0 ? `${WEB_URL}${elem.photos[0]}` : "images/event1.png"} className="event-thumb" alt="" loading="lazy"/>
+                <img src={elem.photos && elem.photos.length > 0 ? `${WEB_URL}${elem.photos[0]}` : "images/event1.png"} className="event-thumb" alt="" loading="lazy" />
                 <div className="event-details"><div className="event-title">{elem.title}</div><div className="event-meta"><span>{formatDate(elem.date)}</span><span>{formatTime(elem.date)}</span></div></div>
               </div>
-            )) : <span style={{color:'#999', fontSize:'0.9rem'}}>No upcoming events</span>}
+            )) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No upcoming events</span>}
           </div>
           {aids.length > 0 && (
             <div className="widget-card">
-              <div className="widget-title"><i className="fa-solid fa-hand-holding-dollar" style={{color: '#66bd9e'}}></i> Scholarship Aid</div>
+              <div className="widget-title"><i className="fa-solid fa-hand-holding-dollar" style={{ color: '#66bd9e' }}></i> Scholarship Aid</div>
               {aids.slice(0, 3).map((elem) => (
                 <div key={elem._id} className="aid-item">
-                  <img src={elem.image ? `${WEB_URL}${elem.image}` : "images/profile1.png"} className="aid-img" alt="" loading="lazy"/>
+                  <img src={elem.image ? `${WEB_URL}${elem.image}` : "images/profile1.png"} className="aid-img" alt="" loading="lazy" />
                   <div className="aid-content">
                     <div className="aid-header"><span>{elem.name}</span><span>{calWidth(elem.aid, elem.claimed)}</span></div>
                     <div className="aid-progress-bg"><div className="aid-progress-fill" style={{ width: calWidth(elem.aid, elem.claimed) }}></div></div>

@@ -27,7 +27,10 @@ const styles = `
   .sp-name:hover { color: #66bd9e; }
   .sp-alumni-badge { background-color: #e3f2fd; color: #1565c0; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; border: 1px solid #90caf9; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
   .sp-location { font-size: 0.85rem; color: #777; margin-bottom: 5px; min-height: 20px; }
+  
+  /* --- NEW STYLE FOR EDUCATION --- */
   .sp-education { font-size: 0.8rem; color: #66bd9e; font-weight: 500; margin-bottom: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
   .sp-socials { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
   .sp-social-icon { font-size: 1.2rem; color: #bbb; transition: color 0.3s; }
   .sp-social-icon.github:hover { color: #333; }
@@ -53,7 +56,6 @@ export default function SearchProfile({ socket }) {
   const [modal, setModal] = useState(false);
   const closeModal = () => setModal(false);
   
-  // Filters
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
   const [degree, setDegree] = useState("");
@@ -77,11 +79,8 @@ export default function SearchProfile({ socket }) {
     }
   }, [userID]);
 
-  // --- REUSABLE SEARCH FUNCTION ---
   const performSearch = (overrideParams = {}) => {
     setIsSearching(true);
-    
-    // Combine current state with any overrides (e.g. name search)
     const payload = {
         search: overrideParams.name !== undefined ? overrideParams.name : name,
         location: overrideParams.add !== undefined ? overrideParams.add : add,
@@ -100,24 +99,21 @@ export default function SearchProfile({ socket }) {
       .catch((error) => {
         console.log(error);
         setIsSearching(false);
-        // Optional: clear results on error
         setUsers([]);
         setShowUsers([]);
       });
   };
 
-  // Debounced Name Search
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-        performSearch({ name: name }); // Search with current filters + new name
+        performSearch({ name: name });
     }, 300);
     return () => clearTimeout(delayDebounceFn);
   }, [name]); 
 
-  // --- UPDATED: Apply Filters via API ---
   const handleFilter = () => {
     closeModal();
-    performSearch(); // Trigger search with all current filter states (add, skill, degree, year)
+    performSearch();
   };
 
   const getSocialLink = (input, platform) => {
@@ -139,7 +135,6 @@ export default function SearchProfile({ socket }) {
           </div>
           <button className="sp-filter-btn" onClick={() => setModal(true)} title="Filters">
             <i className="fa-solid fa-sliders"></i>
-            {/* Show dot if any filter is active */}
             {(add || skill || degree || year) && <div className="filter-active-dot"></div>}
           </button>
         </div>
@@ -167,7 +162,7 @@ export default function SearchProfile({ socket }) {
                   
                   <p className="sp-location">{elem.city ? elem.city : ""}{elem.state ? `, ${elem.state}` : ""}{(!elem.city && !elem.state) ? "Student" : ""}</p>
 
-                  {/* --- NEW: Education Info --- */}
+                  {/* --- NEW SECTION: COURSE & YEAR --- */}
                   <div className="sp-education">
                     {elem.latestCourse && (
                       <span>
@@ -214,8 +209,8 @@ export default function SearchProfile({ socket }) {
             closeModal={closeModal} 
             add={add} setAdd={setAdd} 
             skill={skill} setSkill={setSkill} 
-            degree={degree} setDegree={setDegree} // Pass New Props
-            year={year} setYear={setYear}         // Pass New Props
+            degree={degree} setDegree={setDegree} 
+            year={year} setYear={setYear} 
             handleFilter={handleFilter} 
         /> 
       )}
