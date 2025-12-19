@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser"); // SECURE: Added to handle JWT cookies
 const auth = require("../middleware/auth"); // SECURE: Custom middleware to verify identity
 const { uploadSingle } = require('../db/storage');
+const requireAuth = require("../middleware/auth"); 
 
 // Basic Middleware Configuration
 institute_route.use(cookieParser()); // SECURE: Enables server to read secure cookies
@@ -24,7 +25,7 @@ institute_route.get('/getInstitutes', institute_controller.getInstitues);
 institute_route.post('/instituteUpdatePassword', auth, institute_controller.instituteUpdatePassword);
 institute_route.post('/instituteForgetPassword', institute_controller.instituteForgetPassword);
 institute_route.post('/instituteResetPassword', institute_controller.instituteResetPassword);
-institute_route.post('/instituteUpdate', auth, institute_controller.updateInstitute);
+institute_route.post('/instituteUpdate', requireAuth, institute_controller.updateInstitute);
 institute_route.delete('/deleteInstitute/:id', auth, institute_controller.deleteInstitute);
 institute_route.get('/getInstituteById/:_id', auth, institute_controller.searchInstituteById);
 institute_route.post('/inviteUser', auth, institute_controller.inviteUser);
