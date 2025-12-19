@@ -4,32 +4,43 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const compression = require("compression");
 const http = require("http");
-const helmet = require("helmet"); // Added for security headers
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit"); // SECURE: Added for brute-force protection
 const { connectToMongo } = require("./db/conn");
 
 const app = express();
 const port = process.env.PORT || 5001;
 
 // --- SECURITY & SERVER CONFIGURATION ---
-// Required for Render to handle secure cookies over HTTPS
 app.set("trust proxy", 1); 
 
-app.use(helmet()); // Protects against common web vulnerabilities
-app.use(compression()); // Compresses responses for better performance
+app.use(helmet()); 
+app.use(compression()); 
 app.use(express.json());
 app.use(cookieParser());
 
+// --- BRUTE FORCE PROTECTION (RATE LIMITING) ---
+// This configuration freezes an IP for 1 hour after 10 failed attempts
+const loginLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 10, // Limit each IP to 10 requests per window
+  message: {
+    success: false,
+    msg: "Too many login attempts. Your access is frozen for 1 hour. Please try again later."
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
 // --- SECURE CORS CONFIGURATION ---
-// Add any additional staging or production URLs to this list
 const allowedOrigins = [
   'https://althub-student-connect.vercel.app', 
-  'https://althub-admin.vercel.app', // Added admin panel origin
+  'https://althub-admin.vercel.app',
   'http://localhost:3000'
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -37,13 +48,13 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // Crucial for sending/receiving secure JWT cookies
+  credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle pre-flight requests
+app.options('*', cors(corsOptions));
 
 // --- ROUTE IMPORTS ---
 const user_route = require("./routes/userRoute");
@@ -61,6 +72,11 @@ const company_route = require("./routes/companyRoute");
 const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
+
+// --- PROTECTING LOGIN ROUTES ---
+// Apply the limiter only to login endpoints to prevent locking out valid users from other features
+app.use("/api/adminLogin", loginLimiter);
+app.use("/api/instituteLogin", loginLimiter);
 
 // --- ROUTE MOUNTING ---
 app.use("/api", user_route);
@@ -83,7 +99,7 @@ app.use("/api", images_route);
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
 app.use(express.static("public"));
 
-// Global Error Handler (Must be after all routes)
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Server Error:", err.stack);
   res.status(err.status || 500).json({
@@ -98,7 +114,7 @@ const io = require("socket.io")(server, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true // Crucial for cookie-based auth in Socket.io
+    credentials: true 
   },
   transports: ["websocket", "polling"]
 });
@@ -119,8 +135,6 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-  console.log(`New connection: ${socket.id}`);
-
   socket.on("addUser", (userId) => {
     if (userId) {
       addUser(userId, socket.id);
@@ -145,7 +159,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     removeUser(socket.id);
     io.emit("getUsers", users);
-    console.log(`Disconnected: ${socket.id}`);
   });
 });
 
@@ -158,10 +171,9 @@ connectToMongo()
   })
   .catch(err => {
     console.error('CRITICAL: Failed to connect to MongoDB:', err.message);
-    process.exit(1); // Stop server if database connection fails
+    process.exit(1); 
   });
 
-// Handle unhandled rejections globally
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err.message);
   server.close(() => process.exit(1));

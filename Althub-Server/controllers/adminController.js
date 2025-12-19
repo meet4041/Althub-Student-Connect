@@ -91,7 +91,7 @@ const adminlogin = async (req, res) => {
                 });
 
                 const { password: _, ...adminResult } = adminData._doc;
-                res.status(200).send({ success: true, msg: "Login Successful", data: adminResult, token: tokenData });
+                res.status(401).send({ success: true, msg: "Login Successful", data: adminResult, token: tokenData });
             } else {
                 res.status(401).send({ success: false, msg: "Incorrect password" });
             }
