@@ -3,14 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../../services/axios'; 
-import { ALTHUB_API_URL } from '../../baseURL';
 import Loader from '../layout/Loader';
 import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const Profile = () => {
     const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
-    const navigate = useNavigate(); // Initialize navigate hook
+    const navigate = useNavigate(); 
     
     const [changepass, setChangePass] = useState({
         admin_id: admin_Id || '',
@@ -22,9 +21,13 @@ const Profile = () => {
     const [profileInfo, setProfileInfo] = useState({
         name: "",
         email: "",
-        phone: "",
-        profilepic: ""
+        phone: ""
     });
+
+    // States for password visibility toggles
+    const [showOld, setShowOld] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -40,40 +43,16 @@ const Profile = () => {
                 setProfileInfo({
                     name: data.name || "",
                     email: data.email || "",
-                    phone: data.phone || "",
-                    profilepic: data.profilepic || ""
+                    phone: data.phone || ""
                 });
                 localStorage.setItem('AlmaPlus_admin_Name', data.name);
             }
-        }).catch(err => {
-            console.error("Profile Fetch Error:", err);
-        });
+        }).catch(err => console.error("Profile Fetch Error:", err));
     }, [admin_Id]);
 
     useEffect(() => {
         getData();
     }, [getData]);
-
-    const handleImg = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        var body = new FormData();
-        body.append('profilepic', file);
-        
-        axiosInstance.post('/api/uploadAdminImage', body, {
-            headers: { 'Content-Type': "multipart/form-data" },
-        }).then((response) => {
-            if (response.data.success === true) {
-                const newUrl = response.data.data.url;
-                setProfileInfo(prev => ({
-                    ...prev,
-                    profilepic: newUrl
-                }));
-                toast.info("Image selected. Click 'Update Profile' to save.");
-            }
-        });
-    };
 
     const submitHandler = (e) => {
         e.preventDefault();
@@ -82,8 +61,7 @@ const Profile = () => {
             id: admin_Id,
             name: profileInfo.name,
             phone: profileInfo.phone,
-            email: profileInfo.email,
-            profilepic: profileInfo.profilepic
+            email: profileInfo.email
         }).then((response) => {
             if (response.data.success === true) {
                 toast.success('Profile Updated Successfully');
@@ -92,9 +70,9 @@ const Profile = () => {
                 setErrors({});
             } else {
                 setDisable(false);
-                toast.error('Something went wrong');
+                toast.error('Update failed');
             }
-        }).catch((error) => {
+        }).catch(() => {
             setDisable(false);
             toast.error("Error updating profile");
         })
@@ -114,16 +92,10 @@ const Profile = () => {
                 newpassword: changepass.newpassword
             }).then((response) => {
                 if (response.data.success === true) {
-                    toast.success('Password Updated Successfully.');
-                    
-                    // AUTO LOGOUT AND REDIRECT
+                    toast.success('Password Updated. System logging out...');
                     setTimeout(() => {
-                        // Clear all local admin data
-                        localStorage.removeItem("AlmaPlus_admin_Id");
-                        localStorage.removeItem("AlmaPlus_admin_Name");
-                        
-                        // Redirect to login page
-                        navigate('/');
+                        localStorage.clear(); 
+                        navigate('/'); 
                     }, 2000); 
                 } else {
                     setDisable2(false);
@@ -139,9 +111,9 @@ const Profile = () => {
     const validateTwo = () => {
         let errors = {};
         let isValid = true;
-        if (!changepass.oldpassword) { isValid = false; errors["oldpassword_err"] = "Please Enter Old Password"; }
-        if (!changepass.newpassword) { isValid = false; errors["newpassword_err"] = "Please Enter New Password"; }
-        if (changepass.newpassword !== changepass.confirmpassword) { isValid = false; errors["confirmpassword_err"] = "Password Doesn't Match"; }
+        if (!changepass.oldpassword) { isValid = false; errors["oldpassword_err"] = "Old password is required"; }
+        if (!changepass.newpassword) { isValid = false; errors["newpassword_err"] = "New password is required"; }
+        if (changepass.newpassword !== changepass.confirmpassword) { isValid = false; errors["confirmpassword_err"] = "Passwords do not match"; }
         setErrors(errors);
         return isValid;
     };
@@ -163,65 +135,102 @@ const Profile = () => {
                         <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
                         <li className="breadcrumb-item active">Profile</li>
                     </ol>
-                    <h1 className="page-header">Profile</h1>
+                    <h1 className="page-header text-dark font-weight-bold">Admin Profile</h1>
+                    
                     <div className="row">
+                        {/* GENERAL INFO */}
                         <div className="col-xl-6">
-                            <div className="panel panel-inverse">
-                                <div className="panel-heading">
-                                    <h4 className="panel-title">Profile Setting</h4>
+                            <div className="panel panel-inverse border-0 shadow-sm rounded-lg">
+                                <div className="panel-heading bg-white border-bottom py-3">
+                                    <h4 className="panel-title text-dark">General Information</h4>
                                 </div>
                                 <div className="panel-body">
                                     <form onSubmit={submitHandler}>
-                                        <div className="form-group">
-                                            <label>Name:</label>
-                                            <input type="text" className="form-control" name="name" value={profileInfo.name} onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} />
+                                        <div className="form-group mb-3">
+                                            <label className="font-weight-600">Full Name</label>
+                                            <input type="text" className="form-control" name="name" value={profileInfo.name} onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} required />
                                         </div>
-                                        <div className="form-group">
-                                            <label>Phone Number:</label>
+                                        <div className="form-group mb-3">
+                                            <label className="font-weight-600">Phone Number</label>
                                             <input type="number" className="form-control" name="phone" value={profileInfo.phone} onChange={(e) => setProfileInfo({ ...profileInfo, phone: e.target.value })} />
                                         </div>
-                                        <div className="form-group">
-                                            <label>Email:</label>
-                                            <input type="text" className="form-control" name="email" value={profileInfo.email} onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} />
+                                        <div className="form-group mb-4">
+                                            <label className="font-weight-600">Email Address</label>
+                                            <input type="email" className="form-control" name="email" value={profileInfo.email} onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} required />
                                         </div>
-                                        <div className="form-group">
-                                            <label>Profile Pic:</label>
-                                            <input type="file" className="form-control" onChange={handleImg} />
-                                            {profileInfo.profilepic && (
-                                                <img src={`${ALTHUB_API_URL}${profileInfo.profilepic}`} className="m-t-10" style={{ width: "84px", height: "84px", borderRadius: "50%", objectFit: 'cover' }} alt='profile' />
-                                            )}
-                                        </div>
-                                        <button type="submit" className="btn btn-success" disabled={disable}>
-                                            {disable ? 'Updating...' : 'Update Profile'}
+                                        <button type="submit" className="btn btn-primary px-4 shadow-sm" disabled={disable}>
+                                            {disable ? 'Updating...' : 'Save Changes'}
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         </div>
 
+                        {/* PASSWORD SECTION */}
                         <div className="col-xl-6">
-                            <div className="panel panel-inverse">
-                                <div className="panel-heading">
-                                    <h4 className="panel-title">Change Password</h4>
+                            <div className="panel panel-inverse border-0 shadow-sm rounded-lg">
+                                <div className="panel-heading bg-white border-bottom py-3">
+                                    <h4 className="panel-title text-dark">Change Password</h4>
                                 </div>
                                 <div className="panel-body">
                                     <form onSubmit={submitHandlerTwo}>
-                                        <div className="form-group">
-                                            <label>Old Password:</label>
-                                            <input type="password" className="form-control" name="oldpassword" onChange={handleChange} value={changepass.oldpassword} />
-                                            <div className="text-danger">{errors.oldpassword_err}</div>
+                                        {/* OLD PASSWORD */}
+                                        <div className="form-group mb-3">
+                                            <label className="font-weight-600">Old Password</label>
+                                            <div className="input-group-custom">
+                                                <input 
+                                                    type={showOld ? "text" : "password"} 
+                                                    className={`form-control ${errors.oldpassword_err ? 'is-invalid' : ''}`} 
+                                                    name="oldpassword" 
+                                                    onChange={handleChange} 
+                                                    value={changepass.oldpassword} 
+                                                />
+                                                <button type="button" className="eye-btn" onClick={() => setShowOld(!showOld)}>
+                                                    <i className={`fa ${showOld ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                </button>
+                                            </div>
+                                            {errors.oldpassword_err && <small className="text-danger">{errors.oldpassword_err}</small>}
                                         </div>
-                                        <div className="form-group">
-                                            <label>New Password:</label>
-                                            <input type="password" className="form-control" name="newpassword" onChange={handleChange} value={changepass.newpassword} />
-                                            <div className="text-danger">{errors.newpassword_err}</div>
+
+                                        {/* NEW PASSWORD */}
+                                        <div className="form-group mb-3">
+                                            <label className="font-weight-600">New Password</label>
+                                            <div className="input-group-custom">
+                                                <input 
+                                                    type={showNew ? "text" : "password"} 
+                                                    className={`form-control ${errors.newpassword_err ? 'is-invalid' : ''}`} 
+                                                    name="newpassword" 
+                                                    onChange={handleChange} 
+                                                    value={changepass.newpassword} 
+                                                />
+                                                <button type="button" className="eye-btn" onClick={() => setShowNew(!showNew)}>
+                                                    <i className={`fa ${showNew ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                </button>
+                                            </div>
+                                            {errors.newpassword_err && <small className="text-danger">{errors.newpassword_err}</small>}
                                         </div>
-                                        <div className="form-group">
-                                            <label>Confirm Password:</label>
-                                            <input type="password" className="form-control" name="confirmpassword" onChange={handleChange} value={changepass.confirmpassword} />
-                                            <div className="text-danger">{errors.confirmpassword_err}</div>
+
+                                        {/* CONFIRM PASSWORD */}
+                                        <div className="form-group mb-4">
+                                            <label className="font-weight-600">Confirm New Password</label>
+                                            <div className="input-group-custom">
+                                                <input 
+                                                    type={showConfirm ? "text" : "password"} 
+                                                    className={`form-control ${errors.confirmpassword_err ? 'is-invalid' : ''}`} 
+                                                    name="confirmpassword" 
+                                                    onChange={handleChange} 
+                                                    value={changepass.confirmpassword} 
+                                                />
+                                                <button type="button" className="eye-btn" onClick={() => setShowConfirm(!showConfirm)}>
+                                                    <i className={`fa ${showConfirm ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                </button>
+                                            </div>
+                                            {errors.confirmpassword_err && <small className="text-danger">{errors.confirmpassword_err}</small>}
                                         </div>
-                                        <button type="submit" className="btn btn-primary" disabled={disable2}>{disable2 ? 'Updating...' : 'Change Password'}</button>
+
+                                        <button type="submit" className="btn btn-success px-4 shadow-sm" disabled={disable2}>
+                                            {disable2 ? 'Processing...' : 'Update Password'}
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -230,6 +239,27 @@ const Profile = () => {
                 </div>
                 <Footer />
             </div>
+            
+            <style dangerouslySetInnerHTML={{__html: `
+                .font-weight-600 { font-weight: 600; font-size: 13px; color: #4a5568; }
+                .input-group-custom { position: relative; }
+                .form-control { border-radius: 8px; padding: 10px 15px; background: #f8fafc; border: 1px solid #e2e8f0; }
+                .form-control:focus { background: #fff; border-color: #3182ce; box-shadow: none; }
+                
+                .eye-btn {
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: none;
+                    border: none;
+                    color: #a0aec0;
+                    cursor: pointer;
+                    z-index: 10;
+                    outline: none !important;
+                }
+                .eye-btn:hover { color: #3182ce; }
+            `}} />
         </>
     );
 };

@@ -6,173 +6,234 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [loginInfo, setLoginInfo] = useState({
-        email: '',
-        password: ''
-    });
+    const [loginInfo, setLoginInfo] = useState({ email: '', password: '' });
     const [check, setCheck] = useState(false);
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
 
+    // NEW STATE: Toggle password visibility
+    const [showPassword, setShowPassword] = useState(false);
+
     const InputEvent = (e) => {
         const { name, value } = e.target;
-        setLoginInfo(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
-    }
-
-    const handleRememberMe = (e) => {
-        setCheck(e.target.checked);
+        setLoginInfo(prev => ({ ...prev, [name]: value }));
+        if (errors[`${name}_err`]) setErrors(prev => ({ ...prev, [`${name}_err`]: null }));
     }
 
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-
-            var bodyFormData = new URLSearchParams();
+            const bodyFormData = new URLSearchParams();
             bodyFormData.append('auth_code', "Althub");
             bodyFormData.append('email', loginInfo.email);
             bodyFormData.append('password', loginInfo.password);
 
             axiosInstance.post('/api/adminLogin', bodyFormData)
                 .then((response) => {
-                    if (response.data.success === true && response.data.data) {
-                        toast.success('Login Successfully');
-
+                    if (response.data.success === true) {
+                        toast.success('Authentication Successful');
                         const adminData = response.data.data;
-
-                        // FIX: Store ALL necessary fields to prevent 'undefined' crashes in Menu/Header
                         localStorage.setItem('AlmaPlus_admin_Id', adminData._id);
-                        localStorage.setItem('AlmaPlus_admin_Email', adminData.email);
                         localStorage.setItem('AlmaPlus_admin_Name', adminData.name || 'Admin');
-                        localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic || '');
                         localStorage.setItem('AlmaPlus_admin_Token', response.data.token);
 
-                        if (check === true) {
+                        if (check) {
                             localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Enabled');
                             localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email);
-                        } else {
-                            localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Disabled');
                         }
-
-                        setDisable(false);
-                        // Using replace: true prevents the user from going back to login page
-                        navigate('/dashboard', { replace: true });
+                        setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
                     } else {
                         setDisable(false);
-                        toast.error(response.data.msg || 'Incorrect Credentials');
+                        toast.error(response.data.msg || 'Invalid Credentials');
                     }
                 })
-                .catch((error) => {
+                .catch(() => {
                     setDisable(false);
-                    console.error("Login Error:", error);
-                    toast.error(error.response?.data?.msg || 'Login Failed');
+                    toast.error('Invalid Credentials');
                 });
         }
     }
 
     const validate = () => {
         let errors = {};
-        let isValid = true;
-        if (!loginInfo.email) {
-            isValid = false;
-            errors["email_err"] = "Please Enter Email";
-        }
-        if (!loginInfo.password) {
-            isValid = false;
-            errors["password_err"] = "Please Enter Password";
-        }
+        if (!loginInfo.email) errors["email_err"] = "Username required";
+        if (!loginInfo.password) errors["password_err"] = "Password required";
         setErrors(errors);
-        return isValid;
+        return Object.keys(errors).length === 0;
     }
 
     useEffect(() => {
-        if (localStorage.getItem("AlmaPlus_admin_Id")) {
-            navigate('/dashboard');
-        }
-
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        var element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
-
-        if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled') {
+        if (localStorage.getItem("AlmaPlus_admin_Id")) navigate('/dashboard');
+        const savedEmail = localStorage.getItem('AlmaPlus_Admin_Email');
+        if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled' && savedEmail) {
             setCheck(true);
-            const savedEmail = localStorage.getItem('AlmaPlus_Admin_Email');
-            if (savedEmail) {
-                setLoginInfo(prev => ({ ...prev, email: savedEmail }));
-            }
+            setLoginInfo(prev => ({ ...prev, email: savedEmail }));
         }
     }, [navigate]);
 
     return (
-        <>
-            <ToastContainer />
-            <div id="page-loader" className="fade show">
-                <span className="spinner"></span>
-            </div>
-            <div className="login-cover">
-                <div className="login-cover-image" style={{ backgroundImage: "url(assets/img/login-bg/login-bg-13.jpg)" }} data-id="login-cover-image"></div>
-                <div className="login-cover-bg"></div>
-            </div>
-            <div id="page-container" className="fade">
-                <div className="login login-v2" data-pageload-addclassname="animated fadeIn">
-                    <div className="login-header">
-                        <div className="brand">
-                            <img src='Logo1.png' style={{ width: '150px', height: '70px', borderRadius: "8px" }} alt="logo" />
-                            <b>Admin</b>
-                            <small>Login for Althub Admin panel</small>
-                        </div>
-                        <div className="icon">
-                            <i className="fa fa-lock"></i>
-                        </div>
-                    </div>
-                    <div className="login-content">
-                        <form onSubmit={submitHandler} >
-                            <div className="form-group m-b-20">
-                                <input type="text" className="form-control form-control-lg" placeholder="Email Address" name="email" onChange={InputEvent} value={loginInfo.email} />
-                                <div className="text-danger">{errors.email_err}</div>
-                            </div>
-                            <div className="form-group m-b-20">
-                                <input type="password" className="form-control form-control-lg my-3" placeholder="Password" name="password" onChange={InputEvent} value={loginInfo.password} />
+        <div className="soft-login-wrapper">
+            <ToastContainer autoClose={2000} />
 
-                                <div className="text-danger">{errors.password_err}</div>
-                            </div>
-                            <div className="text-right">
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/forgot-password')}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        padding: 0,
-                                        font: 'inherit',
-                                        marginBottom: '10px'
-                                    }}
-                                >
-                                    Forgot Password?
-                                </button>
-                            </div>
-                            <div className="form-group m-b-20">
-                                <label className="text-white">
-                                    <input type='checkbox' checked={check} onChange={handleRememberMe} /> Remember Me
-                                </label>
-                            </div>
-                            <div className="login-buttons">
-                                <button type="submit" className="btn btn-success btn-block btn-lg" disabled={disable}>
-                                    {disable ? 'Processing...' : 'Sign In'}
-                                </button>
-                            </div>
-                        </form>
+            <div className="login-card shadow-lg">
+                <div className="login-header text-center">
+                    <img src='Logo1.png' alt="Logo" className="brand-logo" />
+                    <h2 className="dau-brand">DAU <span className="admin-light">ADMIN</span></h2>
+                    <p className="login-hint">Please enter your account details</p>
+                </div><br></br>
+
+                <form onSubmit={submitHandler} className="login-form">
+                    <div className={`input-field ${errors.email_err ? 'has-error' : ''}`}>
+                        <label>Email Address</label>
+                        <div className="input-wrapper">
+                            <i className="fa fa-envelope icon-left"></i>
+                            <input
+                                type="text"
+                                name="email"
+                                value={loginInfo.email}
+                                onChange={InputEvent}
+                                placeholder="name@example.com"
+                            />
+                        </div>
                     </div>
+
+                    <div className={`input-field mt-3 ${errors.password_err ? 'has-error' : ''}`}>
+                        <label>Password</label>
+                        <div className="input-wrapper">
+                            <i className="fa fa-lock icon-left"></i>
+                            <input
+                                // DYNAMIC TYPE: Switches between password and text
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={loginInfo.password}
+                                onChange={InputEvent}
+                                placeholder="••••••••"
+                                style={{ paddingRight: '45px' }} // Space for the eye button
+                            />
+                            {/* EYE BUTTON */}
+                            <button
+                                type="button"
+                                className="password-toggle-btn"
+                                onClick={() => setShowPassword(!showPassword)}
+                                tabIndex="-1"
+                            >
+                                <i className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="options-row d-flex justify-content-between align-items-center mt-3">
+                        <label className="custom-check">
+                            <input type="checkbox" checked={check} onChange={(e) => setCheck(e.target.checked)} />
+                            <span>Stay logged in</span>
+                        </label>
+                        <button type="button" onClick={() => navigate('/forgot-password')} className="link-btn">
+                            Forgot Password?
+                        </button>
+                    </div>
+
+                    <button type="submit" className="submit-btn mt-4" disabled={disable}>
+                        {disable ? 'Verifying...' : 'Sign In'}
+                    </button>
+                </form>
+
+                <div className="card-footer-text">
+                    <p>Protected by Althub Security Protocol</p>
                 </div>
             </div>
-        </>
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .soft-login-wrapper {
+                    background: #f4f7fa;
+                    background-image: radial-gradient(#d1d9e6 1px, transparent 1px);
+                    background-size: 20px 20px;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                }
+
+                .login-card {
+                    background: #ffffff;
+                    border-radius: 20px;
+                    padding: 45px;
+                    width: 100%;
+                    max-width: 420px;
+                    border: 1px solid #e1e8f0;
+                }
+
+                .brand-logo { height: 45px; margin-bottom: 15px; }
+                .dau-brand { color: #1a202c; font-weight: 700; font-size: 24px; }
+                .admin-light { color: #3182ce; font-weight: 400; }
+                .login-hint { color: #718096; font-size: 14px; }
+
+                .input-field label {
+                    display: block;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #4a5568;
+                    margin-bottom: 8px;
+                    text-transform: uppercase;
+                }
+
+                .input-wrapper { position: relative; }
+                .icon-left { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #a0aec0; }
+
+                /* EYE BUTTON STYLE */
+                .password-toggle-btn {
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: none;
+                    border: none;
+                    color: #a0aec0;
+                    cursor: pointer;
+                    padding: 5px;
+                    transition: color 0.2s;
+                    outline: none !important;
+                }
+                .password-toggle-btn:hover { color: #3182ce; }
+
+                .input-field input {
+                    width: 100%;
+                    padding: 12px 15px 12px 42px;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                    background: #f8fafc;
+                    font-size: 15px;
+                    outline: none;
+                }
+
+                .input-field input:focus {
+                    border-color: #3182ce;
+                    background: #fff;
+                    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+                }
+
+                .has-error input { border-color: #e53e3e; }
+                .custom-check { display: flex; align-items: center; font-size: 13px; color: #718096; cursor: pointer; }
+                .custom-check input { margin-right: 8px; }
+                .link-btn { background: none; border: none; color: #3182ce; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+                .submit-btn {
+                    width: 100%;
+                    background: #2b6cb0;
+                    color: white;
+                    border: none;
+                    padding: 14px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    font-size: 16px;
+                    cursor: pointer;
+                }
+                .submit-btn:hover { background: #2c5282; transform: translateY(-1px); }
+                .card-footer-text { margin-top: 30px; text-align: center; font-size: 11px; color: black; text-transform: uppercase; }
+            `}} />
+        </div>
     )
 }
 

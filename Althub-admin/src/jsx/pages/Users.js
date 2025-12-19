@@ -1,11 +1,11 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom'
-import Loader from '../layout/Loader'
+import { Link } from 'react-router-dom';
+import Loader from '../layout/Loader';
 import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
-import { ALTHUB_API_URL } from './baseURL';
+import { ALTHUB_API_URL } from '../../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axios from 'axios';
+import axiosInstance from '../../services/axios'; // Use your secure instance
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -13,25 +13,27 @@ const Users = () => {
     const rows = [10, 20, 30];
     const [usersPerPage, setUsersPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
+    
+    // Deletion States
+    const [deleteId, setDeleteId] = useState('');
+    const [showDeletePrompt, setShowDeletePrompt] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
         var element = document.getElementById("page-container");
-        element.classList.add("show");
+        if (element) element.classList.add("show");
         getUsersData();
     }, []);
 
     const getUsersData = () => {
-        axios({
-            method: "get",
-            url: `${ALTHUB_API_URL}/api/getUsers`,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        }).then((response) => {
-            console.log(response.data.data);
-            setUsers(response.data.data);
-        });
+        axiosInstance.get(`/api/getUsers`).then((response) => {
+            if (response.data.success === true) {
+                setUsers(response.data.data);
+            }
+        }).catch(err => console.error("Fetch users error:", err));
     };
 
     useEffect(() => {
@@ -47,56 +49,40 @@ const Users = () => {
         pageNumbers.push(i);
     }
 
-    const paginate = (num) => {
-        setCurrentPage(num);
-    }
-
     const handleSearch = (e) => {
-        if (e.target.value) {
-            let search = e.target.value;
+        let search = e.target.value.toLowerCase();
+        if (search) {
             setDisplayUsers(users.filter(
                 (elem) =>
-                    elem.email.toLowerCase().includes(search.toLowerCase()) 
-                    ||
-                    elem.fname.toLowerCase().includes(search.toLowerCase())
+                    elem.email.toLowerCase().includes(search) ||
+                    (elem.fname && elem.fname.toLowerCase().includes(search)) ||
+                    (elem.lname && elem.lname.toLowerCase().includes(search))
             ));
         } else {
-            setDisplayUsers(users)
+            setDisplayUsers(users);
         }
-    }
+    };
 
-    const handleApply = () => {
-        if (from && to) {
-            setCurrentPage(1);
-        }
-    }
-    const [deleteId, setDeleteId] = useState('');
-    const [alert, setAlert] = useState(false);
-    const [alert2, setAlert2] = useState(false);
-
-    const handleDeleteUser = (id) => {
+    // STEP 1: Handle trash icon click
+    const handleDeleteClick = (id) => {
         setDeleteId(id);
-        setAlert(true);
-    }
+        setShowDeletePrompt(true);
+    };
 
-    const DeleteUser = () => {
-        axios({
-            method: "delete",
-            url: `${ALTHUB_API_URL}/api/deleteUser/${deleteId}`,
-        }).then((response) => {
+    // STEP 2: Handle confirm button in popup
+    const executeDeletion = () => {
+        axiosInstance.delete(`/api/deleteUser/${deleteId}`).then((response) => {
             if (response.data.success === true) {
-                getUsersData();
+                setShowDeletePrompt(false);
+                setShowSuccessAlert(true);
                 setDeleteId('');
-                setAlert(false);
-                setAlert2(true);
+                getUsersData();
             }
-        })
-    }
-    const handleReset = () => {
-        setCurrentPage(1);
-        setFrom('');
-        setTo('');
-    }
+        }).catch(err => {
+            setShowDeletePrompt(false);
+            console.error(err);
+        });
+    };
 
     return (
         <Fragment>
@@ -108,88 +94,143 @@ const Users = () => {
                         <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
                         <li className="breadcrumb-item active">Users</li>
                     </ol>
-                    <h1 className="page-header">Users</h1>
-                    <div className="card">
+                    <h1 className="page-header text-dark font-weight-bold">
+                        User Management <small>View and manage registered accounts</small>
+                    </h1>
+
+                    <div className="card border-0 shadow-sm rounded-lg">
                         <div className="card-body">
-                            <div className="form-outline mb-4">
-                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search User' onChange={handleSearch} />
+                            {/* MODERN SEARCH BAR */}
+                            <div className="input-group mb-4 shadow-sm" style={{ maxWidth: '400px' }}>
+                                <div className="input-group-prepend">
+                                    <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
+                                </div>
+                                <input 
+                                    type="search" 
+                                    className="form-control border-left-0 shadow-none" 
+                                    placeholder='Search by Name or Email...' 
+                                    onChange={handleSearch} 
+                                />
                             </div>
-                            <div className="row">
-                                <div className="col-12">
-                                    <div className="table-responsive">
-                                        <table id="product-listing" className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sr. No.</th>
-                                                    <th>Full Name</th>
-                                                    <th>Profile Pic</th>
-                                                    <th>Email</th>
-                                                    <th>Phone Number</th>
-                                                    <th>Birth Date</th>
-                                                    <th>User Type</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {currentUsers.length > 0 ? currentUsers.map((elem, index) =>
-                                                    <tr key={index}>
-                                                        <td align='left'>{index + 1}</td>
-                                                        <td>{elem.fname}</td>
-                                                        <td>{elem.profilepic === '' || elem.profilepic === undefined ? <img src='assets/img/login-bg/profile1.png' alt='' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}></img> : <img src={`${ALTHUB_API_URL}${elem.profilepic}`} alt='user-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
-                                                        <td>{elem.email}</td>
-                                                        <td>{elem.phone ? elem.phone : ''}</td>
-                                                        <td>{elem.dob}</td>
-                                                        <td>{elem.role}</td>
-                                                        <td><i className='fa fa-trash' style={{ color: "red", cursor: "pointer", marginLeft: "5px" }} onClick={() => { handleDeleteUser(elem._id) }}></i></td>
-                                                    </tr>
-                                                ) : <tr><td >No Record Found..</td></tr>}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul className="pagination">
-                                            {pageNumbers.map((number) =>
-                                                <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
-                                                </li>
-                                            )}
-                                        </ul>
-                                        <div className='filter-pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <label htmlFor='selection' style={{ marginBottom: '0' }}>Users Per Page :</label>
-                                            <select className='selection' style={{ outline: '0', borderWidth: '0 0 1px', borderColor: 'black', marginLeft: '10px' }} onChange={(e) => setUsersPerPage(e.target.value)}>
-                                                {rows.map(value =>
-                                                    <option value={value}>{value}</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                    </div>
+
+                            <div className="table-responsive">
+                                <table className="table table-hover align-middle">
+                                    <thead className="bg-light">
+                                        <tr>
+                                            <th className="border-top-0">Sr.</th>
+                                            <th className="border-top-0">Profile</th>
+                                            <th className="border-top-0">Full Name</th>
+                                            <th className="border-top-0">Email</th>
+                                            <th className="border-top-0">User Type</th>
+                                            <th className="border-top-0 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentUsers.length > 0 ? currentUsers.map((elem, index) => (
+                                            <tr key={index}>
+                                                <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
+                                                <td>
+                                                    <img 
+                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/login-bg/profile1.png'} 
+                                                        alt='User' 
+                                                        className="rounded-circle shadow-sm border"
+                                                        style={{ width: '45px', height: '45px', objectFit: 'cover' }} 
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <div className="font-weight-600 text-dark">{elem.fname} {elem.lname || ''}</div>
+                                                    <div className="text-muted small">{elem.phone || 'No Phone'}</div>
+                                                </td>
+                                                <td>{elem.email}</td>
+                                                <td>
+                                                    <span className={`badge ${elem.role === 'admin' ? 'badge-primary' : 'badge-info-transparent-2 text-info'}`}>
+                                                        {elem.role || 'student'}
+                                                    </span>
+                                                </td>
+                                                <td className="text-center">
+                                                    <button 
+                                                        className="btn btn-outline-danger btn-sm rounded-circle btn-icon" 
+                                                        onClick={() => handleDeleteClick(elem._id)}
+                                                        title="Delete User"
+                                                    >
+                                                        <i className='fa fa-trash-alt'></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan="6" className="text-center py-5 text-muted">No records found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* PAGINATION */}
+                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4">
+                                <nav>
+                                    <ul className="pagination mb-0">
+                                        {pageNumbers.map((number) =>
+                                            <li key={number} className={`page-item ${currentPage === number ? "active" : ""}`}>
+                                                <button className="page-link shadow-none" onClick={() => setCurrentPage(number)}>{number}</button>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </nav>
+                                <div className="mt-3 mt-md-0 d-flex align-items-center bg-light px-3 py-2 rounded">
+                                    <small className="text-muted mr-2">Rows per page:</small>
+                                    <select 
+                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none" 
+                                        style={{ width: 'auto', cursor: 'pointer' }}
+                                        onChange={(e) => setUsersPerPage(Number(e.target.value))}
+                                        value={usersPerPage}
+                                    >
+                                        {rows.map(value => <option key={value} value={value}>{value}</option>)}
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {alert === true ? <SweetAlert
-                    warning
-                    showCancel
-                    confirmBtnText="Yes, delete it!"
-                    confirmBtnBsStyle="danger"
-                    title="Are you sure?"
-                    onConfirm={DeleteUser}
-                    onCancel={() => { setAlert(false); setDeleteId(''); }}
-                >
-                    You will not be able to recover this user!
-                </SweetAlert> : ''
-                }
-                {alert2 === true ? <SweetAlert
-                    success
-                    title="User Deleted Successfully!"
-                    onConfirm={() => { setAlert2(false); getUsersData(); }}
-                />
-                    : ''}
+
+                {/* POPUP 1: DOUBLE CONFIRMATION */}
+                {showDeletePrompt && (
+                    <SweetAlert
+                        warning
+                        showCancel
+                        confirmBtnText="Yes, delete user!"
+                        confirmBtnBsStyle="danger"
+                        cancelBtnText="Cancel"
+                        cancelBtnBsStyle="default"
+                        title="Delete this user?"
+                        onConfirm={executeDeletion}
+                        onCancel={() => { setShowDeletePrompt(false); setDeleteId(''); }}
+                        focusCancelBtn
+                    >
+                        Are you sure you want to permanently delete this user? This cannot be undone.
+                    </SweetAlert>
+                )}
+
+                {/* POPUP 2: SUCCESS MESSAGE */}
+                {showSuccessAlert && (
+                    <SweetAlert 
+                        success 
+                        title="Account Deleted" 
+                        onConfirm={() => setShowSuccessAlert(false)}
+                    >
+                        The user record has been removed successfully.
+                    </SweetAlert>
+                )}
+
                 <Footer />
             </div>
+            <style dangerouslySetInnerHTML={{__html: `
+                .badge-info-transparent-2 { background-color: rgba(54, 184, 214, 0.1); }
+                .font-weight-600 { font-weight: 600; }
+                .align-middle td { vertical-align: middle !important; }
+                .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+                .table-hover tbody tr:hover { background-color: #f8f9fa; }
+            `}} />
         </Fragment>
-    )
-}
+    );
+};
 
-export default Users
+export default Users;

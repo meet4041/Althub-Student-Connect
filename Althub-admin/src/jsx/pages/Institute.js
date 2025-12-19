@@ -1,100 +1,81 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom'
-import Loader from '../layout/Loader'
+import { Link } from 'react-router-dom';
+import Loader from '../layout/Loader';
 import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 import { ALTHUB_API_URL } from '../../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axios from 'axios';
+import axiosInstance from '../../services/axios'; 
 
 const Institutes = () => {
-    const [Institutes, setInstitutes] = useState([]);
+    const [institutes, setInstitutes] = useState([]);
     const [displayInstitutes, setDisplayInstitutes] = useState([]);
     const rows = [10, 20, 30];
-    const [InstitutesPerPage, setInstitutesPerPage] = useState(rows[0]);
+    const [institutesPerPage, setInstitutesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
+    
+    // Deletion States
+    const [deleteId, setDeleteId] = useState('');
+    const [showDeletePrompt, setShowDeletePrompt] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
         var element = document.getElementById("page-container");
-        element.classList.add("show");
+        if (element) element.classList.add("show");
         getInstitutesData();
-
     }, []);
 
     const getInstitutesData = () => {
-
-        axios({
-            method: "get",
-            url: `${ALTHUB_API_URL}/api/getInstitutes`,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        }).then((response) => {
-            console.log(response.data.data);
-            setInstitutes(response.data.data);
-        });
+        axiosInstance.get(`/api/getInstitutes`).then((response) => {
+            if (response.data.success === true) {
+                setInstitutes(response.data.data);
+            }
+        }).catch(err => console.error("Fetch error:", err));
     };
-    useEffect(() => {
-        setDisplayInstitutes(Institutes);
-    }, [Institutes]);
 
-    const indexOfLastInstitute = currentPage * InstitutesPerPage;
-    const indexOfFirstInstitute = indexOfLastInstitute - InstitutesPerPage;
+    useEffect(() => {
+        setDisplayInstitutes(institutes);
+    }, [institutes]);
+
+    const indexOfLastInstitute = currentPage * institutesPerPage;
+    const indexOfFirstInstitute = indexOfLastInstitute - institutesPerPage;
     const currentInstitutes = displayInstitutes.slice(indexOfFirstInstitute, indexOfLastInstitute);
     const pageNumbers = [];
 
-    for (let i = 1; i <= Math.ceil(displayInstitutes.length / InstitutesPerPage); i++) {
+    for (let i = 1; i <= Math.ceil(displayInstitutes.length / institutesPerPage); i++) {
         pageNumbers.push(i);
     }
 
-    const paginate = (num) => {
-        setCurrentPage(num);
-    }
-
     const handleSearch = (e) => {
-        if (e.target.value) {
-            let search = e.target.value;
-            setDisplayInstitutes(Institutes.filter(
-                (elem) =>
-                    elem.email.toLowerCase().includes(search.toLowerCase()) ||
-                    elem.name.toLowerCase().includes(search.toLowerCase())
-            ));
-        } else {
-            setDisplayInstitutes(Institutes)
-        }
-    }
+        let search = e.target.value.toLowerCase();
+        setDisplayInstitutes(institutes.filter(
+            (elem) =>
+                elem.email.toLowerCase().includes(search) ||
+                elem.name.toLowerCase().includes(search) ||
+                (elem.address && elem.address.toLowerCase().includes(search))
+        ));
+    };
 
-    const handleApply = () => {
-        if (from && to) {
-            setCurrentPage(1);
-        }
-    }
-    const [deleteId, setDeleteId] = useState('');
-    const [alert, setAlert] = useState(false);
-    const [alert2, setAlert2] = useState(false);
-    const handleDeleteInstitute = (id) => {
+    const handleDeleteClick = (id) => {
         setDeleteId(id);
-        setAlert(true);
+        setShowDeletePrompt(true);
     }
 
-    const DeleteInstitute = () => {
-        axios({
-            method: "delete",
-            url: `${ALTHUB_API_URL}/api/deleteInstitute/${deleteId}`,
-        }).then((response) => {
+    const executeDeletion = () => {
+        axiosInstance.delete(`/api/deleteInstitute/${deleteId}`).then((response) => {
             if (response.data.success === true) {
-                getInstitutesData();
+                setShowDeletePrompt(false);
+                setShowSuccessAlert(true);
                 setDeleteId('');
-                setAlert(false);
-                setAlert2(true);
+                getInstitutesData();
             }
-        })
-    }
-    const handleReset = () => {
-        setCurrentPage(1);
-        setFrom('');
-        setTo('');
+        }).catch(err => {
+            setShowDeletePrompt(false);
+            console.error("Deletion failed", err);
+        });
     }
 
     return (
@@ -107,89 +88,144 @@ const Institutes = () => {
                         <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
                         <li className="breadcrumb-item active">Institutes</li>
                     </ol>
-                    <h1 className="page-header">Institutes</h1>
-                    <div className="card">
+                    <h1 className="page-header text-dark font-weight-bold">
+                        Institutes <small>Manage institutional partners</small>
+                    </h1>
+
+                    <div className="card border-0 shadow-sm rounded-lg">
                         <div className="card-body">
-                            <div className="form-outline mb-4">
-                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search Institute' onChange={handleSearch} />
+                            {/* MODERN SEARCH BAR */}
+                            <div className="input-group mb-4 shadow-sm" style={{ maxWidth: '400px' }}>
+                                <div className="input-group-prepend">
+                                    <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
+                                </div>
+                                <input 
+                                    type="search" 
+                                    className="form-control border-left-0 shadow-none" 
+                                    placeholder='Search by Name, Email or Location...' 
+                                    onChange={handleSearch} 
+                                />
                             </div>
-                            <div className="row">
-                                <div className="col-12">
-                                    <div className="table-responsive">
-                                        <table id="product-listing" className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sr. No.</th>
-                                                    <th>Institute</th>
-                                                    <th>Address</th>
-                                                    <th>Image</th>
-                                                    <th>Email</th>
-                                                    <th>Phone Number</th>
-                                                    <th>Website</th>
-                                                   
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {currentInstitutes.length > 0 ? currentInstitutes.map((elem, index) =>
-                                                    <tr key={index}>
-                                                        <td align='left'>{index + 1}</td>
-                                                        <td>{elem.name}</td>
-                                                        <td>{elem.address}</td>
-                                                        <td>{elem.image === '' || elem.image === undefined ? <img src='assets/img/login-bg/profile1.png' alt='' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}></img> : <img src={`${ALTHUB_API_URL}${elem.image}`} alt='Institute-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
-                                                        <td>{elem.email}</td>
-                                                        <td>{elem.phone ? elem.phone : ''}</td>
-                                                        <td>{elem.website}</td>
-                                                        <td><i className='fa fa-trash' style={{ color: "red", cursor: "pointer", marginLeft: "5px" }} onClick={() => { handleDeleteInstitute(elem._id) }}></i></td>
-                                                    </tr>
-                                                ) : <tr><td >No Record Found..</td></tr>}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul className="pagination">
-                                            {pageNumbers.map((number) =>
-                                                <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
-                                                </li>
-                                            )}
-                                        </ul>
-                                        <div className='filter-pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <label htmlFor='selection' style={{ marginBottom: '0' }}>Institutes Per Page :</label>
-                                            <select className='selection' style={{ outline: '0', borderWidth: '0 0 1px', borderColor: 'black', marginLeft: '10px' }} onChange={(e) => setInstitutesPerPage(e.target.value)}>
-                                                {rows.map(value =>
-                                                    <option value={value}>{value}</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                    </div>
+
+                            <div className="table-responsive">
+                                <table className="table table-hover align-middle">
+                                    <thead className="bg-light">
+                                        <tr>
+                                            <th className="border-top-0">Sr.</th>
+                                            <th className="border-top-0">Logo</th>
+                                            <th className="border-top-0">Institute Name</th>
+                                            <th className="border-top-0">Contact Info</th>
+                                            <th className="border-top-0">Address</th>
+                                            <th className="border-top-0 text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentInstitutes.length > 0 ? currentInstitutes.map((elem, index) => (
+                                            <tr key={index}>
+                                                <td className="font-weight-bold text-muted">{indexOfFirstInstitute + index + 1}</td>
+                                                <td>
+                                                    <img 
+                                                        src={elem.image ? `${ALTHUB_API_URL}${elem.image}` : 'assets/img/login-bg/profile1.png'} 
+                                                        alt='Logo' 
+                                                        className="rounded shadow-sm border"
+                                                        style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <div className="font-weight-600 text-dark" style={{ fontSize: '15px' }}>{elem.name}</div>
+                                                    {elem.website && (
+                                                        <a href={elem.website.startsWith('http') ? elem.website : `https://${elem.website}`} target="_blank" rel="noreferrer" className="badge badge-soft-blue text-primary text-decoration-none mt-1">
+                                                            <i className="fa fa-link mr-1"></i> Website
+                                                        </a>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <div className="small mb-1"><i className="fa fa-envelope text-muted mr-2"></i>{elem.email}</div>
+                                                    <div className="small"><i className="fa fa-phone text-muted mr-2"></i>{elem.phone || 'N/A'}</div>
+                                                </td>
+                                                <td>
+                                                    <div className="text-muted small" style={{ maxWidth: '200px', lineHeight: '1.4' }}>
+                                                        {elem.address || 'Location not specified'}
+                                                    </div>
+                                                </td>
+                                                <td className="text-center">
+                                                    <button 
+                                                        className="btn btn-outline-danger btn-sm rounded-circle shadow-none" 
+                                                        onClick={() => handleDeleteClick(elem._id)} 
+                                                        title="Delete Institute"
+                                                        style={{ width: '32px', height: '32px', padding: '0' }}
+                                                    >
+                                                        <i className='fa fa-trash-alt'></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan="6" className="text-center py-5 text-muted font-italic">No institutions found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* MODERN PAGINATION SECTION */}
+                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top">
+                                <nav>
+                                    <ul className="pagination mb-0">
+                                        {pageNumbers.map((number) =>
+                                            <li key={number} className={`page-item ${currentPage === number ? "active" : ""}`}>
+                                                <button className="page-link shadow-none" onClick={() => setCurrentPage(number)}>{number}</button>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </nav>
+                                <div className="mt-3 mt-md-0 d-flex align-items-center bg-light px-3 py-2 rounded">
+                                    <small className="text-muted mr-2">Show:</small>
+                                    <select 
+                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none" 
+                                        style={{ width: 'auto', cursor: 'pointer' }}
+                                        onChange={(e) => setInstitutesPerPage(Number(e.target.value))}
+                                        value={institutesPerPage}
+                                    >
+                                        {rows.map(value => <option key={value} value={value}>{value}</option>)}
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {alert === true ? <SweetAlert
-                    warning
-                    showCancel
-                    confirmBtnText="Yes, delete it!"
-                    confirmBtnBsStyle="danger"
-                    title="Are you sure?"
-                    onConfirm={DeleteInstitute}
-                    onCancel={() => { setAlert(false); setDeleteId(''); }}
-                >
-                    You will not be able to recover this Institute!
-                </SweetAlert> : ''
-                }
-                {alert2 === true ? <SweetAlert
-                    success
-                    title="Institute Deleted Successfully!"
-                    onConfirm={() => { setAlert2(false); getInstitutesData(); }}
-                />
-                    : ''}
+
+                {/* DOUBLE CONFIRMATION POPUPS */}
+                {showDeletePrompt && (
+                    <SweetAlert
+                        warning
+                        showCancel
+                        confirmBtnText="Confirm Delete"
+                        confirmBtnBsStyle="danger"
+                        cancelBtnText="Cancel"
+                        title="Delete Institute?"
+                        onConfirm={executeDeletion}
+                        onCancel={() => { setShowDeletePrompt(false); setDeleteId(''); }}
+                        focusCancelBtn
+                    >
+                        You are about to remove this institute. This action will delete all associated data permanently.
+                    </SweetAlert>
+                )}
+
+                {showSuccessAlert && (
+                    <SweetAlert success title="Success!" onConfirm={() => setShowSuccessAlert(false)}>
+                        The institute has been successfully removed.
+                    </SweetAlert>
+                )}
+
                 <Footer />
             </div>
+            <style dangerouslySetInnerHTML={{__html: `
+                .badge-soft-blue { background-color: rgba(49, 130, 206, 0.1); padding: 4px 8px; border-radius: 6px; }
+                .font-weight-600 { font-weight: 600; }
+                .table-hover tbody tr:hover { background-color: #f8fafc; }
+                .align-middle td { vertical-align: middle !important; }
+            `}} />
         </Fragment>
     )
 }
 
-export default Institutes
+export default Institutes;

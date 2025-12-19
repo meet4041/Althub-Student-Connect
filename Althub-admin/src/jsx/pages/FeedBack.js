@@ -1,11 +1,10 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom'
-import Loader from '../layout/Loader'
+import { Link } from 'react-router-dom';
+import Loader from '../layout/Loader';
 import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
-import { ALTHUB_API_URL } from './baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axiosInstance from '../../services/axios'; // Updated to use secure instance
+import axiosInstance from '../../services/axios'; 
 
 const FeedBack = () => {
     const [feedback, setFeedBack] = useState([]);
@@ -13,8 +12,10 @@ const FeedBack = () => {
     const rows = [10, 20, 30];
     const [feedbackPerPage, setFeedBackPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
+    
+    const [deleteId, setDeleteId] = useState('');
+    const [showDeletePrompt, setShowDeletePrompt] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
         if (document.getElementById('page-loader')) {
@@ -26,14 +27,11 @@ const FeedBack = () => {
     }, []);
 
     const getFeedBackData = () => {
-        // Updated to use axiosInstance for consistency with your security setup
         axiosInstance.get(`/api/getFeedback`).then((response) => {
             if (response.data.success === true) {
                 setFeedBack(response.data.data);
             }
-        }).catch(err => {
-            console.error("Error fetching feedback:", err);
-        });
+        }).catch(err => console.error("Error fetching feedback:", err));
     };
 
     useEffect(() => {
@@ -49,43 +47,48 @@ const FeedBack = () => {
         pageNumbers.push(i);
     }
 
-    const paginate = (num) => {
-        setCurrentPage(num);
-    }
+    const paginate = (num) => setCurrentPage(num);
 
     const handleSearch = (e) => {
-        if (e.target.value) {
-            let search = e.target.value.toLowerCase();
-            setDisplayFeedBack(feedback.filter(
-                (elem) =>
-                    // Updated search to filter by both Message and Name
-                    (elem.message && elem.message.toLowerCase().includes(search)) ||
-                    (elem.name && elem.name.toLowerCase().includes(search))
-            ));
-        } else {
-            setDisplayFeedBack(feedback)
-        }
+        let search = e.target.value.toLowerCase();
+        setDisplayFeedBack(feedback.filter(
+            (elem) =>
+                (elem.message && elem.message.toLowerCase().includes(search)) ||
+                (elem.name && elem.name.toLowerCase().includes(search))
+        ));
     }
 
-    const [deleteId, setDeleteId] = useState('');
-    const [alert, setAlert] = useState(false);
-    const [alert2, setAlert2] = useState(false);
-
-    const handleDeleteUser = (id) => {
+    const handleDeleteClick = (id) => {
         setDeleteId(id);
-        setAlert(true);
+        setShowDeletePrompt(true);
     }
 
-    const DeleteUser = () => {
+    const executeDeletion = () => {
         axiosInstance.delete(`/api/deleteFeedback/${deleteId}`).then((response) => {
             if (response.data.success === true) {
-                getFeedBackData();
+                setShowDeletePrompt(false);
+                setShowSuccessAlert(true);
                 setDeleteId('');
-                setAlert(false);
-                setAlert2(true);
+                getFeedBackData();
             }
-        })
+        }).catch(err => {
+            setShowDeletePrompt(false);
+            console.error("Deletion failed", err);
+        });
     }
+
+    const renderStars = (rating) => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                <i key={i} 
+                   className={`fa fa-star ${i <= rating ? 'text-warning' : 'text-muted'}`} 
+                   style={{ fontSize: '13px', marginRight: '2px' }}>
+                </i>
+            );
+        }
+        return stars;
+    };
 
     return (
         <Fragment>
@@ -97,87 +100,136 @@ const FeedBack = () => {
                         <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
                         <li className="breadcrumb-item active">FeedBack</li>
                     </ol>
-                    <h1 className="page-header">FeedBack</h1>
-                    <div className="card">
+                    <h1 className="page-header text-dark font-weight-bold">
+                        User Feedback <small>Monitor and manage platform reviews</small>
+                    </h1>
+                    
+                    <div className="card border-0 shadow-sm rounded-lg">
                         <div className="card-body">
-                            <div className="form-outline mb-4">
-                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search by User Name or Message' onChange={handleSearch} />
+                            {/* MODERN SEARCH BAR */}
+                            <div className="input-group mb-4 shadow-sm" style={{ maxWidth: '400px' }}>
+                                <div className="input-group-prepend">
+                                    <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
+                                </div>
+                                <input 
+                                    type="search" 
+                                    className="form-control border-left-0 shadow-none" 
+                                    placeholder='Search feedback by user or message...' 
+                                    onChange={handleSearch} 
+                                />
                             </div>
-                            <div className="row">
-                                <div className="col-12">
-                                    <div className="table-responsive">
-                                        <table id="product-listing" className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sr. No.</th>
-                                                    <th>User Name</th> {/* NEW COLUMN */}
-                                                    <th>Message</th>
-                                                    <th>Rate</th>
-                                                    <th className="text-center">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {currentFeedBack.length > 0 ? currentFeedBack.map((elem, index) =>
-                                                    <tr key={index}>
-                                                        <td align='left'>{indexOfFirstUser + index + 1}</td>
-                                                        <td>{elem.name || 'N/A'}</td> {/* DISPLAY NAME */}
-                                                        <td>{elem.message}</td>
-                                                        <td>{elem.rate}</td>
-                                                        <td className="text-center">
-                                                            <i className='fa fa-trash' 
-                                                               style={{ color: "red", cursor: "pointer" }} 
-                                                               onClick={() => { handleDeleteUser(elem._id) }}>
-                                                            </i>
-                                                        </td>
-                                                    </tr>
-                                                ) : <tr><td colSpan="5" className="text-center">No Record Found..</td></tr>}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                                        <ul className="pagination">
-                                            {pageNumbers.map((number) =>
-                                                <li key={number} className={currentPage === number ? "page-item active" : "page-item"}>
-                                                    <span className="page-link" style={{cursor: 'pointer'}} onClick={() => paginate(number)}>{number}</span>
-                                                </li>
-                                            )}
-                                        </ul>
-                                        <div className='filter-pages' style={{ display: 'flex', alignItems: 'center' }}>
-                                            <label htmlFor='selection' style={{ marginBottom: '0' }}>FeedBack Per Page :</label>
-                                            <select className='selection' style={{ outline: '0', borderWidth: '0 0 1px', borderColor: 'black', marginLeft: '10px' }} onChange={(e) => setFeedBackPerPage(Number(e.target.value))}>
-                                                {rows.map(value =>
-                                                    <option key={value} value={value}>{value}</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                    </div>
+
+                            <div className="table-responsive">
+                                <table className="table table-hover align-middle">
+                                    <thead className="bg-light">
+                                        <tr>
+                                            <th className="border-top-0">Sr. No.</th>
+                                            <th className="border-top-0">User Name</th>
+                                            <th className="border-top-0">Review Message</th>
+                                            <th className="border-top-0">Rating</th>
+                                            <th className="border-top-0 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentFeedBack.length > 0 ? currentFeedBack.map((elem, index) =>
+                                            <tr key={index}>
+                                                <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
+                                                <td>
+                                                    <div className="d-flex align-items-center">
+                                                        <div className="bg-primary-transparent text-primary rounded-circle d-flex align-items-center justify-content-center mr-2" style={{ width: '32px', height: '32px', fontSize: '12px', fontWeight: 'bold' }}>
+                                                            {elem.name ? elem.name.charAt(0).toUpperCase() : 'A'}
+                                                        </div>
+                                                        <span className="font-weight-600 text-dark">{elem.name || 'Anonymous'}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="text-muted">
+                                                    <div style={{ maxWidth: '450px', wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.5' }}>
+                                                        {elem.message}
+                                                    </div>
+                                                </td>
+                                                <td>{renderStars(elem.rate)}</td>
+                                                <td className="text-center">
+                                                    <button 
+                                                        className="btn btn-outline-danger btn-sm rounded-circle btn-icon" 
+                                                        onClick={() => handleDeleteClick(elem._id)}
+                                                        title="Delete Review"
+                                                    >
+                                                        <i className='fa fa-trash-alt'></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            <tr><td colSpan="5" className="text-center py-5 text-muted">No feedback records found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* PAGINATION SECTION */}
+                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top">
+                                <nav>
+                                    <ul className="pagination mb-0">
+                                        {pageNumbers.map((number) =>
+                                            <li key={number} className={`page-item ${currentPage === number ? "active" : ""}`}>
+                                                <button className="page-link shadow-none" onClick={() => paginate(number)}>{number}</button>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </nav>
+                                <div className="mt-3 mt-md-0 d-flex align-items-center bg-light px-3 py-2 rounded">
+                                    <small className="text-muted mr-2">Show:</small>
+                                    <select 
+                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none" 
+                                        style={{ width: 'auto', cursor: 'pointer' }}
+                                        onChange={(e) => setFeedBackPerPage(Number(e.target.value))}
+                                    >
+                                        {rows.map(value => <option key={value} value={value}>{value}</option>)}
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {alert === true && (
+
+                {/* DOUBLE CONFIRMATION POPUP */}
+                {showDeletePrompt && (
                     <SweetAlert
                         warning
                         showCancel
                         confirmBtnText="Yes, delete it!"
                         confirmBtnBsStyle="danger"
-                        title="Are you sure?"
-                        onConfirm={DeleteUser}
-                        onCancel={() => { setAlert(false); setDeleteId(''); }}
+                        cancelBtnText="Cancel"
+                        cancelBtnBsStyle="default"
+                        title="Delete Feedback?"
+                        onConfirm={executeDeletion}
+                        onCancel={() => { setShowDeletePrompt(false); setDeleteId(''); }}
+                        focusCancelBtn
                     >
-                        You will not be able to recover this feedback!
+                        This will permanently remove the user's review from the platform.
                     </SweetAlert>
                 )}
-                {alert2 === true && (
+
+                {/* SUCCESS POPUP */}
+                {showSuccessAlert && (
                     <SweetAlert
                         success
-                        title="Feedback Deleted Successfully!"
-                        onConfirm={() => { setAlert2(false); getFeedBackData(); }}
-                    />
+                        title="Deleted Successfully!"
+                        onConfirm={() => setShowSuccessAlert(false)}
+                    >
+                        The feedback has been removed from the system.
+                    </SweetAlert>
                 )}
+
                 <Footer />
             </div>
+            <style dangerouslySetInnerHTML={{__html: `
+                .bg-primary-transparent { background-color: rgba(49, 130, 206, 0.1); }
+                .font-weight-600 { font-weight: 600; }
+                .table-hover tbody tr:hover { background-color: #f8fafc; }
+                .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+                .btn-icon:hover { background-color: #e53e3e; color: white; }
+                .text-warning { color: #f6e05e !important; }
+            `}} />
         </Fragment>
     )
 }
