@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../../services/axios'; 
+import axiosInstance from '../../services/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +30,7 @@ const Login = () => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            
+
             var bodyFormData = new URLSearchParams();
             bodyFormData.append('auth_code', "Althub");
             bodyFormData.append('email', loginInfo.email);
@@ -138,24 +138,25 @@ const Login = () => {
                             </div>
                             <div className="form-group m-b-20">
                                 <input type="password" className="form-control form-control-lg my-3" placeholder="Password" name="password" onChange={InputEvent} value={loginInfo.password} />
-                                <div className="text-right">
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/forgot-password')}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'white',
-                                            cursor: 'pointer',
-                                            padding: 0,
-                                            font: 'inherit',
-                                            marginBottom: '10px'
-                                        }}
-                                    >
-                                        Forgot Password?
-                                    </button>
-                                </div>
+
                                 <div className="text-danger">{errors.password_err}</div>
+                            </div>
+                            <div className="text-right">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/forgot-password')}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        padding: 0,
+                                        font: 'inherit',
+                                        marginBottom: '10px'
+                                    }}
+                                >
+                                    Forgot Password?
+                                </button>
                             </div>
                             <div className="form-group m-b-20">
                                 <label className="text-white">

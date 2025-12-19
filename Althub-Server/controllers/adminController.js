@@ -65,7 +65,7 @@ const adminLogin = async (req, res) => {
         const { email, password } = req.body;
 
         // 1. HARDENING: Re-fetch user including password and tokenVersion
-        const adminData = await Admin.findOne({ email }).select("+password +tokenVersion"); 
+        const adminData = await Admin.findOne({ email }).select("+password +tokenVersion");
 
         if (!adminData) {
             return res.status(401).send({ success: false, msg: "Invalid credentials" });
@@ -79,20 +79,20 @@ const adminLogin = async (req, res) => {
 
         // 3. JWT includes tokenVersion to prevent replay bypass
         const token = jwt.sign(
-            { _id: adminData._id, version: adminData.tokenVersion }, 
-            config.secret_jwt, 
+            { _id: adminData._id, version: adminData.tokenVersion },
+            config.secret_jwt,
             { expiresIn: '24h' }
         );
 
         res.cookie('jwt_token', token, {
             httpOnly: true,
-            secure: true, 
+            secure: true,
             sameSite: 'none',
-            maxAge: 24 * 60 * 60 * 1000 
+            maxAge: 24 * 60 * 60 * 1000
         });
 
         const { password: _, tokenVersion: __, ...data } = adminData._doc;
-        
+
         // MASKED: Sending 401 for success as requested
         return res.status(401).send({
             success: true,
@@ -109,25 +109,41 @@ const adminLogin = async (req, res) => {
 const updatePassword = async (req, res) => {
     try {
         const { admin_id, oldpassword, newpassword } = req.body;
-        const data = await Admin.findById(admin_id);
+        
+        // 1. HARDENING: Re-fetch user including password field (which is select: false by default)
+        const data = await Admin.findById(admin_id).select("+password"); //
         
         if (data) {
-            const match = await bcryptjs.compare(oldpassword, data.password);
+            const match = await bcryptjs.compare(oldpassword, data.password); //
             if (match) {
-                const hashedPassword = await bcryptjs.hash(newpassword, 10);
+                const hashedPassword = await bcryptjs.hash(newpassword, 10); //
                 
-                // HARDENING: Increment tokenVersion to kill all old sessions
+                /**
+                 * 2. GLOBAL LOGOUT: 
+                 * - Increment tokenVersion to invalidate all existing JWTs on ALL devices.
+                 * - Clear any existing reset tokens for security.
+                 */
                 await Admin.findByIdAndUpdate(admin_id, { 
-                    $set: { password: hashedPassword },
-                    $inc: { tokenVersion: 1 } 
+                    $set: { password: hashedPassword, token: '' },
+                    $inc: { tokenVersion: 1 } // Critical: This causes requireAuth middleware to fail for old tokens
                 });
                 
-                res.status(200).send({ success: true, msg: "Password updated. All sessions invalidated." });
+                // 3. LOCAL LOGOUT: Clear the cookie from the browser that initiated the change
+                res.clearCookie("jwt_token", { 
+                    httpOnly: true, 
+                    secure: true, 
+                    sameSite: "none" 
+                }); //
+
+                return res.status(200).send({ 
+                    success: true, 
+                    msg: "Password updated successfully. All active sessions have been terminated. Please log in again." 
+                });
             } else {
-                res.status(400).send({ success: false, msg: "Old password incorrect" });
+                return res.status(400).send({ success: false, msg: "Old password incorrect" });
             }
         } else {
-            res.status(400).send({ success: false, msg: "Admin not found" });
+            return res.status(400).send({ success: false, msg: "Admin not found" });
         }
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -157,13 +173,13 @@ const resetpassword = async (req, res) => {
         const tokenData = await Admin.findOne({ token: token });
         if (tokenData) {
             const hashedPassword = await bcryptjs.hash(req.body.password, 10);
-            
+
             // HARDENING: Kill previous sessions on reset
-            await Admin.findByIdAndUpdate(tokenData._id, { 
+            await Admin.findByIdAndUpdate(tokenData._id, {
                 $set: { password: hashedPassword, token: '' },
-                $inc: { tokenVersion: 1 } 
+                $inc: { tokenVersion: 1 }
             });
-            
+
             res.status(200).send({ success: true, msg: "Password reset successfully" });
         } else {
             res.status(400).send({ success: false, msg: "Token expired" });
@@ -175,8 +191,58 @@ const resetpassword = async (req, res) => {
 
 const updateAdmin = async (req, res) => {
     try {
-        const { id, name, phone, email, profilepic } = req.body;
-        const admin_data = await Admin.findByIdAndUpdate(id, { $set: { name, phone, email, profilepic } }, { new: true }).select("-password");
+        const { id } = req.body;
+
+        // 1. Check if req.body exists or is empty
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).send({ success: false, msg: "No data provided for update" });
+        }
+
+        const updateData = {};
+        const emptyFields = [];
+
+        // 2. Define the list of fields we expect to potentially update
+        const fieldsToUpdate = ['name', 'phone', 'email'];
+
+        // 3. Iterate and validate each field
+        fieldsToUpdate.forEach(field => {
+            // Check if the field exists in req.body
+            if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+                const value = req.body[field];
+
+                // 4. VALIDATION: If value is an empty string, null, or undefined, mark it as empty
+                if (value === "" || value === null || value === undefined) {
+                    emptyFields.push(field);
+                } else {
+                    updateData[field] = value;
+                }
+            }
+        });
+
+        // 5. EXCEPTION: If any field was passed as empty, return a validation error
+        if (emptyFields.length > 0) {
+            return res.status(400).send({
+                success: false,
+                msg: `Fields cannot be empty: ${emptyFields.join(", ")}`
+            });
+        }
+
+        // 6. Ensure there is actually something to update after validation
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).send({ success: false, msg: "No valid fields provided to update" });
+        }
+
+        // 7. Perform the update only with validated data
+        const admin_data = await Admin.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true }
+        ).select("-password");
+
+        if (!admin_data) {
+            return res.status(404).send({ success: false, msg: "Admin not found" });
+        }
+
         res.status(200).send({ success: true, msg: 'Admin Updated', data: admin_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -202,12 +268,12 @@ const getAdminById = async (req, res) => {
 }
 
 module.exports = {
-    registerAdmin, 
+    registerAdmin,
     adminLogin, // FIXED: Corrected spelling to match call
-    forgetPassword, 
+    forgetPassword,
     resetpassword,
-    updatePassword, 
-    adminLogout, 
-    updateAdmin, 
+    updatePassword,
+    adminLogout,
+    updateAdmin,
     getAdminById
 }
