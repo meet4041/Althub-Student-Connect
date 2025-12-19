@@ -211,7 +211,7 @@ const ChangePasswordModal = ({ closeModal }) => {
                 newpassword: pass.new
             }
         }).then((Response) => {
-            toast.success("Password Updated Successfully!");
+            toast.success("Password Updated Successfully 3");
             closeModal();
             setPass({ old: "", new: "", confirm: "" });
         }).catch((error) => {

@@ -137,7 +137,7 @@ const Profile = () => {
                 },
             }).then((response) => {
                 if (response.data.success === true) {
-                    toast.success('Password Updated Successfully')
+                    toast.success('Password Updated Successfully 2')
                     setDisable2(false);
                     setChangePass({
                         oldpassword: '',

@@ -110,34 +110,31 @@ const updatePassword = async (req, res) => {
     try {
         const { admin_id, oldpassword, newpassword } = req.body;
         
-        // 1. HARDENING: Re-fetch user including password field (which is select: false by default)
-        const data = await Admin.findById(admin_id).select("+password"); //
+        // 1. Fetch admin including the password field (hidden by default)
+        const data = await Admin.findById(admin_id).select("+password");
         
         if (data) {
-            const match = await bcryptjs.compare(oldpassword, data.password); //
+            const match = await bcryptjs.compare(oldpassword, data.password);
             if (match) {
-                const hashedPassword = await bcryptjs.hash(newpassword, 10); //
+                const hashedPassword = await bcryptjs.hash(newpassword, 10);
                 
-                /**
-                 * 2. GLOBAL LOGOUT: 
-                 * - Increment tokenVersion to invalidate all existing JWTs on ALL devices.
-                 * - Clear any existing reset tokens for security.
-                 */
+                // 2. GLOBAL LOGOUT: Increment tokenVersion to invalidate all existing sessions
+                // Also clear any reset tokens for security
                 await Admin.findByIdAndUpdate(admin_id, { 
                     $set: { password: hashedPassword, token: '' },
-                    $inc: { tokenVersion: 1 } // Critical: This causes requireAuth middleware to fail for old tokens
+                    $inc: { tokenVersion: 1 } 
                 });
                 
-                // 3. LOCAL LOGOUT: Clear the cookie from the browser that initiated the change
+                // 3. LOCAL LOGOUT: Clear the JWT cookie from the current browser
                 res.clearCookie("jwt_token", { 
                     httpOnly: true, 
                     secure: true, 
                     sameSite: "none" 
-                }); //
+                });
 
                 return res.status(200).send({ 
                     success: true, 
-                    msg: "Password updated successfully. All active sessions have been terminated. Please log in again." 
+                    msg: "Password updated. You have been logged out from all devices for security." 
                 });
             } else {
                 return res.status(400).send({ success: false, msg: "Old password incorrect" });

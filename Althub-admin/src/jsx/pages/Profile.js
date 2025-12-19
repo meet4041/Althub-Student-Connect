@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../../services/axios'; 
@@ -10,6 +10,7 @@ import Footer from '../layout/Footer';
 
 const Profile = () => {
     const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
+    const navigate = useNavigate(); // Initialize navigate hook
     
     const [changepass, setChangePass] = useState({
         admin_id: admin_Id || '',
@@ -76,8 +77,6 @@ const Profile = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
-        
-        // NO VALIDATION NEEDED FOR PARTIAL UPDATES
         setDisable(true);
         axiosInstance.post('/api/adminUpdate', {
             id: admin_Id,
@@ -107,7 +106,6 @@ const Profile = () => {
 
     const submitHandlerTwo = (e) => {
         e.preventDefault();
-        // Validation for password stays compulsory for security
         if (validateTwo()) {
             setDisable2(true);
             axiosInstance.post('/api/updatepassword', {
@@ -116,14 +114,17 @@ const Profile = () => {
                 newpassword: changepass.newpassword
             }).then((response) => {
                 if (response.data.success === true) {
-                    toast.success('Password Updated Successfully');
-                    setDisable2(false);
-                    setChangePass({
-                        oldpassword: '',
-                        newpassword: '',
-                        confirmpassword: ''
-                    });
-                    setErrors({});
+                    toast.success('Password Updated Successfully.');
+                    
+                    // AUTO LOGOUT AND REDIRECT
+                    setTimeout(() => {
+                        // Clear all local admin data
+                        localStorage.removeItem("AlmaPlus_admin_Id");
+                        localStorage.removeItem("AlmaPlus_admin_Name");
+                        
+                        // Redirect to login page
+                        navigate('/');
+                    }, 2000); 
                 } else {
                     setDisable2(false);
                     toast.error(response.data.msg || 'Update Failed');
