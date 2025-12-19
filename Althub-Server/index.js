@@ -6,23 +6,40 @@ const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5001;
 const cors = require("cors");
 const compression = require("compression");
+const http = require("http");
 
-// --- FIX 1: REQUIRED FOR RENDER DEPLOYMENT ---
-app.set("trust proxy", 1);
-
-// --- PERFORMANCE FIX: Compress HTTP responses ---
+// --- SERVER CONFIGURATION ---
+app.set("trust proxy", 1); // Required for Render to handle secure cookies correctly
 app.use(compression());
+app.use(express.json());
+app.use(cookieParser());
 
-// --- FIX 2: ALLOW COOKIES & CORS ---
-app.use(cors({
-  origin: true,
-  credentials: true,
+// --- SECURE CORS CONFIGURATION ---
+// Replace the URL below with your actual LIVE Vercel frontend URL
+const allowedOrigins = [
+  'https://althub-student-connect.vercel.app', 
+  'http://localhost:3000'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Crucial for sending/receiving JWT cookies
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
-}));
+};
 
-app.options('*', cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle pre-flight requests
 
+// --- ROUTE IMPORTS ---
 const user_route = require("./routes/userRoute");
 const event_route = require("./routes/eventRoute");
 const institute_route = require("./routes/instituteRoute");
@@ -39,10 +56,7 @@ const notification_route = require("./routes/notificationRoute");
 const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
-app.use(express.json());
-app.use(cookieParser());
-
-// Mount Routes
+// --- ROUTE MOUNTING ---
 app.use("/api", user_route);
 app.use("/api", event_route);
 app.use("/api", institute_route);
@@ -59,40 +73,33 @@ app.use("/api", notification_route);
 app.use("/api", financialaid_route);
 app.use("/api", images_route);
 
-// Health Check Route
-app.get("/", (req, res) => {
-  res.send("Althub Server is running!");
-});
-
+// Health Check & Static Files
+app.get("/", (req, res) => res.send("Althub Server is running!"));
 app.use(express.static("public"));
 
-// Error handling middleware
+// Global Error Handler
 app.use((err, req, res, next) => {
-  if (err.type === 'request.aborted' || err.code === 'ECONNABORTED') {
-    return;
-  }
-  console.error("Error:", err);
+  console.error("Server Error:", err);
   res.status(err.status || 500).json({
+    success: false,
     error: err.message || "Internal Server Error"
   });
 });
 
-const http = require("http");
+// --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: true, // or ["http://localhost:3000"]
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   },
-  // Server must allow websocket transport
   transports: ["websocket", "polling"]
 });
 
 let users = [];
 
 const addUser = (userId, socketId) => {
-  // FIX: Remove any existing entry for this user first to ensure we store the freshest socketId
   users = users.filter((user) => user.userId !== userId);
   users.push({ userId, socketId });
 };
@@ -106,51 +113,43 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-  // console.log("User connected via Socket.IO:", socket.id);
-
   socket.on("addUser", (userId) => {
     addUser(userId, socket.id);
-    io.emit("getUsers", users);
-  });
-
-  socket.on("disconnect", () => {
-    removeUser(socket.id);
     io.emit("getUsers", users);
   });
 
   socket.on("sendMessage", ({ senderId, receiverId, text, time }) => {
     const user = getUser(receiverId);
     if (user && user.socketId) {
-      io.to(user.socketId).emit("getMessage", {
-        senderId,
-        text,
-        time,
-      });
+      io.to(user.socketId).emit("getMessage", { senderId, text, time });
     }
   });
 
   socket.on("sendNotification", ({ receiverid, title, msg }) => {
     const user = getUser(receiverid);
     if (user && user.socketId) {
-      io.to(user.socketId).emit("getNotification", {
-        title,
-        msg,
-      });
+      io.to(user.socketId).emit("getNotification", { title, msg });
     }
+  });
+
+  socket.on("disconnect", () => {
+    removeUser(socket.id);
+    io.emit("getUsers", users);
   });
 });
 
+// --- DATABASE CONNECTION & START SERVER ---
 if (require.main === module) {
   connectToMongo()
     .then(() => {
-      server.listen(port, "0.0.0.0", function () {
-        console.log(`Server is running on port ${port}`);
+      server.listen(port, "0.0.0.0", () => {
+        console.log(`Server is live on port ${port}`);
       });
     })
     .catch(err => {
       console.error('Failed to connect to MongoDB:', err.message);
-      process.exit(1); // <--- Add this line to stop the process immediately on error
+      process.exit(1);
     });
-
 }
+
 module.exports = app;
