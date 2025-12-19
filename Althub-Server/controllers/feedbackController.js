@@ -4,6 +4,7 @@ const addFeedback = async (req, res) => {
     try {
         const feedback = new Feedback({
             userid: req.body.userid,
+            name: req.body.name,
             message: req.body.message,
             rate: req.body.rate
         });

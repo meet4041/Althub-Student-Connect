@@ -5,7 +5,7 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 import { ALTHUB_API_URL } from './baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axios from 'axios';
+import axiosInstance from '../../services/axios'; // Updated to use secure instance
 
 const FeedBack = () => {
     const [feedback, setFeedBack] = useState([]);
@@ -17,24 +17,25 @@ const FeedBack = () => {
     const [to, setTo] = useState('');
 
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
         var element = document.getElementById("page-container");
-        element.classList.add("show");
+        if (element) element.classList.add("show");
         getFeedBackData();
     }, []);
 
     const getFeedBackData = () => {
-
-        axios({
-            method: "get",
-            url: `${ALTHUB_API_URL}/api/getFeedback`,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        }).then((response) => {
-            console.log(response.data.data);
-            setFeedBack(response.data.data);
-
+        // Updated to use axiosInstance for consistency with your security setup
+        axiosInstance.get(`/api/getFeedback`).then((response) => {
+            if (response.data.success === true) {
+                setFeedBack(response.data.data);
+            }
+        }).catch(err => {
+            console.error("Error fetching feedback:", err);
         });
     };
+
     useEffect(() => {
         setDisplayFeedBack(feedback);
     }, [feedback]);
@@ -54,34 +55,29 @@ const FeedBack = () => {
 
     const handleSearch = (e) => {
         if (e.target.value) {
-            let search = e.target.value;
+            let search = e.target.value.toLowerCase();
             setDisplayFeedBack(feedback.filter(
                 (elem) =>
-                    elem.message &&  elem.message.toLowerCase().includes(search.toLowerCase())
+                    // Updated search to filter by both Message and Name
+                    (elem.message && elem.message.toLowerCase().includes(search)) ||
+                    (elem.name && elem.name.toLowerCase().includes(search))
             ));
         } else {
             setDisplayFeedBack(feedback)
         }
     }
 
-    const handleApply = () => {
-        if (from && to) {
-            setCurrentPage(1);
-        }
-    }
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
+
     const handleDeleteUser = (id) => {
         setDeleteId(id);
         setAlert(true);
     }
 
     const DeleteUser = () => {
-        axios({
-            method: "delete",
-            url: `${ALTHUB_API_URL}/api/deleteFeedback/${deleteId}`,
-        }).then((response) => {
+        axiosInstance.delete(`/api/deleteFeedback/${deleteId}`).then((response) => {
             if (response.data.success === true) {
                 getFeedBackData();
                 setDeleteId('');
@@ -89,11 +85,6 @@ const FeedBack = () => {
                 setAlert2(true);
             }
         })
-    }
-    const handleReset = () => {
-        setCurrentPage(1);
-        setFrom('');
-        setTo('');
     }
 
     return (
@@ -110,7 +101,7 @@ const FeedBack = () => {
                     <div className="card">
                         <div className="card-body">
                             <div className="form-outline mb-4">
-                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search User' onChange={handleSearch} />
+                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search by User Name or Message' onChange={handleSearch} />
                             </div>
                             <div className="row">
                                 <div className="col-12">
@@ -119,36 +110,43 @@ const FeedBack = () => {
                                             <thead>
                                                 <tr>
                                                     <th>Sr. No.</th>
+                                                    <th>User Name</th> {/* NEW COLUMN */}
                                                     <th>Message</th>
                                                     <th>Rate</th>
-                                                    <th>Action</th>
+                                                    <th className="text-center">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {currentFeedBack.length > 0 ? currentFeedBack.map((elem, index) =>
                                                     <tr key={index}>
-                                                        <td align='left'>{index + 1}</td>
+                                                        <td align='left'>{indexOfFirstUser + index + 1}</td>
+                                                        <td>{elem.name || 'N/A'}</td> {/* DISPLAY NAME */}
                                                         <td>{elem.message}</td>
                                                         <td>{elem.rate}</td>
-                                                        <td><i className='fa fa-trash' style={{ color: "red", cursor: "pointer", marginLeft: "5px" }} onClick={() => { handleDeleteUser(elem._id) }}></i></td>
+                                                        <td className="text-center">
+                                                            <i className='fa fa-trash' 
+                                                               style={{ color: "red", cursor: "pointer" }} 
+                                                               onClick={() => { handleDeleteUser(elem._id) }}>
+                                                            </i>
+                                                        </td>
                                                     </tr>
-                                                ) : <tr><td >No Record Found..</td></tr>}
+                                                ) : <tr><td colSpan="5" className="text-center">No Record Found..</td></tr>}
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                                         <ul className="pagination">
                                             {pageNumbers.map((number) =>
-                                                <li class={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
+                                                <li key={number} className={currentPage === number ? "page-item active" : "page-item"}>
+                                                    <span className="page-link" style={{cursor: 'pointer'}} onClick={() => paginate(number)}>{number}</span>
                                                 </li>
                                             )}
                                         </ul>
-                                        <div className='filter-pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div className='filter-pages' style={{ display: 'flex', alignItems: 'center' }}>
                                             <label htmlFor='selection' style={{ marginBottom: '0' }}>FeedBack Per Page :</label>
-                                            <select className='selection' style={{ outline: '0', borderWidth: '0 0 1px', borderColor: 'black', marginLeft: '10px' }} onChange={(e) => setFeedBackPerPage(e.target.value)}>
+                                            <select className='selection' style={{ outline: '0', borderWidth: '0 0 1px', borderColor: 'black', marginLeft: '10px' }} onChange={(e) => setFeedBackPerPage(Number(e.target.value))}>
                                                 {rows.map(value =>
-                                                    <option value={value}>{value}</option>
+                                                    <option key={value} value={value}>{value}</option>
                                                 )}
                                             </select>
                                         </div>
@@ -158,28 +156,30 @@ const FeedBack = () => {
                         </div>
                     </div>
                 </div>
-                {alert === true ? <SweetAlert
-                    warning
-                    showCancel
-                    confirmBtnText="Yes, delete it!"
-                    confirmBtnBsStyle="danger"
-                    title="Are you sure?"
-                    onConfirm={DeleteUser}
-                    onCancel={() => { setAlert(false); setDeleteId(''); }}
-                >
-                    You will not be able to recover this feedback!
-                </SweetAlert> : ''
-                }
-                {alert2 === true ? <SweetAlert
-                    success
-                    title="User Deleted Successfully!"
-                    onConfirm={() => { setAlert2(false); getFeedBackData(); }}
-                />
-                    : ''}
+                {alert === true && (
+                    <SweetAlert
+                        warning
+                        showCancel
+                        confirmBtnText="Yes, delete it!"
+                        confirmBtnBsStyle="danger"
+                        title="Are you sure?"
+                        onConfirm={DeleteUser}
+                        onCancel={() => { setAlert(false); setDeleteId(''); }}
+                    >
+                        You will not be able to recover this feedback!
+                    </SweetAlert>
+                )}
+                {alert2 === true && (
+                    <SweetAlert
+                        success
+                        title="Feedback Deleted Successfully!"
+                        onConfirm={() => { setAlert2(false); getFeedBackData(); }}
+                    />
+                )}
                 <Footer />
             </div>
         </Fragment>
     )
 }
 
-export default FeedBack
+export default FeedBack;

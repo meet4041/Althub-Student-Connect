@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ALTHUB_API_URL } from '../../baseURL';
+import axiosInstance from '../../services/axios'; 
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -16,67 +15,72 @@ const Login = () => {
     const [disable, setDisable] = useState(false);
 
     const InputEvent = (e) => {
-        const newLoginInfo = { ...loginInfo };
-        newLoginInfo[e.target.name] = e.target.value;
-        setLoginInfo(newLoginInfo);
+        const { name, value } = e.target;
+        setLoginInfo(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
     }
 
     const handleRememberMe = (e) => {
-        if (e.target.checked) {
-            setCheck(true)
-        } else {
-            setCheck(false)
-        }
+        setCheck(e.target.checked);
     }
 
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
+            
             var bodyFormData = new URLSearchParams();
             bodyFormData.append('auth_code', "Althub");
             bodyFormData.append('email', loginInfo.email);
             bodyFormData.append('password', loginInfo.password);
-            const myurl = `${ALTHUB_API_URL}/api/adminLogin`;
-            axios({
-                method: "post",
-                url: myurl,
-                data: bodyFormData,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            }).then((response) => {
-                if (response.data.success === true) {
-                    toast.success('Login Successfully')
-                    localStorage.setItem('AlmaPlus_admin_Id', response.data.data._id);
-                    localStorage.setItem('AlmaPlus_admin_Email', loginInfo.email);
-                    localStorage.setItem('AlmaPlus_admin_Token', response.data.token);
-                    if (check === true) {
-                        localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Enabled')
+
+            axiosInstance.post('/api/adminLogin', bodyFormData)
+                .then((response) => {
+                    if (response.data.success === true && response.data.data) {
+                        toast.success('Login Successfully');
+
+                        const adminData = response.data.data;
+
+                        // FIX: Store ALL necessary fields to prevent 'undefined' crashes in Menu/Header
+                        localStorage.setItem('AlmaPlus_admin_Id', adminData._id);
+                        localStorage.setItem('AlmaPlus_admin_Email', adminData.email);
+                        localStorage.setItem('AlmaPlus_admin_Name', adminData.name || 'Admin');
+                        localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic || '');
+                        localStorage.setItem('AlmaPlus_admin_Token', response.data.token);
+
+                        if (check === true) {
+                            localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Enabled');
+                            localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email);
+                        } else {
+                            localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Disabled');
+                        }
+
+                        setDisable(false);
+                        // Using replace: true prevents the user from going back to login page
+                        navigate('/dashboard', { replace: true });
                     } else {
-                        localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Disabled')
+                        setDisable(false);
+                        toast.error(response.data.msg || 'Incorrect Credentials');
                     }
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+                })
+                .catch((error) => {
                     setDisable(false);
-                    navigate('/dashboard');
-                } else {
-                    setDisable(false);
-                    toast.error('Incorrect Credentials')
-                }
-            }).catch((error) => {
-                console.log("Errors", error);
-                setDisable(false);
-            })
+                    console.error("Login Error:", error);
+                    toast.error(error.response?.data?.msg || 'Login Failed');
+                });
         }
     }
 
     const validate = () => {
-        let input = loginInfo;
         let errors = {};
         let isValid = true;
-        if (!input["email"]) {
+        if (!loginInfo.email) {
             isValid = false;
             errors["email_err"] = "Please Enter Email";
         }
-        if (!input["password"]) {
+        if (!loginInfo.password) {
             isValid = false;
             errors["password_err"] = "Please Enter Password";
         }
@@ -85,18 +89,22 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (localStorage.getItem("AlmaPlus_admin_Id") !== null) {
+        if (localStorage.getItem("AlmaPlus_admin_Id")) {
             navigate('/dashboard');
         }
-        document.getElementById('page-loader').style.display = 'none';
+
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
         var element = document.getElementById("page-container");
-        element.classList.add("show");
+        if (element) element.classList.add("show");
+
         if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled') {
             setCheck(true);
-            setLoginInfo({
-                email: localStorage.getItem('AlmaPlus_Admin_Email'),
-                password: localStorage.getItem('AlmaPlus_Admin_Password')
-            })
+            const savedEmail = localStorage.getItem('AlmaPlus_Admin_Email');
+            if (savedEmail) {
+                setLoginInfo(prev => ({ ...prev, email: savedEmail }));
+            }
         }
     }, [navigate]);
 
@@ -114,7 +122,7 @@ const Login = () => {
                 <div className="login login-v2" data-pageload-addclassname="animated fadeIn">
                     <div className="login-header">
                         <div className="brand">
-                            <img src='Logo1.png' style={{ width: '150px', height: '70px',borderRadius:"8px" }} alt="logo" />
+                            <img src='Logo1.png' style={{ width: '150px', height: '70px', borderRadius: "8px" }} alt="logo" />
                             <b>Admin</b>
                             <small>Login for Althub Admin panel</small>
                         </div>
@@ -123,34 +131,41 @@ const Login = () => {
                         </div>
                     </div>
                     <div className="login-content">
-                        <form onSubmit={(e) => submitHandler(e)} >
+                        <form onSubmit={submitHandler} >
                             <div className="form-group m-b-20">
                                 <input type="text" className="form-control form-control-lg" placeholder="Email Address" name="email" onChange={InputEvent} value={loginInfo.email} />
                                 <div className="text-danger">{errors.email_err}</div>
                             </div>
                             <div className="form-group m-b-20">
                                 <input type="password" className="form-control form-control-lg my-3" placeholder="Password" name="password" onChange={InputEvent} value={loginInfo.password} />
-                                <button
-                                    onClick={() => navigate('/forgot-password')}
-                                    style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'white',
-                                    marginLeft: '18rem',
-                                    cursor: 'pointer',
-                                    padding: 0,
-                                    font: 'inherit',
-                                    }}
+                                <div className="text-right">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/forgot-password')}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'white',
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            font: 'inherit',
+                                            marginBottom: '10px'
+                                        }}
                                     >
-                                    Forgot Password
-                                </button>
+                                        Forgot Password?
+                                    </button>
+                                </div>
                                 <div className="text-danger">{errors.password_err}</div>
                             </div>
                             <div className="form-group m-b-20">
-                                <input type='checkbox' checked={check} value={check} onChange={handleRememberMe} /> Remember Me
+                                <label className="text-white">
+                                    <input type='checkbox' checked={check} onChange={handleRememberMe} /> Remember Me
+                                </label>
                             </div>
                             <div className="login-buttons">
-                                <button type="submit" className="btn btn-success btn-block btn-lg" disabled={disable}>{disable ? 'Processing...' : 'Sign In'}</button>
+                                <button type="submit" className="btn btn-success btn-block btn-lg" disabled={disable}>
+                                    {disable ? 'Processing...' : 'Sign In'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -160,4 +175,4 @@ const Login = () => {
     )
 }
 
-export default Login
+export default Login;

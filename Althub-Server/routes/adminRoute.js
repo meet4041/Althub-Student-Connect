@@ -15,7 +15,6 @@ const upload = multer({ storage });
 const admin_controller = require("../controllers/adminController");
 
 //admin routes
-admin_route.post('/registerAdmin', admin_controller.registerAdmin);
 admin_route.post('/adminLogin', admin_controller.adminlogin);
 admin_route.post('/updatepassword', admin_controller.updatePassword);
 admin_route.post('/forgetpassword', admin_controller.forgetPassword);

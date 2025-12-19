@@ -4,6 +4,9 @@ const feedback = new mongoose.Schema({
     userid: {
         type: String,
     },
+    name: { 
+        type: String, 
+    },
     message: {
         type: String,
     },

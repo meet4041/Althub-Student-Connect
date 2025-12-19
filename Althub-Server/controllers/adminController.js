@@ -3,6 +3,7 @@ const config = require("../config/config");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
+const bcryptjs = require("bcryptjs"); // Declared ONCE at the top
 
 const sendresetpasswordMail = async (name, email, token) => {
     try {
@@ -20,18 +21,10 @@ const sendresetpasswordMail = async (name, email, token) => {
             from: config.emailUser,
             to: email,
             subject: 'For Reset Password',
-            html: '<p>Hello ' + name + ', Please copy the link to<a href="http://localhost:3000/new-password?token=' + token + '"> reset your password</a></p>'
+            html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
         }
 
-        transporter.sendMail(mailoptions, function (error, info) {
-            if (error) {
-                console.log("error while sending : ", error);
-            }
-            else {
-                console.log("Mail has been sent :- ", info.response);
-            }
-        })
-
+        transporter.sendMail(mailoptions);
     } catch (error) {
         console.log(error.message);
     }
@@ -39,8 +32,7 @@ const sendresetpasswordMail = async (name, email, token) => {
 
 const createtoken = async (id) => {
     try {
-        const token = jwt.sign({ _id: id }, config.secret_jwt);
-        return token;
+        return jwt.sign({ _id: id }, config.secret_jwt);
     } catch (error) {
         console.log(error.message);
     }
@@ -48,132 +40,84 @@ const createtoken = async (id) => {
 
 const registerAdmin = async (req, res) => {
     try {
-        // FIX: Plain text password storage
-        const spassword = req.body.password; 
-        
+        const { lname, email, phone, password, admin_secret_key } = req.body;
+
+        // 1. Check secret key (Set this in Render Environment Variables)
+        const MASTER_KEY = process.env.ADMIN_REGISTRATION_SECRET || "Althub_Default_Secret_2024";
+
+        if (admin_secret_key !== MASTER_KEY) {
+            return res.status(403).send({ success: false, msg: "Registration Failed: Invalid Secret Master Key" });
+        }
+
+        const adminExists = await Admin.findOne({ email });
+        if (adminExists) {
+            return res.status(400).send({ success: false, msg: "Admin already exists" });
+        }
+
+        // 2. Hash password
+        const hashedPassword = await bcryptjs.hash(password, 10);
+
         const admin = new Admin({
-            name: req.body.lname,
-            phone: req.body.phone,
-            email: req.body.email,
-            password: spassword,
-            profilepic: req.body.profilepic,
+            name: lname,
+            phone: phone,
+            email: email,
+            password: hashedPassword,
+            profilepic: ""
         });
 
-        const adminData = await Admin.findOne({ email: req.body.email });
+        const savedAdmin = await admin.save();
+        const { password: _, ...adminData } = savedAdmin._doc;
 
-        if (adminData) {
-            res.status(400).send({ success: false, msg: "Admin already exists" });
-        }
-        else {
-            const token = await createtoken();
-            
-            // FIX: Secure Cookie for Deployment
-            res.cookie('jwt_token', token, { 
-                httpOnly: true,
-                secure: true, 
-                sameSite: "none"
-            });
-            
-            const admin_data = await admin.save();
-            res.status(200).send({ success: true, data: admin_data });
-        }
-
+        res.status(200).send({ success: true, msg: "Admin created successfully", data: adminData });
     } catch (error) {
-        res.status(400).send(error.message);
-        console.log("Error in Register Admin : " + error.message);
-    }
-}
-
-const uploadAdminImage = async (req, res) => {
-    try {
-        if (req.file !== undefined) {
-            const picture = ({
-                url: '/adminImages/' + req.file.filename,
-            });
-            res.status(200).send({ success: true, data: picture });
-        }
-        else {
-            res.status(400).send({ success: false, msg: "plz select a file" });
-        }
-    } catch (error) {
-        res.status(400).send(error.message);
+        res.status(500).send({ success: false, msg: error.message });
     }
 }
 
 const adminlogin = async (req, res) => {
     try {
-        const email = req.body.email;
-        const password = req.body.password;
-        const adminData = await Admin.findOne({ email: email });
+        const { email, password } = req.body;
+        const adminData = await Admin.findOne({ email });
 
         if (adminData) {
-            // FIX: Plain text comparison for @Althub1212
-            if (password === adminData.password) {
-                
+            const passwordMatch = await bcryptjs.compare(password, adminData.password);
+            if (passwordMatch) {
                 const tokenData = await createtoken(adminData._id);
-                
-                // FIX: Secure Cookie for Deployment
-                res.cookie('jwt_token', tokenData, { 
-                    httpOnly: true, 
-                    expires: new Date(Date.now() + 25892000000), 
-                    secure: true,       // Required for Vercel/Render
-                    sameSite: "none"    // Required for Cross-Site
+                res.cookie('jwt_token', tokenData, {
+                    httpOnly: true,
+                    expires: new Date(Date.now() + 25892000000),
+                    secure: true,
+                    sameSite: "none"
                 });
 
-                const adminResult = {
-                    _id: adminData._id,
-                    name: adminData.name,
-                    phone: adminData.phone,
-                    email: adminData.email,
-                    password: adminData.password,
-                    profilepic: adminData.profilepic,
-                }
-
-                const response = {
-                    success: true,
-                    msg: "user details",
-                    data: adminResult
-                }
-
-                res.status(200).send(response);
-            }
-            else {
-                res.status(400).send({ success: false, msg: "Admin Login details are incorrect (password incorrect)" });
+                const { password: _, ...adminResult } = adminData._doc;
+                res.status(200).send({ success: true, msg: "Login Successful", data: adminResult, token: tokenData });
+            } else {
+                res.status(401).send({ success: false, msg: "Incorrect password" });
             }
         } else {
-            res.status(400).send({ success: false, msg: "Admin Login details are incorrect (Register First)" });
+            res.status(404).send({ success: false, msg: "Admin not found" });
         }
-
     } catch (error) {
-        res.status(400).send(error.message);
-        console.log("Error in Login Admin : " + error.message);
+        res.status(500).send({ success: false, msg: "Internal Server Error" });
     }
 }
 
 const updatePassword = async (req, res) => {
     try {
-        const admin_id = req.body.admin_id;
-        var oldpassword = req.body.oldpassword;
-        var newpassword = req.body.newpassword;
-
+        const { admin_id, oldpassword, newpassword } = req.body;
         const data = await Admin.findOne({ _id: admin_id });
         if (data) {
-            // FIX: Plain text comparison
-            if (oldpassword === data.password) {
-                
-                const adminData = await Admin.findByIdAndUpdate({ _id: admin_id }, {
-                    $set: {
-                        password: newpassword 
-                    }
-                }, { new: true });
-
-                res.status(200).send({ success: true, msg: "Your password has been updated", data: adminData });
+            const match = await bcryptjs.compare(oldpassword, data.password);
+            if (match) {
+                const hashedPassword = await bcryptjs.hash(newpassword, 10);
+                await Admin.findByIdAndUpdate(admin_id, { $set: { password: hashedPassword } });
+                res.status(200).send({ success: true, msg: "Password updated successfully" });
             } else {
-                res.status(400).send({ success: false, msg: "Your Old password is incorrect" });
+                res.status(400).send({ success: false, msg: "Old password incorrect" });
             }
-        }
-        else {
-            res.status(400).send({ success: false, msg: "Admin Id not found!" });
+        } else {
+            res.status(400).send({ success: false, msg: "Admin not found" });
         }
     } catch (error) {
         res.status(400).send(error.message);
@@ -182,25 +126,16 @@ const updatePassword = async (req, res) => {
 
 const forgetPassword = async (req, res) => {
     try {
-        const email = req.body.email;
-        const adminData = await Admin.findOne({ email: email });
+        const { email } = req.body;
+        const adminData = await Admin.findOne({ email });
         if (adminData) {
             const randomString = randomstring.generate();
-            const data = await Admin.updateOne({ email: email }, {
-                $set: {
-                    token: randomString
-                }
-            });
-
+            await Admin.updateOne({ email }, { $set: { token: randomString } });
             sendresetpasswordMail(adminData.name, adminData.email, randomString);
-
-            res.status(200).send({ success: true, msg: "Please Check your inbox of mail and reset your password" });
-
+            res.status(200).send({ success: true, msg: "Please check your email" });
+        } else {
+            res.status(404).send({ success: false, msg: "Email does not exist" });
         }
-        else {
-            res.status(200).send({ success: true, msg: "This Email is not exists!" });
-        }
-
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -211,19 +146,11 @@ const resetpassword = async (req, res) => {
         const token = req.query.token;
         const tokenData = await Admin.findOne({ token: token });
         if (tokenData) {
-            const password = req.body.password;
-            // FIX: Plain text storage
-            const adminData = await Admin.findByIdAndUpdate({ _id: tokenData._id }, {
-                $set: {
-                    password: password, 
-                    token: ''
-                }
-            }, { new: true });
-
-            res.status(200).send({ success: true, msg: "admin password has been reset!", data: adminData });
-        }
-        else {
-            res.status(200).send({ success: true, msg: "This link has been expired!" });
+            const hashedPassword = await bcryptjs.hash(req.body.password, 10);
+            await Admin.findByIdAndUpdate(tokenData._id, { $set: { password: hashedPassword, token: '' } });
+            res.status(200).send({ success: true, msg: "Password reset successfully" });
+        } else {
+            res.status(400).send({ success: false, msg: "Token expired" });
         }
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -232,15 +159,9 @@ const resetpassword = async (req, res) => {
 
 const updateAdmin = async (req, res) => {
     try {
-        var id = req.body.id;
-        var name = req.body.name;
-        var phone = req.body.phone;
-        var email = req.body.email;
-        var profilepic = req.body.profilepic;
-
-        const admin_data = await Admin.findByIdAndUpdate({ _id: id }, { $set: { name: name, phone: phone, email: email, profilepic: profilepic } }, { new: true });
-        res.status(200).send({ success: true, msg: 'admin Updated', data: admin_data });
-
+        const { id, name, phone, email, profilepic } = req.body;
+        const admin_data = await Admin.findByIdAndUpdate(id, { $set: { name, phone, email, profilepic } }, { new: true });
+        res.status(200).send({ success: true, msg: 'Admin Updated', data: admin_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -248,13 +169,8 @@ const updateAdmin = async (req, res) => {
 
 const adminLogout = async (req, res) => {
     try {
-        // FIX: Secure Cookie Clearing
-        res.clearCookie("jwt_token", { 
-            httpOnly: true, 
-            secure: true, 
-            sameSite: "none" 
-        });
-        res.status(200).send({ success: true, msg: "successfully Loged Out" });
+        res.clearCookie("jwt_token", { httpOnly: true, secure: true, sameSite: "none" });
+        res.status(200).send({ success: true, msg: "Logged Out" });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -262,9 +178,7 @@ const adminLogout = async (req, res) => {
 
 const getAdminById = async (req, res) => {
     try {
-        const admin = await Admin.find({
-            _id: req.params._id
-        });
+        const admin = await Admin.findById(req.params._id);
         res.status(200).send({ success: true, data: admin });
     } catch (error) {
         res.status(500).send({ success: false, msg: error.message });
@@ -272,13 +186,6 @@ const getAdminById = async (req, res) => {
 }
 
 module.exports = {
-    registerAdmin,
-    adminlogin,
-    forgetPassword,
-    resetpassword,
-    updatePassword,
-    adminLogout,
-    updateAdmin,
-    uploadAdminImage,
-    getAdminById
+    registerAdmin, adminlogin, forgetPassword, resetpassword,
+    updatePassword, adminLogout, updateAdmin, getAdminById
 }
