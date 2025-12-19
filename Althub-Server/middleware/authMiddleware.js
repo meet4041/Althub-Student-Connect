@@ -2,26 +2,25 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 
 const requireAuth = (req, res, next) => {
-    const token = req.cookies.jwt_token;
+    // SECURE: Check for tokens in cookies
+    // The 400 error in your screenshot often happens if the 'institute_token' 
+    // is expected but not found or formatted incorrectly.
+    const token = req.cookies.institute_token || req.cookies.jwt_token;
+
     if (token) {
         jwt.verify(token, config.secret_jwt, (err, decodedToken) => {
             if (err) {
-                console.log("error in verify token(login first) : " + err.message);
-                res.status(401).send({ success: false, msg: "Login First" });
-            }
-            else {
-                // FIX: Attach the decoded user info to the request object
-                // This allows controllers to see req.user._id
-                req.user = decodedToken; 
-                console.log("Authenticated User ID:", req.user._id);
+                console.error("Token verification failed:", err.message);
+                return res.status(401).send({ success: false, msg: "Login Session Expired" });
+            } else {
+                req.user = decodedToken;
                 next();
             }
         });
-    }
-    else {
-        console.log("No token found");
+    } else {
+        // If no token is found, we send a 401, not a 400.
         res.status(401).send({ success: false, msg: "Authentication Required" });
     }
 }
 
-module.exports = { requireAuth }
+module.exports = { requireAuth };

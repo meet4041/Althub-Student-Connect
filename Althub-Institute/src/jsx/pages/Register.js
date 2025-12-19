@@ -1,186 +1,120 @@
-/* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
-import React, { useEffect } from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ALTHUB_API_URL } from './baseURL';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// This line was causing the error; it will now work if Step 1 is done
+import axiosInstance from '../../service/axios'; 
 
 const Register = () => {
-    const [errors, setErrors] = useState({});
-    const nav = useNavigate();
-    const [user, setUser] = useState({
-        name: "",
-        address: "",
-        phone: "",
-        email: "",
-        image: "",
-        website: "",
-        password: "",
-        cpassword: ""
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+        masterKey: ''
     });
+    const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        setUser({ ...user, [e.target.name]: e.target.value });
+    const handleInput = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const validate = () => {
-        let input = user;
+    const submitHandler = async (e) => {
+        e.preventDefault();
 
-        let errors = {};
-        let isValid = true;
+        // Security check: passwords must match
+        if (formData.password !== formData.confirmPassword) {
+            return toast.error("Passwords do not match!");
+        }
 
-        if (!input["name"]) {
-            isValid = false;
-            errors["name_err"] = "Please Enter Name";
-        }
-        if (!input["address"]) {
-            isValid = false;
-            errors["address_err"] = "Please Enter Address";
-        }
-        if (!input["phone"]) {
-            isValid = false;
-            errors["phone_err"] = "Please Enter Phone Number";
-        }
-        if (!input["email"]) {
-            isValid = false;
-            errors["email_err"] = "Please Enter Email";
-        }
-        if (!input["password"]) {
-            isValid = false;
-            errors["password_err"] = "Please Enter Password";
-        }
-        if (!input["website"]) {
-            isValid = false;
-            errors["website_err"] = "Please Enter Website";
-        }
-        if (input["password"].length < 8) {
-            isValid = false;
-            errors["password_err"] = "Password must be at least 8 characters long";
-        }
-        if (input["cpassword"] !== input["password"]) {
-            isValid = false;
-            errors["cpassword_err"] = "Password not match";
-        }
-        setErrors(errors);
-        return isValid;
-    };
+        setLoading(true);
+        try {
+            // POST request to your secured register route
+            const response = await axiosInstance.post('/api/registerInstitute', {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                password: formData.password,
+                masterKey: formData.masterKey // Authorizes registration
+            });
 
-    const handleSubmit = () => {
-        if (validate()) {
-            var body = {
-                name: user.name,
-                address: user.address,
-                image: user.image,
-                phone: user.phone,
-                email: user.email,
-                password: user.password,
-                website: user.website,
-            };
-            const myurl = `${ALTHUB_API_URL}/api/registerInstitute`;
-            axios({
-                method: "post",
-                url: myurl,
-                data: body,
-            })
-                .then((res) => {
-                    toast.success("Register Successful");
-                    setTimeout(() => {
-                        nav("/login");
-                    }, 1000)
-                })
-                .catch((err) => {
-                    toast.error(err.response.data.msg);
-                });
-        }
-        else {
-            toast.error("Some Fields Missing!!")
+            if (response.data.success) {
+                toast.success("Institute Registered Successfully!");
+                setTimeout(() => navigate('/login'), 2000);
+            }
+        } catch (error) {
+            // Displays specific error (e.g., "Invalid Master Key")
+            toast.error(error.response?.data?.msg || "Registration failed.");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleImgChange = (e) => {
-        var body = new FormData();
-        body.append("image", e.target.files[0]);
-        axios({
-            method: "post",
-            headers: { "Content-Type": "multipart/form-data" },
-            url: `${ALTHUB_API_URL}/api/uploadInstituteImage`,
-            data: body,
-        })
-            .then((response) => {
-                setUser({ ...user, image: response.data.data.url });
-            })
-            .catch((error) => { });
-    };
+    useEffect(() => {
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
+        const element = document.getElementById("page-container");
+        if (element) element.classList.add("show");
+    }, []);
 
     return (
-        <>
-            <div className="form-fields-container">
-                <div className="left-container">
-                    <div className="left-container-content">
-                        <h2>Already a member ?</h2>
-                        <p>
-                            To keep track on your dashboard please login with your personal
-                            info
-                        </p>
-                        <a onClick={() => {
-                            nav("/login");
-                        }}>
-                            Login
-                        </a>
+        <div className="login-cover">
+            <ToastContainer />
+            <div className="login-cover-bg"></div>
+            <div id="page-container" className="fade">
+                <div className="login login-v2">
+                    <div className="login-header">
+                        <div className="brand">
+                            <b>Althub</b> Institute
+                            <small>Secure Institute Registration</small>
+                        </div>
                     </div>
-                    <img src="/img/Usability testing-bro.png" alt="" />
-                </div>
-                <div className="right-container">
-                    <form id="msform">
-                        <fieldset>
-                            <h2 className="fs-title">Institute Details</h2>
-                            <h3 className="fs-subtitle">Tell us something more about your Institute</h3>
-
-                            <input type="text" name="name" placeholder=" Name" value={user.name} onChange={handleChange} />
-                            <div className="text-danger">{errors.name_err}</div>
-
-                            <input type="text" name="address" placeholder="Address" value={user.address} onChange={handleChange} />
-                            <div className="text-danger">{errors.address_err}</div>
-
-                            <input type="text" name="phone" placeholder="Contact Number" value={user.phone} onChange={handleChange} />
-                            <div className="text-danger">{errors.phone_err}</div>
-
-                            <input type="text" name="email" placeholder="Email" value={user.email} onChange={handleChange} />
-                            <div className="text-danger">{errors.email_err}</div>
-
-                            <input type="file" name="image" placeholder="Select your profile picture" onChange={handleImgChange} />
-                            {user.image ? (
-                                <div>
-                                    <img
-                                        src={`${ALTHUB_API_URL}${user.image}`}
-                                        alt=""
-                                        height={150}
-                                        width={150}
-                                        style={{ objectFit: "cover", borderRadius: "50%" }}
-                                    />
-                                </div>
-                            ) : (
-                                ""
-                            )}
-
-                            <input type="text" name="website" placeholder="Website URL" value={user.website} onChange={handleChange} />
-                            <div className="text-danger">{errors.website_err}</div>
-
-                            <input type="password" name="password" placeholder="Password" value={user.password} onChange={handleChange} />
-                            <div className="text-danger">{errors.password_err}</div>
-
-                            <input type="password" name="cpassword" placeholder="Confirm Password" value={user.cpassword} onChange={handleChange} />
-                            <div className="text-danger">{errors.cpassword_err}</div>
-
-                            <input type="button" name="Submit" className="next action-button" value="SUBMIT" onClick={handleSubmit} />
-                        </fieldset>
-                    </form>
+                    <div className="login-content">
+                        <form onSubmit={submitHandler}>
+                            <div className="form-group m-b-15">
+                                <input type="text" name="name" className="form-control form-control-lg" placeholder="Institute Name" onChange={handleInput} required />
+                            </div>
+                            <div className="form-group m-b-15">
+                                <input type="email" name="email" className="form-control form-control-lg" placeholder="Email Address" onChange={handleInput} required />
+                            </div>
+                            <div className="form-group m-b-15">
+                                <input type="text" name="phone" className="form-control form-control-lg" placeholder="Phone Number" onChange={handleInput} required />
+                            </div>
+                            <div className="form-group m-b-15">
+                                <input type="password" name="password" className="form-control form-control-lg" placeholder="Password" onChange={handleInput} required />
+                            </div>
+                            <div className="form-group m-b-15">
+                                <input type="password" name="confirmPassword" className="form-control form-control-lg" placeholder="Confirm Password" onChange={handleInput} required />
+                            </div>
+                            <div className="form-group m-b-15">
+                                <label className="text-white">Security Master Key:</label>
+                                <input 
+                                    type="password" 
+                                    name="masterKey" 
+                                    className="form-control form-control-lg" 
+                                    style={{ border: '2px solid #ff5b57', background: '#2d353c', color: '#fff' }} 
+                                    placeholder="Enter Security Key" 
+                                    onChange={handleInput} 
+                                    required 
+                                />
+                            </div>
+                            <div className="login-buttons">
+                                <button type="submit" className="btn btn-success btn-block btn-lg" disabled={loading}>
+                                    {loading ? "Registering..." : "Register Now"}
+                                </button>
+                            </div>
+                            <div className="m-t-20 text-white">
+                                Already registered? <Link to="/login" className="text-success">Login</Link>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </>
-    )
-}
+        </div>
+    );
+};
 
-export default Register
+export default Register;
