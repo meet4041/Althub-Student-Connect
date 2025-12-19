@@ -5,6 +5,7 @@ user_route.use(bodyParser.json());
 user_route.use(bodyParser.urlencoded({ extended: true }));
 const { uploadSingle } = require('../db/storage');
 const user_controller = require("../controllers/userController");
+const { requireAuth } = require("../middleware/authMiddleware");
 
 // --- OLD ROUTE (Kept for compatibility) ---
 user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
@@ -19,12 +20,10 @@ user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
     }
 });
 
-// --- NEW CRUD ROUTES for PROFILE IMAGE ---
-// 1. Update: Expects form-data with key 'image' and 'userid'
-user_route.put('/updateProfilePic', uploadSingle('image'), user_controller.updateProfilePic);
-
-// 2. Delete: Expects user ID in the URL
 user_route.put('/deleteProfilePic/:id', user_controller.deleteProfilePic);
+user_route.put('/updateProfilePic', requireAuth, uploadSingle('image'), user_controller.updateProfilePic);
+user_route.post('/userProfileEdit', requireAuth, user_controller.userProfileEdit);
+user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);
 
 
 // --- EXISTING ROUTES ---
@@ -34,7 +33,6 @@ user_route.post('/userLogin', user_controller.userlogin);
 user_route.post('/userUpdatePassword', user_controller.updatePassword);
 user_route.post('/userForgetPassword', user_controller.forgetPassword);
 user_route.post('/userResetPassword', user_controller.resetpassword);
-user_route.post('/userProfileEdit', user_controller.userProfileEdit);
 user_route.post('/searchUser', user_controller.searchUser);
 user_route.post('/getTopUsers', user_controller.getTopUsers);
 user_route.get('/searchUserById/:_id', user_controller.searchUserById);
@@ -43,6 +41,5 @@ user_route.get('/getUsers', user_controller.getUsers);
 user_route.get('/getUsersOfInstitute/:institute', user_controller.getUsersOfInstitute);
 user_route.put("/follow/:id", user_controller.followUser);
 user_route.put("/unfollow/:id", user_controller.unfollowUser);
-user_route.delete("/deleteUser/:id", user_controller.deleteUser);
 
 module.exports = user_route;

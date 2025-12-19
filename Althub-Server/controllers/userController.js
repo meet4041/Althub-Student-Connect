@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const Education = require("../models/educationModel"); 
+const Education = require("../models/educationModel");
 const bcryptjs = require("bcryptjs");
 const config = require("../config/config");
 const jwt = require("jsonwebtoken");
@@ -75,7 +75,7 @@ const getLatestEducation = (educations) => {
 
 const createFlexibleRegex = (text) => {
     if (!text) return null;
-    const clean = text.replace(/[\W_]+/g, ""); 
+    const clean = text.replace(/[\W_]+/g, "");
     const pattern = clean.split('').join('[\\W_]*');
     return new RegExp(pattern, "i");
 };
@@ -165,15 +165,38 @@ const resetpassword = async (req, res) => {
 }
 const userProfileEdit = async (req, res) => {
     try {
-        const new_data = await User.findByIdAndUpdate({ _id: req.body.id }, { $set: req.body }, { new: true });
+        // ALWAYS use the ID from the token (req.user), NEVER from req.body
+        const loggedInUserId = req.user._id;
+
+        const new_data = await User.findByIdAndUpdate(
+            { _id: loggedInUserId },
+            { $set: req.body },
+            { new: true }
+        );
         res.status(200).send({ success: true, msg: 'Profile Updated', data: new_data });
-    } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
 }
 const deleteUser = async (req, res) => {
     try {
-        await User.deleteOne({ _id: req.params.id });
+        const userIdToDelete = req.params.id;
+        const loggedInUserId = req.user._id; // Attached by your fixed middleware
+
+        // SECURITY CHECK: Only allow users to delete their OWN account
+        if (userIdToDelete !== loggedInUserId) {
+            return res.status(403).send({
+                success: false,
+                msg: "Security Alert: Unauthorized deletion attempt!"
+            });
+        }
+
+        await User.deleteOne({ _id: userIdToDelete });
+        res.clearCookie("jwt_token");
         res.status(200).send({ success: true, msg: 'Deleted successfully' });
-    } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
 }
 
 // --- OPTIMIZED ADVANCED SEARCH ---
@@ -192,7 +215,7 @@ const searchUser = async (req, res) => {
                 eduQuery.enddate = { $regex: new RegExp(year.toString()) };
             }
             educationUserIds = await Education.find(eduQuery).distinct('userid');
-            
+
             if (educationUserIds.length === 0) {
                 return res.status(200).send({ success: true, msg: 'No User Found', data: [] });
             }
@@ -218,8 +241,8 @@ const searchUser = async (req, res) => {
             const locRegex = new RegExp(location, "i");
             const locQuery = { $or: [{ city: { $regex: locRegex } }, { state: { $regex: locRegex } }] };
             if (matchStage.$or) {
-                matchStage.$and = [ { $or: matchStage.$or }, locQuery ];
-                delete matchStage.$or; 
+                matchStage.$and = [{ $or: matchStage.$or }, locQuery];
+                delete matchStage.$or;
             } else {
                 Object.assign(matchStage, locQuery);
             }
@@ -241,9 +264,9 @@ const searchUser = async (req, res) => {
                 from: Education.collection.name, // Dynamically gets 'educationtbs' (or whatever it is)
                 let: { userId: "$_id" },
                 pipeline: [
-                    { 
-                        $match: { 
-                            $expr: { $eq: ["$userid", { $toString: "$$userId" }] } 
+                    {
+                        $match: {
+                            $expr: { $eq: ["$userid", { $toString: "$$userId" }] }
                         }
                     },
                     { $project: { course: 1, enddate: 1 } }
@@ -267,9 +290,9 @@ const searchUser = async (req, res) => {
             const isAlumni = checkAlumniStatus(user.educationList);
             const latestEdu = getLatestEducation(user.educationList);
             delete user.educationList;
-            
-            return { 
-                ...user, 
+
+            return {
+                ...user,
                 isAlumni,
                 latestCourse: latestEdu.course,
                 latestYear: latestEdu.year
@@ -297,7 +320,7 @@ const searchUserById = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 const userLogout = async (req, res) => {
-    try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); } 
+    try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); }
     catch (error) { res.status(400).send({ success: false }); }
 }
 const getUsers = async (req, res) => {

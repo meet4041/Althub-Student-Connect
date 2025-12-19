@@ -7,20 +7,21 @@ const requireAuth = (req, res, next) => {
         jwt.verify(token, config.secret_jwt, (err, decodedToken) => {
             if (err) {
                 console.log("error in verify token(login first) : " + err.message);
-                res.status(400).send({ success: false, msg: "Login First" });
+                res.status(401).send({ success: false, msg: "Login First" });
             }
             else {
-                console.log(decodedToken);
+                // FIX: Attach the decoded user info to the request object
+                // This allows controllers to see req.user._id
+                req.user = decodedToken; 
+                console.log("Authenticated User ID:", req.user._id);
                 next();
             }
         });
     }
     else {
-        console.log("Login first");
-        res.status(400).send({ success: false, msg: "Login First" });
+        console.log("No token found");
+        res.status(401).send({ success: false, msg: "Authentication Required" });
     }
 }
 
-module.exports = {
-    requireAuth
-}
+module.exports = { requireAuth }
