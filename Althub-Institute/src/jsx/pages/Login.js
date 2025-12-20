@@ -6,6 +6,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
+// Ensure cookies are sent with requests
+axios.defaults.withCredentials = true;
+
 const Login = () => {
     const navigate = useNavigate();
     const [loginInfo, setLoginInfo] = useState({
@@ -14,67 +17,78 @@ const Login = () => {
     });
     const [check, setCheck] = useState(false);
     const [errors, setErrors] = useState({});
-    const [err] = useState('');
     const [disable, setDisable] = useState(false);
 
     const InputEvent = (e) => {
-        const newLoginInfo = { ...loginInfo };
-        newLoginInfo[e.target.name] = e.target.value;
-        setLoginInfo(newLoginInfo);
+        const { name, value } = e.target;
+        setLoginInfo((prev) => ({ ...prev, [name]: value }));
     }
 
     const handleRememberMe = (e) => {
-        if (e.target.checked) {
-            setCheck(true)
-        } else {
-            setCheck(false)
-        }
+        setCheck(e.target.checked);
     }
 
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            var bodyFormData = new URLSearchParams();
-            bodyFormData.append('email', loginInfo.email);
-            bodyFormData.append('password', loginInfo.password);
+            
             const myurl = `${ALTHUB_API_URL}/api/instituteLogin`;
-            axios({
-                method: "post",
-                url: myurl,
-                data: bodyFormData,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            }).then((response) => {
+            
+            axios.post(myurl, {
+                email: loginInfo.email,
+                password: loginInfo.password
+            })
+            .then((response) => {
                 if (response.data.success === true) {
-                    toast.success('Login Successfully')
+                    toast.success('Login Successfully');
+                    
+                    // --- CRITICAL FIX: Save Token and Details ---
+                    // Many dashboards check for 'token' or 'userDetails' specifically
+                    localStorage.setItem('token', response.data.token); 
+                    localStorage.setItem('userDetails', JSON.stringify(response.data.data));
+                    
                     localStorage.setItem('AlmaPlus_institute_Id', response.data.data._id);
                     localStorage.setItem('AlmaPlus_institute_Name', response.data.data.name);
-                    if (check === true) {
-                        localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Enabled')
+                    
+                    // Set default header for future requests in this session
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+                    if (check) {
+                        localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Enabled');
+                        localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email);
+                        localStorage.setItem('AlmaPlus_Admin_Password', loginInfo.password);
                     } else {
-                        localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Disabled')
+                        localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Disabled');
                     }
+                    
                     setDisable(false);
-                    navigate('/dashboard');
+                    // Use replace to prevent back-button looping
+                    navigate('/dashboard', { replace: true });
                 } else {
                     setDisable(false);
-                    toast.error('Incorrect Credentials')
+                    toast.error('Incorrect Credentials');
                 }
             }).catch((error) => {
                 setDisable(false);
+                console.error("Login Error:", error);
+                if (error.response && error.response.data && error.response.data.msg) {
+                    toast.error(error.response.data.msg);
+                } else {
+                    toast.error("Login Failed. Please check server connection.");
+                }
             })
         }
     }
 
     const validate = () => {
-        let input = loginInfo;
         let errors = {};
         let isValid = true;
-        if (!input["email"]) {
+        if (!loginInfo.email) {
             isValid = false;
             errors["email_err"] = "Please Enter Email";
         }
-        if (!input["password"]) {
+        if (!loginInfo.password) {
             isValid = false;
             errors["password_err"] = "Please Enter Password";
         }
@@ -83,18 +97,24 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (localStorage.getItem("AlmaPlus_institute_Id") !== null) {
+        // If we already have a token or ID, go to dashboard
+        if (localStorage.getItem("AlmaPlus_institute_Id") || localStorage.getItem("token")) {
             navigate('/dashboard');
         }
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
+        
+        // Clean up UI loader
+        const loader = document.getElementById('page-loader');
+        if(loader) loader.style.display = 'none';
+        
+        const container = document.getElementById("page-container");
+        if(container) container.classList.add("show");
+
         if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled') {
             setCheck(true);
             setLoginInfo({
-                email: localStorage.getItem('AlmaPlus_Admin_Email'),
-                password: localStorage.getItem('AlmaPlus_Admin_Password')
-            })
+                email: localStorage.getItem('AlmaPlus_Admin_Email') || '',
+                password: localStorage.getItem('AlmaPlus_Admin_Password') || ''
+            });
         }
     }, [navigate]);
 
@@ -121,19 +141,18 @@ const Login = () => {
                         </div>
                     </div>
                     <div className="login-content">
-                        <form onSubmit={(e) => submitHandler(e)} >
+                        <form onSubmit={submitHandler}>
                             <div className="form-group m-b-20">
                                 <input type="text" className="form-control form-control-lg" placeholder="Email Address" name="email" onChange={InputEvent} value={loginInfo.email} />
                                 <div className="text-danger">{errors.email_err}</div>
                             </div>
                             <div className="form-group m-b-20">
                                 <input type="password" className="form-control form-control-lg my-3" placeholder="Password" name="password" onChange={InputEvent} value={loginInfo.password} />
-                                <a onClick={() => navigate('/forgot-password')} style={{ color: "white", marginLeft: "243px", textDecoration: "underline" }}>Forgot Password</a>
+                                <a onClick={() => navigate('/forgot-password')} style={{ color: "white", marginLeft: "243px", textDecoration: "underline", cursor: "pointer" }}>Forgot Password</a>
                                 <div className="text-danger">{errors.password_err}</div>
-                                <div className='text-danger'>{err}</div>
                             </div>
                             <div className="form-group m-b-20">
-                                <input type='checkbox' checked={check} value={check} onChange={handleRememberMe} /> Remember Me
+                                <input type='checkbox' checked={check} onChange={handleRememberMe} /> Remember Me
                             </div>
                             <div className="login-buttons">
                                 <button type="submit" className="btn btn-success btn-block btn-lg" disabled={disable}>{disable ? 'Processing...' : 'Sign In'}</button>
@@ -146,4 +165,4 @@ const Login = () => {
     )
 }
 
-export default Login
+export default Login;

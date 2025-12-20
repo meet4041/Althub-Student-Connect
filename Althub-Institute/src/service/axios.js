@@ -1,17 +1,33 @@
 import axios from 'axios';
+import { ALTHUB_API_URL } from '../jsx/pages/baseURL';
 
-// This instance ensures secure communication with your backend
-const axiosInstance = axios.create({
-    baseURL: 'http://localhost:5001', // Ensure this matches your Server port
-    withCredentials: true, // REQUIRED: To send/receive secure HTTP-only cookies
+const instance = axios.create({
+    baseURL: ALTHUB_API_URL,
+    withCredentials: true // Important for cookies
 });
 
-// Global error handling
-axiosInstance.interceptors.response.use(
-    (response) => response,
+// Add a request interceptor to attach the token
+instance.interceptors.request.use(
+    function (config) {
+        const token = localStorage.getItem('token'); 
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    function (error) {
+        return Promise.reject(error);
+    }
+);
+
+// Add a response interceptor to handle session expiry
+instance.interceptors.response.use(
+    (response) => {
+        return response;
+    },
     (error) => {
-        // If server returns 401, the session is invalid
         if (error.response && error.response.status === 401) {
+            // If token is invalid/expired, clear storage and redirect
             localStorage.clear();
             window.location.href = '/login';
         }
@@ -19,4 +35,4 @@ axiosInstance.interceptors.response.use(
     }
 );
 
-export default axiosInstance;
+export default instance;

@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Loader from '../layout/Loader'
 import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
-// FIX: Use your secure axiosInstance instead of the default axios
 import axiosInstance from '../../service/axios'; 
 
 function Dashboard() {
@@ -17,16 +16,30 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Initialize dashboard layout and fetch stored credentials
-        const loader = document.getElementById('page-loader');
-        const element = document.getElementById("page-container");
-        if (loader) loader.style.display = 'none';
-        if (element) element.classList.add("show");
+        // --- 1. UI Initialization Fixes ---
         
+        // Hide Loader securely so it doesn't block clicks
+        const loader = document.getElementById('page-loader');
+        if (loader) {
+            loader.classList.remove('show');
+            loader.classList.add('d-none'); // Bootstrap hide utility
+            loader.style.display = 'none';  // Force inline hide
+        }
+
+        // Show main container
+        const element = document.getElementById("page-container");
+        if (element) element.classList.add("show");
+
+        // RE-INITIALIZE TEMPLATE SCRIPTS
+        // This makes the Sidebar, Mobile Menu, and Profile Dropdown clickable again
+        if (window.App) {
+            window.App.init();
+        }
+
+        // --- 2. Auth & Data Fetching ---
         const id = localStorage.getItem("AlmaPlus_institute_Id");
         const name = localStorage.getItem("AlmaPlus_institute_Name");
 
-        // Redirect if session data is missing
         if (!id || !name) {
             navigate('/login');
             return;
@@ -37,7 +50,6 @@ function Dashboard() {
         setLoading(false);
     }, [navigate]);
     
-    // Fetch statistics once institute data is available
     useEffect(() => {
         if (institute_Id && institute_Name) {
             fetchAllStats();
@@ -58,7 +70,6 @@ function Dashboard() {
 
     const getTotalUser = async () => {
         try {
-            // FIX: axiosInstance automatically includes credentials/cookies
             const response = await axiosInstance.get(`/api/getUsersOfInstitute/${institute_Name}`);
             if (response.data.success === true) {
                 setUsers(response.data.data.length);
@@ -151,4 +162,4 @@ function Dashboard() {
     )
 }
 
-export default Dashboard
+export default Dashboard;

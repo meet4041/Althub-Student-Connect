@@ -1,8 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify';
-import axios from 'axios';
+import axios from '../../service/axios'; // Use the secure axios
 import { ALTHUB_API_URL } from '../pages/baseURL';
 
 function Menu() {
@@ -13,79 +12,85 @@ function Menu() {
    const [eventsClass, setEventsClass] = useState("");
    const [postsClass, setPostsClass] = useState("");
    const [aidClass, setAidClass] = useState("");
-
-   useEffect(() => {
-      if (typeof window !== 'undefined') {
-         const id = localStorage.getItem("AlmaPlus_institute_Id");
-         if (id == null) {
-            toast.error("Please login first...!");
-            navigate(`/`);
-            return;
-         }
-         setInstitute_Id(id);
-         
-         const pathname = window.location.pathname;
-         setDashboardClass(pathname.match(/^\/dashboard/) ? "active" : "");
-         setUsersClass(pathname.match(/^\/users/) ? "active" : "");
-         setEventsClass(pathname.match(/^\/events/) ? "active" : "");
-         setPostsClass(pathname.match(/^\/posts/) ? "active" : "");
-         setAidClass(pathname.match(/^\/financial-aid/) ? "active" : "");
-      }
-   }, [navigate]);
-
-   const Logout = () => {
-      if (typeof window !== 'undefined') {
-         localStorage.removeItem('AlmaPlus_institute_Id');
-      }
-      navigate(`/`);
-   }
    const [profileInfo, setProfileInfo] = useState({
-      name: '',
+      name: 'Institute',
       image: ''
    });
 
-   const getData = () => {
-      if (institute_Id) {
-         const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
-         axios({
-            method: "get",
-            url: myurl,
-         }).then((response) => {
+   useEffect(() => {
+      const id = localStorage.getItem("AlmaPlus_institute_Id");
+      if (!id) {
+         // Don't toast here to avoid loop, just let Dashboard handle redirect
+         return;
+      }
+      setInstitute_Id(id);
+      
+      // Highlight active menu item
+      const pathname = window.location.pathname;
+      setDashboardClass(pathname.includes("/dashboard") ? "active" : "");
+      setUsersClass(pathname.includes("/users") ? "active" : "");
+      setEventsClass(pathname.includes("/events") ? "active" : "");
+      setPostsClass(pathname.includes("/posts") ? "active" : "");
+      setAidClass(pathname.includes("/financial-aid") ? "active" : "");
+      
+      getData(id);
+   }, [navigate]);
+
+   const Logout = () => {
+      localStorage.clear(); // Clear all auth data
+      navigate(`/login`);
+   }
+
+   const getData = (id) => {
+      if (id) {
+         axios.get(`/api/getInstituteById/${id}`)
+         .then((response) => {
             if (response.data.success === true) {
                setProfileInfo({
                   name: response.data.data.name,
                   image: response.data.data.image
                })
             }
-         });
+         })
+         .catch(err => console.error("Menu fetch error", err));
       }
    };
-   useEffect(() => getData(), [institute_Id])
 
    return (
       <>
          <div id="header" className="header navbar-default">
             <div className="navbar-header">
                <Link to="/dashboard" className="navbar-brand">
-                  <img src='Logo1.jpeg' style={{ marginRight: '5px' , width:"1000px"}} alt="logo" />
-                  <b>Institute</b></Link>
+                  <img src='Logo1.jpeg' style={{ marginRight: '10px' , width:"30px", borderRadius: "4px"}} alt="logo" />
+                  <b>Institute</b>
+               </Link>
+               {/* Mobile Sidebar Toggle Button */}
+               <button type="button" className="navbar-toggle" data-click="sidebar-toggled">
+                  <span className="icon-bar"></span>
+                  <span className="icon-bar"></span>
+                  <span className="icon-bar"></span>
+               </button>
             </div>
+            
             <ul className="navbar-nav navbar-right">
                <li className="dropdown navbar-user">
-                  <a className="dropdown-toggle" data-toggle="dropdown">
-                     <img src={`${ALTHUB_API_URL}${profileInfo.image}`} alt="" />
+                  <a href="#" className="dropdown-toggle" data-toggle="dropdown" style={{cursor: 'pointer'}}>
+                     <img src={profileInfo.image ? `${ALTHUB_API_URL}${profileInfo.image}` : 'assets/img/profile1.png'} alt="" />
                      <span className="d-none d-md-inline">{profileInfo.name}</span> <b className="caret"></b>
                   </a>
                   <div className="dropdown-menu dropdown-menu-right">
                      <Link to="/profile" className="dropdown-item">Edit Profile</Link>
-                     <a onClick={Logout} className="dropdown-item">Log Out</a>
+                     <div className="dropdown-divider"></div>
+                     <a onClick={Logout} className="dropdown-item" style={{cursor: 'pointer'}}>Log Out</a>
                   </div>
                </li>
             </ul>
          </div>
+         
          <div id="sidebar" className="sidebar">
             <div data-scrollbar="true" data-height="100%">
                <ul className="nav">
+                  <li className="nav-header">Navigation</li>
                   <li className={dashboardClass}>
                      <Link to="/dashboard" >
                         <i className="fa fa-th-large"></i>
@@ -116,6 +121,9 @@ function Menu() {
                         <span>Scholarship</span>
                      </Link>
                   </li>
+                  
+                  {/* Minifier button for sidebar */}
+                  <li><a href="javascript:;" className="sidebar-minify-btn" data-click="sidebar-minify"><i className="fa fa-angle-double-left"></i></a></li>
                </ul>
             </div>
          </div>

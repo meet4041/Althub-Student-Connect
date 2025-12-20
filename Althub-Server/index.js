@@ -17,26 +17,29 @@ app.set("trust proxy", 1);
 app.use(helmet()); 
 app.use(compression()); 
 app.use(express.json());
+// FIX: Added urlencoded to handle standard form submissions
+app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser());
 
 // --- BRUTE FORCE PROTECTION (RATE LIMITING) ---
-// This configuration freezes an IP for 1 hour after 10 failed attempts
+// FIX: Relaxed limits for development testing
 const loginLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour window
-  max: 10, // Limit each IP to 10 requests per window
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: 100, // Limit each IP to 100 requests per window (increased for testing)
   message: {
     success: false,
-    msg: "Too many login attempts. Your access is frozen for 1 hour. Please try again later."
+    msg: "Too many login attempts. Please try again in 15 minutes."
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true, 
+  legacyHeaders: false, 
 });
 
 // --- SECURE CORS CONFIGURATION ---
 const allowedOrigins = [
   'https://althub-student-connect.vercel.app', 
   'https://althub-admin.vercel.app',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:3001' // Added common react port just in case
 ];
 
 const corsOptions = {
@@ -74,7 +77,6 @@ const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
 // --- PROTECTING LOGIN ROUTES ---
-// Apply the limiter only to login endpoints to prevent locking out valid users from other features
 app.use("/api/adminLogin", loginLimiter);
 app.use("/api/instituteLogin", loginLimiter);
 
