@@ -93,8 +93,8 @@ const adminLogin = async (req, res) => {
 
         const { password: _, tokenVersion: __, ...data } = adminData._doc;
 
-        // MASKED: Sending 401 for success as requested
-        return res.status(401).send({
+        // MASKED: Sending 200 for success as requested
+        return res.status(200).send({
             success: true,
             msg: "Login Successful",
             data: { ...data, token }
