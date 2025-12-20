@@ -10,9 +10,26 @@ const axiosInstance = axios.create({
 axios.defaults.withCredentials = true;
 
 /**
- * Response Interceptor
- * Updated to handle your special security requirement where even successful
- * logins return a 401 status code.
+ * REQUEST INTERCEPTOR (Critical for Safari)
+ * Safari blocks third-party cookies. We must manually attach the token 
+ * from LocalStorage to the Authorization header to ensure the user stays logged in.
+ */
+axiosInstance.interceptors.request.use(
+    async (config) => {
+        const token = localStorage.getItem('AlmaPlus_admin_Token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+/**
+ * RESPONSE INTERCEPTOR
+ * Handles global errors and your specific 401 logic.
  */
 axiosInstance.interceptors.response.use(
     (response) => {
@@ -31,9 +48,6 @@ axiosInstance.interceptors.response.use(
 
         // Actual Security Failures (Unauthorized or Forbidden)
         if (response && (response.status === 401 || response.status === 403)) {
-            const errorMsg = response.data.msg;
-            
-            // If the error is real (not your masked success), clear storage and logout
             console.warn("Session expired or unauthorized. Logging out...");
             
             // Clear all admin data from storage
@@ -41,6 +55,7 @@ axiosInstance.interceptors.response.use(
             localStorage.removeItem('AlmaPlus_admin_Email');
             localStorage.removeItem('AlmaPlus_admin_Token'); 
             localStorage.removeItem('AlmaPlus_admin_Name');
+            localStorage.removeItem('AlmaPlus_admin_Pic'); // Added based on your Menu.jsx usage
             
             // Redirect to login page if not already there
             if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
@@ -51,5 +66,30 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+/**
+ * Securely fetches an image as a Blob using the authenticated axios instance.
+ * @param {string} imageId - The ID of the image to fetch
+ * @returns {Promise<string>} - A local URL (blob:...) that can be used in <img src>
+ */
+export const fetchSecureImage = async (imageId) => {
+  try {
+    // If the ID is empty or null, return null immediately
+    if (!imageId) return null;
+
+    // Check if the input is already a full URL (legacy support)
+    if (imageId.startsWith('http')) return imageId;
+
+    const response = await axiosInstance.get(`/api/images/${imageId}`, {
+      responseType: 'blob' // Critical: tells axios to handle the response as binary data
+    });
+    
+    // Create a local URL for the blob
+    return URL.createObjectURL(response.data);
+  } catch (error) {
+    console.error("Failed to fetch secure image:", error);
+    return null; // Return null on error so the UI can show a placeholder
+  }
+};
 
 export default axiosInstance;
