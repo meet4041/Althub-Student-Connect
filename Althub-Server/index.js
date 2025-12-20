@@ -5,27 +5,25 @@ const cors = require("cors");
 const compression = require("compression");
 const http = require("http");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit"); // SECURE: Added for brute-force protection
+const rateLimit = require("express-rate-limit"); 
 const { connectToMongo } = require("./db/conn");
 
 const app = express();
 const port = process.env.PORT || 5001;
 
 // --- SECURITY & SERVER CONFIGURATION ---
-app.set("trust proxy", 1); 
+app.set("trust proxy", 1); // Required for Render
 
 app.use(helmet()); 
 app.use(compression()); 
 app.use(express.json());
-// FIX: Added urlencoded to handle standard form submissions
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser());
 
-// --- BRUTE FORCE PROTECTION (RATE LIMITING) ---
-// FIX: Relaxed limits for development testing
+// --- BRUTE FORCE PROTECTION ---
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes window
-  max: 100, // Limit each IP to 100 requests per window (increased for testing)
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
   message: {
     success: false,
     msg: "Too many login attempts. Please try again in 15 minutes."
@@ -38,16 +36,23 @@ const loginLimiter = rateLimit({
 const allowedOrigins = [
   'https://althub-student-connect.vercel.app', 
   'https://althub-admin.vercel.app',
+  // Add your SPECIFIC Vercel domain if it's different (e.g. from your browser address bar)
+  'https://althub-student-connect-git-main-meet4041.vercel.app', 
   'http://localhost:3000',
-  'http://localhost:3001' // Added common react port just in case
+  'http://localhost:3001',
+  'http://localhost:5173'
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      // --- DEBUGGING: Log the blocked origin to the console ---
+      console.log("BLOCKED BY CORS -> Origin tried:", origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
