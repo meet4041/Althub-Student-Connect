@@ -1,14 +1,38 @@
 const express = require("express");
 const user_route = express();
 const bodyParser = require("body-parser");
+
+// Middleware Setup
 user_route.use(bodyParser.json());
 user_route.use(bodyParser.urlencoded({ extended: true }));
+
+// Imports
 const { uploadSingle } = require('../db/storage');
 const user_controller = require("../controllers/userController");
-const { requireAuth } = require("../middleware/authMiddleware");
+const { requireAuth } = require("../middleware/authMiddleware"); // Ensure this path matches your file structure
 
-// --- OLD ROUTE (Kept for compatibility) ---
-user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
+// --- PUBLIC ROUTES (No Login Required) ---
+// These must remain public so users can sign up/login/recover accounts
+user_route.post('/register', user_controller.registerUser);
+user_route.post('/userLogin', user_controller.userlogin);
+user_route.post('/userForgetPassword', user_controller.forgetPassword);
+user_route.post('/userResetPassword', user_controller.resetpassword);
+user_route.get('/userLogout', user_controller.userLogout); // Logout should be accessible even if token is expired
+
+// --- PROTECTED ROUTES (Login Required) ---
+// I have added 'requireAuth' to all these routes to secure your data.
+
+// 1. Profile Management
+user_route.post('/userUpdatePassword', requireAuth, user_controller.updatePassword);
+user_route.post('/userProfileEdit', requireAuth, user_controller.userProfileEdit);
+user_route.put('/deleteProfilePic/:id', requireAuth, user_controller.deleteProfilePic); // Added requireAuth for safety
+user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);
+
+// 2. Image Uploads
+user_route.put('/updateProfilePic', requireAuth, uploadSingle('image'), user_controller.updateProfilePic);
+
+// OLD ROUTE (Kept for compatibility but secured)
+user_route.post('/uploadUserImage', requireAuth, uploadSingle('profilepic'), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
         const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
@@ -20,26 +44,18 @@ user_route.post('/uploadUserImage', uploadSingle('profilepic'), (req, res) => {
     }
 });
 
-user_route.put('/deleteProfilePic/:id', user_controller.deleteProfilePic);
-user_route.put('/updateProfilePic', requireAuth, uploadSingle('image'), user_controller.updateProfilePic);
-user_route.post('/userProfileEdit', requireAuth, user_controller.userProfileEdit);
-user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);
+// 3. User Data & Search (CRITICAL SECURITY UPDATES)
+// These were public before. Now they are locked.
+user_route.get('/getUsers', requireAuth, user_controller.getUsers); // <--- FIXED: Now Secure
+user_route.post('/getRandomUsers', requireAuth, user_controller.getRandomUsers);
+user_route.post('/searchUser', requireAuth, user_controller.searchUser);
+user_route.post('/getTopUsers', requireAuth, user_controller.getTopUsers);
+user_route.get('/searchUserById/:_id', requireAuth, user_controller.searchUserById);
+user_route.get('/getUsersOfInstitute/:institute', requireAuth, user_controller.getUsersOfInstitute);
 
-
-// --- EXISTING ROUTES ---
-user_route.post('/getRandomUsers', user_controller.getRandomUsers);
-user_route.post('/register', user_controller.registerUser);
-user_route.post('/userLogin', user_controller.userlogin);
-user_route.post('/userUpdatePassword', user_controller.updatePassword);
-user_route.post('/userForgetPassword', user_controller.forgetPassword);
-user_route.post('/userResetPassword', user_controller.resetpassword);
-user_route.post('/searchUser', user_controller.searchUser);
-user_route.post('/getTopUsers', user_controller.getTopUsers);
-user_route.get('/searchUserById/:_id', user_controller.searchUserById);
-user_route.get('/userLogout', user_controller.userLogout);
-user_route.get('/getUsers', user_controller.getUsers);
-user_route.get('/getUsersOfInstitute/:institute', user_controller.getUsersOfInstitute);
-user_route.put("/follow/:id", user_controller.followUser);
-user_route.put("/unfollow/:id", user_controller.unfollowUser);
+// 4. Social Actions
+// You cannot follow/unfollow if the server doesn't know who "You" are.
+user_route.put("/follow/:id", requireAuth, user_controller.followUser);
+user_route.put("/unfollow/:id", requireAuth, user_controller.unfollowUser);
 
 module.exports = user_route;
