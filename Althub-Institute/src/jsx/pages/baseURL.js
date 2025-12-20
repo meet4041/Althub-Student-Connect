@@ -1,4 +1,4 @@
-// Althub-Institute/src/jsx/pages/baseURL.js
+// PUT YOUR EXACT RENDER BACKEND URL HERE (No trailing slash)
 const RENDER_URL = "https://althub-server.onrender.com"; 
 
 export const ALTHUB_API_URL = 

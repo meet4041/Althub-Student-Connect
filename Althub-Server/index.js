@@ -12,7 +12,8 @@ const app = express();
 const port = process.env.PORT || 5001;
 
 // --- SECURITY & SERVER CONFIGURATION ---
-app.set("trust proxy", 1); // Required for Render
+// Required for Render/Vercel to handle secure cookies correctly
+app.set("trust proxy", 1); 
 
 app.use(helmet()); 
 app.use(compression()); 
@@ -32,12 +33,8 @@ const loginLimiter = rateLimit({
   legacyHeaders: false, 
 });
 
-// --- SECURE CORS CONFIGURATION ---
+// --- SMART CORS CONFIGURATION ---
 const allowedOrigins = [
-  'https://althub-student-connect.vercel.app', 
-  'https://althub-admin.vercel.app',
-  // Add your SPECIFIC Vercel domain if it's different (e.g. from your browser address bar)
-  'https://althub-student-connect-git-main-meet4041.vercel.app', 
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173'
@@ -45,16 +42,24 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // 1. Allow requests with no origin (like mobile apps, curl, or server-to-server)
     if (!origin) return callback(null, true);
     
+    // 2. Allow Localhost
     if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // --- DEBUGGING: Log the blocked origin to the console ---
-      console.log("BLOCKED BY CORS -> Origin tried:", origin);
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
+    } 
+
+    // 3. DYNAMIC ALLOW: Allow ANY Vercel deployment automatically
+    // This allows 'althub-student-connect.vercel.app', 'althub-admin.vercel.app',
+    // and 'althub-student-connect-git-main-meet4041.vercel.app' etc.
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
     }
+
+    // 4. Block anything else and log it for debugging
+    console.log("BLOCKED BY CORS -> Origin tried:", origin);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -118,11 +123,7 @@ app.use((err, req, res, next) => {
 // --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true 
-  },
+  cors: corsOptions, // Use the same smart CORS options for Socket.io
   transports: ["websocket", "polling"]
 });
 
