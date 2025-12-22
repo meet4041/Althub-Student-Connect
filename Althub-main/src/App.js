@@ -21,7 +21,7 @@ import ForgetPassword from "./components/ForgetPassword";
 import NewPassword from "./components/NewPassword";
 import Scholarship from "./components/Scholarship";
 import MyPosts from "./components/MyPosts";
-import Loader from "./components/Loader"; // --- IMPORT LOADER ---
+import Loader from "./components/Loader";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
