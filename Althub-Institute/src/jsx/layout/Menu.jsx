@@ -12,6 +12,7 @@ function Menu() {
    const [eventsClass, setEventsClass] = useState("");
    const [postsClass, setPostsClass] = useState("");
    const [aidClass, setAidClass] = useState("");
+   const [feedbackClass, setFeedbackClass] = useState(""); // NEW: Feedback class
    const [profileInfo, setProfileInfo] = useState({
       name: 'Institute',
       image: ''
@@ -19,25 +20,24 @@ function Menu() {
 
    useEffect(() => {
       const id = localStorage.getItem("AlmaPlus_institute_Id");
-      if (!id) {
-         // Don't toast here to avoid loop, just let Dashboard handle redirect
-         return;
-      }
+      if (!id) return;
+      
       setInstitute_Id(id);
       
-      // Highlight active menu item
+      // Highlight active menu item based on current URL
       const pathname = window.location.pathname;
       setDashboardClass(pathname.includes("/dashboard") ? "active" : "");
       setUsersClass(pathname.includes("/users") ? "active" : "");
       setEventsClass(pathname.includes("/events") ? "active" : "");
       setPostsClass(pathname.includes("/posts") ? "active" : "");
       setAidClass(pathname.includes("/financial-aid") ? "active" : "");
+      setFeedbackClass(pathname.includes("/feedback") ? "active" : ""); // NEW: Active check
       
       getData(id);
    }, [navigate]);
 
    const Logout = () => {
-      localStorage.clear(); // Clear all auth data
+      localStorage.clear(); 
       navigate(`/login`);
    }
 
@@ -64,7 +64,6 @@ function Menu() {
                   <img src='Logo1.jpeg' style={{ marginRight: '10px' , width:"30px", borderRadius: "4px"}} alt="logo" />
                   <b>Institute</b>
                </Link>
-               {/* Mobile Sidebar Toggle Button */}
                <button type="button" className="navbar-toggle" data-click="sidebar-toggled">
                   <span className="icon-bar"></span>
                   <span className="icon-bar"></span>
@@ -121,8 +120,15 @@ function Menu() {
                         <span>Scholarship</span>
                      </Link>
                   </li>
+
+                  {/* ADDED: Feedback Navigation Item */}
+                  <li className={feedbackClass}>
+                     <Link to="/feedback" >
+                        <i className="fa fa-comment-dots text-success"></i>
+                        <span>Student Feedback</span>
+                     </Link>
+                  </li>
                   
-                  {/* Minifier button for sidebar */}
                   <li><a href="javascript:;" className="sidebar-minify-btn" data-click="sidebar-minify"><i className="fa fa-angle-double-left"></i></a></li>
                </ul>
             </div>
@@ -132,4 +138,4 @@ function Menu() {
    )
 }
 
-export default Menu
+export default Menu;

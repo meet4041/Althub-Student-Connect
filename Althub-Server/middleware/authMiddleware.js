@@ -1,36 +1,43 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
-const Admin = require("../models/adminModel");
 const Institute = require("../models/instituteModel");
+const Admin = require("../models/adminModel");
+const User = require("../models/userModel");
 
 const requireAuth = async (req, res, next) => {
-    // 1. IMPROVED: Check Cookies FIRST, then check Headers as a backup
-    const token = req.cookies.institute_token || 
-                  req.cookies.jwt_token || 
-                  (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
-
-    if (!token) {
-        return res.status(401).send({ success: false, msg: "Authentication Required" });
-    }
-
     try {
-        const decoded = jwt.verify(token, config.secret_jwt);
+        // Extract token from Header, Cookie, or Body
+        const token = req.headers["authorization"]?.split(" ")[1] || 
+                      req.cookies.institute_token || 
+                      req.cookies.admin_token || 
+                      req.body.token;
 
-        // Session validation (The versioning check you already have)
-        let user = await Admin.findById(decoded._id).select("+tokenVersion");
-        if (!user) {
-            user = await Institute.findById(decoded._id).select("+tokenVersion");
+        if (!token) {
+            return res.status(401).send({ success: false, msg: "Access Denied: No Token Provided" });
         }
 
-        if (!user || user.tokenVersion !== decoded.version) {
+        const decoded = jwt.verify(token, config.secret_jwt);
+        
+        // 1. Check all user collections for the ID
+        let user = await Institute.findById(decoded._id).select("+tokenVersion");
+        if (!user) user = await Admin.findById(decoded._id).select("+tokenVersion");
+        if (!user) user = await User.findById(decoded._id).select("+tokenVersion");
+
+        if (!user) {
+            return res.status(401).send({ success: false, msg: "User no longer exists" });
+        }
+
+        // 2. GLOBAL LOGOUT CHECK (The Hardening)
+        // If DB version is 1 but token version is 0, someone changed the password.
+        if (user.tokenVersion !== decoded.version) {
             return res.status(401).send({ 
                 success: false, 
-                msg: "Session expired. Please login again." 
+                msg: "Session expired due to security update. Please login again." 
             });
         }
 
-        req.user = decoded;
-        next();
+        req.user = user;
+        next(); // Authorization successful
     } catch (err) {
         return res.status(401).send({ success: false, msg: "Invalid or Expired Token" });
     }

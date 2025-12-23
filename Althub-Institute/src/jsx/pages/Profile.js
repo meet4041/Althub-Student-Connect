@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom' // Added useNavigate for redirection
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -10,6 +10,7 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const Profile = () => {
+    const navigate = useNavigate(); // Hook for programmatic navigation
     const [institute_Id, setInstitute_Id] = useState(null);
     const [changepass, setChangePass] = useState({
         oldpassword: '',
@@ -44,7 +45,11 @@ const Profile = () => {
         });
     };
 
-    useEffect(() => getData(), [])
+    useEffect(() => {
+        if (institute_Id) {
+            getData();
+        }
+    }, [institute_Id])
 
     const handleImg = (e) => {
         var body = new FormData();
@@ -85,7 +90,8 @@ const Profile = () => {
             }).then((response) => {
                 if (response.data.success === true) {
                     toast.success('Profile Updated Successfully')
-                    window.location.reload();
+                    // Using reload sparingly; ideally update state instead
+                    setTimeout(() => window.location.reload(), 1500);
                     setDisable(false);
                     setErrors({});
                 } else {
@@ -94,23 +100,29 @@ const Profile = () => {
                 }
             }).catch((error) => {
                 setDisable(false);
+                toast.error('Network error');
             })
         }
     }
+
     const handlePassReset = () => {
         setChangePass({
-            old_password: '',
-            new_password: '',
-            confirm_password: ''
+            ...changepass,
+            oldpassword: '',
+            newpassword: '',
+            confirmpassword: ''
         })
     }
+
     const getPassData = () => {
         if (institute_Id) {
-            setChangePass({
+            setChangePass((prev) => ({
+                ...prev,
                 institute_id: institute_Id
-            })
+            }))
         }
     }
+
     useEffect(() => {
         if (institute_Id) {
             getPassData();
@@ -121,6 +133,7 @@ const Profile = () => {
         setChangePass({ ...changepass, [e.target.name]: e.target.value });
     }
 
+    // HARDENING: Added Global Logout logic on password change
     const submitHandlerTwo = (e) => {
         e.preventDefault();
         if (validateTwo()) {
@@ -131,27 +144,37 @@ const Profile = () => {
                 url: myurl,
                 data:
                 {
-                    institute_id: changepass.institute_id,
+                    institute_id: institute_Id,
                     oldpassword: changepass.oldpassword,
                     newpassword: changepass.newpassword
                 },
             }).then((response) => {
                 if (response.data.success === true) {
-                    toast.success('Password Updated Successfully 2')
-                    setDisable2(false);
-                    setChangePass({
-                        oldpassword: '',
-                        newpassword: '',
-                        confirmpassword: ''
-                    });
-                    setErrors({});
+                    // Security hardening: Invalidate session and redirect
+                    toast.success('Password Updated. Sessions invalidated. Logging out...');
+                    
+                    setTimeout(() => {
+                        // Clear all local session data
+                        localStorage.removeItem("AlmaPlus_institute_Id");
+                        localStorage.clear();
+                        
+                        // Redirect to Login page
+                        navigate('/'); 
+                        
+                        // Optional: Clear remaining component state
+                        setDisable2(false);
+                    }, 2000);
+
                 } else {
                     setDisable2(false);
-                    toast.error('Something went wrong')
-                    setErrors({ ...errors, confirmpassword: response.data.message })
+                    toast.error(response.data.msg || 'Update Failed');
+                    if (response.data.msg) {
+                        setErrors({ ...errors, confirmpassword: response.data.msg });
+                    }
                 }
             }).catch((error) => {
                 setDisable2(false);
+                toast.error('Server error during password update');
             })
         }
     }
@@ -188,11 +211,11 @@ const Profile = () => {
             isValid = false;
             errors["confirmpassword_err"] = "Please Enter Confirm Password";
         }
-        if (input["newpassword"] !== input["confirmpassword"]) {
+        if (input["newpassword"] && input["confirmpassword"] && input["newpassword"] !== input["confirmpassword"]) {
             isValid = false;
             errors["confirmpassword_err"] = "Password Doesn't Match";
         }
-        if (input["newpassword"] === input["oldpassword"]) {
+        if (input["newpassword"] && input["oldpassword"] && input["newpassword"] === input["oldpassword"]) {
             isValid = false;
             errors["newpassword_err"] = "New Password should be different from old one";
         }
@@ -235,21 +258,21 @@ const Profile = () => {
                                         <fieldset>
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
-                                                    <label for="exampleInputName">Name:</label>
+                                                    <label htmlFor="exampleInputName">Name:</label>
                                                     <input type="text" className="form-control" id="exampleInputName" placeholder="Enter name here.." name="name" value={profileInfo.name} onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} />
                                                     <div className="text-danger">{errors.name_err}</div>
                                                 </div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
-                                                    <label for="exampleInputName">Email:</label>
-                                                    <input type="text" className="form-control" id="exampleInputEmail" placeholder="Enter name here.." name="name" value={profileInfo.email} onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} />
+                                                    <label htmlFor="exampleInputEmail">Email:</label>
+                                                    <input type="text" className="form-control" id="exampleInputEmail" placeholder="Enter email here.." name="email" value={profileInfo.email} onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} />
                                                     <div className="text-danger">{errors.email_err}</div>
                                                 </div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
-                                                    <label for="exampleInputImage">Image:</label>
+                                                    <label htmlFor="exampleInputImage">Image:</label>
                                                     <br />
                                                     <input type="file" className="form-control" id="exampleInputImage" onChange={handleImg} />
                                                     {profileInfo.image !== '' ?
@@ -266,7 +289,7 @@ const Profile = () => {
                             </div>
                         </div>
                         <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
+                            <div className="panel panel-inverse" data-sortable-id="form-stuff-11">
                                 <div className="panel-heading ui-sortable-handle">
                                     <h4 className="panel-title">Change Password</h4>
                                 </div>
@@ -275,22 +298,22 @@ const Profile = () => {
                                         <fieldset>
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
-                                                    <label for="exampleInputOldPass">Old Password:</label>
-                                                    <input type="password" className="form-control" id="exampleInputOldPass" placeholder="Enter old password here.." name="oldpassword" onChange={handleChange} value={changepass.oldpassword} />
+                                                    <label htmlFor="exampleInputOldPass">Old Password:</label>
+                                                    <input type="password" title='Old Password' core-index='0' className="form-control" id="exampleInputOldPass" placeholder="Enter old password here.." name="oldpassword" onChange={handleChange} value={changepass.oldpassword} />
                                                     <div className="text-danger">{errors.oldpassword_err}</div>
                                                 </div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
-                                                    <label for="exampleInputNewPass">New Password:</label>
-                                                    <input type="password" className="form-control" id="exampleInputNewPass" placeholder="Enter new password here.." name="newpassword" onChange={handleChange} value={changepass.newpassword} />
+                                                    <label htmlFor="exampleInputNewPass">New Password:</label>
+                                                    <input type="password" title='New Password' core-index='1' className="form-control" id="exampleInputNewPass" placeholder="Enter new password here.." name="newpassword" onChange={handleChange} value={changepass.newpassword} />
                                                     <div className="text-danger">{errors.newpassword_err}</div>
                                                 </div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-md-12 form-group">
-                                                    <label for="exampleInputConfirmPass">Confirm Password:</label>
-                                                    <input type="password" className="form-control" id="exampleInputConfirmPass" placeholder="Enter confirm password here.." name="confirmpassword" onChange={handleChange} value={changepass.confirmpassword} />
+                                                    <label htmlFor="exampleInputConfirmPass">Confirm Password:</label>
+                                                    <input type="password" title='Confirm Password' core-index='2' className="form-control" id="exampleInputConfirmPass" placeholder="Enter confirm password here.." name="confirmpassword" onChange={handleChange} value={changepass.confirmpassword} />
                                                     <div className="text-danger">{errors.confirmpassword_err}</div>
                                                 </div>
                                             </div>
@@ -309,4 +332,4 @@ const Profile = () => {
     )
 }
 
-export default Profile
+export default Profile;

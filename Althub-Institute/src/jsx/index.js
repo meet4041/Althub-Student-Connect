@@ -19,6 +19,7 @@ import NewPassword from './pages/NewPassword';
 import FinancialPole from './pages/FinancialPole';
 import AddFinancialHelp from './pages/AddFinancialHelp';
 import EditFinancialAid from './pages/EditFinancialAid';
+import Feedback from './pages/Feedback';
 
 const Markup = () => {
     return (
@@ -27,6 +28,7 @@ const Markup = () => {
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
+            <Route path='/feedback' element={<Feedback />} />
             <Route path='/new-password' element={<NewPassword />} />
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/profile' element={<Profile />} />
