@@ -22,6 +22,9 @@ const Feedback = () => {
     const [deleteId, setDeleteId] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
+
     // 1. Fetch Feedback using the Secure Route
     const fetchFeedbackData = () => {
         setLoading(true);
@@ -84,9 +87,9 @@ const Feedback = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Home</Link></li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Home</Link></li>
                         <li className="breadcrumb-item active">Feedback</li>
                     </ol>
                     <h1 className="page-header">User Feedback Management</h1>
@@ -94,12 +97,12 @@ const Feedback = () => {
                     <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
                         <div className="card-body p-0">
                             {/* Search Header */}
-                            <div className="p-4 border-bottom bg-light">
+                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
                                 <div className="row align-items-center">
                                     <div className="col-md-6">
-                                        <div className="input-group bg-white border rounded-pill px-3 shadow-none">
+                                        <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
                                             <div className="input-group-prepend">
-                                                <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-success"></i></span>
+                                                <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
                                             </div>
                                             <input type="text" className="form-control border-0 bg-transparent" placeholder="Search by user or message..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                         </div>
@@ -110,7 +113,7 @@ const Feedback = () => {
                             {/* Table Representation */}
                             <div className="table-responsive">
                                 <table className="table table-hover mb-0">
-                                    <thead className="bg-dark text-white">
+                                    <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
                                         <tr>
                                             <th className="border-0 pl-4">No.</th>
                                             <th className="border-0">Student Name</th>
@@ -121,11 +124,11 @@ const Feedback = () => {
                                     </thead>
                                     <tbody>
                                         {loading ? (
-                                            <tr><td colSpan="5" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x text-success"></i></td></tr>
+                                            <tr><td colSpan="5" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x" style={{color: themeColor}}></i></td></tr>
                                         ) : currentItems.length > 0 ? currentItems.map((item, index) => (
                                             <tr key={item._id}>
                                                 <td className="pl-4 align-middle text-muted">{indexOfFirstItem + index + 1}</td>
-                                                <td className="align-middle font-weight-bold">{item.name || 'Anonymous'}</td>
+                                                <td className="align-middle font-weight-bold" style={{color: '#1E293B'}}>{item.name || 'Anonymous'}</td>
                                                 <td className="align-middle">
                                                     <div className="text-warning">
                                                         {[...Array(5)].map((_, i) => (
@@ -133,13 +136,15 @@ const Feedback = () => {
                                                         ))}
                                                     </div>
                                                 </td>
-                                                <td className="align-middle text-grey-darker">
-                                                    <div style={{ maxHeight: '60px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                <td className="align-middle text-muted">
+                                                    <div style={{ maxHeight: '60px', overflow: 'hidden', textOverflow: 'ellipsis', fontStyle: 'italic' }}>
                                                         "{item.message}"
                                                     </div>
                                                 </td>
                                                 <td className="align-middle text-center">
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" onClick={() => { setDeleteId(item._id); setShowAlert(true); }}>
+                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
+                                                            onClick={() => { setDeleteId(item._id); setShowAlert(true); }}
+                                                            title="Delete Feedback">
                                                         <i className="fa fa-trash-alt text-danger"></i>
                                                     </button>
                                                 </td>
@@ -152,15 +157,27 @@ const Feedback = () => {
                             </div>
 
                             {/* Pagination Footer */}
-                            <div className="p-3 bg-light d-flex justify-content-between align-items-center" style={{ borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
+                            <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
                                 <div className="text-muted small">Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, displayFeedbacks.length)} of {displayFeedbacks.length}</div>
                                 <nav>
                                     <ul className="pagination pagination-sm mb-0">
+                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev - 1)} style={{color: themeColor}}>Previous</button>
+                                        </li>
                                         {pageNumbers.map(num => (
                                             <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                                <button className="page-link" onClick={() => setCurrentPage(num)}>{num}</button>
+                                                <button 
+                                                    className="page-link" 
+                                                    onClick={() => setCurrentPage(num)}
+                                                    style={currentPage === num ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
+                                                >
+                                                    {num}
+                                                </button>
                                             </li>
                                         ))}
+                                        <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
+                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)} style={{color: themeColor}}>Next</button>
+                                        </li>
                                     </ul>
                                 </nav>
                             </div>

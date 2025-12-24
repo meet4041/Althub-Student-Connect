@@ -12,6 +12,9 @@ import Footer from '../layout/Footer';
 const AddUser = () => {
     const navigate = useNavigate();
 
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
+
     useEffect(() => {
         const loader = document.getElementById('page-loader');
         const element = document.getElementById("page-container");
@@ -50,7 +53,7 @@ const AddUser = () => {
             axios({
                 method: "post",
                 url: `${ALTHUB_API_URL}/api/inviteUser`,
-                headers: { 'Authorization': `Bearer ${token}` }, // Security Header
+                headers: { 'Authorization': `Bearer ${token}` },
                 data: {
                     fname: data.name,
                     phone: data.number,
@@ -100,13 +103,13 @@ const AddUser = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     {/* Header & Breadcrumb Section */}
                     <div className="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                                <li className="breadcrumb-item"><Link to="/users">Users</Link></li>
+                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
+                                <li className="breadcrumb-item"><Link to="/users" style={{color: themeColor}}>Users</Link></li>
                                 <li className="breadcrumb-item active">Invite Member</li>
                             </ol>
                             <h1 className="page-header mb-0">Invite New Member</h1>
@@ -116,12 +119,12 @@ const AddUser = () => {
                         </Link>
                     </div>
 
-                    <div className="row">
+                    <div className="row justify-content-center">
                         <div className="col-xl-6 col-lg-8">
                             <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
-                                <div className="card-header bg-dark text-white p-3 border-0" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
-                                    <h4 className="card-title mb-0">Member Information</h4>
-                                    <p className="text-white-50 small mb-0">A temporary password will be sent to the user via email.</p>
+                                <div className="card-header bg-white p-3 border-bottom" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
+                                    <h4 className="card-title mb-0 text-dark">Member Information</h4>
+                                    <p className="text-muted small mb-0">A temporary password will be sent to the user via email.</p>
                                 </div>
 
                                 <div className="card-body p-4 bg-white">
@@ -129,9 +132,11 @@ const AddUser = () => {
                                         {/* Name Input */}
                                         <div className="form-group mb-4">
                                             <label className="text-dark font-weight-bold small">FULL NAME</label>
-                                            <div className="input-group border rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                            <div className="input-group border rounded" style={{ backgroundColor: '#F8FAFC' }}>
                                                 <div className="input-group-prepend">
-                                                    <span className="input-group-text bg-transparent border-0"><i className="fa fa-user text-success"></i></span>
+                                                    <span className="input-group-text bg-transparent border-0">
+                                                        <i className="fa fa-user" style={{color: themeColor}}></i>
+                                                    </span>
                                                 </div>
                                                 <input type="text" className="form-control bg-transparent border-0 py-4" placeholder="Enter Full Name" name="name" value={data.name} onChange={handleChange} />
                                             </div>
@@ -141,9 +146,11 @@ const AddUser = () => {
                                         {/* Email Input */}
                                         <div className="form-group mb-4">
                                             <label className="text-dark font-weight-bold small">EMAIL ADDRESS</label>
-                                            <div className="input-group border rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                            <div className="input-group border rounded" style={{ backgroundColor: '#F8FAFC' }}>
                                                 <div className="input-group-prepend">
-                                                    <span className="input-group-text bg-transparent border-0"><i className="fa fa-envelope text-success"></i></span>
+                                                    <span className="input-group-text bg-transparent border-0">
+                                                        <i className="fa fa-envelope" style={{color: themeColor}}></i>
+                                                    </span>
                                                 </div>
                                                 <input type="email" className="form-control bg-transparent border-0 py-4" placeholder="user@example.com" name="email" value={data.email} onChange={handleChange} />
                                             </div>
@@ -153,9 +160,11 @@ const AddUser = () => {
                                         {/* Phone Input */}
                                         <div className="form-group mb-4">
                                             <label className="text-dark font-weight-bold small">PHONE NUMBER</label>
-                                            <div className="input-group border rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                            <div className="input-group border rounded" style={{ backgroundColor: '#F8FAFC' }}>
                                                 <div className="input-group-prepend">
-                                                    <span className="input-group-text bg-transparent border-0"><i className="fa fa-phone text-success"></i></span>
+                                                    <span className="input-group-text bg-transparent border-0">
+                                                        <i className="fa fa-phone" style={{color: themeColor}}></i>
+                                                    </span>
                                                 </div>
                                                 <input type="text" className="form-control bg-transparent border-0 py-4" placeholder="+1 234 567 890" name="number" value={data.number} onChange={handleChange} />
                                             </div>
@@ -165,12 +174,13 @@ const AddUser = () => {
                                         <hr className="mt-5 mb-4" />
 
                                         {/* Action Buttons */}
-                                        <div className="d-flex align-items-center">
-                                            <button type="submit" className="btn btn-success px-4 py-2 shadow-sm font-weight-bold" disabled={disable} style={{ borderRadius: '8px', minWidth: '140px' }}>
-                                                {disable ? <><i className="fa fa-spinner fa-spin mr-2"></i> Inviting...</> : <><i className="fa fa-paper-plane mr-2"></i> Send Invitation</>}
-                                            </button>
-                                            <button type="button" className="btn btn-link text-muted ml-3" onClick={handleReset}>
+                                        <div className="d-flex align-items-center justify-content-between">
+                                            <button type="button" className="btn btn-link text-muted" onClick={handleReset}>
                                                 Reset Form
+                                            </button>
+                                            <button type="submit" className="btn btn-primary px-4 py-2 shadow-sm font-weight-bold" disabled={disable} 
+                                                    style={{ borderRadius: '8px', minWidth: '160px', backgroundColor: themeColor, borderColor: themeColor }}>
+                                                {disable ? <><span className="spinner-border spinner-border-sm mr-2"></span> Inviting...</> : <><i className="fa fa-paper-plane mr-2"></i> Send Invitation</>}
                                             </button>
                                         </div>
                                     </form>
@@ -178,7 +188,7 @@ const AddUser = () => {
                                 
                                 <div className="card-footer bg-light border-0 p-3" style={{ borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
                                     <div className="d-flex align-items-center">
-                                        <i className="fa fa-shield-alt text-success mr-2"></i>
+                                        <i className="fa fa-shield-alt mr-2" style={{color: themeColor}}></i>
                                         <span className="text-muted small">Invitations are sent via secure Althub SMTP protocol.</span>
                                     </div>
                                 </div>

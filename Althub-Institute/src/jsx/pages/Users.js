@@ -19,6 +19,9 @@ const Users = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Theme constants used for consistent styling
+    const themeColor = '#2563EB'; // Royal Blue
+
     useEffect(() => {
         const loader = document.getElementById('page-loader');
         const element = document.getElementById("page-container");
@@ -88,16 +91,18 @@ const Users = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <div className="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
+                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
                                 <li className="breadcrumb-item active">Users</li>
                             </ol>
                             <h1 className="page-header mb-0">Member Directory</h1>
                         </div>
-                        <Link to="/add-user" className="btn btn-success btn-lg shadow-sm" style={{borderRadius: '8px'}}>
+                        {/* Changed Button from Green to Blue Theme */}
+                        <Link to="/add-user" className="btn btn-primary btn-lg shadow-sm" 
+                              style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
                             <i className="fa fa-user-plus mr-2"></i> Add New User
                         </Link>
                     </div>
@@ -105,10 +110,10 @@ const Users = () => {
                     <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
                         <div className="card-body p-0">
                             {/* Search & Filter Bar */}
-                            <div className="p-4 border-bottom bg-light-lighter" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
+                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
                                 <div className="row align-items-center">
                                     <div className="col-md-6">
-                                        <div className="input-group bg-white border rounded-pill px-3 py-1 shadow-none">
+                                        <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
                                             </div>
@@ -126,7 +131,7 @@ const Users = () => {
 
                             <div className="table-responsive">
                                 <table className="table table-hover mb-0">
-                                    <thead className="bg-light text-dark">
+                                    <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
                                         <tr>
                                             <th className="border-0 pl-4">ID</th>
                                             <th className="border-0">User Profile</th>
@@ -137,7 +142,7 @@ const Users = () => {
                                     </thead>
                                     <tbody>
                                         {isTableLoading ? (
-                                            <tr><td colSpan="5" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x text-success"></i></td></tr>
+                                            <tr><td colSpan="5" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x" style={{color: themeColor}}></i></td></tr>
                                         ) : currentUsers.length > 0 ? currentUsers.map((elem, index) => (
                                             <tr key={elem._id}>
                                                 <td className="pl-4 align-middle text-muted" style={{fontSize: '12px'}}>{indexOfFirstUser + index + 1}</td>
@@ -151,7 +156,8 @@ const Users = () => {
                                                         />
                                                         <div>
                                                             <div className="font-weight-bold text-dark">{elem.fname}</div>
-                                                            <small className="text-success">Verified Member</small>
+                                                            {/* Changed from text-success to text-primary for Blue theme */}
+                                                            <small className="text-primary" style={{color: themeColor}}>Verified Member</small>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -160,13 +166,13 @@ const Users = () => {
                                                     {elem.phone && <div className="small text-muted"><i className="fa fa-phone mr-2"></i>{elem.phone}</div>}
                                                 </td>
                                                 <td className="align-middle text-center">
-                                                    <span className="badge badge-light p-2 font-weight-normal">
+                                                    <span className="badge p-2 font-weight-normal" style={{backgroundColor: '#EFF6FF', color: themeColor}}>
                                                         {elem.dob ? elem.dob.split('T')[0] : 'N/A'}
                                                     </span>
                                                 </td>
                                                 <td className="align-middle text-center">
                                                     <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm mr-2" title="Edit">
-                                                        <i className="fa fa-pencil-alt text-blue"></i>
+                                                        <i className="fa fa-pencil-alt" style={{color: themeColor}}></i>
                                                     </button>
                                                     <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" onClick={() => handleDeleteUser(elem._id)} title="Delete">
                                                         <i className="fa fa-trash-alt text-danger"></i>
@@ -181,22 +187,28 @@ const Users = () => {
                             </div>
 
                             {/* Custom Pagination Footer */}
-                            <div className="p-4 bg-light-lighter d-flex justify-content-between align-items-center" style={{ borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
+                            <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
                                 <div className="text-muted small">
                                     Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length} users
                                 </div>
                                 <nav>
                                     <ul className="pagination pagination-sm mb-0">
                                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev - 1)}>Previous</button>
+                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev - 1)} style={{color: themeColor}}>Previous</button>
                                         </li>
                                         {pageNumbers.map(num => (
                                             <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                                <button className="page-link" onClick={() => setCurrentPage(num)}>{num}</button>
+                                                <button 
+                                                    className="page-link" 
+                                                    onClick={() => setCurrentPage(num)}
+                                                    style={currentPage === num ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
+                                                >
+                                                    {num}
+                                                </button>
                                             </li>
                                         ))}
                                         <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)}>Next</button>
+                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)} style={{color: themeColor}}>Next</button>
                                         </li>
                                     </ul>
                                 </nav>

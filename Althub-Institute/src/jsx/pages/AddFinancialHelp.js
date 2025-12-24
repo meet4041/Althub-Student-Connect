@@ -13,6 +13,9 @@ const AddFinancialHelp = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState(null);
 
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const loader = document.getElementById('page-loader');
@@ -51,6 +54,7 @@ const AddFinancialHelp = () => {
             image: "",
             dueDate: ""
         });
+        document.getElementById('imageInput').value = ""; // Reset file input visual
     }
 
     const handleImgChange = (e) => {
@@ -67,6 +71,7 @@ const AddFinancialHelp = () => {
     };
 
     const submitHandler = (e) => {
+        e.preventDefault(); // Prevent default form submission
         if (validate()) {
             setDisable(true)
             axios({
@@ -84,12 +89,13 @@ const AddFinancialHelp = () => {
             }).then((response) => {
                 handleReset();
                 setDisable(false);
-                toast.success("Financial aid added");
+                toast.success("Financial aid added successfully");
                 setTimeout(() => {
                     navigate('/financial-aid');
                 }, 1500);
             }).catch((error) => {
                 setDisable(false);
+                toast.error("Failed to add financial aid");
             });
         }
     };
@@ -101,11 +107,11 @@ const AddFinancialHelp = () => {
 
         if (!input["name"]) {
             isValid = false;
-            errors["name_err"] = "Please Enter Course Name";
+            errors["name_err"] = "Please Enter Student Name";
         }
         if (!input["aid"]) {
             isValid = false;
-            errors["aid_err"] = "Please Enter Aid Ammount";
+            errors["aid_err"] = "Please Enter Aid Amount";
         }
         if (!input["claimed"]) {
             isValid = false;
@@ -130,87 +136,83 @@ const AddFinancialHelp = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/financial-aid">Scholarship</Link></li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/financial-aid" style={{color: themeColor}}>Scholarship</Link></li>
                         <li className="breadcrumb-item active">Add Scholarship</li>
                     </ol>
-                    <h1 className="page-header">Add Scholarship</h1>
+                    <h1 className="page-header">Create Scholarship</h1>
 
-                    <div className="row">
-                        <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
-                                <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Add Scholarship</h4>
-                                    <Link to="/financial-aid" className="btn btn-sm btn-default pull-right">Back</Link>
+                    <div className="row justify-content-center">
+                        <div className="col-xl-8">
+                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
+                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                                    <h4 className="card-title mb-0 text-dark">Scholarship Details</h4>
+                                    <Link to="/financial-aid" className="btn btn-light btn-sm shadow-sm">
+                                        <i className="fa fa-arrow-left mr-1"></i> Back
+                                    </Link>
                                 </div>
 
-                                <div className="panel-body">
-                                    <form>
+                                <div className="card-body p-4">
+                                    <form onSubmit={submitHandler}>
                                         <fieldset>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputName">Student Name:</label>
-                                                    <input type="text" className="form-control" id="exampleInputName" placeholder="Enter Student Name" name="name" value={data.name} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.name_err}</div>
-                                                </div>
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputName">Student Name</label>
+                                                <input type="text" className="form-control" id="exampleInputName" placeholder="e.g. John Doe" name="name" value={data.name} onChange={handleChange} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.name_err}</div>
                                             </div>
 
                                             <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="courseStream">Aid Amount</label>
-                                                    <input type='number' className="form-control" id="courseStream" placeholder="Enter Aid Amount" name="aid" value={data.aid} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.aid_err}</div>
+                                                <div className="col-md-6 form-group mb-3">
+                                                    <label className="font-weight-bold" htmlFor="courseStream">Total Aid Amount (₹)</label>
+                                                    <input type='number' className="form-control" id="courseStream" placeholder="e.g. 50000" name="aid" value={data.aid} onChange={handleChange} style={{height: '45px'}} />
+                                                    <div className="text-danger small mt-1">{errors.aid_err}</div>
+                                                </div>
+
+                                                <div className="col-md-6 form-group mb-3">
+                                                    <label className="font-weight-bold" htmlFor="exampleInputNumber">Claimed Amount (₹)</label>
+                                                    <input type='number' className="form-control" id="exampleInputNumber" placeholder="e.g. 20000" name="claimed" value={data.claimed} onChange={handleChange} style={{height: '45px'}} />
+                                                    <div className="text-danger small mt-1">{errors.claimed_err}</div>
                                                 </div>
                                             </div>
 
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputAddress">Claimed Amount</label>
-                                                    <input type='number' className="form-control" id="exampleInputNumber" placeholder="Enter Claimed Amount" name="claimed" value={data.claimed} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.claimed_err}</div>
-                                                </div>
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputDesc">Description</label>
+                                                <textarea className="form-control" rows="3" id="exampleInputDesc" placeholder="Enter details about the scholarship or aid..." name="description" value={data.description} onChange={handleChange}></textarea>
+                                                <div className="text-danger small mt-1">{errors.description_err}</div>
                                             </div>
 
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputAddress">Description</label>
-                                                    <input className="form-control" id="exampleInputNumber" placeholder="Enter Description" name="description" value={data.description} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.description_err}</div>
-                                                </div>
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="dueDate">Application Due Date</label>
+                                                <input type="date" className="form-control" id="dueDate" name="dueDate" value={data.dueDate} onChange={handleChange} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.dueDate_err}</div>
                                             </div>
 
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputAddress">Due Date :</label>
-                                                    <input type="Date" className="form-control" id="exampleInputNumber" placeholder="Enter Due Date" name="dueDate" value={data.dueDate} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.dueDate_err}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputName">Student Image:</label>
-                                                    <input type="file" className='form-control' name="image" placeholder="Select image" onChange={handleImgChange} />
-                                                    {data.image ? (
-                                                        <div>
+                                            <div className="form-group mb-4">
+                                                <label className="font-weight-bold">Student/Banner Image</label>
+                                                <div className="custom-file-container p-3 border rounded bg-light">
+                                                    <input type="file" id="imageInput" className='form-control-file' name="image" onChange={handleImgChange} />
+                                                    
+                                                    {data.image && (
+                                                        <div className="mt-3 shadow-sm rounded overflow-hidden" style={{width: '120px', height: '120px', border: '1px solid #e2e8f0'}}>
                                                             <img
                                                                 src={`${ALTHUB_API_URL}${data.image}`}
-                                                                alt=""
-                                                                height={150}
-                                                                width={150}
-                                                                style={{ objectFit: "cover" }}
+                                                                alt="Preview"
+                                                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
                                                             />
                                                         </div>
-                                                    ) : (
-                                                        ""
                                                     )}
                                                 </div>
                                             </div>
 
-                                            <button type="button" className="btn btn-sm btn-success m-r-5" onClick={submitHandler}>{disable ? 'Processing...' : 'Submit'}</button>
-                                            <button type="reset" className="btn btn-sm btn-default" onClick={handleReset}>Reset</button>
+                                            <div className="d-flex justify-content-end">
+                                                <button type="reset" className="btn btn-light mr-2" onClick={handleReset} style={{minWidth: '100px'}}>Reset</button>
+                                                <button type="submit" className="btn btn-primary" disabled={disable} 
+                                                        style={{minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor}}>
+                                                    {disable ? <><span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Saving...</> : 'Publish Aid'}
+                                                </button>
+                                            </div>
                                         </fieldset>
                                     </form>
                                 </div>

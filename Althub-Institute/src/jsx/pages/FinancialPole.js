@@ -12,12 +12,13 @@ const FinancialPole = () => {
     const [institute_Name, setInstitute_Name] = useState(null);
     let navigate = useNavigate();
     const [data, setData] = useState([]);
-    const [displayCourses, setDisplayCourses] = useState([]);
+    const [displayCourses, setDisplayCourses] = useState([]); // Kept variable name to maintain logic
     const rows = [10, 20, 30];
     const [coursesPerPage, setCoursesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
+    
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -42,9 +43,8 @@ const FinancialPole = () => {
             method: "get",
             url: `${ALTHUB_API_URL}/api/getFinancialAidByInstitute/${institute_Name}`,
         }).then((response) => {
-            setData(response.data.data);
-
-        });
+            setData(response.data.data || []);
+        }).catch(err => setData([]));
     };
 
     useEffect(() => {
@@ -71,24 +71,13 @@ const FinancialPole = () => {
             setDisplayCourses(data.filter(
                 (elem) =>
                     elem.name.toLowerCase().includes(search.toLowerCase()) ||
-                    elem.aid.toLowerCase().includes(search.toLowerCase())
+                    elem.aid.toString().toLowerCase().includes(search.toLowerCase())
             ));
         } else {
             setDisplayCourses(data)
         }
     }
 
-    const handleApply = () => {
-        if (from && to) {
-            setCurrentPage(1);
-        }
-    }
-
-    const handleReset = () => {
-        setCurrentPage(1);
-        setFrom('');
-        setTo('');
-    }
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
@@ -117,97 +106,158 @@ const FinancialPole = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
-                    <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item active">Scholarship</li>
-                    </ol>
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <ol className="breadcrumb mb-1">
+                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
+                                <li className="breadcrumb-item active">Scholarship</li>
+                            </ol>
+                            <h1 className="page-header mb-0">Scholarship Management</h1>
+                        </div>
+                        {/* Primary Blue Button */}
+                        <Link to="/add-financial-aid" className="btn btn-primary btn-lg shadow-sm" 
+                              style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
+                            <i className="fa fa-plus mr-2"></i> Add Scholarship
+                        </Link>
+                    </div>
 
-                    <h1 className="page-header">Scholarship
-                        <Link to="/add-financial-aid" className="btn btn-success mx-3" ><i className="fa fa-plus"></i></Link>
-                    </h1>
-
-                    <div className="card">
-                        <div className="card-body">
-                            <div className="form-outline mb-4">
-                                <input type="search" className="form-control" id="datatable-search-input" placeholder='Search Course' onChange={handleSearch} />
-                            </div>
-                            <div className="row">
-                                <div className="col-12">
-                                    <div className="table-responsive">
-                                        <table id="product-listing" className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sr. No.</th>
-                                                    <th>Student Name</th>
-                                                    <th>image</th>
-                                                    <th>Aid</th>
-                                                    <th>Claimed</th>
-                                                    <th>Due Date</th>
-                                                    <th>Description</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {currentCourses.length > 0 ? currentCourses.map((elem, index) =>
-                                                    <tr key={index}>
-                                                        <td align='left'>{index + 1}</td>
-                                                        <td>{elem.name}</td>
-                                                        <td>{elem.image === '' || elem.image === undefined ? <img src='assets/img/profile1.png' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}></img> : <img src={`${ALTHUB_API_URL}${elem.image}`} alt='user-img' style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }} />}</td>
-                                                        <td>{elem.aid}</td>
-                                                        <td>{elem.claimed}</td>
-                                                        <td>{elem.dueDate.split('T')[0]}</td>
-                                                        <td>{elem.description}</td>
-                                                        <td><i className='fa fa-edit' style={{ color: "green", cursor: "pointer" }} onClick={() => { navigate('/edit-financial-aid', { state: { data: elem } }) }}></i><i className='fa fa-trash' style={{ color: "red", cursor: "pointer", marginLeft: "5px" }} onClick={() => { handleDeleteAid(elem._id) }}></i></td>
-                                                    </tr>
-                                                ) : <tr><td >No Record Found..</td></tr>}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="gt-pagination" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <ul className="pagination">
-                                            {pageNumbers.map((number) =>
-                                                <li className={currentPage === number ? "page-item active" : "page-item"} aria-current="page">
-                                                    <span className="page-link" onClick={() => paginate(number)}>{number}</span>
-                                                </li>
-                                            )}
-                                        </ul>
-                                        <div className='filter-pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <label htmlFor='selection' style={{ marginBottom: '0' }}>Users Per Page :</label>
-                                            <select className='selection' style={{ outline: '0', borderWidth: '0 0 1px', borderColor: 'black', marginLeft: '10px' }} onChange={(e) => setCoursesPerPage(e.target.value)}>
-                                                {rows.map(value =>
-                                                    <option value={value}>{value}</option>
-                                                )}
-                                            </select>
+                    <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
+                        <div className="card-body p-0">
+                            
+                            {/* Search & Filter Bar */}
+                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
+                                <div className="row align-items-center">
+                                    <div className="col-md-6">
+                                        <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
+                                            <div className="input-group-prepend">
+                                                <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
+                                            </div>
+                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search by student name..." onChange={handleSearch} />
                                         </div>
+                                    </div>
+                                    <div className="col-md-6 text-md-right mt-3 mt-md-0">
+                                        <span className="text-muted mr-2">Show</span>
+                                        <select className="custom-select custom-select-sm w-auto border-0 shadow-sm" style={{borderRadius: '5px'}} onChange={(e) => setCoursesPerPage(Number(e.target.value))}>
+                                            {rows.map(value =>
+                                                <option key={value} value={value}>{value} Items</option>
+                                            )}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
+
+                            <div className="table-responsive">
+                                <table className="table table-hover mb-0">
+                                    <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
+                                        <tr>
+                                            <th className="border-0 pl-4">Sr. No.</th>
+                                            <th className="border-0">Student Profile</th>
+                                            <th className="border-0">Aid Amount</th>
+                                            <th className="border-0">Claimed</th>
+                                            <th className="border-0">Due Date</th>
+                                            <th className="border-0">Description</th>
+                                            <th className="border-0 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentCourses.length > 0 ? currentCourses.map((elem, index) =>
+                                            <tr key={index}>
+                                                <td className="pl-4 align-middle text-muted">{indexOfFirstCourse + index + 1}</td>
+                                                <td className="align-middle">
+                                                    <div className="d-flex align-items-center">
+                                                        {elem.image === '' || elem.image === undefined ? 
+                                                            <img src='assets/img/profile1.png' alt='default' className="rounded shadow-sm mr-2" style={{ width: '40px', height: '40px', objectFit: 'cover' }} /> 
+                                                            : 
+                                                            <img src={`${ALTHUB_API_URL}${elem.image}`} alt='user' className="rounded shadow-sm mr-2" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                                        }
+                                                        <span className="font-weight-bold text-dark">{elem.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="align-middle text-dark">₹{elem.aid}</td>
+                                                <td className="align-middle">
+                                                    <span className={`badge p-2 ${parseInt(elem.claimed) > 0 ? 'badge-soft-success' : 'badge-soft-secondary'}`} 
+                                                          style={{backgroundColor: parseInt(elem.claimed) > 0 ? '#DCFCE7' : '#F1F5F9', color: parseInt(elem.claimed) > 0 ? '#166534' : '#64748B'}}>
+                                                        ₹{elem.claimed}
+                                                    </span>
+                                                </td>
+                                                <td className="align-middle">{elem.dueDate ? elem.dueDate.split('T')[0] : 'N/A'}</td>
+                                                <td className="align-middle">
+                                                    <span className="text-muted text-truncate d-inline-block" style={{maxWidth: '150px'}} title={elem.description}>
+                                                        {elem.description}
+                                                    </span>
+                                                </td>
+                                                <td className="align-middle text-center">
+                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm mr-2" 
+                                                            onClick={() => { navigate('/edit-financial-aid', { state: { data: elem } }) }} 
+                                                            title="Edit">
+                                                        <i className="fa fa-pencil-alt" style={{ color: themeColor }}></i>
+                                                    </button>
+                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
+                                                            onClick={() => { handleDeleteAid(elem._id) }} 
+                                                            title="Delete">
+                                                        <i className="fa fa-trash-alt text-danger"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ) : <tr><td colSpan="7" className="text-center p-5 text-muted">No records found.</td></tr>}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination Footer */}
+                            <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
+                                <div className="text-muted small">
+                                    Showing {indexOfFirstCourse + 1} to {Math.min(indexOfLastCourse, displayCourses.length)} of {displayCourses.length} entries
+                                </div>
+                                <nav>
+                                    <ul className="pagination pagination-sm mb-0">
+                                        {pageNumbers.map((number) => (
+                                            <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                                                <button 
+                                                    className="page-link" 
+                                                    onClick={() => paginate(number)}
+                                                    style={currentPage === number ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
+                                                >
+                                                    {number}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </nav>
+                            </div>
+
                         </div>
                     </div>
                 </div>
-                {alert === true ? <SweetAlert
-                    warning
-                    showCancel
-                    confirmBtnText="Yes, delete it!"
-                    confirmBtnBsStyle="danger"
-                    title="Are you sure?"
-                    onConfirm={DeleteAid}
-                    onCancel={() => { setAlert(false); setDeleteId(''); }}
-                >
-                    You will not be able to recover this user!
-                </SweetAlert> : ''
-                }
-                {alert2 === true ? <SweetAlert
-                    success
-                    title="User Deleted Successfully!"
-                    onConfirm={() => { setAlert2(false); getAidData(); }}
-                />
-                    : ''}
+
+                {alert === true && (
+                    <SweetAlert
+                        warning
+                        showCancel
+                        confirmBtnText="Yes, delete it!"
+                        confirmBtnBsStyle="danger"
+                        title="Delete Record?"
+                        onConfirm={DeleteAid}
+                        onCancel={() => { setAlert(false); setDeleteId(''); }}
+                    >
+                        This financial aid record will be permanently removed.
+                    </SweetAlert>
+                )}
+                
+                {alert2 === true && (
+                    <SweetAlert
+                        success
+                        title="Deleted Successfully!"
+                        onConfirm={() => { setAlert2(false); getAidData(); }}
+                    >
+                        The record has been removed.
+                    </SweetAlert>
+                )}
                 <Footer />
             </div>
         </Fragment>
     )
 }
 
-export default FinancialPole
+export default FinancialPole;

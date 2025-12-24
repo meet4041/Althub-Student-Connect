@@ -11,3 +11,68 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* --- Blue & White Theme Variables --- */
+:root {
+  --primary-blue: #2563EB;       /* Royal Blue */
+  --primary-blue-light: #EFF6FF; /* Very Light Blue for active backgrounds */
+  --text-dark: #1E293B;          /* Dark Slate for headings */
+  --text-gray: #64748B;          /* Gray for inactive menu items */
+  --white: #ffffff;
+  --sidebar-width: 220px;
+}
+
+/* --- Header Styling --- */
+.header.navbar-default {
+  background: var(--white);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.navbar-brand {
+  color: var(--primary-blue) !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* --- Sidebar Styling --- */
+.sidebar {
+  background: var(--white);
+  border-right: 1px solid #e2e8f0;
+}
+
+.sidebar .nav > li > a {
+  color: var(--text-gray);
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  padding: 12px 20px;
+}
+
+.sidebar .nav > li > a:hover {
+  color: var(--primary-blue);
+  background: transparent;
+}
+
+.sidebar .nav > li > a i {
+  margin-right: 10px;
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+}
+
+/* --- Active Menu Item Styling --- */
+/* This creates the Blue Highlight effect */
+.sidebar .nav > li.active > a {
+  background: var(--primary-blue-light) !important;
+  color: var(--primary-blue) !important;
+  border-right: 3px solid var(--primary-blue); /* Accent bar on the right */
+}
+
+.sidebar .nav > li.active > a i {
+  color: var(--primary-blue) !important;
+}
+
+/* --- Dropdown Profile --- */
+.navbar-user img {
+  border: 2px solid var(--primary-blue-light);
+}

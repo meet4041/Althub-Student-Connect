@@ -89,6 +89,11 @@ const images_route = require("./routes/imagesRoute");
 // --- PROTECTING LOGIN ROUTES ---
 app.use("/api/adminLogin", loginLimiter);
 app.use("/api/instituteLogin", loginLimiter);
+app.use("/api/userLogin", loginLimiter);
+
+// 3. Limit Request Size
+app.use(express.json({ limit: '1mb' })); 
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // --- ROUTE MOUNTING ---
 app.use("/api", user_route);

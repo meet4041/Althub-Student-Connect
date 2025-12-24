@@ -11,6 +11,10 @@ import Footer from '../layout/Footer';
 
 const EditFinancialAid = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
 
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -18,27 +22,26 @@ const EditFinancialAid = () => {
         id: "",
         claimed: ""
     });
-    const location = useLocation();
-    const state = location.state.data;
 
     const getAidData = () => {
-        setData({
-            id: state._id,
-            claimed: state.claimed,
-        })
+        if (location.state && location.state.data) {
+            const state = location.state.data;
+            setData({
+                id: state._id,
+                claimed: state.claimed,
+            });
+        }
     }
+
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
+        const loader = document.getElementById('page-loader');
+        if (loader) loader.style.display = 'none';
+        const element = document.getElementById("page-container");
+        if (element) element.classList.add("show");
+        
         getAidData();
     }, []);
 
-    const handleReset = () => {
-        setData({
-            claimed: "",
-        });
-    }
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
@@ -55,7 +58,6 @@ const EditFinancialAid = () => {
                     claimed: data.claimed,
                 },
             }).then((response) => {
-                handleReset();
                 setDisable(false);
                 toast.success("Claimed Amount Updated");
                 setTimeout(() => {
@@ -63,20 +65,19 @@ const EditFinancialAid = () => {
                 }, 1500);
             }).catch((error) => {
                 setDisable(false);
+                toast.error("Failed to update amount");
             });
-
         }
     };
 
     const validate = () => {
         let input = data;
-
         let errors = {};
         let isValid = true;
 
         if (!input["claimed"]) {
             isValid = false;
-            errors["claimed_err"] = "Please Enter claimed Amount";
+            errors["claimed_err"] = "Please Enter Claimed Amount";
         }
 
         setErrors(errors);
@@ -89,36 +90,54 @@ const EditFinancialAid = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/financial-Aid">Financial-Aid</Link></li>
-                        <li className="breadcrumb-item active">Edit Financial-Aid</li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/financial-aid" style={{color: themeColor}}>Scholarship</Link></li>
+                        <li className="breadcrumb-item active">Update Status</li>
                     </ol>
-                    <h1 className="page-header">Edit Financial-Aid </h1>
+                    <h1 className="page-header">Update Scholarship Status</h1>
 
-                    <div className="row">
-                        <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
-                                <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Edit Course</h4>
-                                    <Link to="/financial-aid" className="btn btn-sm btn-default pull-right">Back</Link>
+                    <div className="row justify-content-center">
+                        <div className="col-xl-6">
+                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
+                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                                    <h4 className="card-title mb-0 text-dark">Financial Details</h4>
+                                    <Link to="/financial-aid" className="btn btn-light btn-sm shadow-sm">
+                                        <i className="fa fa-arrow-left mr-1"></i> Cancel
+                                    </Link>
                                 </div>
 
-
-                                <div className="panel-body">
-                                    <form onSubmit={(e) => submitHandler(e)} >
+                                <div className="card-body p-4">
+                                    <form onSubmit={submitHandler} >
                                         <fieldset>
-
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputName">Claimed Amount : </label>
-                                                    <input type="text" className="form-control" id="exampleInputName" placeholder="Enter Course Name" name="claimed" onChange={handleChange} value={data.claimed} />
-                                                    <div className="text-danger">{errors.claimed_err}</div>
+                                            <div className="form-group mb-4">
+                                                <label className="font-weight-bold text-dark" htmlFor="exampleInputName">Total Claimed Amount (₹)</label>
+                                                <div className="input-group">
+                                                    <div className="input-group-prepend">
+                                                        <span className="input-group-text bg-light border-right-0">₹</span>
+                                                    </div>
+                                                    <input 
+                                                        type="number" 
+                                                        className="form-control border-left-0" 
+                                                        id="exampleInputName" 
+                                                        placeholder="Enter amount" 
+                                                        name="claimed" 
+                                                        onChange={handleChange} 
+                                                        value={data.claimed}
+                                                        style={{height: '45px'}} 
+                                                    />
                                                 </div>
+                                                <small className="text-muted">Update the amount that has been successfully disbursed to the student.</small>
+                                                <div className="text-danger small mt-1">{errors.claimed_err}</div>
                                             </div>
 
-                                            <button type="submit" className="btn btn-sm btn-success m-r-5" disabled={disable} >{disable ? 'Processing...' : 'Update'}</button>
+                                            <div className="d-flex justify-content-end">
+                                                <button type="submit" className="btn btn-primary px-4" disabled={disable} 
+                                                        style={{minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor}}>
+                                                    {disable ? <><span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Updating...</> : 'Update Amount'}
+                                                </button>
+                                            </div>
                                         </fieldset>
                                     </form>
                                 </div>

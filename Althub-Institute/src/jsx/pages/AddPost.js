@@ -11,8 +11,11 @@ import Footer from '../layout/Footer';
 const AddPost = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const [iname, setiname] = useState('');
-    const [image,setImage]=useState("");
+    const [image, setImage] = useState("");
     const navigate = useNavigate();
+
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -46,7 +49,10 @@ const AddPost = () => {
         setData({
             description: "",
         });
+        setFileList(null);
+        document.getElementById("exampleInputfile").value = "";
     }
+
     const getData = () => {
         if (!institute_Id) return;
         const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`;
@@ -65,7 +71,7 @@ const AddPost = () => {
             url:`${ALTHUB_API_URL}/api/getInstituteById/${institute_Id}`,
             method:"get",
         }).then((Response)=>{
-            setImage(Response.data.data.image&&Response.data.data.image);
+            setImage(Response.data.data.image && Response.data.data.image);
         })
     }
 
@@ -97,12 +103,13 @@ const AddPost = () => {
             }).then((response) => {
                 handleReset();
                 setDisable(false);
-                toast.success("Post Added");
+                toast.success("Post Added Successfully");
                 setTimeout(() => {
                     navigate('/posts');
                 }, 1500);
             }).catch((error) => {
                 setDisable(false);
+                toast.error("Failed to add post");
             });
         }
     };
@@ -127,51 +134,76 @@ const AddPost = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/posts">Posts</Link></li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/posts" style={{color: themeColor}}>Posts</Link></li>
                         <li className="breadcrumb-item active">Add Post</li>
                     </ol>
-                    <h1 className="page-header">Add Post  </h1>
+                    <h1 className="page-header">Create New Post</h1>
 
-                    <div className="row">
-                        <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
-                                <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Add Post</h4>
-                                    <Link to="/posts" className="btn btn-sm btn-default pull-right">Back</Link>
+                    <div className="row justify-content-center">
+                        <div className="col-xl-8">
+                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
+                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                                    <h4 className="card-title mb-0 text-dark">Post Details</h4>
+                                    <Link to="/posts" className="btn btn-light btn-sm shadow-sm">
+                                        <i className="fa fa-arrow-left mr-1"></i> Back
+                                    </Link>
                                 </div>
 
-
-                                <div className="panel-body">
+                                <div className="card-body p-4">
                                     <form onSubmit={submitHandler}>
                                         <fieldset>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputdesc">Description:</label>
-                                                    <input className="form-control" id="exampleInputdesc" placeholder="Enter Description" name="description" value={data.description} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.description_err}</div>
-                                                </div>
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputdesc">What's happening?</label>
+                                                <textarea 
+                                                    className="form-control" 
+                                                    rows="5"
+                                                    id="exampleInputdesc" 
+                                                    placeholder="Share news, updates, or announcements..." 
+                                                    name="description" 
+                                                    value={data.description} 
+                                                    onChange={handleChange}
+                                                    style={{resize: 'none'}}
+                                                ></textarea>
+                                                <div className="text-danger small mt-1">{errors.description_err}</div>
                                             </div>
 
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputfile">Upload Photos:</label>
-                                                    <input type='file' multiple="true" className="form-control" id="exampleInputfile" placeholder="Upload Photos" name="photos" value={data.photos} onChange={imgChange} />
-                                                    {files.length > 0 ?
-                                                        <div className="selected-img row mt-2">
-                                                            {files.map((elem) =>
-                                                                <div className='col col-2 ml-2'>
-                                                                    <img src={window.URL.createObjectURL(elem)} alt="" height={100} width={100} />
+                                            <div className="form-group mb-4">
+                                                <label className="font-weight-bold" htmlFor="exampleInputfile">Attach Media</label>
+                                                <div className="custom-file-container p-3 border rounded bg-light">
+                                                    <input 
+                                                        type='file' 
+                                                        multiple 
+                                                        className="form-control-file" 
+                                                        id="exampleInputfile" 
+                                                        name="photos" 
+                                                        onChange={imgChange} 
+                                                    />
+                                                    <small className="text-muted d-block mt-2">Add photos to make your post engaging.</small>
+
+                                                    {files.length > 0 && (
+                                                        <div className="selected-img row mt-3 px-2">
+                                                            {files.map((elem, index) =>
+                                                                <div className='col-auto mb-2' key={index}>
+                                                                    <div className="shadow-sm rounded overflow-hidden" style={{width: '100px', height: '100px'}}>
+                                                                        <img src={window.URL.createObjectURL(elem)} alt="preview" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        : ""}
+                                                    )}
                                                 </div>
                                             </div>
-                                            <button className="btn btn-sm btn-success m-r-5">{disable ? 'Processing...' : 'Submit'}</button>
-                                            <button type="reset" className="btn btn-sm btn-default" onClick={handleReset}>Reset</button>
+
+                                            <div className="d-flex justify-content-end">
+                                                <button type="reset" className="btn btn-light mr-2" onClick={handleReset} style={{minWidth: '100px'}}>Reset</button>
+                                                <button type="submit" className="btn btn-primary" disabled={disable} 
+                                                        style={{minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor}}>
+                                                    {disable ? <><span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Posting...</> : 'Publish Post'}
+                                                </button>
+                                            </div>
                                         </fieldset>
                                     </form>
                                 </div>

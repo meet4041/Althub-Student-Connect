@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom' // Added useNavigate for redirection
+import { Link, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -10,8 +10,12 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 
 const Profile = () => {
-    const navigate = useNavigate(); // Hook for programmatic navigation
+    const navigate = useNavigate();
     const [institute_Id, setInstitute_Id] = useState(null);
+    
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
+
     const [changepass, setChangePass] = useState({
         oldpassword: '',
         newpassword: '',
@@ -90,7 +94,6 @@ const Profile = () => {
             }).then((response) => {
                 if (response.data.success === true) {
                     toast.success('Profile Updated Successfully')
-                    // Using reload sparingly; ideally update state instead
                     setTimeout(() => window.location.reload(), 1500);
                     setDisable(false);
                     setErrors({});
@@ -133,7 +136,6 @@ const Profile = () => {
         setChangePass({ ...changepass, [e.target.name]: e.target.value });
     }
 
-    // HARDENING: Added Global Logout logic on password change
     const submitHandlerTwo = (e) => {
         e.preventDefault();
         if (validateTwo()) {
@@ -150,18 +152,11 @@ const Profile = () => {
                 },
             }).then((response) => {
                 if (response.data.success === true) {
-                    // Security hardening: Invalidate session and redirect
-                    toast.success('Password Updated. Sessions invalidated. Logging out...');
-                    
+                    toast.success('Password Updated. Logging out...');
                     setTimeout(() => {
-                        // Clear all local session data
                         localStorage.removeItem("AlmaPlus_institute_Id");
                         localStorage.clear();
-                        
-                        // Redirect to Login page
                         navigate('/'); 
-                        
-                        // Optional: Clear remaining component state
                         setDisable2(false);
                     }, 2000);
 
@@ -241,84 +236,108 @@ const Profile = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
                         <li className="breadcrumb-item active">Profile</li>
                     </ol>
-                    <h1 className="page-header">Profile</h1>
+                    <h1 className="page-header">Settings</h1>
+                    
                     <div className="row">
-                        <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
-                                <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Profile setting</h4>
+                        {/* Profile Settings Card */}
+                        <div className="col-xl-6 mb-4">
+                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
+                                <div className="card-header bg-white border-bottom p-3" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                                    <h4 className="card-title mb-0 text-dark">Profile Information</h4>
                                 </div>
-                                <div className="panel-body">
+                                <div className="card-body p-4">
                                     <form onSubmit={(e) => submitHandler(e)} >
                                         <fieldset>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputName">Name:</label>
-                                                    <input type="text" className="form-control" id="exampleInputName" placeholder="Enter name here.." name="name" value={profileInfo.name} onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} />
-                                                    <div className="text-danger">{errors.name_err}</div>
-                                                </div>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputEmail">Email:</label>
-                                                    <input type="text" className="form-control" id="exampleInputEmail" placeholder="Enter email here.." name="email" value={profileInfo.email} onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} />
-                                                    <div className="text-danger">{errors.email_err}</div>
-                                                </div>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputImage">Image:</label>
-                                                    <br />
-                                                    <input type="file" className="form-control" id="exampleInputImage" onChange={handleImg} />
-                                                    {profileInfo.image !== '' ?
-                                                        <img src={`${ALTHUB_API_URL}${profileInfo.image}`} className="form-img__img-preview" style={{ width: "84px", height: "84px" }} alt='profile_img' />
-                                                        : ''
+                                            <div className="text-center mb-4">
+                                                <div className="d-inline-block position-relative">
+                                                    {profileInfo.image ? 
+                                                        <img src={`${ALTHUB_API_URL}${profileInfo.image}`} 
+                                                             className="rounded-circle shadow-sm" 
+                                                             style={{ width: "120px", height: "120px", objectFit: 'cover', border: `3px solid ${themeColor}` }} 
+                                                             alt='profile_img' />
+                                                        : 
+                                                        <img src="assets/img/profile1.png" 
+                                                             className="rounded-circle shadow-sm" 
+                                                             style={{ width: "120px", height: "120px", objectFit: 'cover', border: `3px solid ${themeColor}` }} 
+                                                             alt='default' />
                                                     }
+                                                    <div className="mt-2">
+                                                        <label htmlFor="exampleInputImage" className="btn btn-sm btn-light shadow-sm" style={{cursor: 'pointer'}}>
+                                                            <i className="fa fa-camera mr-1"></i> Change Photo
+                                                        </label>
+                                                        <input type="file" className="d-none" id="exampleInputImage" onChange={handleImg} />
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <button type="submit" className="btn btn-sm btn-success m-r-5" disabled={disable}>{disable ? 'Processing...' : 'Submit'}</button>
-                                            <button type="reset" className="btn btn-sm btn-default" onClick={handleProfileReset}>Reset</button>
+
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputName">Institute Name</label>
+                                                <input type="text" className="form-control" id="exampleInputName" placeholder="Enter name" name="name" value={profileInfo.name} onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.name_err}</div>
+                                            </div>
+                                            
+                                            <div className="form-group mb-4">
+                                                <label className="font-weight-bold" htmlFor="exampleInputEmail">Email Address</label>
+                                                <input type="text" className="form-control" id="exampleInputEmail" placeholder="Enter email" name="email" value={profileInfo.email} onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.email_err}</div>
+                                            </div>
+
+                                            <div className="d-flex justify-content-between">
+                                                <button type="reset" className="btn btn-light" onClick={handleProfileReset}>Reset</button>
+                                                <button type="submit" className="btn btn-primary px-4" disabled={disable} 
+                                                        style={{backgroundColor: themeColor, borderColor: themeColor}}>
+                                                    {disable ? <><span className="spinner-border spinner-border-sm mr-2"></span> Saving...</> : 'Update Profile'}
+                                                </button>
+                                            </div>
                                         </fieldset>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                        <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-11">
-                                <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Change Password</h4>
+
+                        {/* Change Password Card */}
+                        <div className="col-xl-6 mb-4">
+                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
+                                <div className="card-header bg-white border-bottom p-3" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                                    <h4 className="card-title mb-0 text-dark">Security Settings</h4>
                                 </div>
-                                <div className="panel-body">
+                                <div className="card-body p-4">
                                     <form onSubmit={(e) => submitHandlerTwo(e)} >
                                         <fieldset>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputOldPass">Old Password:</label>
-                                                    <input type="password" title='Old Password' core-index='0' className="form-control" id="exampleInputOldPass" placeholder="Enter old password here.." name="oldpassword" onChange={handleChange} value={changepass.oldpassword} />
-                                                    <div className="text-danger">{errors.oldpassword_err}</div>
-                                                </div>
+                                            <div className="alert alert-light mb-4 border-0 shadow-sm">
+                                                <small className="text-muted"><i className="fa fa-info-circle mr-1"></i> Changing your password will sign you out of all devices.</small>
                                             </div>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputNewPass">New Password:</label>
-                                                    <input type="password" title='New Password' core-index='1' className="form-control" id="exampleInputNewPass" placeholder="Enter new password here.." name="newpassword" onChange={handleChange} value={changepass.newpassword} />
-                                                    <div className="text-danger">{errors.newpassword_err}</div>
-                                                </div>
+
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputOldPass">Current Password</label>
+                                                <input type="password" className="form-control" id="exampleInputOldPass" placeholder="Enter current password" name="oldpassword" onChange={handleChange} value={changepass.oldpassword} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.oldpassword_err}</div>
                                             </div>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputConfirmPass">Confirm Password:</label>
-                                                    <input type="password" title='Confirm Password' core-index='2' className="form-control" id="exampleInputConfirmPass" placeholder="Enter confirm password here.." name="confirmpassword" onChange={handleChange} value={changepass.confirmpassword} />
-                                                    <div className="text-danger">{errors.confirmpassword_err}</div>
-                                                </div>
+                                            
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputNewPass">New Password</label>
+                                                <input type="password" className="form-control" id="exampleInputNewPass" placeholder="Enter new password" name="newpassword" onChange={handleChange} value={changepass.newpassword} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.newpassword_err}</div>
                                             </div>
-                                            <button type="submit" className="btn btn-sm btn-success m-r-5" disabled={disable2}>{disable2 ? 'Processing...' : 'Submit'}</button>
-                                            <button type="reset" className="btn btn-sm btn-default" onClick={handlePassReset}>Reset</button>
+                                            
+                                            <div className="form-group mb-4">
+                                                <label className="font-weight-bold" htmlFor="exampleInputConfirmPass">Confirm New Password</label>
+                                                <input type="password" className="form-control" id="exampleInputConfirmPass" placeholder="Confirm new password" name="confirmpassword" onChange={handleChange} value={changepass.confirmpassword} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.confirmpassword_err}</div>
+                                            </div>
+
+                                            <div className="d-flex justify-content-between">
+                                                <button type="reset" className="btn btn-light" onClick={handlePassReset}>Clear</button>
+                                                <button type="submit" className="btn btn-primary px-4" disabled={disable2}
+                                                        style={{backgroundColor: themeColor, borderColor: themeColor}}>
+                                                    {disable2 ? <><span className="spinner-border spinner-border-sm mr-2"></span> Processing...</> : 'Change Password'}
+                                                </button>
+                                            </div>
                                         </fieldset>
                                     </form>
                                 </div>

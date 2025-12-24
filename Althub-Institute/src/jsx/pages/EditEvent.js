@@ -21,32 +21,32 @@ const EditEvent = () => {
         venue: "",
     });
     const location = useLocation();
-    const state = location.state.data;
+    
+    // Theme Constant
+    const themeColor = '#2563EB'; // Royal Blue
 
     const geteventData = () => {
-        setData({
-            id: state._id,
-            title: state.title,
-            description: state.description,
-            date: state.date,
-            venue: state.venue,
-        })
+        if (location.state && location.state.data) {
+            const state = location.state.data;
+            setData({
+                id: state._id,
+                title: state.title,
+                description: state.description,
+                date: state.date,
+                venue: state.venue,
+            });
+        }
     }
+
     useEffect(() => {
-        document.getElementById('page-loader').style.display = 'none';
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
+        const loader = document.getElementById('page-loader');
+        if (loader) loader.style.display = 'none';
+        const element = document.getElementById("page-container");
+        if (element) element.classList.add("show");
+        
         geteventData();
     }, []);
 
-    const handleReset = () => {
-        setData({
-            title: "",
-            description: "",
-            date: "",
-            venue: "",
-        });
-    }
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
@@ -79,14 +79,14 @@ const EditEvent = () => {
                     "content-type": "multipart/form-data"
                 },
             }).then((response) => {
-                handleReset();
                 setDisable(false);
-                toast.success("Event Updated");
+                toast.success("Event Updated Successfully");
                 setTimeout(() => {
                     navigate('/events');
                 }, 1200);
             }).catch((error) => {
                 setDisable(false);
+                toast.error("Failed to update event");
             });
         }
     };
@@ -116,80 +116,92 @@ const EditEvent = () => {
         return isValid;
     }
 
+    // Helper to safely format date for input value
+    const getFormattedDate = (dateString) => {
+        if (!dateString) return "";
+        return dateString.split('T')[0];
+    }
+
     return (
         <Fragment>
             <ToastContainer />
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
+                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/courses">Courses</Link></li>
-                        <li className="breadcrumb-item active">Edit Course</li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/events" style={{color: themeColor}}>Events</Link></li>
+                        <li className="breadcrumb-item active">Edit Event</li>
                     </ol>
-                    <h1 className="page-header">Edit Course  </h1>
+                    <h1 className="page-header">Edit Event Details</h1>
 
-                    <div className="row">
-                        <div className="col-xl-6 ui-sortable">
-                            <div className="panel panel-inverse" data-sortable-id="form-stuff-10">
-                                <div className="panel-heading ui-sortable-handle">
-                                    <h4 className="panel-title">Edit Course</h4>
-                                    <Link to="/courses" className="btn btn-sm btn-default pull-right">Back</Link>
+                    <div className="row justify-content-center">
+                        <div className="col-xl-8">
+                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
+                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                                    <h4 className="card-title mb-0 text-dark">Event Information</h4>
+                                    <Link to="/events" className="btn btn-light btn-sm shadow-sm">
+                                        <i className="fa fa-arrow-left mr-1"></i> Cancel
+                                    </Link>
                                 </div>
 
-                                <div className="panel-body">
-                                    <form onSubmit={(e) => submitHandler(e)} >
+                                <div className="card-body p-4">
+                                    <form onSubmit={submitHandler} >
                                         <fieldset>
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputName">Title:</label>
-                                                    <input type="text" className="form-control" id="exampleInputName" placeholder="Enter Event Title" name="title" value={data.title} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.name_err}</div>
-                                                </div>
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputName">Event Title</label>
+                                                <input type="text" className="form-control" id="exampleInputName" placeholder="Enter Event Title" name="title" value={data.title} onChange={handleChange} style={{height: '45px'}} />
+                                                <div className="text-danger small mt-1">{errors.name_err}</div>
+                                            </div>
+
+                                            <div className="form-group mb-3">
+                                                <label className="font-weight-bold" htmlFor="exampleInputdesc">Description</label>
+                                                {/* Changed to textarea for better editing */}
+                                                <textarea className="form-control" rows="4" id="exampleInputdesc" placeholder="Enter Event Description" name="description" value={data.description} onChange={handleChange} />
+                                                <div className="text-danger small mt-1">{errors.description_err}</div>
                                             </div>
 
                                             <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputdesc">Description:</label>
-                                                    <input className="form-control" id="exampleInputdesc" placeholder="Enter Event Description" name="description" value={data.description} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.description_err}</div>
+                                                <div className="col-md-6 form-group mb-3">
+                                                    <label className="font-weight-bold" htmlFor="exampleInputdate">Date</label>
+                                                    <input type='date' className="form-control" id="exampleInputdate" name="date" value={getFormattedDate(data.date)} onChange={handleChange} style={{height: '45px'}} />
+                                                    <div className="text-danger small mt-1">{errors.date_err}</div>
+                                                </div>
+
+                                                <div className="col-md-6 form-group mb-3">
+                                                    <label className="font-weight-bold" htmlFor="exampleInputvenue">Venue</label>
+                                                    <input className="form-control" id="exampleInputvenue" placeholder="Enter Event venue" name="venue" value={data.venue} onChange={handleChange} style={{height: '45px'}} />
+                                                    <div className="text-danger small mt-1">{errors.venue_err}</div>
                                                 </div>
                                             </div>
 
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputdate">Date:</label>
-                                                    <input type='date' className="form-control" id="exampleInputdate" placeholder="Enter Event Date" name="date" value={data.date.split('T')[0]} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.date_err}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputvenue">Venue:</label>
-                                                    <input className="form-control" id="exampleInputvenue" placeholder="Enter Event venue" name="venue" value={data.venue} onChange={handleChange} />
-                                                    <div className="text-danger">{errors.venue_err}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-md-12 form-group">
-                                                    <label htmlFor="exampleInputfile">Upload Photos:</label>
-                                                    <input type='file' multiple="true" className="form-control" id="exampleInputfile" placeholder="Upload Event Photos" name="photos" value={data.photos} onChange={imgChange} />
-                                                    {files.length > 0 ?
-                                                        <div className="selected-img row mt-2">
-                                                            {files.map((elem) =>
-                                                                <div className='col col-2 ml-2'>
-                                                                    <img src={window.URL.createObjectURL(elem)} alt="" height={100} width={100} />
+                                            <div className="form-group mb-4">
+                                                <label className="font-weight-bold" htmlFor="exampleInputfile">Update Photos</label>
+                                                <div className="custom-file-container p-3 border rounded bg-light">
+                                                    <input type='file' multiple className="form-control-file" id="exampleInputfile" name="photos" onChange={imgChange} />
+                                                    <small className="text-muted d-block mt-2">Uploading new photos will append to existing ones.</small>
+                                                    
+                                                    {files.length > 0 && (
+                                                        <div className="selected-img row mt-3 px-2">
+                                                            {files.map((elem, index) =>
+                                                                <div className='col-auto mb-2' key={index}>
+                                                                    <div className="shadow-sm rounded overflow-hidden" style={{width: '80px', height: '80px'}}>
+                                                                        <img src={window.URL.createObjectURL(elem)} alt="preview" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        : ""}
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            <button type="submit" className="btn btn-sm btn-success m-r-5" disabled={disable} >{disable ? 'Processing...' : 'Update'}</button>
+                                            <div className="d-flex justify-content-end">
+                                                <button type="submit" className="btn btn-primary px-4" disabled={disable} 
+                                                        style={{minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor}}>
+                                                    {disable ? <><span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Updating...</> : 'Update Event'}
+                                                </button>
+                                            </div>
                                         </fieldset>
                                     </form>
                                 </div>
