@@ -5,7 +5,7 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 import { ALTHUB_API_URL } from '../../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axiosInstance from '../../services/axios'; 
+import axiosInstance from '../../services/axios';
 
 const Institutes = () => {
     const [institutes, setInstitutes] = useState([]);
@@ -13,7 +13,7 @@ const Institutes = () => {
     const rows = [10, 20, 30];
     const [institutesPerPage, setInstitutesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Deletion States
     const [deleteId, setDeleteId] = useState('');
     const [showDeletePrompt, setShowDeletePrompt] = useState(false);
@@ -29,11 +29,25 @@ const Institutes = () => {
     }, []);
 
     const getInstitutesData = () => {
-        axiosInstance.get(`/api/getInstitutes`).then((response) => {
+        // 1. Get the token from storage
+        const token = localStorage.getItem('token');
+
+        // 2. Pass it in the Authorization header
+        axiosInstance.get(`/api/getInstitutes`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).then((response) => {
             if (response.data.success === true) {
                 setInstitutes(response.data.data);
             }
-        }).catch(err => console.error("Fetch error:", err));
+        }).catch(err => {
+            console.error("Fetch error:", err);
+            // Optional: Redirect to login if token is expired
+            if (err.response && err.response.status === 401) {
+                window.location.href = '/login';
+            }
+        });
     };
 
     useEffect(() => {
@@ -99,11 +113,11 @@ const Institutes = () => {
                                 <div className="input-group-prepend">
                                     <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
                                 </div>
-                                <input 
-                                    type="search" 
-                                    className="form-control border-left-0 shadow-none" 
-                                    placeholder='Search by Name, Email or Location...' 
-                                    onChange={handleSearch} 
+                                <input
+                                    type="search"
+                                    className="form-control border-left-0 shadow-none"
+                                    placeholder='Search by Name, Email or Location...'
+                                    onChange={handleSearch}
                                 />
                             </div>
 
@@ -124,11 +138,11 @@ const Institutes = () => {
                                             <tr key={index}>
                                                 <td className="font-weight-bold text-muted">{indexOfFirstInstitute + index + 1}</td>
                                                 <td>
-                                                    <img 
-                                                        src={elem.image ? `${ALTHUB_API_URL}${elem.image}` : 'assets/img/login-bg/profile1.png'} 
-                                                        alt='Logo' 
+                                                    <img
+                                                        src={elem.image ? `${ALTHUB_API_URL}${elem.image}` : 'assets/img/login-bg/profile1.png'}
+                                                        alt='Logo'
                                                         className="rounded shadow-sm border"
-                                                        style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
+                                                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                                                     />
                                                 </td>
                                                 <td>
@@ -149,9 +163,9 @@ const Institutes = () => {
                                                     </div>
                                                 </td>
                                                 <td className="text-center">
-                                                    <button 
-                                                        className="btn btn-outline-danger btn-sm rounded-circle shadow-none" 
-                                                        onClick={() => handleDeleteClick(elem._id)} 
+                                                    <button
+                                                        className="btn btn-outline-danger btn-sm rounded-circle shadow-none"
+                                                        onClick={() => handleDeleteClick(elem._id)}
                                                         title="Delete Institute"
                                                         style={{ width: '32px', height: '32px', padding: '0' }}
                                                     >
@@ -179,8 +193,8 @@ const Institutes = () => {
                                 </nav>
                                 <div className="mt-3 mt-md-0 d-flex align-items-center bg-light px-3 py-2 rounded">
                                     <small className="text-muted mr-2">Show:</small>
-                                    <select 
-                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none" 
+                                    <select
+                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none"
                                         style={{ width: 'auto', cursor: 'pointer' }}
                                         onChange={(e) => setInstitutesPerPage(Number(e.target.value))}
                                         value={institutesPerPage}
@@ -218,7 +232,8 @@ const Institutes = () => {
 
                 <Footer />
             </div>
-            <style dangerouslySetInnerHTML={{__html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .badge-soft-blue { background-color: rgba(49, 130, 206, 0.1); padding: 4px 8px; border-radius: 6px; }
                 .font-weight-600 { font-weight: 600; }
                 .table-hover tbody tr:hover { background-color: #f8fafc; }
