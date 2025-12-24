@@ -6,13 +6,12 @@ import { ALTHUB_API_URL } from '../pages/baseURL';
 
 function Menu() {
    const navigate = useNavigate();
-   const location = useLocation(); // Use standard hook for cleaner URL checking
+   const location = useLocation(); 
    const [profileInfo, setProfileInfo] = useState({
       name: 'Institute',
       image: ''
    });
 
-   // Simplified class calculation based on current path
    const isActive = (path) => location.pathname.includes(path) ? "active" : "";
 
    useEffect(() => {
@@ -41,12 +40,18 @@ function Menu() {
       }
    };
 
+   // Helper to prevent default link behavior for UI toggles
+   const handleSidebarToggle = (e) => {
+      e.preventDefault();
+      // The actual toggle logic is likely handled by your template's 
+      // data-click="sidebar-minify" event listener
+   };
+
    return (
       <>
          <div id="header" className="header navbar-default">
             <div className="navbar-header">
                <Link to="/dashboard" className="navbar-brand">
-                  {/* Ensure logo fits the blue/white theme */}
                   <img src='Logo1.jpeg' style={{ marginRight: '10px' , width:"30px", borderRadius: "4px"}} alt="logo" />
                   <b>Institute</b>
                </Link>
@@ -59,7 +64,7 @@ function Menu() {
             
             <ul className="navbar-nav navbar-right">
                <li className="dropdown navbar-user">
-                  <a href="#" className="dropdown-toggle" data-toggle="dropdown" style={{cursor: 'pointer'}}>
+                  <a href="#" className="dropdown-toggle" data-toggle="dropdown" style={{cursor: 'pointer'}} onClick={(e) => e.preventDefault()}>
                      <img 
                         src={profileInfo.image ? `${ALTHUB_API_URL}${profileInfo.image}` : 'assets/img/profile1.png'} 
                         alt="Profile"
@@ -115,7 +120,6 @@ function Menu() {
                      </Link>
                   </li>
 
-                  {/* Removed 'text-success' so it follows the blue theme active state */}
                   <li className={isActive("/feedback")}>
                      <Link to="/feedback">
                         <i className="fa fa-comment-dots"></i>
@@ -123,8 +127,9 @@ function Menu() {
                      </Link>
                   </li>
                   
+                  {/* FIXED: Removed javascript:; and added onClick preventDefault */}
                   <li>
-                     <a href="javascript:;" className="sidebar-minify-btn" data-click="sidebar-minify">
+                     <a href="#" className="sidebar-minify-btn" data-click="sidebar-minify" onClick={handleSidebarToggle}>
                         <i className="fa fa-angle-double-left"></i>
                      </a>
                   </li>

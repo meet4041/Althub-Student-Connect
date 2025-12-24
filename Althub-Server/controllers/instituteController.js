@@ -6,7 +6,16 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 
-// Utility: Hash password
+// --- UTILITIES ---
+
+// 1. Password Policy Validator (New Addition)
+const validatePassword = (password) => {
+    // Policy: Min 8 chars, 1 Uppercase, 1 Lowercase, 1 Number
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(password);
+}
+
+// 2. Hash Password
 const securePassword = async (password) => {
     try {
         return await bcryptjs.hash(password, 10);
@@ -15,7 +24,7 @@ const securePassword = async (password) => {
     }
 }
 
-// Mailer: Reset Password
+// 3. Mailer: Reset Password
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -36,7 +45,7 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
-// Mailer: Invitation
+// 4. Mailer: Invitation
 const sendInvitationMail = async (name, email, tempPass) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -62,13 +71,25 @@ const sendInvitationMail = async (name, email, tempPass) => {
 const registerInstitute = async (req, res) => {
     try {
         const { name, email, phone, password, masterKey } = req.body;
+        
+        // 1. Master Key Check
         if (masterKey !== config.masterKey) {
             return res.status(403).send({ success: false, msg: "Invalid Master Key." });
         }
+
+        // 2. Password Strength Check (New)
+        if (!validatePassword(password)) {
+            return res.status(400).send({ 
+                success: false, 
+                msg: "Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number." 
+            });
+        }
+
         const instituteExists = await Institute.findOne({ email });
         if (instituteExists) {
             return res.status(400).send({ success: false, msg: "Institute already exists" });
         }
+
         const spassword = await securePassword(password);
         const institute = new Institute({
             name, email, phone, password: spassword, active: false,
@@ -87,13 +108,11 @@ const instituteLogin = async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).send({ success: false, msg: "Required fields missing" });
 
-        // HARDENING: Fetch including hidden password and version
         const instituteData = await Institute.findOne({ email }).select("+password +tokenVersion");
         
         if (instituteData) {
             const isMatch = await bcryptjs.compare(password, instituteData.password);
             if (isMatch) {
-                // SECURITY: JWT now includes tokenVersion for replay protection
                 const token = jwt.sign(
                     { _id: instituteData._id, version: instituteData.tokenVersion }, 
                     config.secret_jwt, 
@@ -128,15 +147,21 @@ const instituteUpdatePassword = async (req, res) => {
         if (data) {
             const match = await bcryptjs.compare(oldpassword, data.password);
             if (match) {
+                // 1. Password Strength Check (New)
+                if (!validatePassword(newpassword)) {
+                    return res.status(400).send({ 
+                        success: false, 
+                        msg: "New password is too weak. Requires 1 Upper, 1 Lower, 1 Number, Min 8 chars." 
+                    });
+                }
+
                 const hashedPassword = await securePassword(newpassword);
                 
-                // GLOBAL LOGOUT: Increment version to kill all other sessions
                 await Institute.findByIdAndUpdate(institute_id, { 
                     $set: { password: hashedPassword, token: '' },
                     $inc: { tokenVersion: 1 } 
                 });
                 
-                // LOCAL LOGOUT: Clear cookie
                 res.clearCookie("institute_token", { httpOnly: true, secure: true, sameSite: "none" });
 
                 return res.status(200).send({ 
@@ -174,8 +199,16 @@ const instituteResetPassword = async (req, res) => {
         const token = req.query.token;
         const tokenData = await Institute.findOne({ token: token });
         if (tokenData) {
+            // 1. Password Strength Check (New)
+            if (!validatePassword(req.body.password)) {
+                return res.status(400).send({ 
+                    success: false, 
+                    msg: "Password is too weak. Requires 1 Upper, 1 Lower, 1 Number, Min 8 chars." 
+                });
+            }
+
             const hashedPassword = await securePassword(req.body.password);
-            // SECURITY: Incrementing tokenVersion here also logs out user from all devices after reset
+            
             await Institute.findByIdAndUpdate(tokenData._id, {
                 $set: { password: hashedPassword, token: '' },
                 $inc: { tokenVersion: 1 }
@@ -213,7 +246,6 @@ const updateInstitute = async (req, res) => {
     }
 }
 
-// Missing function added to fix Express crash
 const deleteInstitute = async (req, res) => {
     try {
         const id = req.params.id;
@@ -224,6 +256,10 @@ const deleteInstitute = async (req, res) => {
     }
 }
 
+// NOTE: For 'inviteUser', we generate a random password. 
+// Since we control that generation, we assume randomstring creates a secure enough temp pass, 
+// or you can implement complex generation logic if strictly required.
+
 module.exports = {
     registerInstitute,
     instituteLogin,
@@ -232,7 +268,7 @@ module.exports = {
     instituteForgetPassword,
     instituteResetPassword,
     getInstituteById,
-    deleteInstitute, // Exported to match the route
+    deleteInstitute,
     getInstitues: async (req, res) => {
         try {
             const data = await Institute.find({}).select("name image address website active").lean();
@@ -244,8 +280,12 @@ module.exports = {
             const { fname, phone, email } = req.body;
             const userData = await User.findOne({ email });
             if (userData) return res.status(400).send({ success: false, msg: "User already exists" });
+            
+            // Note: If you want these temp passwords to strictly follow the policy, use a library like 'generate-password' 
+            // instead of 'randomstring' to force 1 number/1 uppercase, but usually simple random is fine for temp invites.
             const randpassword = randomstring.generate(8);
             const spassword = await securePassword(randpassword);
+            
             const user = new User({ fname, phone, email, password: spassword });
             await user.save();
             sendInvitationMail(fname, email, randpassword);

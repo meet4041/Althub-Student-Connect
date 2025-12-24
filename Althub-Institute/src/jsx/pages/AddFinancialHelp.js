@@ -22,7 +22,7 @@ const AddFinancialHelp = () => {
             const element = document.getElementById("page-container");
             if (loader) loader.style.display = 'none';
             if (element) element.classList.add("show");
-            
+
             const id = localStorage.getItem("AlmaPlus_institute_Id");
             const name = localStorage.getItem("AlmaPlus_institute_Name");
             setInstitute_Id(id);
@@ -58,16 +58,36 @@ const AddFinancialHelp = () => {
     }
 
     const handleImgChange = (e) => {
+        const file = e.target.files[0];
+
+        // 1. Check if file exists
+        if (!file) return;
+
+        // 2. Validate File Extension (jpg, jpeg, png, gif)
+        if (!file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            toast.error("Invalid file format. Only .jpg, .jpeg, .png, .gif allowed.");
+            e.target.value = null; // Clear the input so user can retry
+            return;
+        }
+
+        // 3. Proceed with Upload if valid
         var body = new FormData();
-        body.append("profilepic", e.target.files[0]);
+        body.append("profilepic", file); // Using the validated 'file' variable
+
         axios({
             method: "post",
             headers: { "Content-Type": "multipart/form-data" },
-            url: `${ALTHUB_API_URL}/api/uploadUserImage`,
+            url: `${ALTHUB_API_URL}/api/uploadUserImage`, // Ensure this endpoint matches your backend route
             data: body,
         }).then((response) => {
-            setData({ ...data, image: response.data.data.url });
-        }).catch((error) => { });
+            if (response.data.success) {
+                setData({ ...data, image: response.data.data.url });
+                toast.success("Image uploaded successfully");
+            }
+        }).catch((error) => {
+            console.error(error);
+            toast.error("Image upload failed");
+        });
     };
 
     const submitHandler = (e) => {
@@ -136,18 +156,18 @@ const AddFinancialHelp = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
+                <div id="content" className="content" style={{ backgroundColor: '#F8FAFC' }}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/financial-aid" style={{color: themeColor}}>Scholarship</Link></li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor }}>Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/financial-aid" style={{ color: themeColor }}>Scholarship</Link></li>
                         <li className="breadcrumb-item active">Add Scholarship</li>
                     </ol>
                     <h1 className="page-header">Create Scholarship</h1>
 
                     <div className="row justify-content-center">
                         <div className="col-xl-8">
-                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
-                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                            <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
+                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
                                     <h4 className="card-title mb-0 text-dark">Scholarship Details</h4>
                                     <Link to="/financial-aid" className="btn btn-light btn-sm shadow-sm">
                                         <i className="fa fa-arrow-left mr-1"></i> Back
@@ -159,20 +179,20 @@ const AddFinancialHelp = () => {
                                         <fieldset>
                                             <div className="form-group mb-3">
                                                 <label className="font-weight-bold" htmlFor="exampleInputName">Student Name</label>
-                                                <input type="text" className="form-control" id="exampleInputName" placeholder="e.g. John Doe" name="name" value={data.name} onChange={handleChange} style={{height: '45px'}} />
+                                                <input type="text" className="form-control" id="exampleInputName" placeholder="e.g. John Doe" name="name" value={data.name} onChange={handleChange} style={{ height: '45px' }} />
                                                 <div className="text-danger small mt-1">{errors.name_err}</div>
                                             </div>
 
                                             <div className="row">
                                                 <div className="col-md-6 form-group mb-3">
                                                     <label className="font-weight-bold" htmlFor="courseStream">Total Aid Amount (₹)</label>
-                                                    <input type='number' className="form-control" id="courseStream" placeholder="e.g. 50000" name="aid" value={data.aid} onChange={handleChange} style={{height: '45px'}} />
+                                                    <input type='number' className="form-control" id="courseStream" placeholder="e.g. 50000" name="aid" value={data.aid} onChange={handleChange} style={{ height: '45px' }} />
                                                     <div className="text-danger small mt-1">{errors.aid_err}</div>
                                                 </div>
 
                                                 <div className="col-md-6 form-group mb-3">
                                                     <label className="font-weight-bold" htmlFor="exampleInputNumber">Claimed Amount (₹)</label>
-                                                    <input type='number' className="form-control" id="exampleInputNumber" placeholder="e.g. 20000" name="claimed" value={data.claimed} onChange={handleChange} style={{height: '45px'}} />
+                                                    <input type='number' className="form-control" id="exampleInputNumber" placeholder="e.g. 20000" name="claimed" value={data.claimed} onChange={handleChange} style={{ height: '45px' }} />
                                                     <div className="text-danger small mt-1">{errors.claimed_err}</div>
                                                 </div>
                                             </div>
@@ -185,7 +205,7 @@ const AddFinancialHelp = () => {
 
                                             <div className="form-group mb-3">
                                                 <label className="font-weight-bold" htmlFor="dueDate">Application Due Date</label>
-                                                <input type="date" className="form-control" id="dueDate" name="dueDate" value={data.dueDate} onChange={handleChange} style={{height: '45px'}} />
+                                                <input type="date" className="form-control" id="dueDate" name="dueDate" value={data.dueDate} onChange={handleChange} style={{ height: '45px' }} />
                                                 <div className="text-danger small mt-1">{errors.dueDate_err}</div>
                                             </div>
 
@@ -193,9 +213,9 @@ const AddFinancialHelp = () => {
                                                 <label className="font-weight-bold">Student/Banner Image</label>
                                                 <div className="custom-file-container p-3 border rounded bg-light">
                                                     <input type="file" id="imageInput" className='form-control-file' name="image" onChange={handleImgChange} />
-                                                    
+
                                                     {data.image && (
-                                                        <div className="mt-3 shadow-sm rounded overflow-hidden" style={{width: '120px', height: '120px', border: '1px solid #e2e8f0'}}>
+                                                        <div className="mt-3 shadow-sm rounded overflow-hidden" style={{ width: '120px', height: '120px', border: '1px solid #e2e8f0' }}>
                                                             <img
                                                                 src={`${ALTHUB_API_URL}${data.image}`}
                                                                 alt="Preview"
@@ -207,9 +227,9 @@ const AddFinancialHelp = () => {
                                             </div>
 
                                             <div className="d-flex justify-content-end">
-                                                <button type="reset" className="btn btn-light mr-2" onClick={handleReset} style={{minWidth: '100px'}}>Reset</button>
-                                                <button type="submit" className="btn btn-primary" disabled={disable} 
-                                                        style={{minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor}}>
+                                                <button type="reset" className="btn btn-light mr-2" onClick={handleReset} style={{ minWidth: '100px' }}>Reset</button>
+                                                <button type="submit" className="btn btn-primary" disabled={disable}
+                                                    style={{ minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor }}>
                                                     {disable ? <><span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Saving...</> : 'Publish Aid'}
                                                 </button>
                                             </div>

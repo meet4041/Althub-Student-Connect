@@ -11,7 +11,7 @@ import Footer from '../layout/Footer';
 const AddEvent = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
-    
+
     // Theme Constant
     const themeColor = '#2563EB'; // Royal Blue
 
@@ -21,7 +21,7 @@ const AddEvent = () => {
             const element = document.getElementById("page-container");
             if (loader) loader.style.display = 'none';
             if (element) element.classList.add("show");
-            
+
             const id = localStorage.getItem("AlmaPlus_institute_Id");
             setInstitute_Id(id);
         }
@@ -40,7 +40,27 @@ const AddEvent = () => {
     const files = fileList ? [...fileList] : [];
 
     const imgChange = (e) => {
-        setFileList(e.target.files);
+        const selectedFiles = Array.from(e.target.files);
+        const validFiles = [];
+        let hasInvalid = false;
+
+        selectedFiles.forEach(file => {
+            if (file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                validFiles.push(file);
+            } else {
+                hasInvalid = true;
+            }
+        });
+
+        if (hasInvalid) {
+            toast.error("Some files were skipped. Only .jpg, .jpeg, .png, .gif are allowed.");
+        }
+
+        if (validFiles.length > 0) {
+            setFileList(validFiles);
+        } else {
+            e.target.value = null; // clear input if no valid files
+        }
     }
 
     const handleChange = (e) => {
@@ -124,18 +144,18 @@ const AddEvent = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
+                <div id="content" className="content" style={{ backgroundColor: '#F8FAFC' }}>
                     <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/events" style={{color: themeColor}}>Events</Link></li>
+                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor }}>Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/events" style={{ color: themeColor }}>Events</Link></li>
                         <li className="breadcrumb-item active">Add Event</li>
                     </ol>
                     <h1 className="page-header">Create New Event</h1>
 
                     <div className="row justify-content-center">
                         <div className="col-xl-8"> {/* Increased width for better form layout */}
-                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
-                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{borderTopLeftRadius: '15px', borderTopRightRadius: '15px'}}>
+                            <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
+                                <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
                                     <h4 className="card-title mb-0 text-dark">Event Details</h4>
                                     <Link to="/events" className="btn btn-light btn-sm shadow-sm">
                                         <i className="fa fa-arrow-left mr-1"></i> Back
@@ -147,7 +167,7 @@ const AddEvent = () => {
                                         <fieldset>
                                             <div className="form-group mb-3">
                                                 <label className="font-weight-bold" htmlFor="exampleInputName">Event Title</label>
-                                                <input type="text" className="form-control" id="exampleInputName" placeholder="e.g. Annual Tech Symposium" name="title" value={data.title} onChange={handleChange} style={{height: '45px'}} />
+                                                <input type="text" className="form-control" id="exampleInputName" placeholder="e.g. Annual Tech Symposium" name="title" value={data.title} onChange={handleChange} style={{ height: '45px' }} />
                                                 <div className="text-danger small mt-1">{errors.name_err}</div>
                                             </div>
 
@@ -160,13 +180,13 @@ const AddEvent = () => {
                                             <div className="row">
                                                 <div className="col-md-6 form-group mb-3">
                                                     <label className="font-weight-bold" htmlFor="exampleInputdate">Date & Time</label>
-                                                    <input type='datetime-local' className="form-control" id="exampleInputdate" name="date" value={data.date} onChange={handleChange} style={{height: '45px'}} />
+                                                    <input type='datetime-local' className="form-control" id="exampleInputdate" name="date" value={data.date} onChange={handleChange} style={{ height: '45px' }} />
                                                     <div className="text-danger small mt-1">{errors.date_err}</div>
                                                 </div>
 
                                                 <div className="col-md-6 form-group mb-3">
                                                     <label className="font-weight-bold" htmlFor="exampleInputvenue">Venue</label>
-                                                    <input className="form-control" id="exampleInputvenue" placeholder="e.g. Main Auditorium" name="venue" value={data.venue} onChange={handleChange} style={{height: '45px'}} />
+                                                    <input className="form-control" id="exampleInputvenue" placeholder="e.g. Main Auditorium" name="venue" value={data.venue} onChange={handleChange} style={{ height: '45px' }} />
                                                     <div className="text-danger small mt-1">{errors.venue_err}</div>
                                                 </div>
                                             </div>
@@ -176,13 +196,13 @@ const AddEvent = () => {
                                                 <div className="custom-file-container p-3 border rounded bg-light">
                                                     <input type='file' multiple className="form-control-file" id="exampleInputfile" name="photos" onChange={imgChange} />
                                                     <small className="text-muted d-block mt-2">Supported formats: JPG, PNG. Max size: 5MB.</small>
-                                                    
+
                                                     {files.length > 0 && (
                                                         <div className="selected-img row mt-3 px-2">
                                                             {files.map((elem, index) =>
                                                                 <div className='col-auto mb-2' key={index}>
-                                                                    <div className="shadow-sm rounded overflow-hidden" style={{width: '100px', height: '100px'}}>
-                                                                        <img src={window.URL.createObjectURL(elem)} alt="preview" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                                    <div className="shadow-sm rounded overflow-hidden" style={{ width: '100px', height: '100px' }}>
+                                                                        <img src={window.URL.createObjectURL(elem)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -192,9 +212,9 @@ const AddEvent = () => {
                                             </div>
 
                                             <div className="d-flex justify-content-end">
-                                                <button type="reset" className="btn btn-light mr-2" onClick={handleReset} style={{minWidth: '100px'}}>Reset</button>
-                                                <button type="submit" className="btn btn-primary" disabled={disable} 
-                                                        style={{minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor}}>
+                                                <button type="reset" className="btn btn-light mr-2" onClick={handleReset} style={{ minWidth: '100px' }}>Reset</button>
+                                                <button type="submit" className="btn btn-primary" disabled={disable}
+                                                    style={{ minWidth: '120px', backgroundColor: themeColor, borderColor: themeColor }}>
                                                     {disable ? <><span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Saving...</> : 'Publish Event'}
                                                 </button>
                                             </div>
