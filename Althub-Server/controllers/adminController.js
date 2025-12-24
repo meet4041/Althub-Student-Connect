@@ -5,6 +5,16 @@ const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const bcryptjs = require("bcryptjs");
 
+// --- UTILITIES ---
+
+// 1. Password Policy Validator (New Addition)
+const validatePassword = (password) => {
+    // Policy: Min 8 chars, 1 Uppercase, 1 Lowercase, 1 Number
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(password);
+}
+
+// 2. Mailer: Reset Password
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -29,13 +39,24 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
+// --- CONTROLLERS ---
+
 const registerAdmin = async (req, res) => {
     try {
         const { lname, email, phone, password, admin_secret_key } = req.body;
         const MASTER_KEY = process.env.ADMIN_REGISTRATION_SECRET || "Althub_Default_Secret_2024";
 
+        // 1. Master Key Check
         if (admin_secret_key !== MASTER_KEY) {
             return res.status(403).send({ success: false, msg: "Registration Failed: Invalid Secret Master Key" });
+        }
+
+        // 2. Password Strength Check (New)
+        if (!validatePassword(password)) {
+            return res.status(400).send({ 
+                success: false, 
+                msg: "Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number." 
+            });
         }
 
         const adminExists = await Admin.findOne({ email });
@@ -116,16 +137,24 @@ const updatePassword = async (req, res) => {
         if (data) {
             const match = await bcryptjs.compare(oldpassword, data.password);
             if (match) {
+                // 2. Password Strength Check (New)
+                if (!validatePassword(newpassword)) {
+                    return res.status(400).send({ 
+                        success: false, 
+                        msg: "New password is too weak. Requires 1 Upper, 1 Lower, 1 Number, Min 8 chars." 
+                    });
+                }
+
                 const hashedPassword = await bcryptjs.hash(newpassword, 10);
                 
-                // 2. GLOBAL LOGOUT: Increment tokenVersion to invalidate all existing sessions
+                // 3. GLOBAL LOGOUT: Increment tokenVersion to invalidate all existing sessions
                 // Also clear any reset tokens for security
                 await Admin.findByIdAndUpdate(admin_id, { 
                     $set: { password: hashedPassword, token: '' },
                     $inc: { tokenVersion: 1 } 
                 });
                 
-                // 3. LOCAL LOGOUT: Clear the JWT cookie from the current browser
+                // 4. LOCAL LOGOUT: Clear the JWT cookie from the current browser
                 res.clearCookie("jwt_token", { 
                     httpOnly: true, 
                     secure: true, 
@@ -169,9 +198,17 @@ const resetpassword = async (req, res) => {
         const token = req.query.token;
         const tokenData = await Admin.findOne({ token: token });
         if (tokenData) {
+            // 1. Password Strength Check (New)
+            if (!validatePassword(req.body.password)) {
+                return res.status(400).send({ 
+                    success: false, 
+                    msg: "Password is too weak. Requires 1 Upper, 1 Lower, 1 Number, Min 8 chars." 
+                });
+            }
+
             const hashedPassword = await bcryptjs.hash(req.body.password, 10);
 
-            // HARDENING: Kill previous sessions on reset
+            // 2. HARDENING: Kill previous sessions on reset
             await Admin.findByIdAndUpdate(tokenData._id, {
                 $set: { password: hashedPassword, token: '' },
                 $inc: { tokenVersion: 1 }
@@ -190,24 +227,17 @@ const updateAdmin = async (req, res) => {
     try {
         const { id } = req.body;
 
-        // 1. Check if req.body exists or is empty
         if (!req.body || Object.keys(req.body).length === 0) {
             return res.status(400).send({ success: false, msg: "No data provided for update" });
         }
 
         const updateData = {};
         const emptyFields = [];
-
-        // 2. Define the list of fields we expect to potentially update
         const fieldsToUpdate = ['name', 'phone', 'email'];
 
-        // 3. Iterate and validate each field
         fieldsToUpdate.forEach(field => {
-            // Check if the field exists in req.body
             if (Object.prototype.hasOwnProperty.call(req.body, field)) {
                 const value = req.body[field];
-
-                // 4. VALIDATION: If value is an empty string, null, or undefined, mark it as empty
                 if (value === "" || value === null || value === undefined) {
                     emptyFields.push(field);
                 } else {
@@ -216,7 +246,6 @@ const updateAdmin = async (req, res) => {
             }
         });
 
-        // 5. EXCEPTION: If any field was passed as empty, return a validation error
         if (emptyFields.length > 0) {
             return res.status(400).send({
                 success: false,
@@ -224,12 +253,10 @@ const updateAdmin = async (req, res) => {
             });
         }
 
-        // 6. Ensure there is actually something to update after validation
         if (Object.keys(updateData).length === 0) {
             return res.status(400).send({ success: false, msg: "No valid fields provided to update" });
         }
 
-        // 7. Perform the update only with validated data
         const admin_data = await Admin.findByIdAndUpdate(
             id,
             { $set: updateData },
@@ -266,7 +293,7 @@ const getAdminById = async (req, res) => {
 
 module.exports = {
     registerAdmin,
-    adminLogin, // FIXED: Corrected spelling to match call
+    adminLogin,
     forgetPassword,
     resetpassword,
     updatePassword,

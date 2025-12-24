@@ -12,7 +12,7 @@ const FinancialPole = () => {
     const [institute_Name, setInstitute_Name] = useState(null);
     let navigate = useNavigate();
     const [data, setData] = useState([]);
-    const [displayCourses, setDisplayCourses] = useState([]); // Kept variable name to maintain logic
+    const [displayCourses, setDisplayCourses] = useState([]); 
     const rows = [10, 20, 30];
     const [coursesPerPage, setCoursesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -38,13 +38,25 @@ const FinancialPole = () => {
         }
     }, [institute_Name]);
 
+    // 1. UPDATED: Added Authorization Header
     const getAidData = () => {
+        const token = localStorage.getItem('token');
         axios({
             method: "get",
             url: `${ALTHUB_API_URL}/api/getFinancialAidByInstitute/${institute_Name}`,
+            headers: { 
+                'Authorization': `Bearer ${token}` 
+            }
         }).then((response) => {
             setData(response.data.data || []);
-        }).catch(err => setData([]));
+        }).catch(err => {
+            console.error(err);
+            setData([]);
+            // Optional: Redirect if unauthorized
+            if (err.response && err.response.status === 401) {
+                navigate('/login');
+            }
+        });
     };
 
     useEffect(() => {
@@ -87,10 +99,15 @@ const FinancialPole = () => {
         setAlert(true);
     }
 
+    // 2. UPDATED: Added Authorization Header for Delete
     const DeleteAid = () => {
+        const token = localStorage.getItem('token');
         axios({
             method: "delete",
             url: `${ALTHUB_API_URL}/api/deleteFinancialAid/${deleteId}`,
+            headers: { 
+                'Authorization': `Bearer ${token}` 
+            }
         }).then((response) => {
             if (response.data.success === true) {
                 getAidData();
@@ -98,7 +115,10 @@ const FinancialPole = () => {
                 setAlert(false);
                 setAlert2(true);
             }
-        })
+        }).catch(err => {
+            console.error("Delete failed", err);
+            setAlert(false);
+        });
     }
 
     return (

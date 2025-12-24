@@ -33,15 +33,27 @@ const Login = () => {
                 .then((response) => {
                     if (response.data.success === true) {
                         toast.success('Authentication Successful');
+                        
+                        // SECURITY FIX: The token is nested inside response.data.data
                         const adminData = response.data.data;
+                        
                         localStorage.setItem('AlmaPlus_admin_Id', adminData._id);
                         localStorage.setItem('AlmaPlus_admin_Name', adminData.name || 'Admin');
-                        localStorage.setItem('AlmaPlus_admin_Token', response.data.token);
+                        
+                        // CORRECTED: Use adminData.token instead of response.data.token
+                        // This prevents "undefined" from being saved to LocalStorage
+                        if (adminData.token) {
+                            localStorage.setItem('AlmaPlus_admin_Token', adminData.token);
+                        } else {
+                            console.error("Security Warning: Token missing in response");
+                        }
 
                         if (check) {
                             localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Enabled');
                             localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email);
                         }
+                        
+                        // Navigate to dashboard after success
                         setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
                     } else {
                         setDisable(false);
