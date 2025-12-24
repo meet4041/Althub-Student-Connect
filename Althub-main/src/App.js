@@ -73,11 +73,11 @@ function App() {
       (error) => {
         hideLoader();
         
-        // Optional: Auto-logout on 401 error
+        //Auto-logout on 401 error
         if (error.response && error.response.status === 401) {
             console.warn("Session Expired or Unauthorized");
-            // You can uncomment the line below to force logout
-            // localStorage.clear(); nav("/login");
+            localStorage.clear(); 
+            nav("/login");
         }
         
         return Promise.reject(error);

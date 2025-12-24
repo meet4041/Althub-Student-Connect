@@ -110,12 +110,15 @@ export default function Login() {
         withCredentials: true // <--- FIX: Add this line
       }).then((response) => {
         toast.success("Login Successful");
+        
         localStorage.setItem("Althub_Id", response.data.data._id);
+        if (response.data.token) {
+            localStorage.setItem("Althub_Token", response.data.token);
+        }
         setTimeout(() => {
           nav("/home");
-        }, 1000) // Added small delay to let toast show
+        }, 1000)
       }).catch((err) => {
-        // Safe access to error message
         const msg = err.response ? err.response.data.msg : "Login Failed";
         toast.error(msg);
       })
