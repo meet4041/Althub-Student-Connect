@@ -97,49 +97,28 @@ export default function Login() {
     return true;
   };
 
-  // --- UPDATED HANDLE LOGIN ---
-  const handleLogin = async () => {
-    if (!validate()) return;
-
-    setLoading(true);
-    try {
-      const response = await axios.post(`${WEB_URL}/api/userLogin`, {
-        email: user.email,
-        password: user.password,
-      });
-
-      // Check if the backend response indicates success
-      if (response.data.success || response.data.token) { 
+  
+  const handleLogin = () => {
+    if (validate()) {
+      axios({
+        method: "post",
+        data: {
+          email: user.email,
+          password: user.password,
+        },
+        url: `${WEB_URL}/api/userLogin`,
+        withCredentials: true // <--- FIX: Add this line
+      }).then((response) => {
         toast.success("Login Successful");
-
-        // 1. Store User ID
         localStorage.setItem("Althub_Id", response.data.data._id);
-
-        // 2. Store Token (Mirroring Admin/Institute logic)
-        // We check both locations just in case your backend structure varies
-        const token = response.data.token || response.data.data.token;
-        
-        if (token) {
-            localStorage.setItem("Althub_Token", token);
-            
-            // 3. Set Default Header Immediately
-            // This ensures subsequent requests (like getting the profile) work instantly
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        } else {
-            console.warn("Token not found in response");
-        }
-
-        // 4. Navigate
-        setTimeout(() => nav("/home"), 100);
-      } else {
-        // Handle cases where API returns 200 but success is false
-        throw new Error(response.data.msg || "Login Failed");
-      }
-
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.msg || "Invalid Credentials");
-      setLoading(false);
+        setTimeout(() => {
+          nav("/home");
+        }, 1000) // Added small delay to let toast show
+      }).catch((err) => {
+        // Safe access to error message
+        const msg = err.response ? err.response.data.msg : "Login Failed";
+        toast.error(msg);
+      })
     }
   };
 

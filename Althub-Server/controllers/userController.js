@@ -99,48 +99,79 @@ const registerUser = async (req, res) => {
         });
         
         const userData = await User.findOne({ email: req.body.email });
-        if (userData) { 
-            res.status(400).send({ success: false, msg: "User already exists" }); 
+
+        if (userData) {
+            res.status(400).send({ success: false, msg: "User already exists" });
         } else {
+            //Save user FIRST to get the _id
             const user_data = await user.save();
-            // Generate token for immediate login
-            const token = await createtoken(user_data); 
+            //Pass the _id to createtoken
+            const token = await createtoken(user_data._id);
+            
+            res.cookie("jwt_token", token, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                secure: process.env.NODE_ENV === 'production', // true in production
+                sameSite: 'lax'
+            });
+
             res.status(200).send({ success: true, data: user_data, token: token });
         }
-    } catch (error) { res.status(400).send(error.message); }
+
+    } catch (error) {
+        res.status(400).send(error.message);
+        console.log("Error in Registering User : " + error.message);
+    }
 }
+
 
 const userlogin = async (req, res) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
-        
-        // Select +tokenVersion so we can put it in the token payload
-        const userData = await User.findOne({ email: email }).select("+tokenVersion");
+        const userData = await User.findOne({ email: email });
         
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                // 1. Generate the Token
-                const token = await createtoken(userData);
+                // FIX: Generate the token upon successful login
+                const token = await createtoken(userData._id);
 
-                // 2. Remove sensitive info before sending back
-                const { password, tokenVersion, ...userResult } = userData._doc;
-                
-                // 3. Send Token in response
-                res.status(200).send({ 
-                    success: true, 
-                    msg: "Login Successful", 
-                    data: userResult, 
-                    token: token 
+                // FIX: Set the HttpOnly cookie
+                res.cookie("jwt_token", token, {
+                    httpOnly: true,
+                    maxAge: 24 * 60 * 60 * 1000, // 1 day
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax'
                 });
-            } else { 
-                res.status(400).send({ success: false, msg: "Incorrect password" }); 
+
+                const userResult = {
+                    _id: userData._id,
+                    fname: userData.fname,
+                    lname: userData.lname,
+                    email: userData.email,
+                    role: userData.role,
+                    profilepic: userData.profilepic,
+                    // ... include other fields you need
+                }
+
+                res.status(200).send({
+                    success: true,
+                    msg: "Login Successful",
+                    data: userResult,
+                    token: token
+                });
+            } else {
+                res.status(400).send({ success: false, msg: "Invalid Credentials" });
             }
-        } else { 
-            res.status(400).send({ success: false, msg: "User not found" }); 
+        } else {
+            res.status(400).send({ success: false, msg: "User not found. Please Register." });
         }
-    } catch (error) { res.status(400).send(error.message); }
+
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+        console.log("Error in Login User : " + error.message);
+    }
 }
 
 const updatePassword = async (req, res) => {
