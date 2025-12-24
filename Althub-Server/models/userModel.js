@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const config = require("../config/config");
 
 const user = new mongoose.Schema({
-    fname:
-    {
+    fname: {
         type: String,
     },
     lname: {
@@ -63,9 +60,16 @@ const user = new mongoose.Schema({
     institute: {
         type: String
     },
+    // Used for "Forget Password" reset links
     token: {
         type: String,
         default: ''
+    },
+    // Used for "Security" (Global Logout / Invalidating old sessions)
+    tokenVersion: { 
+        type: Number, 
+        default: 0, 
+        select: false // Protected: won't be sent to frontend by default
     }
 });
 

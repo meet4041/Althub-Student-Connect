@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
@@ -49,7 +49,7 @@ const styles = `
 
 export default function SearchProfile({ socket }) {
   const [name, setName] = useState("");
-  const [users, setUsers] = useState([]);
+  // REMOVED: unused 'users' state
   const [showUsers, setShowUsers] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const nav = useNavigate();
@@ -62,7 +62,7 @@ export default function SearchProfile({ socket }) {
   const [year, setYear] = useState("");
 
   const userID = localStorage.getItem("Althub_Id");
-  const [self, setSelf] = useState({});
+  // REMOVED: unused 'self' state and its useEffect
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -71,15 +71,8 @@ export default function SearchProfile({ socket }) {
     return () => { document.head.removeChild(styleSheet); };
   }, []);
 
-  useEffect(() => {
-    if (userID) {
-      axios.get(`${WEB_URL}/api/searchUserById/${userID}`)
-        .then((Response) => { setSelf(Response.data.data[0]); })
-        .catch((error) => {});
-    }
-  }, [userID]);
-
-  const performSearch = (overrideParams = {}) => {
+  // WRAPPED in useCallback to fix dependency warning
+  const performSearch = useCallback((overrideParams = {}) => {
     setIsSearching(true);
     const payload = {
         search: overrideParams.name !== undefined ? overrideParams.name : name,
@@ -92,24 +85,24 @@ export default function SearchProfile({ socket }) {
     axios.post(`${WEB_URL}/api/searchUser`, payload)
       .then((Response) => {
         const data = Response.data.data || [];
-        setUsers(data);
+        // Removed setUsers(data) as it was unused
         setShowUsers(data);
         setIsSearching(false);
       })
       .catch((error) => {
         console.log(error);
         setIsSearching(false);
-        setUsers([]);
         setShowUsers([]);
       });
-  };
+  }, [name, add, skill, degree, year]);
 
+  // Added performSearch to dependency array
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
         performSearch({ name: name });
     }, 300);
     return () => clearTimeout(delayDebounceFn);
-  }, [name]); 
+  }, [name, performSearch]); 
 
   const handleFilter = () => {
     closeModal();
@@ -162,7 +155,6 @@ export default function SearchProfile({ socket }) {
                   
                   <p className="sp-location">{elem.city ? elem.city : ""}{elem.state ? `, ${elem.state}` : ""}{(!elem.city && !elem.state) ? "Student" : ""}</p>
 
-                  {/* --- NEW SECTION: COURSE & YEAR --- */}
                   <div className="sp-education">
                     {elem.latestCourse && (
                       <span>

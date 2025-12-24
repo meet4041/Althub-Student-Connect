@@ -1,7 +1,7 @@
 const express = require('express');
-const router = express();
+const router = express.Router(); // Use Router, not express()
 const gridfs = require('../db/storage');
-const { requireAuth } = require('../middleware/authMiddleware'); // <--- 1. IMPORT THIS
+const { requireAuth } = require('../middleware/authMiddleware');
 
 // Helper: Guess mime type if it's missing in DB
 const getMimeType = (filename) => {
@@ -10,15 +10,18 @@ const getMimeType = (filename) => {
   if (filename.endsWith('.webm')) return 'video/webm';
   if (filename.endsWith('.ogg')) return 'video/ogg';
   if (filename.endsWith('.mov')) return 'video/quicktime';
+  if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) return 'image/jpeg';
+  if (filename.endsWith('.png')) return 'image/png';
   return 'application/octet-stream';
 };
 
-// 2. ADD 'requireAuth' HERE vvv
+// --- SECURED IMAGE ROUTE ---
+// Now requires a valid Token to access
 router.get('/images/:id', requireAuth, async (req, res) => {
   try {
     const id = req.params.id;
     
-    // Security Check: Ensure ID format is valid to prevent database injection attacks
+    // Security Check: Valid MongoDB ID format
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
         return res.status(400).send({ success: false, msg: 'Invalid File ID format' });
     }
@@ -29,13 +32,13 @@ router.get('/images/:id', requireAuth, async (req, res) => {
       return res.status(404).send({ success: false, msg: 'File not found' });
     }
 
-    // --- FIX 3: Robust Content-Type Detection ---
+    // Robust Content-Type Detection
     let contentType = file.contentType;
     if (!contentType || contentType === 'application/octet-stream') {
       contentType = getMimeType(file.filename);
     }
 
-    // --- FIX 4: Handle Video Range Requests ---
+    // Handle Video Range Requests & Standard Images
     const range = req.headers.range;
 
     if (range) {
@@ -57,7 +60,7 @@ router.get('/images/:id', requireAuth, async (req, res) => {
         'Content-Length': file.length,
         'Content-Type': contentType,
         'Accept-Ranges': 'bytes',
-        'Cache-Control': 'private, max-age=31536000' // Changed 'public' to 'private'
+        'Cache-Control': 'private, max-age=31536000' // Private = Only for this user
       });
       
       gridfs.streamToResponse(id, res);

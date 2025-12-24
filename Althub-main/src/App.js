@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom"; 
 import { ToastContainer } from "react-toastify";
 import { socket } from "./socket";
-import axios from "axios"; // Import Axios
+import axios from "axios"; 
 
 // Components
 import Navbar from "./components/Navbar";
@@ -21,13 +21,14 @@ import ForgetPassword from "./components/ForgetPassword";
 import NewPassword from "./components/NewPassword";
 import Scholarship from "./components/Scholarship";
 import MyPosts from "./components/MyPosts";
-import Loader from "./components/Loader";
+import Loader from "./components/Loader"; 
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
+  const nav = useNavigate(); 
 
   useEffect(() => {
-    // --- AXIOS INTERCEPTORS FOR GLOBAL LOADER ---
+    // --- AXIOS INTERCEPTORS ---
     let requestCount = 0;
 
     const showLoader = () => {
@@ -43,10 +44,18 @@ function App() {
       }
     };
 
-    // Add a request interceptor
+    // 1. REQUEST INTERCEPTOR (Attaches Token + Shows Loader)
     const reqInterceptor = axios.interceptors.request.use(
       (config) => {
         showLoader();
+        
+        // --- AUTHENTICATION FIX ---
+        // We get the token from LocalStorage and attach it to the header
+        const token = localStorage.getItem("Althub_Token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        
         return config;
       },
       (error) => {
@@ -55,7 +64,7 @@ function App() {
       }
     );
 
-    // Add a response interceptor
+    // 2. RESPONSE INTERCEPTOR (Handles Errors + Hides Loader)
     const resInterceptor = axios.interceptors.response.use(
       (response) => {
         hideLoader();
@@ -63,37 +72,48 @@ function App() {
       },
       (error) => {
         hideLoader();
+        
+        // Optional: Auto-logout on 401 error
+        if (error.response && error.response.status === 401) {
+            console.warn("Session Expired or Unauthorized");
+            // You can uncomment the line below to force logout
+            // localStorage.clear(); nav("/login");
+        }
+        
         return Promise.reject(error);
       }
     );
 
     // --- SOCKET CONNECTION ---
-    if (!socket.connected) {
+    const token = localStorage.getItem("Althub_Token");
+    if (token && !socket.connected) {
       socket.connect();
     }
 
     socket.on("connect", () => {
       console.log("Socket Connected:", socket.id);
+      const userId = localStorage.getItem("Althub_Id");
+      if(userId) socket.emit("addUser", userId);
     });
 
     socket.on("connect_error", (err) => {
-      console.warn("Socket Connection Failed (Retrying...):", err.message);
+      console.warn("Socket Connection Failed:", err.message);
     });
 
-    // Cleanup interceptors and socket on unmount
+    // Cleanup
     return () => {
       axios.interceptors.request.eject(reqInterceptor);
       axios.interceptors.response.eject(resInterceptor);
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, []);
+  }, [nav]);
 
   return (
     <>
       <ToastContainer />
       
-      {/* --- DISPLAY GLOBAL LOADER --- */}
+      {/* Global Loader */}
       {isLoading && <Loader />}
 
       <Navbar socket={socket} />

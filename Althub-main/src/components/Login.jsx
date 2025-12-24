@@ -1,362 +1,334 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import axios from "axios"; // Ensure this import exists
+import { 
+  Box, 
+  Button, 
+  Typography, 
+  TextField, 
+  CircularProgress, 
+  Container, 
+  Link 
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'; 
 import { WEB_URL } from "../baseURL";
 
-// --- INJECTED STYLES FOR MODERN LOGIN UI ---
-const styles = `
-  .login-page-wrapper {
-    min-height: 100vh;
-    display: flex;
-    font-family: 'Poppins', sans-serif;
-    background-color: #fff;
+// 1. The Left Side Visual Wrapper
+const VisualSide = styled(Box)(({ theme }) => ({
+  flex: 1,
+  background: 'linear-gradient(135deg, #e3fdf5 0%, #ffe6fa 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+  // Responsive: Matches your @media (max-width: 900px)
+  [theme.breakpoints.down('md')]: {
+    minHeight: '300px',
+    flex: 'none',
+    order: -1, 
+  },
+  // The Circle Decoration (::before replacement)
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    width: '600px',
+    height: '600px',
+    background: '#fff',
+    opacity: 0.3,
+    borderRadius: '50%',
+    top: '-150px',
+    right: '-150px',
   }
+}));
 
-  /* --- LEFT SIDE (Illustration) --- */
-  .login-visual {
-    flex: 1;
-    background: linear-gradient(135deg, #e3fdf5 0%, #ffe6fa 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .login-visual::before {
-    content: '';
-    position: absolute;
-    width: 600px;
-    height: 600px;
-    background: #fff;
-    opacity: 0.3;
-    border-radius: 50%;
-    top: -150px;
-    right: -150px;
-  }
-
-  .login-img {
-    width: 80%;
-    max-width: 600px;
-    position: relative;
-    z-index: 1;
-    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1));
-  }
-
-  /* --- RIGHT SIDE (Form) --- */
-  .login-form-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-    position: relative;
-    background: #fff;
-  }
-
-  /* Back Button */
-  .back-btn {
-    position: absolute;
-    top: 30px;
-    left: 30px;
-    padding: 10px 20px;
-    background: #f8f9fa;
-    border: none;
-    border-radius: 30px;
-    color: #666;
-    font-weight: 500;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .back-btn:hover {
-    background: #e9ecef;
-    color: #333;
-    transform: translateX(-3px);
-  }
-
-  /* Form Container */
-  .login-box {
-    width: 100%;
-    max-width: 420px;
-    text-align: center;
-  }
-
-  .app-logo {
-    width: 200px;
-    border-radius: 12px;
-  }
-
-  .login-title h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #2d3436;
-    margin-bottom: 10px;
-  }
-
-  .login-title p {
-    color: #b2bec3;
-    margin-bottom: 40px;
-  }
-
-  /* Inputs */
-  .input-group {
-    margin-bottom: 20px;
-    text-align: left;
-  }
-
-  .input-field {
-    width: 100%;
-    padding: 15px 20px;
-    background: #f8f9fa;
-    border: 2px solid #f1f2f6;
-    border-radius: 12px;
-    font-size: 1rem;
-    color: #333;
-    outline: none;
-    transition: all 0.3s;
-  }
-
-  .input-field:focus {
-    border-color: #66bd9e;
-    background: #fff;
-    box-shadow: 0 4px 15px rgba(102, 189, 158, 0.1);
-  }
-
-  /* Button */
-  .login-btn {
-    width: 100%;
-    padding: 15px;
-    background: #66bd9e;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-    box-shadow: 0 4px 15px rgba(102, 189, 158, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .login-btn:hover {
-    background: #479378;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 189, 158, 0.4);
-  }
-
-  .login-btn:disabled {
-    background: #a5d6c5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* --- SPINNER --- */
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  /* Links */
-  .login-options {
-    margin-top: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    font-size: 0.9rem;
-    color: #636e72;
-  }
-
-  .forgot-link {
-    color: #66bd9e;
-    cursor: pointer;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  .forgot-link:hover {
-    text-decoration: underline;
-  }
-
-  .signup-link span {
-    color: #66bd9e;
-    font-weight: 600;
-    cursor: pointer;
-    margin-left: 5px;
-  }
-
-  .signup-link span:hover {
-    text-decoration: underline;
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .login-page-wrapper { flex-direction: column; }
-    .login-visual { min-height: 300px; flex: none; order: -1; }
-    .login-img { width: 60%; margin-top: 20px; }
-    .login-form-section { padding: 40px 20px; }
-  }
-`;
+// 2. Custom Styled TextField to match your "Modern Login" look
+const CustomTextField = styled(TextField)({
+  marginBottom: '20px',
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: '#f8f9fa',
+    borderRadius: '12px',
+    transition: 'all 0.3s',
+    '& fieldset': { 
+      border: '2px solid #f1f2f6', // Your specific border
+    },
+    '&:hover fieldset': { 
+      borderColor: '#66bd9e', 
+    },
+    '&.Mui-focused': {
+      backgroundColor: '#fff',
+      boxShadow: '0 4px 15px rgba(102, 189, 158, 0.1)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#66bd9e',
+      borderWidth: '2px', // Prevent MUI from making it thicker
+    },
+  },
+  '& .MuiInputBase-input': {
+    padding: '15px 20px',
+    fontSize: '1rem',
+    color: '#333',
+  },
+});
 
 export default function Login() {
   const nav = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
-  // --- ADDED: Loading state ---
-  const [loading, setLoading] = useState(false);
-
-  // Inject Styles
-  useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-    return () => document.head.removeChild(styleSheet);
-  }, []);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
   const validate = () => {
-    let input = user;
-    let isValid = true;
-
-    if (!input["email"]) {
-      isValid = false;
+    if (!user.email) {
       toast.error("Please Enter Email");
+      return false;
     }
-    if (!input["password"]) {
-      isValid = false;
+    if (!user.password) {
       toast.error("Please Enter Password");
+      return false;
     }
-    return isValid;
+    return true;
   };
 
-  const handleLogin = () => {
-    if (validate()) {
-      setLoading(true); // Start loading
-      axios({
-        method: "post",
-        data: {
-          email: user.email,
-          password: user.password,
-        },
-        url: `${WEB_URL}/api/userLogin`
-      }).then((response) => {
+  // --- UPDATED HANDLE LOGIN ---
+  const handleLogin = async () => {
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${WEB_URL}/api/userLogin`, {
+        email: user.email,
+        password: user.password,
+      });
+
+      // Check if the backend response indicates success
+      if (response.data.success || response.data.token) { 
         toast.success("Login Successful");
+
+        // 1. Store User ID
         localStorage.setItem("Althub_Id", response.data.data._id);
-        // We keep loading true here because we are navigating away immediately
-        setTimeout(() => {
-          nav("/home");
-        })
-      }).catch((err) => {
-        setLoading(false); // Stop loading on error
-        toast.error("Invalid Credentials");
-      })
+
+        // 2. Store Token (Mirroring Admin/Institute logic)
+        // We check both locations just in case your backend structure varies
+        const token = response.data.token || response.data.data.token;
+        
+        if (token) {
+            localStorage.setItem("Althub_Token", token);
+            
+            // 3. Set Default Header Immediately
+            // This ensures subsequent requests (like getting the profile) work instantly
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+            console.warn("Token not found in response");
+        }
+
+        // 4. Navigate
+        setTimeout(() => nav("/home"), 100);
+      } else {
+        // Handle cases where API returns 200 but success is false
+        throw new Error(response.data.msg || "Login Failed");
+      }
+
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.msg || "Invalid Credentials");
+      setLoading(false);
     }
   };
 
+  // Redirect if already logged in
   useEffect(() => {
-    if (localStorage.getItem("Althub_Id") !== null) {
+    if (localStorage.getItem("Althub_Id")) {
       nav('/home');
     }
   }, [nav]);
 
   return (
-    <div className="login-page-wrapper">
+    <Box sx={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: { xs: 'column', md: 'row' }, // Responsive Layout logic
+      fontFamily: "'Poppins', sans-serif",
+      bgcolor: '#fff' 
+    }}>
       
-      {/* Left Side: Visuals */}
-      <div className="login-visual">
-        <img src="images/register-animate.svg" alt="Welcome" className="login-img" />
-      </div>
+      {/* --- LEFT SIDE: VISUALS --- */}
+      <VisualSide>
+        <Box 
+          component="img" 
+          src="images/register-animate.svg" 
+          alt="Welcome" 
+          sx={{ 
+            width: { xs: '60%', md: '80%' }, 
+            maxWidth: '600px', 
+            position: 'relative', 
+            zIndex: 1, 
+            filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.1))',
+            mt: { xs: 2, md: 0 }
+          }} 
+        />
+      </VisualSide>
 
-      {/* Right Side: Form */}
-      <div className="login-form-section">
+      {/* --- RIGHT SIDE: FORM --- */}
+      <Box sx={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        p: { xs: 3, md: 5 }, 
+        position: 'relative',
+        bgcolor: '#fff' 
+      }}>
         
-        {/* Back to Main Button */}
-        <button className="back-btn" onClick={() => nav("/")}>
-          <i className="fa-solid fa-arrow-left"></i> Back to Main
-        </button>
+        {/* Back Button (Absolute Position) */}
+        <Button 
+          startIcon={<ArrowBackIcon />} 
+          onClick={() => nav("/")}
+          sx={{ 
+            position: 'absolute', 
+            top: 30, 
+            left: 30, 
+            color: '#666', 
+            bgcolor: '#f8f9fa',
+            borderRadius: '30px',
+            px: 3,
+            textTransform: 'none',
+            fontSize: '0.9rem',
+            fontWeight: 500,
+            '&:hover': { 
+              bgcolor: '#e9ecef', 
+              color: '#333',
+              transform: 'translateX(-3px)' 
+            },
+            transition: 'all 0.2s'
+          }}
+        >
+          Back to Main
+        </Button>
 
-        <div className="login-box">
-          <img src="images/Logo1.jpeg" alt="Logo" className="app-logo" />
+        <Container maxWidth="xs" sx={{ textAlign: 'center' }}>
           
-          <div className="login-title">
-            <h1>Welcome Back</h1>
-            <p>Please enter your details to sign in</p>
-          </div>
+          {/* Logo */}
+          <Box 
+            component="img" 
+            src="images/Logo1.jpeg" 
+            alt="Logo" 
+            sx={{ width: '200px', borderRadius: '12px', mb: 3 }} 
+          />
+          
+          {/* Title */}
+          <Box sx={{ mb: 5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#2d3436', mb: 1, fontSize: '2rem' }}>
+              Welcome Back
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#b2bec3' }}>
+              Please enter your details to sign in
+            </Typography>
+          </Box>
 
-          <div className="input-group">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="Email Address"
-              value={user.email}
-              onChange={handleChange}
-              name="email"
-            />
-          </div>
+          {/* Form Inputs */}
+          <CustomTextField
+            fullWidth
+            placeholder="Email Address"
+            name="email"
+            value={user.email}
+            onChange={handleChange}
+            variant="outlined"
+          />
 
-          <div className="input-group">
-            <input
-              type="password"
-              className="input-field"
-              placeholder="Password"
-              value={user.password}
-              onChange={handleChange}
-              name="password"
-            />
-          </div>
+          <CustomTextField
+            fullWidth
+            placeholder="Password"
+            type="password"
+            name="password"
+            value={user.password}
+            onChange={handleChange}
+            variant="outlined"
+          />
 
-          {/* --- CHANGED: Replaced Input with Button to support Spinner --- */}
-          <button
-            className="login-btn"
+          {/* Login Button */}
+          <Button
+            fullWidth
             onClick={handleLogin}
             disabled={loading}
+            sx={{
+              mt: 1,
+              py: 1.8,
+              bgcolor: '#66bd9e',
+              color: '#fff',
+              borderRadius: '12px',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: '0 4px 15px rgba(102, 189, 158, 0.3)',
+              transition: 'all 0.3s',
+              display: 'flex',
+              gap: 1,
+              '&:hover': {
+                bgcolor: '#479378',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(102, 189, 158, 0.4)',
+              },
+              '&:disabled': {
+                bgcolor: '#a5d6c5',
+                color: '#fff',
+                cursor: 'not-allowed'
+              }
+            }}
           >
             {loading ? (
               <>
-                <div className="spinner"></div>
-                Logging in...
+                <CircularProgress size={20} sx={{ color: '#fff' }} />
+                <span>Logging in...</span>
               </>
             ) : (
               "Login"
             )}
-          </button>
+          </Button>
 
-          <div className="login-options">
-            <div className="forgot-link" onClick={() => nav("/forget-password")}>
+          {/* Footer Options */}
+          <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1.5, color: '#636e72', fontSize: '0.9rem' }}>
+            <Typography 
+              onClick={() => nav("/forget-password")}
+              sx={{ 
+                color: '#66bd9e', 
+                cursor: 'pointer', 
+                fontWeight: 500, 
+                transition: 'color 0.2s',
+                '&:hover': { textDecoration: 'underline' } 
+              }}
+            >
               Forgot Password?
-            </div>
+            </Typography>
             
-            <div className="signup-link">
-              Don't have an account? 
-              <span onClick={() => nav("/register")}>Sign Up</span>
-            </div>
-          </div>
-        </div>
-      </div>
+            <Typography>
+              Don't have an account?{' '}
+              <Link 
+                component="span" 
+                onClick={() => nav("/register")}
+                sx={{ 
+                  color: '#66bd9e', 
+                  fontWeight: 600, 
+                  cursor: 'pointer', 
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                Sign Up
+              </Link>
+            </Typography>
+          </Box>
 
-    </div>
+        </Container>
+      </Box>
+    </Box>
   );
 }

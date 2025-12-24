@@ -228,6 +228,7 @@ export default function Navbar({ socket }) {
   const [mesDot, setMesDot] = useState(false);
   const [notDot, setNotDot] = useState(false);
   const nav = useNavigate();
+  const token = localStorage.getItem("Althub_Token");
 
   // Inject Styles
   useEffect(() => {
@@ -431,7 +432,7 @@ export default function Navbar({ socket }) {
         <div className="navbar-right">
           <div className="nav-profile" onClick={() => nav("/view-profile")}>
             <img
-              src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+              src={user?.profilepic ? `${WEB_URL}${user.profilepic}?token=${token}` : "images/profile1.png"}
               alt="User"
               className="nav-profile-img"
             />
