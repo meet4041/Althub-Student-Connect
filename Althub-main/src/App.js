@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useLayoutEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom"; 
 import { ToastContainer } from "react-toastify";
 import { socket } from "./socket";
@@ -25,7 +25,20 @@ import Loader from "./components/Loader";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
+  // specific state to ensure auth is checked before rendering
+  const [isAuthReady, setIsAuthReady] = useState(false); 
   const nav = useNavigate(); 
+
+  // --- 1. IMMEDIATE TOKEN RESTORATION ---
+  // We use useLayoutEffect to ensure headers are set BEFORE the browser paints
+  // or any child components (like Navbar) attempt to fetch data.
+  useLayoutEffect(() => {
+    const token = localStorage.getItem("Althub_Token");
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+    setIsAuthReady(true); // Allow the app to render now
+  }, []);
 
   useEffect(() => {
     // --- AXIOS INTERCEPTORS ---
@@ -44,18 +57,15 @@ function App() {
       }
     };
 
-    // 1. REQUEST INTERCEPTOR (Attaches Token + Shows Loader)
+    // REQUEST INTERCEPTOR
     const reqInterceptor = axios.interceptors.request.use(
       (config) => {
         showLoader();
-        
-        // --- AUTHENTICATION FIX ---
-        // We get the token from LocalStorage and attach it to the header
+        // Redundant safety check: ensure token is always fresh from storage
         const token = localStorage.getItem("Althub_Token");
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+           config.headers.Authorization = `Bearer ${token}`;
         }
-        
         return config;
       },
       (error) => {
@@ -64,7 +74,7 @@ function App() {
       }
     );
 
-    // 2. RESPONSE INTERCEPTOR (Handles Errors + Hides Loader)
+    // RESPONSE INTERCEPTOR
     const resInterceptor = axios.interceptors.response.use(
       (response) => {
         hideLoader();
@@ -73,10 +83,17 @@ function App() {
       (error) => {
         hideLoader();
         
-        //Auto-logout on 401 error
+        // Auto-logout on 401 error
         if (error.response && error.response.status === 401) {
-            console.warn("Session Expired or Unauthorized");
-            localStorage.clear(); 
+            console.warn("Session Expired or Unauthorized - Logging out");
+            
+            // Clear all auth data
+            localStorage.removeItem("Althub_Token");
+            localStorage.removeItem("Althub_Id");
+            // Remove header
+            delete axios.defaults.headers.common["Authorization"];
+            
+            // Redirect
             nav("/login");
         }
         
@@ -86,28 +103,38 @@ function App() {
 
     // --- SOCKET CONNECTION ---
     const token = localStorage.getItem("Althub_Token");
-    if (token && !socket.connected) {
+    const userId = localStorage.getItem("Althub_Id");
+
+    // Only connect if we have a token and user ID
+    if (token && userId && !socket.connected) {
+      socket.auth = { token };
       socket.connect();
     }
 
-    socket.on("connect", () => {
+    const onConnect = () => {
       console.log("Socket Connected:", socket.id);
-      const userId = localStorage.getItem("Althub_Id");
       if(userId) socket.emit("addUser", userId);
-    });
+    };
 
-    socket.on("connect_error", (err) => {
+    const onConnectError = (err) => {
       console.warn("Socket Connection Failed:", err.message);
-    });
+    };
 
-    // Cleanup
+    socket.on("connect", onConnect);
+    socket.on("connect_error", onConnectError);
+
     return () => {
       axios.interceptors.request.eject(reqInterceptor);
       axios.interceptors.response.eject(resInterceptor);
-      socket.off("connect");
-      socket.off("connect_error");
+      socket.off("connect", onConnect);
+      socket.off("connect_error", onConnectError);
     };
   }, [nav]);
+
+  // Prevent rendering until we have checked for the token
+  if (!isAuthReady) {
+      return null; // Or return <Loader /> here strictly
+  }
 
   return (
     <>
@@ -117,6 +144,7 @@ function App() {
       {isLoading && <Loader />}
 
       <Navbar socket={socket} />
+      
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/login" element={<Login />} />

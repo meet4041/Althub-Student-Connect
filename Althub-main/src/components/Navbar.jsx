@@ -10,6 +10,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import axios from "axios";
+import ProtectedImage from "../ProtectedImage";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 
@@ -431,8 +432,8 @@ export default function Navbar({ socket }) {
         {/* Right: Profile */}
         <div className="navbar-right">
           <div className="nav-profile" onClick={() => nav("/view-profile")}>
-            <img
-              src={user?.profilepic ? `${WEB_URL}${user.profilepic}?token=${token}` : "images/profile1.png"}
+            <ProtectedImage
+              src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
               alt="User"
               className="nav-profile-img"
             />
