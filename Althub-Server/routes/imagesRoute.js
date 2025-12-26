@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express();
 const gridfs = require('../db/storage');
-const { requireAuth } = require('../middleware/authMiddleware'); // <--- 1. IMPORT THIS
+const { requireAuth } = require('../middleware/authMiddleware'); // <--- Import this back
 
 // Helper: Guess mime type if it's missing in DB
 const getMimeType = (filename) => {
@@ -13,12 +13,17 @@ const getMimeType = (filename) => {
   return 'application/octet-stream';
 };
 
-// 2. ADD 'requireAuth' HERE vvv
+// SECURITY UPDATE: Added 'requireAuth' back to this line.
+// Now, only requests with a valid Token header can see the image.
 router.get('/images/:id', requireAuth, async (req, res) => {
   try {
     const id = req.params.id;
     
-    // Security Check: Ensure ID format is valid to prevent database injection attacks
+    if (!id || id === 'undefined' || id === 'null') {
+        return res.status(400).send({ success: false, msg: 'No image ID provided' });
+    }
+    
+    // Security Check: Ensure ID format is valid to prevent injection
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
         return res.status(400).send({ success: false, msg: 'Invalid File ID format' });
     }
@@ -29,13 +34,11 @@ router.get('/images/:id', requireAuth, async (req, res) => {
       return res.status(404).send({ success: false, msg: 'File not found' });
     }
 
-    // --- FIX 3: Robust Content-Type Detection ---
     let contentType = file.contentType;
     if (!contentType || contentType === 'application/octet-stream') {
       contentType = getMimeType(file.filename);
     }
 
-    // --- FIX 4: Handle Video Range Requests ---
     const range = req.headers.range;
 
     if (range) {
@@ -57,7 +60,8 @@ router.get('/images/:id', requireAuth, async (req, res) => {
         'Content-Length': file.length,
         'Content-Type': contentType,
         'Accept-Ranges': 'bytes',
-        'Cache-Control': 'private, max-age=31536000' // Changed 'public' to 'private'
+        // 'Cache-Control': 'public, max-age=31536000' // <-- REMOVED PUBLIC CACHE FOR SECURITY
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate' // <-- ADDED PRIVATE HEADERS
       });
       
       gridfs.streamToResponse(id, res);
