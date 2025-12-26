@@ -4,6 +4,7 @@ import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import FollowerModal from "./FollowerModal";
+import ProtectedImage from "../ProtectedImage";
 
 // --- INJECTED STYLES FOR MODERN PROFILE UI ---
 const styles = `
@@ -468,7 +469,12 @@ export default function ViewSearchProfile({ socket }) {
             <div className="header-cover"></div>
             <div className="header-body">
               <div className="header-left">
-                <img src={user.profilepic && user.profilepic !== "undefined" ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} alt="Profile" className="header-avatar" loading="lazy" />
+                <ProtectedImage 
+                  imgSrc={user.profilepic} 
+                  defaultImage="/images/profile1.png" 
+                  className="header-avatar" 
+                  alt="Profile"
+                />
                 <div className="user-details">
                   <h1>{user.fname} {user.lname} {isAlumni && <span className="alumni-badge">Alumni</span>}</h1>
                   <p className="user-headline">{user.institute || "Student"}</p>

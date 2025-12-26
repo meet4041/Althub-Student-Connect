@@ -3,8 +3,6 @@ const router = express.Router();
 const gridfs = require('../db/storage'); // Connects to your existing storage helper
 const { requireAuth } = require('../middleware/authMiddleware'); // Connects to your security check
 
-// Helper: Guess mime type if it's missing in DB
-// This ensures the browser knows how to play/display the file
 const getMimeType = (filename) => {
   if (!filename) return 'application/octet-stream';
   if (filename.endsWith('.mp4')) return 'video/mp4';

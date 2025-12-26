@@ -3,6 +3,7 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import FilterModal from "./FilterModal";
+import ProtectedImage from "../ProtectedImage";
 
 // --- INJECTED STYLES ---
 const styles = `
@@ -140,11 +141,11 @@ export default function SearchProfile({ socket }) {
               <div key={elem._id} className="sp-card">
                 <div className="sp-banner"></div>
                 <div className="sp-avatar-container">
-                  <img
-                    src={ elem.profilepic && elem.profilepic !== "" && elem.profilepic !== "undefined" ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png" }
+                  <ProtectedImage
+                    imgSrc={elem.profilepic}
                     alt="profile"
                     className="sp-avatar"
-                    loading="lazy"
+                    defaultImage="images/profile1.png"
                   />
                 </div>
                 <div className="sp-content">

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { WEB_URL } from "../baseURL";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import navigation
+import { useNavigate } from "react-router-dom";
+import ProtectedImage from "../ProtectedImage";
 
 // --- INJECTED STYLES FOR LIST ITEM ---
 const styles = `
@@ -126,13 +127,11 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
     <div className="connection-item" onClick={handleProfileClick}>
       
       <div className="connection-left">
-        <img
-          src={user && user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined"
-            ? `${WEB_URL}${user.profilepic}`
-            : "images/profile1.png"
-          }
-          alt="Profile"
+        <ProtectedImage 
+          imgSrc={user.receiverProfilePic} // Verify the exact field name
+          defaultImage="/images/profile1.png" 
           className="connection-avatar"
+          alt="User"
         />
         <span className="connection-name">
           {user && user.fname ? `${user.fname} ${user.lname}` : "User"}

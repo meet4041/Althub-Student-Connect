@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { useNavigate } from "react-router-dom";
+import ProtectedImage from "../ProtectedImage"; // IMPORT ADDED
 
 // --- INJECTED STYLES FOR FULL-SCREEN DENSE UI ---
 const styles = `
@@ -20,8 +21,8 @@ const styles = `
     display: flex;
     justify-content: center;
     gap: 25px;
-    width: 98%; /* Cover almost full width */
-    max-width: 1920px; /* Allow wide screens */
+    width: 98%;
+    max-width: 1920px;
     margin: 0 auto;
     padding: 0 10px;
     align-items: flex-start;
@@ -29,11 +30,11 @@ const styles = `
 
   /* --- LEFT FEED SECTION --- */
   .myposts-feed {
-    flex: 1; /* Grow to fill space */
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    min-width: 0; /* Prevent flex overflow */
+    min-width: 0;
   }
 
   /* Header Card */
@@ -49,18 +50,8 @@ const styles = `
     border: 1px solid #eee;
   }
 
-  .header-info h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #2d3436;
-    margin: 0 0 5px 0;
-  }
-
-  .header-info p {
-    color: #636e72;
-    margin: 0;
-    font-size: 0.95rem;
-  }
+  .header-info h1 { font-size: 1.6rem; font-weight: 700; color: #2d3436; margin: 0 0 5px 0; }
+  .header-info p { color: #636e72; margin: 0; font-size: 0.95rem; }
 
   .post-count-badge {
     background: #e3fdf5;
@@ -90,11 +81,7 @@ const styles = `
     border-bottom: 1px solid #f9f9f9;
   }
 
-  .post-user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
+  .post-user-info { display: flex; align-items: center; gap: 15px; }
 
   .post-user-img {
     width: 50px;
@@ -104,23 +91,11 @@ const styles = `
     border: 1px solid #eee;
   }
 
-  .post-meta h4 {
-    margin: 0;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .post-meta span {
-    font-size: 0.85rem;
-    color: #999;
-  }
+  .post-meta h4 { margin: 0; font-size: 1.05rem; font-weight: 600; color: #333; }
+  .post-meta span { font-size: 0.85rem; color: #999; }
 
   /* Action Buttons (Edit/Delete) */
-  .post-actions-top {
-    display: flex;
-    gap: 12px;
-  }
+  .post-actions-top { display: flex; gap: 12px; }
 
   .action-icon-btn {
     width: 38px;
@@ -152,16 +127,16 @@ const styles = `
 
   .post-media-container {
     margin-bottom: 15px;
-    background: #000;
+    background: #fff; /* FIX: Changed from #000 to #fff */
   }
 
   .post-img {
     width: 100%;
-    max-height: 600px; /* Taller max height for large screens */
+    max-height: 600px;
     object-fit: contain;
     display: block;
     margin: 0 auto;
-    background: #000;
+    background: #fff; /* FIX: Changed from #000 to #fff */
   }
 
   .post-footer {
@@ -176,7 +151,7 @@ const styles = `
 
   /* --- RIGHT SIDEBAR --- */
   .myposts-sidebar {
-    flex: 0 0 380px; /* Wider Sidebar */
+    flex: 0 0 380px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -201,12 +176,7 @@ const styles = `
     padding-bottom: 12px;
   }
 
-  .suggestion-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 18px;
-  }
+  .suggestion-item { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; }
 
   .suggestion-img {
     width: 50px;
@@ -216,22 +186,9 @@ const styles = `
     border: 1px solid #eee;
   }
 
-  .suggestion-info {
-    flex: 1;
-  }
-
-  .suggestion-info h5 {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-    font-weight: 600;
-  }
-
-  .suggestion-info p {
-    margin: 0;
-    font-size: 0.85rem;
-    color: #888;
-  }
+  .suggestion-info { flex: 1; }
+  .suggestion-info h5 { margin: 0; font-size: 1rem; color: #333; font-weight: 600; }
+  .suggestion-info p { margin: 0; font-size: 0.85rem; color: #888; }
 
   .suggestion-link {
     font-size: 0.85rem;
@@ -243,7 +200,6 @@ const styles = `
     border-radius: 20px;
     background: #f0f9f6;
   }
-
   .suggestion-link:hover { background: #66bd9e; color: #fff; }
 
   /* Empty State */
@@ -256,11 +212,7 @@ const styles = `
     border: 2px dashed #eee;
   }
 
-  .no-posts i {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    color: #eee;
-  }
+  .no-posts i { font-size: 4rem; margin-bottom: 20px; color: #eee; }
 
   /* --- MODAL STYLES --- */
   .modal-box {
@@ -277,15 +229,8 @@ const styles = `
     font-family: 'Poppins', sans-serif;
   }
 
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-  }
-
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
   .modal-title { font-size: 1.4rem; font-weight: 700; color: #333; }
-  
   .modal-close { cursor: pointer; color: #888; font-size: 1.4rem; transition: color 0.2s; }
   .modal-close:hover { color: #333; }
 
@@ -327,15 +272,8 @@ const styles = `
   .btn-save { background: #66bd9e; color: #fff; }
   .btn-save:hover { background: #479378; }
 
-  /* Responsive */
-  @media (max-width: 1100px) {
-    .myposts-sidebar { display: none; }
-  }
-  
-  @media (max-width: 768px) {
-    .myposts-content { padding: 0 10px; }
-    .modal-box { width: 95%; padding: 20px; }
-  }
+  @media (max-width: 1100px) { .myposts-sidebar { display: none; } }
+  @media (max-width: 768px) { .myposts-content { padding: 0 10px; } .modal-box { width: 95%; padding: 20px; } }
 `;
 
 export default function MyPosts() {
@@ -344,6 +282,7 @@ export default function MyPosts() {
   const [user, setUser] = useState({});
   const [topUsers, setTopUsers] = useState([]);
   const userid = localStorage.getItem("Althub_Id");
+  const token = localStorage.getItem("Althub_Token"); // Get token for video
 
   // Edit State
   const [open, setOpen] = useState(false);
@@ -360,7 +299,6 @@ export default function MyPosts() {
     arrows: false,
   };
 
-  // Inject Styles
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.innerText = styles;
@@ -368,7 +306,16 @@ export default function MyPosts() {
     return () => document.head.removeChild(styleSheet);
   }, []);
 
-  // --- Fetch Data ---
+  const isVideo = (url) => {
+    if (typeof url === "string") {
+      const lowerUrl = url.toLowerCase();
+      if (lowerUrl.includes("mime=video")) return true;
+      const videoExts = [".mp4", ".webm", ".ogg", ".mov", ".mkv"];
+      return videoExts.some((ext) => lowerUrl.endsWith(ext));
+    }
+    return false;
+  };
+
   const getUser = useCallback(() => {
     if (!userid) return;
     axios.get(`${WEB_URL}/api/searchUserById/${userid}`).then((Response) => {
@@ -402,7 +349,6 @@ export default function MyPosts() {
     getNewUsers();
   }, [getUser, getMyPosts, getNewUsers]);
 
-  // --- Actions ---
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       axios.delete(`${WEB_URL}/api/deletePost/${id}`)
@@ -453,10 +399,8 @@ export default function MyPosts() {
     <div className="myposts-wrapper">
       <div className="myposts-content">
         
-        {/* --- LEFT: POST FEED (Expands to Fill Space) --- */}
+        {/* --- LEFT: POST FEED --- */}
         <div className="myposts-feed">
-          
-          {/* Header */}
           <div className="myposts-header-card">
             <div className="header-info">
                 <h1>My Posts</h1>
@@ -467,16 +411,15 @@ export default function MyPosts() {
             </div>
           </div>
 
-          {/* Posts List */}
           {posts.length > 0 ? (
             posts.map((elem) => (
               <div key={elem._id} className="post-card">
                 
                 <div className="post-header">
                   <div className="post-user-info">
-                    <img
-                      src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
-                      alt=""
+                    <ProtectedImage 
+                      imgSrc={user.profilepic} 
+                      defaultImage="images/profile1.png"
                       className="post-user-img"
                     />
                     <div className="post-meta">
@@ -486,20 +429,8 @@ export default function MyPosts() {
                   </div>
 
                   <div className="post-actions-top">
-                    <button 
-                        className="action-icon-btn btn-edit" 
-                        onClick={() => handleOpenEdit(elem)}
-                        title="Edit"
-                    >
-                        <i className="fa-solid fa-pen"></i>
-                    </button>
-                    <button 
-                        className="action-icon-btn btn-delete" 
-                        onClick={() => handleDelete(elem._id)}
-                        title="Delete"
-                    >
-                        <i className="fa-solid fa-trash"></i>
-                    </button>
+                    <button className="action-icon-btn btn-edit" onClick={() => handleOpenEdit(elem)} title="Edit"><i className="fa-solid fa-pen"></i></button>
+                    <button className="action-icon-btn btn-delete" onClick={() => handleDelete(elem._id)} title="Delete"><i className="fa-solid fa-trash"></i></button>
                   </div>
                 </div>
 
@@ -510,7 +441,11 @@ export default function MyPosts() {
                     <Slider {...settings}>
                       {elem.photos.map((el, idx) => (
                         <div key={idx} style={{ outline: 'none' }}>
-                            <img src={`${WEB_URL}${el}`} alt="" className="post-img" />
+                            {isVideo(el) ? (
+                                <video src={`${WEB_URL}${el}${el.includes('?') ? '&' : '?'}token=${token}`} className="post-img" controls playsInline />
+                            ) : (
+                                <ProtectedImage imgSrc={el} className="post-img" defaultImage="images/cover-pattern.png" />
+                            )}
                         </div>
                       ))}
                     </Slider>
@@ -531,28 +466,23 @@ export default function MyPosts() {
           )}
         </div>
 
-        {/* --- RIGHT: SIDEBAR (Wider) --- */}
+        {/* --- RIGHT: SIDEBAR --- */}
         <div className="myposts-sidebar">
             <div className="sidebar-widget">
                 <div className="widget-title">People you may know</div>
                 {topUsers.length > 0 ? (
                     topUsers.map((elem) => (
                         <div key={elem._id} className="suggestion-item">
-                            <img 
-                                src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} 
-                                alt="" 
-                                className="suggestion-img"
+                            <ProtectedImage 
+                                imgSrc={elem.profilepic} 
+                                defaultImage="images/profile1.png" 
+                                className="suggestion-img" 
                             />
                             <div className="suggestion-info">
                                 <h5>{elem.fname} {elem.lname}</h5>
                                 <p>{elem.city ? elem.city : "Student"}</p>
                             </div>
-                            <span 
-                                className="suggestion-link"
-                                onClick={() => nav("/view-search-profile", { state: { id: elem._id } })}
-                            >
-                                View
-                            </span>
+                            <span className="suggestion-link" onClick={() => nav("/view-search-profile", { state: { id: elem._id } })}>View</span>
                         </div>
                     ))
                 ) : (
@@ -564,12 +494,7 @@ export default function MyPosts() {
       </div>
 
       {/* --- EDIT MODAL --- */}
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
+      <Modal open={open} onClose={handleClose}>
         <div className="modal-box">
           <div className="modal-header">
             <span className="modal-title">Edit Post</span>
@@ -578,12 +503,7 @@ export default function MyPosts() {
           
           <div className="modal-input-group">
             <label className="modal-label">Description</label>
-            <textarea 
-              rows="4" 
-              className="modal-textarea"
-              value={editDesc}
-              onChange={(e) => setEditDesc(e.target.value)}
-            />
+            <textarea rows="4" className="modal-textarea" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
           </div>
 
           <div className="modal-input-group">
@@ -591,14 +511,8 @@ export default function MyPosts() {
              <div className="modal-imgs">
                 {editImages.map((img, idx) => (
                     <div key={idx} className="modal-img-wrapper">
-                        <img 
-                            src={`${WEB_URL}${img}`} 
-                            alt="post-content" 
-                            className="modal-img"
-                        />
-                        <div className="modal-remove-img" onClick={() => removeImage(idx)}>
-                            <i className="fa-solid fa-xmark"></i>
-                        </div>
+                        <ProtectedImage imgSrc={img} className="modal-img" />
+                        <div className="modal-remove-img" onClick={() => removeImage(idx)}><i className="fa-solid fa-xmark"></i></div>
                     </div>
                 ))}
                 {editImages.length === 0 && <span style={{fontSize: '0.85rem', color: '#999'}}>No images.</span>}

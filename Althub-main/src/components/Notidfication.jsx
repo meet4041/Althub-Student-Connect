@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
+import ProtectedImage from "../ProtectedImage";
 
 // --- INJECTED STYLES FOR CONSISTENT FULL-WIDTH UI ---
 const styles = `
@@ -346,11 +347,12 @@ export default function Notidfication() {
                   onClick={(e) => handleProfileRedirect(e, elem.senderId)}
                   title="View Profile"
                 >
-                  {elem.image ? (
-                      <img src={`${WEB_URL}${elem.image}`} alt="" className="notif-img" />
-                  ) : (
-                      <img src="images/profile1.png" alt="" className="notif-img" />
-                  )}
+                  <ProtectedImage 
+                    imgSrc={elem.image} 
+                    defaultImage="images/profile1.png" 
+                    className="notif-img" 
+                    alt="sender"
+                  />
                 </div>
                 
                 {/* Content */}

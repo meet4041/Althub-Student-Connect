@@ -1,10 +1,9 @@
 const Event = require("../models/EventModel");
-const Notification = require("../models/notificationModel"); // Import Notification
-const User = require("../models/userModel"); // Import User to notify them
+const Notification = require("../models/notificationModel");
+const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
 
 const addEvents = async (req, res) => {
-    // ... (Keep existing logic)
     try {
         const event = new Event({
             organizerid: req.body.organizerid,
@@ -12,7 +11,7 @@ const addEvents = async (req, res) => {
             description: req.body.description,
             date: req.body.date,
             venue: req.body.venue,
-            photos: req.images
+            photos: req.images || []
         });
 
         const event_data = await event.save();

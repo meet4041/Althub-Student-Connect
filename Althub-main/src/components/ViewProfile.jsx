@@ -8,6 +8,7 @@ import EditEducationModal from "./EditEducationModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { useNavigate } from "react-router-dom";
 import FollowerModal from "./FollowerModal";
+import ProtectedImage from "../ProtectedImage";
 
 // --- STYLES REMAIN SAME ---
 const styles = `
@@ -164,7 +165,12 @@ export default function ViewProfile() {
             <div className="header-cover"></div>
             <div className="header-body">
               <div className="header-avatar-wrapper">
-                <img src={user.profilepic && user.profilepic !== "undefined" ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} alt="Profile" className="header-avatar" loading="lazy" />
+                <ProtectedImage 
+                    imgSrc={user.profilepic} 
+                    defaultImage="/images/profile1.png" 
+                    className="header-avatar" 
+                    alt="Profile"
+                  />
                 <div className="header-actions">
                   <button className="icon-btn" onClick={() => setShowModal1(true)} title="Edit Profile"><i className="fa-solid fa-pencil"></i></button>
                   <div style={{position: 'relative'}}>

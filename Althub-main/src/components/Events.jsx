@@ -4,8 +4,8 @@ import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import EventModal from "./EventModal";
+import ProtectedImage from "../ProtectedImage"; // Ensure this is imported
 
-// --- INJECTED STYLES FOR COMPACT 4-COLUMN GRID ---
 const styles = `
   .events-page-wrapper {
     background-color: #f8f9fa;
@@ -15,7 +15,7 @@ const styles = `
   }
 
   .events-container {
-    max-width: 1400px; /* Increased width to fit 4 cols comfortably */
+    max-width: 1400px;
     margin: 0 auto;
   }
 
@@ -92,7 +92,7 @@ const styles = `
     transform: translateX(-3px);
   }
 
-  /* --- TABS / FILTERS --- */
+  /* --- TABS --- */
   .events-tabs {
     display: flex;
     gap: 10px;
@@ -125,15 +125,14 @@ const styles = `
     box-shadow: 0 4px 12px rgba(102, 189, 158, 0.3);
   }
 
-  /* --- EVENTS GRID (4 Columns) --- */
+  /* --- EVENTS GRID --- */
   .events-grid {
     display: grid;
-    /* minmax(260px, 1fr) ensures 4 cards fit on a typical 1200px+ screen */
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 25px;
   }
 
-  /* --- EVENT CARD (Compact) --- */
+  /* --- EVENT CARD --- */
   .event-card {
     background: #fff;
     border-radius: 12px;
@@ -153,31 +152,34 @@ const styles = `
   }
 
   .card-img-wrapper {
-    height: 150px; /* Reduced height for compact look */
+    height: 150px; 
     overflow: hidden;
     position: relative;
+    background: #f0f0f0; /* Placeholder color while loading */
   }
 
-  .card-img-wrapper img {
+  /* FIX: Target the class explicitly passed to ProtectedImage */
+  .event-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
+    display: block;
   }
 
-  .event-card:hover .card-img-wrapper img {
+  .event-card:hover .event-img {
     transform: scale(1.05);
   }
 
   .card-body {
-    padding: 18px; /* Reduced padding */
+    padding: 18px;
     flex: 1;
     display: flex;
     flex-direction: column;
   }
 
   .card-title {
-    font-size: 1.1rem; /* Slightly smaller title */
+    font-size: 1.1rem;
     font-weight: 700;
     color: #2d3436;
     margin-bottom: 12px;
@@ -200,7 +202,7 @@ const styles = `
     gap: 10px;
     margin-bottom: 8px;
     color: #636e72;
-    font-size: 0.85rem; /* Smaller text */
+    font-size: 0.85rem;
   }
 
   .info-item i {
@@ -228,7 +230,6 @@ const styles = `
     color: #fff;
   }
 
-  /* --- EMPTY STATE --- */
   .no-events {
     grid-column: 1 / -1;
     text-align: center;
@@ -246,7 +247,6 @@ const styles = `
     color: #dfe6e9;
   }
 
-  /* Responsive */
   @media (max-width: 900px) {
     .events-header-card {
       flex-direction: column;
@@ -277,7 +277,6 @@ export default function Events() {
   const [type, setType] = useState("All");
   const nav = useNavigate();
 
-  // Inject Styles
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.innerText = styles;
@@ -306,22 +305,13 @@ export default function Events() {
 
   const formatDate = (dateTimeString) => {
     const date = new Date(dateTimeString);
-    const options = {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    };
+    const options = { weekday: "short", year: "numeric", month: "short", day: "numeric" };
     return date.toLocaleDateString("en-US", options);
   };
 
   const formatTime = (dateTimeString) => {
     const date = new Date(dateTimeString);
-    const options = {
-      hour: "numeric",
-      minute: "numeric",
-      timeZone: "Asia/Kolkata",
-    };
+    const options = { hour: "numeric", minute: "numeric", timeZone: "Asia/Kolkata" };
     const formattedTime = date.toLocaleTimeString("en-US", options);
     return formattedTime.replace(/(\+|-)\d+:\d+/, "");
   };
@@ -330,13 +320,9 @@ export default function Events() {
     const currentDate = new Date();
     setShowEvent(events.filter(event => {
       const eventDate = new Date(event.date);
-      if (type === "All") {
-        return true;
-      } else if (type === "Upcomming") {
-        return eventDate > currentDate;
-      } else {
-        return eventDate < currentDate;
-      }
+      if (type === "All") return true;
+      else if (type === "Upcomming") return eventDate > currentDate;
+      else return eventDate < currentDate;
     }));
   }, [type, events]);
 
@@ -362,10 +348,17 @@ export default function Events() {
             {showEvent.length > 0 ? (
               showEvent.map((elem) => (
                 <div key={elem._id} className="event-card">
+                  
+                  {/* FIX: Keep wrapper, add ProtectedImage with proper class */}
                   <div className="card-img-wrapper">
-                    {/* --- OPTIMIZATION: Lazy Load --- */}
-                    {elem.photos.length > 0 ? <img src={`${WEB_URL}${elem.photos[0]}`} alt={elem.title} loading="lazy" /> : <img src="images/event1.png" alt="Default Event" loading="lazy" />}
+                    <ProtectedImage 
+                      imgSrc={elem.photos && elem.photos[0]} 
+                      defaultImage="images/event1.png" 
+                      alt={elem.title}
+                      className="event-img" 
+                    />
                   </div>
+
                   <div className="card-body">
                     <h2 className="card-title" title={elem.title}>{elem.title}</h2>
                     <ul className="info-list">

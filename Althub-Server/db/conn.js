@@ -15,10 +15,10 @@ try {
     file: (req, file) => {
       return new Promise((resolve, reject) => {
         const filename = Date.now() + '-' + file.originalname;
+        const isPublicUpload = req.originalUrl.toLowerCase().includes('event');
         const fileInfo = {
           filename: filename,
           bucketName: 'uploads',
-          // --- FIX 1: Save correct Content-Type so browser knows it is a video ---
           contentType: file.mimetype,
           metadata: { originalname: file.originalname }
         };
