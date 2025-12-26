@@ -436,6 +436,7 @@ export default function Navbar({ socket }) {
               src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
               alt="User"
               className="nav-profile-img"
+              defaultImage="/images/profile1.png"
             />
             <div className="user-profile">
               <span>{user.fname || "User"}</span>
