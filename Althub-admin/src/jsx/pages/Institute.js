@@ -232,13 +232,6 @@ const Institutes = () => {
 
                 <Footer />
             </div>
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                .badge-soft-blue { background-color: rgba(49, 130, 206, 0.1); padding: 4px 8px; border-radius: 6px; }
-                .font-weight-600 { font-weight: 600; }
-                .table-hover tbody tr:hover { background-color: #f8fafc; }
-                .align-middle td { vertical-align: middle !important; }
-            `}} />
         </Fragment>
     )
 }

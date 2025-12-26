@@ -177,18 +177,6 @@ function Dashboard() {
                 </div>
                 <Footer />
             </div>
-
-            {/* Inline CSS for Hover Effects */}
-            <style dangerouslySetInnerHTML={{__html: `
-                .hover-up:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
-                }
-                .bg-gradient-blue { background: linear-gradient(to right, #007bff, #00c6ff) !important; }
-                .bg-gradient-purple { background: linear-gradient(to right, #6f42c1, #e83e8c) !important; }
-                .bg-gradient-teal { background: linear-gradient(to right, #20c997, #008080) !important; }
-                .transition-all { transition: all 0.3s ease-in-out; }
-            `}} />
         </>
     )
 }
