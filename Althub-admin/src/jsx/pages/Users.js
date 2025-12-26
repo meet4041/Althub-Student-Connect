@@ -13,7 +13,7 @@ const Users = () => {
     const rows = [10, 20, 30];
     const [usersPerPage, setUsersPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Deletion States
     const [deleteId, setDeleteId] = useState('');
     const [showDeletePrompt, setShowDeletePrompt] = useState(false);
@@ -105,11 +105,11 @@ const Users = () => {
                                 <div className="input-group-prepend">
                                     <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
                                 </div>
-                                <input 
-                                    type="search" 
-                                    className="form-control border-left-0 shadow-none" 
-                                    placeholder='Search by Name or Email...' 
-                                    onChange={handleSearch} 
+                                <input
+                                    type="search"
+                                    className="form-control border-left-0 shadow-none"
+                                    placeholder='Search by Name or Email...'
+                                    onChange={handleSearch}
                                 />
                             </div>
 
@@ -130,11 +130,11 @@ const Users = () => {
                                             <tr key={index}>
                                                 <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
                                                 <td>
-                                                    <img 
-                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/login-bg/profile1.png'} 
-                                                        alt='User' 
+                                                    <img
+                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/login-bg/profile1.png'}
+                                                        alt='User'
                                                         className="rounded-circle shadow-sm border"
-                                                        style={{ width: '45px', height: '45px', objectFit: 'cover' }} 
+                                                        style={{ width: '45px', height: '45px', objectFit: 'cover' }}
                                                     />
                                                 </td>
                                                 <td>
@@ -148,8 +148,8 @@ const Users = () => {
                                                     </span>
                                                 </td>
                                                 <td className="text-center">
-                                                    <button 
-                                                        className="btn btn-outline-danger btn-sm rounded-circle btn-icon" 
+                                                    <button
+                                                        className="btn btn-outline-danger btn-sm rounded-circle btn-icon"
                                                         onClick={() => handleDeleteClick(elem._id)}
                                                         title="Delete User"
                                                     >
@@ -177,8 +177,8 @@ const Users = () => {
                                 </nav>
                                 <div className="mt-3 mt-md-0 d-flex align-items-center bg-light px-3 py-2 rounded">
                                     <small className="text-muted mr-2">Rows per page:</small>
-                                    <select 
-                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none" 
+                                    <select
+                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none"
                                         style={{ width: 'auto', cursor: 'pointer' }}
                                         onChange={(e) => setUsersPerPage(Number(e.target.value))}
                                         value={usersPerPage}
@@ -211,9 +211,9 @@ const Users = () => {
 
                 {/* POPUP 2: SUCCESS MESSAGE */}
                 {showSuccessAlert && (
-                    <SweetAlert 
-                        success 
-                        title="Account Deleted" 
+                    <SweetAlert
+                        success
+                        title="Account Deleted"
                         onConfirm={() => setShowSuccessAlert(false)}
                     >
                         The user record has been removed successfully.
@@ -222,13 +222,6 @@ const Users = () => {
 
                 <Footer />
             </div>
-            <style dangerouslySetInnerHTML={{__html: `
-                .badge-info-transparent-2 { background-color: rgba(54, 184, 214, 0.1); }
-                .font-weight-600 { font-weight: 600; }
-                .align-middle td { vertical-align: middle !important; }
-                .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
-                .table-hover tbody tr:hover { background-color: #f8f9fa; }
-            `}} />
         </Fragment>
     );
 };

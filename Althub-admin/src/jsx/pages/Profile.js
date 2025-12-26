@@ -270,28 +270,6 @@ const Profile = () => {
                 </div>
                 <Footer />
             </div>
-
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                .font-weight-600 { font-weight: 600; font-size: 13px; color: #4a5568; }
-                .input-group-custom { position: relative; }
-                .form-control { border-radius: 8px; padding: 10px 15px; background: #f8fafc; border: 1px solid #e2e8f0; }
-                .form-control:focus { background: #fff; border-color: #3182ce; box-shadow: none; }
-                
-                .eye-btn {
-                    position: absolute;
-                    right: 12px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    background: none;
-                    border: none;
-                    color: #a0aec0;
-                    cursor: pointer;
-                    z-index: 10;
-                    outline: none !important;
-                }
-                .eye-btn:hover { color: #3182ce; }
-            `}} />
         </>
     );
 };

@@ -222,14 +222,6 @@ const FeedBack = () => {
 
                 <Footer />
             </div>
-            <style dangerouslySetInnerHTML={{__html: `
-                .bg-primary-transparent { background-color: rgba(49, 130, 206, 0.1); }
-                .font-weight-600 { font-weight: 600; }
-                .table-hover tbody tr:hover { background-color: #f8fafc; }
-                .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-                .btn-icon:hover { background-color: #e53e3e; color: white; }
-                .text-warning { color: #f6e05e !important; }
-            `}} />
         </Fragment>
     )
 }
