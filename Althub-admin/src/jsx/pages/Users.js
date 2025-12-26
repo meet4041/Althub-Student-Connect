@@ -5,36 +5,37 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 import { ALTHUB_API_URL } from '../../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axiosInstance, { fetchSecureImage } from '../../services/axios'; 
+import axiosInstance, { fetchSecureImage } from '../../services/axios'; // Import the new helper
 
-// --- NEW COMPONENT: SecureImage ---
-// This component automatically fetches the image using the Admin Token
+// --- CUSTOM COMPONENT TO HANDLE SECURE IMAGES ---
 const SecureImage = ({ src, alt, className, style }) => {
+    // Default placeholder
     const [imgUrl, setImgUrl] = useState('assets/img/login-bg/profile1.png');
 
     useEffect(() => {
         let isMounted = true;
-        
+
         if (src) {
-            // If src is already a full URL (like local assets), use it
-            if (!src.includes('/api/images/')) {
-                 setImgUrl(src);
-                 return;
+            // Case 1: If it's a static asset (like the default placeholder), use it directly
+            if (src.includes('assets/img') || !src.includes('api/')) {
+                setImgUrl(src);
+                return;
             }
 
-            // Otherwise, fetch it securely
+            // Case 2: If it's a backend image, fetch it securely with the token
             fetchSecureImage(src).then(url => {
-                if (isMounted && url) setImgUrl(url);
+                if (isMounted && url) {
+                    setImgUrl(url);
+                }
             });
         }
-
         return () => { isMounted = false; };
     }, [src]);
 
     return <img src={imgUrl} alt={alt} className={className} style={style} />;
 };
-// ----------------------------------
 
+// --- MAIN USERS COMPONENT ---
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [displayUsers, setDisplayUsers] = useState([]);
@@ -91,13 +92,11 @@ const Users = () => {
         }
     };
 
-    // STEP 1: Handle trash icon click
     const handleDeleteClick = (id) => {
         setDeleteId(id);
         setShowDeletePrompt(true);
     };
 
-    // STEP 2: Handle confirm button in popup
     const executeDeletion = () => {
         axiosInstance.delete(`/api/deleteUser/${deleteId}`).then((response) => {
             if (response.data.success === true) {
@@ -128,7 +127,7 @@ const Users = () => {
 
                     <div className="card border-0 shadow-sm rounded-lg">
                         <div className="card-body">
-                            {/* MODERN SEARCH BAR */}
+                            {/* SEARCH BAR */}
                             <div className="input-group mb-4 shadow-sm" style={{ maxWidth: '400px' }}>
                                 <div className="input-group-prepend">
                                     <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
@@ -158,7 +157,7 @@ const Users = () => {
                                             <tr key={index}>
                                                 <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
                                                 <td>
-                                                    {/* UPDATED: Using SecureImage Component */}
+                                                    {/* HERE IS THE FIX: Using SecureImage instead of <img> */}
                                                     <SecureImage
                                                         src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/login-bg/profile1.png'}
                                                         alt='User'
@@ -220,7 +219,7 @@ const Users = () => {
                     </div>
                 </div>
 
-                {/* POPUP 1: DOUBLE CONFIRMATION */}
+                {/* POPUPS */}
                 {showDeletePrompt && (
                     <SweetAlert
                         warning
@@ -238,7 +237,6 @@ const Users = () => {
                     </SweetAlert>
                 )}
 
-                {/* POPUP 2: SUCCESS MESSAGE */}
                 {showSuccessAlert && (
                     <SweetAlert
                         success
