@@ -1,39 +1,390 @@
-.App {
-  text-align: center;
+/* =========================================
+   INSTITUTE LOGIN PAGE STYLES
+   ========================================= */
+
+/* Variables */
+:root {
+  --brand-blue: #0052cc;
+  --brand-navy: #091e42;
+  --brand-light-blue: #deebff;
+  --bg-soft: #f4f5f7;
+  --text-main: #172b4d;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body .auth-main-wrapper {
+  height: 100vh;
+  width: 100vw;
+  background: #fff;
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+body .auth-split-container {
   display: flex;
-  flex-direction: column;
+  height: 100%;
+}
+
+/* Left Side Visuals */
+body .auth-visual-side {
+  flex: 1.3;
+  position: relative;
+  background: var(--brand-navy);
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  padding: 80px;
+  overflow: hidden;
+}
+
+body .mesh-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(at 0% 0%, #0747a6 0px, transparent 50%),
+              radial-gradient(at 100% 100%, #0052cc 0px, transparent 50%);
+  opacity: 0.6;
+}
+
+body .visual-inner { 
+  position: relative; 
+  z-index: 5; 
+  color: white; 
+  max-width: 500px; 
+}
+
+body .main-logo-glow { 
+  width: 100px; 
+  border-radius: 20px; 
+  box-shadow: 0 0 30px rgba(0, 82, 204, 0.5); 
+  margin-bottom: 40px; 
+}
+
+body .title-text { 
+  font-size: 3.5rem; 
+  font-weight: 800; 
+  margin-bottom: 20px; 
+  letter-spacing: -1px; 
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+body .text-highlight { 
+  color: #4c9aff; 
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+body .subtitle-text { 
+  font-size: 1.1rem; 
+  line-height: 1.6; 
+  color: #b3bac5; 
+}
+
+body .badge-pill-custom {
+  background: rgba(255,255,255,0.1);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  margin-right: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  display: inline-block;
+}
+
+/* Right Side Form */
+body .auth-form-side {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+body .form-card-inner { 
+  width: 100%; 
+  max-width: 420px; 
+}
+
+body .text-navy { 
+  color: var(--brand-navy); 
+}
+
+/* Modern Inputs */
+body .modern-form-group { 
+  margin-bottom: 24px; 
+  position: relative; 
+}
+
+body .label-modern { 
+  font-weight: 700; 
+  font-size: 13px; 
+  color: var(--brand-navy); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  margin-bottom: 8px; 
+  display: block; 
+}
+
+body .input-wrapper-modern {
+  display: flex;
+  align-items: center;
+  background: var(--bg-soft);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+body .input-wrapper-modern:focus-within {
+  background: #fff;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.1);
+}
+
+body .input-wrapper-modern input {
+  width: 100%;
+  padding: 14px 14px 14px 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: var(--text-main);
+  height: auto;
+}
+
+body .icon-left { 
+  padding: 0 18px; 
+  color: #6b778c; 
+  font-size: 18px; 
+}
+
+body .error-border { 
+  border-color: #ff5630 !important; 
+}
+
+body .error-msg-modern { 
+  color: #ff5630; 
+  font-size: 12px; 
+  margin-top: 5px; 
+  font-weight: 600; 
+}
+
+/* Checkbox & Button */
+body .checkbox-container-modern {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #5e6c84;
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 0;
+}
+
+body .checkbox-container-modern input { 
+  display: none; 
+}
+
+body .checkmark {
+  position: absolute;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: var(--bg-soft);
+  border-radius: 6px;
+  border: 2px solid #dfe1e6;
+}
+
+body .checkbox-container-modern input:checked ~ .checkmark { 
+  background-color: var(--brand-blue); 
+  border-color: var(--brand-blue); 
+}
+
+body .checkbox-container-modern input:checked ~ .checkmark:after {
+  content: ""; 
+  position: absolute; 
+  left: 6px; 
+  top: 2px; 
+  width: 5px; 
+  height: 10px;
+  border: solid white; 
+  border-width: 0 2px 2px 0; 
+  transform: rotate(45deg);
+}
+
+body .forgot-pass-link { 
+  color: var(--brand-blue); 
+  font-weight: 700; 
+  font-size: 14px; 
+  cursor: pointer; 
+  text-decoration: none; 
+}
+
+body .btn-modern-submit {
+  width: 100%;
+  padding: 16px;
+  background: var(--brand-blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 82, 204, 0.3);
+  cursor: pointer;
+}
+
+body .btn-modern-submit:hover:not(:disabled) {
+  background: var(--brand-navy);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(9, 30, 66, 0.4);
+}
+
+body .btn-modern-submit:disabled { 
+  opacity: 0.7; 
+  cursor: not-allowed; 
+}
+
+body .mobile-logo { 
+  width: 70px; 
+  border-radius: 12px; 
+  margin-bottom: 10px; 
+  border: 2px solid var(--brand-blue); 
+}
+
+@media (max-width: 991px) {
+  body .auth-form-side { 
+    background: var(--bg-soft); 
   }
-  to {
-    transform: rotate(360deg);
+  body .form-card-inner { 
+    background: #fff; 
+    padding: 40px; 
+    border-radius: 24px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
   }
 }
 
+:root {
+  --brand-blue: #0052cc;
+  --brand-navy: #091e42;
+  --brand-light-blue: #deebff;
+  --bg-soft: #f4f5f7;
+  --text-main: #172b4d;
+}
+
+.auth-main-wrapper {
+  height: 100vh;
+  width: 100vw;
+  background: #fff;
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+.auth-split-container { display: flex; height: 100%; }
+
+/* Left Side Styles */
+.auth-visual-side {
+  flex: 1.3;
+  position: relative;
+  background: var(--brand-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px;
+  overflow: hidden;
+}
+
+.mesh-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(at 0% 0%, #0747a6 0px, transparent 50%),
+              radial-gradient(at 100% 100%, #0052cc 0px, transparent 50%);
+  opacity: 0.6;
+}
+
+.visual-inner { position: relative; z-index: 5; color: white; max-width: 500px; }
+.main-logo-glow { width: 100px; border-radius: 20px; box-shadow: 0 0 30px rgba(0, 82, 204, 0.5); margin-bottom: 40px; }
+.title-text { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
+.text-highlight { color: #4c9aff; }
+.subtitle-text { font-size: 1.1rem; line-height: 1.6; color: #b3bac5; }
+
+.badge-pill-custom {
+  background: rgba(255,255,255,0.1);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  margin-right: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Right Side Styles */
+.auth-form-side {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.form-card-inner { width: 100%; max-width: 420px; }
+.text-navy { color: var(--brand-navy); }
+
+/* Modern Input Styling */
+.modern-form-group { margin-bottom: 24px; position: relative; }
+.label-modern { font-weight: 700; font-size: 13px; color: var(--brand-navy); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+
+.input-wrapper-modern {
+  display: flex;
+  align-items: center;
+  background: var(--bg-soft);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper-modern:focus-within {
+  background: #fff;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.1);
+}
+
+.input-wrapper-modern input {
+  width: 100%;
+  padding: 14px 14px 14px 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.icon-left { min-width: 50px; text-align: center; color: var(--brand-blue) !important; font-size: 1.2rem; }
+.error-border { border-color: #ff5630 !important; }
+.error-msg-modern { color: #ff5630; font-size: 12px; margin-top: 5px; font-weight: 600; }
+
+/* Back Link & Button */
+.back-to-login { color: var(--brand-blue); font-weight: 700; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.3s; }
+
+.btn-modern-submit {
+  width: 100%;
+  padding: 16px;
+  background: var(--brand-blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 82, 204, 0.3);
+  cursor: pointer;
+}
+
+.btn-modern-submit:hover:not(:disabled) {
+  background: var(--brand-navy);
+  transform: translateY(-2px);
+}
+
+.mobile-logo { width: 70px; border-radius: 12px; margin-bottom: 10px; border: 2px solid var(--brand-blue); }
+
+@media (max-width: 991px) {
+  .auth-form-side { background: var(--bg-soft); }
+  .form-card-inner { background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+}

@@ -6,13 +6,10 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
 import AddUser from './pages/AddUser';
-import Courses from './pages/Courses';
-import AddCourse from './pages/AddCourse';
 import Events from './pages/Events';
 import AddEvent from './pages/AddEvent';
 import Posts from './pages/Posts';
 import AddPost from './pages/AddPost';
-import EditCourse from './pages/EditCourse';
 import EditEvent from './pages/EditEvent';
 import Register from './pages/Register';
 import NewPassword from './pages/NewPassword';
@@ -34,9 +31,6 @@ const Markup = () => {
             <Route path='/profile' element={<Profile />} />
             <Route path='/users' element={<Users />} />
             <Route path='/add-user' element={<AddUser />} />
-            <Route path='/courses' element={<Courses />} />
-            <Route path='/add-course' element={<AddCourse />} />
-            <Route path='/edit-course' element={<EditCourse />} />
             <Route path='/events' element={<Events />} />
             <Route path='/add-event' element={<AddEvent />} />
             <Route path='/edit-event' element={<EditEvent />} />
