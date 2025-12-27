@@ -1,36 +1,14 @@
 const mongoose = require("mongoose");
 const { GridFSBucket, ObjectId } = require('mongodb');
 const multer = require('multer');
-const { GridFsStorage } = require('multer-gridfs-storage');
+//const { GridFsStorage } = require('multer-gridfs-storage');
 require("dotenv").config();
 
 let cachedConnection = null;
 let gridFSBucket = null;
-const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/althub';
-let storage;
-try {
-  storage = new GridFsStorage({
-    url: mongoURI,
-    options: { useUnifiedTopology: true },
-    file: (req, file) => {
-      return new Promise((resolve, reject) => {
-        const filename = Date.now() + '-' + file.originalname;
-        const isPublicUpload = req.originalUrl.toLowerCase().includes('event');
-        const fileInfo = {
-          filename: filename,
-          bucketName: 'uploads',
-          contentType: file.mimetype,
-          metadata: { originalname: file.originalname }
-        };
-        resolve(fileInfo);
-      });
-    }
-  });
-  console.log('GridFS storage engine initialized');
-} catch (err) {
-  console.error('Failed to initialize GridFS storage engine:', err.message);
-  storage = multer.memoryStorage();
-}
+const mongoURI = process.env.MONGO_URI;
+const storage = multer.memoryStorage();
+
 
 function uploadSingle(fieldName) {
   return multer({ storage }).single(fieldName);
@@ -43,6 +21,10 @@ function uploadArray(fieldName, maxCount) {
 const connectToMongo = async () => {
   try {
     if (mongoose.connection.readyState === 1) {
+      if (!gridFSBucket) {
+         const db = mongoose.connection.db;
+         gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
+      }
       console.log("Using existing MongoDB connection");
       return mongoose.connection;
     }

@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const mongoose = require('mongoose');
+const { uploadFromBuffer, connectToMongo } = require("../db/conn"); // FIX: Imported helpers
 
 // --- HELPER FUNCTIONS ---
 
@@ -13,9 +14,9 @@ const createtoken = async (user) => {
     try {
         return jwt.sign({ 
             _id: user._id,
-            version: user.tokenVersion || 0, // IMPORTANT: Matches authMiddleware check
-            role: user.role || 'student'     // Optional: Good for frontend logic
-        }, config.secret_jwt, { expiresIn: '7d' }); // Added expiry for security
+            version: user.tokenVersion || 0, 
+            role: user.role || 'student'     
+        }, config.secret_jwt, { expiresIn: '7d' }); 
     } catch (error) { 
         throw new Error(error.message); 
     }
@@ -69,7 +70,6 @@ const checkAlumniStatus = (educations) => {
 
 const getLatestEducation = (educations) => {
     if (!educations || educations.length === 0) return { course: "", year: "" };
-    // Sort by enddate descending (latest first)
     const sorted = educations.sort((a, b) => {
         const dateA = new Date(a.enddate || "1900-01-01");
         const dateB = new Date(b.enddate || "1900-01-01");
@@ -95,7 +95,7 @@ const registerUser = async (req, res) => {
         const user = new User({
             fname: req.body.fname, lname: req.body.lname, email: req.body.email, 
             password: spassword, role: req.body.role,
-            tokenVersion: 0 // Initialize security version
+            tokenVersion: 0 
         });
         
         const userData = await User.findOne({ email: req.body.email });
@@ -103,15 +103,13 @@ const registerUser = async (req, res) => {
         if (userData) {
             res.status(400).send({ success: false, msg: "User already exists" });
         } else {
-            //Save user FIRST to get the _id
             const user_data = await user.save();
-            //Pass the _id to createtoken
             const token = await createtoken(user_data._id);
             
             res.cookie("jwt_token", token, {
                 httpOnly: true,
                 maxAge: 24 * 60 * 60 * 1000,
-                secure: process.env.NODE_ENV === 'production', // true in production
+                secure: process.env.NODE_ENV === 'production', 
                 sameSite: 'lax'
             });
 
@@ -124,7 +122,6 @@ const registerUser = async (req, res) => {
     }
 }
 
-
 const userlogin = async (req, res) => {
     try {
         const email = req.body.email;
@@ -134,13 +131,11 @@ const userlogin = async (req, res) => {
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                // FIX: Generate the token upon successful login
                 const token = await createtoken(userData._id);
 
-                // FIX: Set the HttpOnly cookie
                 res.cookie("jwt_token", token, {
                     httpOnly: true,
-                    maxAge: 24 * 60 * 60 * 1000, // 1 day
+                    maxAge: 24 * 60 * 60 * 1000, 
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax'
                 });
@@ -152,7 +147,6 @@ const userlogin = async (req, res) => {
                     email: userData.email,
                     role: userData.role,
                     profilepic: userData.profilepic,
-                    // ... include other fields you need
                 }
 
                 res.status(200).send({
@@ -183,12 +177,11 @@ const updatePassword = async (req, res) => {
             if (passwordMatch) {
                 const newpassword = await securePassword(req.body.newpassword);
                 
-                // SECURITY FEATURE: Increment tokenVersion to invalidate all old sessions
                 const userData = await User.findByIdAndUpdate(
                     { _id: user_id }, 
                     { 
                         $set: { password: newpassword },
-                        $inc: { tokenVersion: 1 } // <--- GLOBAL LOGOUT
+                        $inc: { tokenVersion: 1 } 
                     },
                     { new: true }
                 );
@@ -226,9 +219,7 @@ const resetpassword = async (req, res) => {
 
 const userProfileEdit = async (req, res) => {
     try {
-        // Uses ID from the token (req.user) for security
         const loggedInUserId = req.user._id;
-
         const new_data = await User.findByIdAndUpdate(
             { _id: loggedInUserId },
             { $set: req.body },
@@ -245,7 +236,6 @@ const deleteUser = async (req, res) => {
         const userIdToDelete = req.params.id;
         const loggedInUserId = req.user._id; 
 
-        // SECURITY CHECK: Only allow users to delete their OWN account
         if (userIdToDelete !== loggedInUserId.toString()) {
             return res.status(403).send({
                 success: false,
@@ -264,10 +254,20 @@ const deleteUser = async (req, res) => {
 const uploadUserImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
-            const picture = { url: '/userImages/' + req.file.filename };
+            // FIX: Ensure connection and upload manually from buffer
+            await connectToMongo();
+            const filename = `user-${Date.now()}-${req.file.originalname}`;
+            const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
+            
+            // Construct URL based on your server's image route
+            const picture = { url: `/api/images/${fileId}` };
             res.status(200).send({ success: true, data: picture });
-        } else { res.status(400).send({ success: false, msg: "plz select a file" }); }
-    } catch (error) { res.status(400).send(error.message); }
+        } else { 
+            res.status(400).send({ success: false, msg: "plz select a file" }); 
+        }
+    } catch (error) { 
+        res.status(400).send(error.message); 
+    }
 }
 
 // --- OPTIMIZED ADVANCED SEARCH ---
@@ -356,7 +356,6 @@ const searchUser = async (req, res) => {
         const user_data = await User.aggregate(pipeline);
 
         const finalData = user_data.map(user => {
-            // Calculate Alumni status dynamically if not present in DB
             const isAlumni = checkAlumniStatus(user.educationList);
             const latestEdu = getLatestEducation(user.educationList);
             delete user.educationList;
@@ -440,9 +439,24 @@ const unfollowUser = async (req, res) => {
 
 const updateProfilePic = async (req, res) => {
     try {
-        // Handle various GridFS file structures
-        const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
-        const updatedUser = await User.findByIdAndUpdate(req.body.userid, { $set: { profilepic: `/api/images/${fileId}` } }, { new: true });
+        // FIX: Handle MemoryStorage buffer
+        let fileId;
+        if (req.file) {
+            await connectToMongo();
+            const filename = `profile-${Date.now()}-${req.file.originalname}`;
+            fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
+        } else {
+            // Fallback if existing logic uses a passed ID
+            fileId = req.body.fileId;
+        }
+
+        if (!fileId) return res.status(400).send({ success: false, msg: "No file provided" });
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.body.userid, 
+            { $set: { profilepic: `/api/images/${fileId}` } }, 
+            { new: true }
+        );
         res.status(200).send({ success: true, msg: "Profile updated", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };

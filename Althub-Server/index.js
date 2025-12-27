@@ -12,21 +12,21 @@ const app = express();
 const port = process.env.PORT || 5001;
 
 // --- SECURITY & SERVER CONFIGURATION ---
-// Required for Render/Vercel to handle secure cookies correctly
+// Required for Render/Vercel to handle secure cookies correctly behind proxies
 app.set("trust proxy", 1); 
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(compression()); 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.json({ limit: '5mb' })); // Increased limit slightly for base64 images if any
+app.use(express.urlencoded({ extended: true, limit: '5mb' })); 
 app.use(cookieParser());
 
 // --- BRUTE FORCE PROTECTION ---
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
   message: {
     success: false,
     msg: "Too many login attempts. Please try again in 15 minutes."
@@ -35,40 +35,45 @@ const loginLimiter = rateLimit({
   legacyHeaders: false, 
 });
 
-// --- SMART CORS CONFIGURATION ---
+// --- SMART CORS CONFIGURATION (FIXED FOR COOKIES) ---
+// We explicitly define allowed origins. 
+// Using an array ensures the server returns the EXACT origin in the header, 
+// which is required for 'credentials: true' to work.
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'https://althub-student-connect.vercel.app'
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // 1. Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    // 1. Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) return callback(null, true);
     
-    // 2. Allow Localhost
+    // 2. Check if the origin is in our allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     } 
 
-    // 3. DYNAMIC ALLOW: Allow ANY Vercel deployment automatically
-    // This allows 'althub-student-connect.vercel.app', 'althub-admin.vercel.app',
-    // and 'althub-student-connect-git-main-meet4041.vercel.app' etc.
+    // 3. Dynamic check for Vercel Preview Deployments (Optional but useful)
+    // This allows any subdomain of vercel.app (good for testing PRs)
     if (origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
 
-    // 4. Block anything else and log it for debugging
+    // 4. If nothing matches, block it
     console.log("BLOCKED BY CORS -> Origin tried:", origin);
     callback(new Error('Not allowed by CORS'));
   },
-  credentials: true, 
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true, // <--- CRITICAL: Allows cookies to be sent/received
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 };
 
+// Apply CORS globally
 app.use(cors(corsOptions));
+// Handle preflight requests for complex operations
 app.options('*', cors(corsOptions));
 
 // --- ROUTE IMPORTS ---
@@ -89,13 +94,10 @@ const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
 // --- PROTECTING LOGIN ROUTES ---
+// Note: Ensure these paths match your actual route definitions in route files
 app.use("/api/adminLogin", loginLimiter);
 app.use("/api/instituteLogin", loginLimiter);
-app.use("/api/userLogin", loginLimiter);
-
-// 3. Limit Request Size
-app.use(express.json({ limit: '1mb' })); 
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use("/api/userLogin", loginLimiter); 
 
 // --- ROUTE MOUNTING ---
 app.use("/api", user_route);
@@ -112,7 +114,7 @@ app.use("/api", feedback_route);
 app.use("/api", company_route);
 app.use("/api", notification_route);
 app.use("/api", financialaid_route);
-app.use("/api", images_route);
+app.use("/api/images", images_route); // Mounted specifically for images if needed, or stick to /api
 
 // Health Check & Static Files
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
@@ -120,7 +122,7 @@ app.use(express.static("public"));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err.stack);
+  console.error("Server Error Stack:", err.stack);
   res.status(err.status || 500).json({
     success: false,
     message: process.env.NODE_ENV === 'production' ? "Internal Server Error" : err.message
@@ -130,13 +132,14 @@ app.use((err, req, res, next) => {
 // --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
-  cors: corsOptions, // Use the same smart CORS options for Socket.io
+  cors: corsOptions, // Recycle the same robust CORS options
   transports: ["websocket", "polling"]
 });
 
 let users = [];
 
 const addUser = (userId, socketId) => {
+  if (!userId) return;
   users = users.filter((user) => user.userId !== userId);
   users.push({ userId, socketId });
 };
@@ -150,6 +153,8 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
   socket.on("addUser", (userId) => {
     if (userId) {
       addUser(userId, socket.id);
@@ -172,6 +177,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
     removeUser(socket.id);
     io.emit("getUsers", users);
   });
@@ -186,12 +192,13 @@ connectToMongo()
   })
   .catch(err => {
     console.error('CRITICAL: Failed to connect to MongoDB:', err.message);
-    process.exit(1); 
+    // Do not exit process immediately in dev, it helps debugging
+    if (process.env.NODE_ENV === 'production') process.exit(1);
   });
 
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err.message);
-  server.close(() => process.exit(1));
+  // server.close(() => process.exit(1)); // Optional: Restart on crash
 });
 
 module.exports = app;
