@@ -5,6 +5,8 @@ import ChatMessage from "./ChatMessage";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
+import ProtectedImage from "../ProtectedImage";
+
 
 // --- STYLES REMAIN SAME ---
 const styles = `
@@ -282,17 +284,12 @@ export default function Message({ socket }) {
           <div className="msg-chat-header">
             <div className="msg-header-user">
               <i className="fa-solid fa-arrow-left msg-back-btn" onClick={handleBack}></i>
-              {/* --- OPTIMIZATION: loading="lazy" --- */}
-              <img
-                src={
-                  profilepic && profilepic !== "" && profilepic !== "undefined"
-                    ? `${WEB_URL}${profilepic}`
-                    : "images/profile1.png"
-                }
-                alt="User"
-                className="msg-header-img"
-                loading="lazy"
-              />
+              <ProtectedImage
+                  imgSrc={profilepic} 
+                  defaultImage="images/profile1.png"
+                  className="msg-header-img"
+                  alt="User"
+                />
               <div className="msg-header-info">
                 <h3>{name}</h3>
               </div>

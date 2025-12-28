@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const mongoose = require('mongoose');
-const { uploadFromBuffer, connectToMongo } = require("../db/conn"); // FIX: Imported helpers
+const { uploadFromBuffer, connectToMongo } = require("../db/conn"); 
 
 // --- HELPER FUNCTIONS ---
 
@@ -29,29 +29,32 @@ const securePassword = async (password) => {
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
+            host: 'smtp.gmail.com', // Ensure this host is correct
             port: 465,
-            secure: true,
+            secure: true, // true for port 465, false for other ports
             auth: {
                 user: config.emailUser,
-                pass: config.emailPassword
-            }
+                pass: config.emailPassword // MUST be an App Password, not Gmail login password
+            },
+            // logger: true, // Uncomment for debugging
+            // debug: true   // Uncomment for debugging
         });
+
         const mailoptions = {
-            from: config.emailUser,
+            from: `"Althub Support" <${config.emailUser}>`, // Better sender format
             to: email,
             subject: 'For Reset Password',
-            html: '<p>Hello ' + name + ', Please copy the link to <a href="http://localhost:3000/new-password?token=' + token + '">reset your password</a></p>'
+            html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
         };
-        return new Promise((resolve, reject) => {
-            transporter.sendMail(mailoptions, function (error, info) {
-                if (error) { console.log("Error sending email: ", error); reject(error); }
-                else { console.log("Mail sent: ", info.response); resolve(info); }
-            });
-        });
+
+        // Nodemailer v7 supports async/await natively
+        const info = await transporter.sendMail(mailoptions);
+        console.log("Mail sent: ", info.response);
+        return info;
+
     } catch (error) {
-        console.log("Nodemailer error:", error.message);
-        throw error;
+        console.error("Nodemailer Error:", error);
+        throw new Error("Failed to send email. Please try again later.");
     }
 }
 
@@ -106,11 +109,14 @@ const registerUser = async (req, res) => {
             const user_data = await user.save();
             const token = await createtoken(user_data._id);
             
+            // --- FIX: Dynamic Cookie Configuration ---
+            const isProduction = process.env.NODE_ENV === 'production';
+            
             res.cookie("jwt_token", token, {
                 httpOnly: true,
                 maxAge: 24 * 60 * 60 * 1000,
-                secure: process.env.NODE_ENV === 'production', 
-                sameSite: 'lax'
+                secure: isProduction, // False on localhost, True in Prod
+                sameSite: isProduction ? 'None' : 'Lax' // None for Cross-Site (Vercel), Lax for Local
             });
 
             res.status(200).send({ success: true, data: user_data, token: token });
@@ -133,11 +139,14 @@ const userlogin = async (req, res) => {
             if (passwordMatch) {
                 const token = await createtoken(userData._id);
 
+                // --- FIX: Dynamic Cookie Configuration ---
+                const isProduction = process.env.NODE_ENV === 'production';
+
                 res.cookie("jwt_token", token, {
                     httpOnly: true,
                     maxAge: 24 * 60 * 60 * 1000, 
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax'
+                    secure: isProduction, // False on localhost, True in Prod
+                    sameSite: isProduction ? 'None' : 'Lax' // None for Cross-Site (Vercel), Lax for Local
                 });
 
                 const userResult = {
@@ -254,7 +263,7 @@ const deleteUser = async (req, res) => {
 const uploadUserImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
-            // FIX: Ensure connection and upload manually from buffer
+            // Ensure connection and upload manually from buffer
             await connectToMongo();
             const filename = `user-${Date.now()}-${req.file.originalname}`;
             const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
@@ -439,7 +448,6 @@ const unfollowUser = async (req, res) => {
 
 const updateProfilePic = async (req, res) => {
     try {
-        // FIX: Handle MemoryStorage buffer
         let fileId;
         if (req.file) {
             await connectToMongo();
@@ -488,6 +496,35 @@ const getRandomUsers = async (req, res) => {
         res.status(200).send({ success: true, data: user_data });
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
+
+
+const searchFollowings = async (req, res) => {
+    try {
+        const { userId, query } = req.params;
+        
+        // 1. Get the current user to access their following list
+        const currentUser = await User.findById(userId);
+        if (!currentUser) {
+            return res.status(404).send({ success: false, msg: "User not found" });
+        }
+
+        const regex = new RegExp(query, "i");
+
+        const matchedUsers = await User.find({
+            _id: { $in: currentUser.followings },
+            $or: [
+                { fname: { $regex: regex } },
+                { lname: { $regex: regex } }
+            ]
+        }).select("fname lname profilepic email");
+
+        res.status(200).send({ success: true, data: matchedUsers });
+
+    } catch (error) {
+        res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
 
 module.exports = {
     registerUser, userlogin, updatePassword, forgetPassword, resetpassword,

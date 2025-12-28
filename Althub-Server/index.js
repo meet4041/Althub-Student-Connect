@@ -153,7 +153,6 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
 
   socket.on("addUser", (userId) => {
     if (userId) {
@@ -177,7 +176,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
     removeUser(socket.id);
     io.emit("getUsers", users);
   });
@@ -192,7 +190,6 @@ connectToMongo()
   })
   .catch(err => {
     console.error('CRITICAL: Failed to connect to MongoDB:', err.message);
-    // Do not exit process immediately in dev, it helps debugging
     if (process.env.NODE_ENV === 'production') process.exit(1);
   });
 

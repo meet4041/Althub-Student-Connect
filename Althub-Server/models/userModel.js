@@ -60,6 +60,20 @@ const user = new mongoose.Schema({
     institute: {
         type: String
     },
+
+    isOnline: { 
+        type: Boolean, 
+        default: false 
+    },
+    socketId: { 
+        type: String, 
+        default: "" 
+    },
+    lastSeen: { 
+        type: Date, 
+        default: Date.now 
+    },
+    
     // Used for "Forget Password" reset links
     token: {
         type: String,
