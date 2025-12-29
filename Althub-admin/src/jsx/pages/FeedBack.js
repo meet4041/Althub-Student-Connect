@@ -49,12 +49,14 @@ const FeedBack = () => {
 
     const paginate = (num) => setCurrentPage(num);
 
+    // --- UPDATED SEARCH LOGIC ---
     const handleSearch = (e) => {
         let search = e.target.value.toLowerCase();
         setDisplayFeedBack(feedback.filter(
             (elem) =>
                 (elem.message && elem.message.toLowerCase().includes(search)) ||
-                (elem.name && elem.name.toLowerCase().includes(search))
+                (elem.name && elem.name.toLowerCase().includes(search)) ||
+                (elem.selected_user && elem.selected_user.toLowerCase().includes(search)) // Search by Selected User
         ));
     }
 
@@ -106,7 +108,7 @@ const FeedBack = () => {
                     
                     <div className="card border-0 shadow-sm rounded-lg">
                         <div className="card-body">
-                            {/* MODERN SEARCH BAR */}
+                            {/* SEARCH BAR */}
                             <div className="input-group mb-4 shadow-sm" style={{ maxWidth: '400px' }}>
                                 <div className="input-group-prepend">
                                     <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
@@ -114,7 +116,7 @@ const FeedBack = () => {
                                 <input 
                                     type="search" 
                                     className="form-control border-left-0 shadow-none" 
-                                    placeholder='Search feedback by user or message...' 
+                                    placeholder='Search by sender, target user, or message...' 
                                     onChange={handleSearch} 
                                 />
                             </div>
@@ -124,8 +126,9 @@ const FeedBack = () => {
                                     <thead className="bg-light">
                                         <tr>
                                             <th className="border-top-0">Sr. No.</th>
-                                            <th className="border-top-0">User Name</th>
-                                            <th className="border-top-0">Review Message</th>
+                                            <th className="border-top-0">Sender (From)</th>
+                                            <th className="border-top-0">Selected User (To)</th> {/* NEW COLUMN */}
+                                            <th className="border-top-0" style={{width: '35%'}}>Review Message</th>
                                             <th className="border-top-0">Rating</th>
                                             <th className="border-top-0 text-center">Action</th>
                                         </tr>
@@ -134,6 +137,8 @@ const FeedBack = () => {
                                         {currentFeedBack.length > 0 ? currentFeedBack.map((elem, index) =>
                                             <tr key={index}>
                                                 <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
+                                                
+                                                {/* SENDER */}
                                                 <td>
                                                     <div className="d-flex align-items-center">
                                                         <div className="bg-primary-transparent text-primary rounded-circle d-flex align-items-center justify-content-center mr-2" style={{ width: '32px', height: '32px', fontSize: '12px', fontWeight: 'bold' }}>
@@ -142,12 +147,32 @@ const FeedBack = () => {
                                                         <span className="font-weight-600 text-dark">{elem.name || 'Anonymous'}</span>
                                                     </div>
                                                 </td>
+
+                                                {/* SELECTED USER (TARGET) */}
+                                                <td>
+                                                    <span className="text-primary font-weight-bold">
+                                                        {elem.selected_user ? (
+                                                            <>
+                                                                <i className="fa fa-user-tag mr-1 opacity-5"></i>
+                                                                {elem.selected_user}
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-muted small">General</span>
+                                                        )}
+                                                    </span>
+                                                </td>
+
+                                                {/* MESSAGE */}
                                                 <td className="text-muted">
                                                     <div style={{ maxWidth: '450px', wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.5' }}>
                                                         {elem.message}
                                                     </div>
                                                 </td>
+
+                                                {/* RATING */}
                                                 <td>{renderStars(elem.rate)}</td>
+
+                                                {/* ACTIONS */}
                                                 <td className="text-center">
                                                     <button 
                                                         className="btn btn-outline-danger btn-sm rounded-circle btn-icon" 
@@ -159,7 +184,7 @@ const FeedBack = () => {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            <tr><td colSpan="5" className="text-center py-5 text-muted">No feedback records found.</td></tr>
+                                            <tr><td colSpan="6" className="text-center py-5 text-muted">No feedback records found.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -191,7 +216,7 @@ const FeedBack = () => {
                     </div>
                 </div>
 
-                {/* DOUBLE CONFIRMATION POPUP */}
+                {/* DELETE PROMPT */}
                 {showDeletePrompt && (
                     <SweetAlert
                         warning
@@ -209,7 +234,7 @@ const FeedBack = () => {
                     </SweetAlert>
                 )}
 
-                {/* SUCCESS POPUP */}
+                {/* SUCCESS ALERT */}
                 {showSuccessAlert && (
                     <SweetAlert
                         success
@@ -222,6 +247,15 @@ const FeedBack = () => {
 
                 <Footer />
             </div>
+            <style dangerouslySetInnerHTML={{__html: `
+                .bg-primary-transparent { background-color: rgba(49, 130, 206, 0.1); }
+                .font-weight-600 { font-weight: 600; }
+                .table-hover tbody tr:hover { background-color: #f8fafc; }
+                .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+                .btn-icon:hover { background-color: #e53e3e; color: white; }
+                .text-warning { color: #f6e05e !important; }
+                .opacity-5 { opacity: 0.5; }
+            `}} />
         </Fragment>
     )
 }

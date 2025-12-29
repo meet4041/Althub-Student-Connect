@@ -158,6 +158,14 @@ const styles = `
     border-color: #66bd9e;
   }
   .btn-outline:hover { background: #f0f9f6; }
+  
+  /* NEW: Feedback Button Style */
+  .btn-warning-outline {
+    background: #fff;
+    color: #f1c40f;
+    border-color: #f1c40f;
+  }
+  .btn-warning-outline:hover { background: #fffdf5; }
 
   .btn-secondary {
     background: #e0e0e0;
@@ -263,6 +271,29 @@ const styles = `
   }
   .view-link:hover { background: #66bd9e; color: #fff; }
 
+  /* --- NEW: Confirmation Modal Styles --- */
+  .confirm-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 1000;
+    backdrop-filter: blur(4px);
+    display: flex; justify-content: center; align-items: center;
+  }
+  .confirm-box {
+    background: #fff; padding: 30px; border-radius: 20px;
+    width: 90%; max-width: 400px; text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .confirm-title { font-size: 1.4rem; font-weight: 700; color: #2d3436; margin-bottom: 10px; }
+  .confirm-desc { font-size: 0.95rem; color: #636e72; margin-bottom: 25px; line-height: 1.5; }
+  .confirm-btns { display: flex; gap: 15px; }
+  .confirm-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+  .btn-no { background: #f1f3f5; color: #2d3436; }
+  .btn-no:hover { background: #dfe6e9; }
+  .btn-yes { background: #ff4757; color: #fff; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3); }
+  .btn-yes:hover { background: #e84118; transform: translateY(-2px); }
+  @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
   /* Responsive */
   @media (max-width: 1100px) {
     .profile-content { flex-direction: column; }
@@ -287,6 +318,9 @@ export default function ViewSearchProfile({ socket }) {
 
   const [showFollowerModal, setShowFollowerModal] = useState(false);
   const [followerTab, setFollowerTab] = useState("Follower");
+  
+  // NEW: State for Confirmation Modal
+  const [showUnfollowModal, setShowUnfollowModal] = useState(false);
 
   // Inject Styles
   useEffect(() => {
@@ -388,16 +422,24 @@ export default function ViewSearchProfile({ socket }) {
       .catch((error) => console.log(error));
   };
 
-  const handleUnfollow = () => {
-    if (window.confirm("Do you want to Unfollow?") === true) {
-      axios.put(`${WEB_URL}/api/unfollow/${userID}`, { userId: myID })
-        .then((Response) => {
-          toast.success(Response.data);
-          getUser();
-          handleConversation();
-        })
-        .catch((error) => console.log(error));
-    }
+  // --- NEW: Initiate Unfollow (Opens Modal) ---
+  const handleUnfollowClick = () => {
+    setShowUnfollowModal(true);
+  };
+
+  // --- NEW: Execute Unfollow (Called from Modal) ---
+  const confirmUnfollow = () => {
+    axios.put(`${WEB_URL}/api/unfollow/${userID}`, { userId: myID })
+      .then((Response) => {
+        toast.info("Unfollowed successfully.");
+        setShowUnfollowModal(false);
+        getUser();
+        handleConversation();
+      })
+      .catch((error) => {
+        console.log(error);
+        toast.error("Failed to unfollow.");
+      });
   };
 
   const handleConversation = () => {
@@ -407,6 +449,15 @@ export default function ViewSearchProfile({ socket }) {
           axios.post(`${WEB_URL}/api/newConversation`, { senderId: myID, receiverId: userID }).catch(console.log);
         }
       });
+  };
+
+  // --- NEW: Handle Give Feedback Click ---
+  const handleGiveFeedback = () => {
+    if (user.followers && user.followers.includes(myID.toString())) {
+      nav("/feedback", { state: { selectedUserId: user._id } });
+    } else {
+      toast.error("You must follow this user to give feedback!");
+    }
   };
 
   const formatDate = (date) => {
@@ -491,11 +542,15 @@ export default function ViewSearchProfile({ socket }) {
               </div>
               <div className="header-actions">
                 {user.followers && user.followers.includes(myID.toString()) ? (
-                  <button className="action-btn btn-secondary" onClick={handleUnfollow}>Following</button>
+                  <button className="action-btn btn-secondary" onClick={handleUnfollowClick}>Following</button>
                 ) : (
                   <button className="action-btn btn-primary" onClick={handleFollow}><i className="fa-solid fa-plus"></i> Follow</button>
                 )}
+                
                 <button className="action-btn btn-outline" onClick={() => nav("/message", { state: user })}><i className="fa-regular fa-message"></i> Message</button>
+                
+                {/* NEW: Give Feedback Button */}
+                <button className="action-btn btn-warning-outline" onClick={handleGiveFeedback}><i className="fa-regular fa-star"></i> Feedback</button>
               </div>
             </div>
           </div>
@@ -553,7 +608,22 @@ export default function ViewSearchProfile({ socket }) {
           </div>
         </div>
       </div>
+      
       {showFollowerModal && <FollowerModal closeModal={() => setShowFollowerModal(false)} user={user} getUser={getUser} initialType={followerTab} />}
+
+      {/* CONFIRMATION MODAL */}
+      {showUnfollowModal && (
+        <div className="confirm-overlay">
+            <div className="confirm-box">
+                <div className="confirm-title">Unfollow User?</div>
+                <p className="confirm-desc">Are you sure you want to stop following <b>{user.fname}</b>? You won't see their updates in your feed anymore.</p>
+                <div className="confirm-btns">
+                    <button className="confirm-btn btn-no" onClick={() => setShowUnfollowModal(false)}>Cancel</button>
+                    <button className="confirm-btn btn-yes" onClick={confirmUnfollow}>Yes, Unfollow</button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 }

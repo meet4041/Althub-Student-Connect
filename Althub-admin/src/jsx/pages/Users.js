@@ -5,7 +5,35 @@ import Menu from '../layout/Menu';
 import Footer from '../layout/Footer';
 import { ALTHUB_API_URL } from '../../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axiosInstance from '../../services/axios'; // Use your secure instance
+import axiosInstance, { fetchSecureImage } from '../../services/axios'; 
+
+// --- NEW COMPONENT: SecureImage ---
+// This component automatically fetches the image using the Admin Token
+const SecureImage = ({ src, alt, className, style }) => {
+    const [imgUrl, setImgUrl] = useState('assets/img/login-bg/profile1.png');
+
+    useEffect(() => {
+        let isMounted = true;
+        
+        if (src) {
+            // If src is already a full URL (like local assets), use it
+            if (!src.includes('/api/images/')) {
+                 setImgUrl(src);
+                 return;
+            }
+
+            // Otherwise, fetch it securely
+            fetchSecureImage(src).then(url => {
+                if (isMounted && url) setImgUrl(url);
+            });
+        }
+
+        return () => { isMounted = false; };
+    }, [src]);
+
+    return <img src={imgUrl} alt={alt} className={className} style={style} />;
+};
+// ----------------------------------
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -130,7 +158,8 @@ const Users = () => {
                                             <tr key={index}>
                                                 <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
                                                 <td>
-                                                    <img
+                                                    {/* UPDATED: Using SecureImage Component */}
+                                                    <SecureImage
                                                         src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/login-bg/profile1.png'}
                                                         alt='User'
                                                         className="rounded-circle shadow-sm border"

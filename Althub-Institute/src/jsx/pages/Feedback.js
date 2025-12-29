@@ -13,19 +13,12 @@ const Feedback = () => {
     const [displayFeedbacks, setDisplayFeedbacks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    
-    // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
-
-    // Delete state
     const [deleteId, setDeleteId] = useState('');
     const [showAlert, setShowAlert] = useState(false);
+    const themeColor = '#2563EB';
 
-    // Theme Constant
-    const themeColor = '#2563EB'; // Royal Blue
-
-    // 1. Fetch Feedback using the Secure Route
     const fetchFeedbackData = () => {
         setLoading(true);
         const token = localStorage.getItem('token');
@@ -45,24 +38,22 @@ const Feedback = () => {
 
     useEffect(() => {
         fetchFeedbackData();
-        // UI Initialization for template
         const loader = document.getElementById('page-loader');
         if (loader) loader.style.display = 'none';
         const container = document.getElementById("page-container");
         if (container) container.classList.add("show");
     }, []);
 
-    // 2. Search Logic
     useEffect(() => {
         const filtered = feedbacks.filter(item => 
             item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.selected_user?.toLowerCase().includes(searchTerm.toLowerCase()) || // Search by selected user too
             item.message?.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setDisplayFeedbacks(filtered);
         setCurrentPage(1);
     }, [searchTerm, feedbacks]);
 
-    // 3. Delete Feedback Logic
     const confirmDelete = () => {
         const token = localStorage.getItem('token');
         axios.delete(`${ALTHUB_API_URL}/api/deleteFeedback/${deleteId}`, {
@@ -76,7 +67,6 @@ const Feedback = () => {
         });
     };
 
-    // Pagination Logic
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = displayFeedbacks.slice(indexOfFirstItem, indexOfLastItem);
@@ -96,39 +86,52 @@ const Feedback = () => {
 
                     <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
                         <div className="card-body p-0">
-                            {/* Search Header */}
-                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
+                            <div className="p-4 border-bottom bg-white">
                                 <div className="row align-items-center">
                                     <div className="col-md-6">
                                         <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
                                             </div>
-                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search by user or message..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Table Representation */}
                             <div className="table-responsive">
                                 <table className="table table-hover mb-0">
                                     <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
                                         <tr>
                                             <th className="border-0 pl-4">No.</th>
-                                            <th className="border-0">Student Name</th>
+                                            <th className="border-0">Sender (From)</th>
+                                            <th className="border-0">Selected User (To)</th> {/* NEW COLUMN */}
+                                            <th className="border-0" style={{ width: '40%' }}>Feedback</th>
                                             <th className="border-0">Rating</th>
-                                            <th className="border-0" style={{ width: '40%' }}>Feedback Message</th>
                                             <th className="border-0 text-center">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {loading ? (
-                                            <tr><td colSpan="5" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x" style={{color: themeColor}}></i></td></tr>
+                                            <tr><td colSpan="6" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x"></i></td></tr>
                                         ) : currentItems.length > 0 ? currentItems.map((item, index) => (
                                             <tr key={item._id}>
                                                 <td className="pl-4 align-middle text-muted">{indexOfFirstItem + index + 1}</td>
+                                                
+                                                {/* 1. Who sent it */}
                                                 <td className="align-middle font-weight-bold" style={{color: '#1E293B'}}>{item.name || 'Anonymous'}</td>
+                                                
+                                                {/* 2. Who it is about (NEW) */}
+                                                <td className="align-middle text-primary font-weight-bold">
+                                                    {item.selected_user || <span className="text-muted small">General</span>}
+                                                </td>
+
+                                                {/* 3. Message */}
+                                                <td className="align-middle text-muted">
+                                                    <div style={{ maxHeight: '60px', overflow: 'hidden', textOverflow: 'ellipsis' }}>"{item.message}"</div>
+                                                </td>
+
+                                                {/* 4. Rating */}
                                                 <td className="align-middle">
                                                     <div className="text-warning">
                                                         {[...Array(5)].map((_, i) => (
@@ -136,27 +139,22 @@ const Feedback = () => {
                                                         ))}
                                                     </div>
                                                 </td>
-                                                <td className="align-middle text-muted">
-                                                    <div style={{ maxHeight: '60px', overflow: 'hidden', textOverflow: 'ellipsis', fontStyle: 'italic' }}>
-                                                        "{item.message}"
-                                                    </div>
-                                                </td>
+
                                                 <td className="align-middle text-center">
                                                     <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
-                                                            onClick={() => { setDeleteId(item._id); setShowAlert(true); }}
-                                                            title="Delete Feedback">
+                                                            onClick={() => { setDeleteId(item._id); setShowAlert(true); }}>
                                                         <i className="fa fa-trash-alt text-danger"></i>
                                                     </button>
                                                 </td>
                                             </tr>
                                         )) : (
-                                            <tr><td colSpan="5" className="text-center p-5 text-muted">No records found matching your search.</td></tr>
+                                            <tr><td colSpan="6" className="text-center p-5 text-muted">No records found.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Pagination Footer */}
+                            
+                            {/* ... Pagination code same as before ... */}
                             <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
                                 <div className="text-muted small">Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, displayFeedbacks.length)} of {displayFeedbacks.length}</div>
                                 <nav>
@@ -166,13 +164,7 @@ const Feedback = () => {
                                         </li>
                                         {pageNumbers.map(num => (
                                             <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                                <button 
-                                                    className="page-link" 
-                                                    onClick={() => setCurrentPage(num)}
-                                                    style={currentPage === num ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
-                                                >
-                                                    {num}
-                                                </button>
+                                                <button className="page-link" onClick={() => setCurrentPage(num)} style={currentPage === num ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}>{num}</button>
                                             </li>
                                         ))}
                                         <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
@@ -181,21 +173,13 @@ const Feedback = () => {
                                     </ul>
                                 </nav>
                             </div>
+
                         </div>
                     </div>
                 </div>
 
-                <SweetAlert
-                    warning
-                    show={showAlert}
-                    showCancel
-                    confirmBtnText="Delete"
-                    confirmBtnBsStyle="danger"
-                    title="Remove this feedback?"
-                    onConfirm={confirmDelete}
-                    onCancel={() => setShowAlert(false)}
-                >
-                    This feedback will be permanently removed from the records.
+                <SweetAlert warning show={showAlert} showCancel confirmBtnText="Delete" confirmBtnBsStyle="danger" title="Remove?" onConfirm={confirmDelete} onCancel={() => setShowAlert(false)}>
+                    Permanently delete this feedback?
                 </SweetAlert>
                 <Footer />
             </div>

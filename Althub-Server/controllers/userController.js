@@ -29,25 +29,22 @@ const securePassword = async (password) => {
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com', // Ensure this host is correct
+            host: 'smtp.gmail.com',
             port: 465,
-            secure: true, // true for port 465, false for other ports
+            secure: true,
             auth: {
                 user: config.emailUser,
-                pass: config.emailPassword // MUST be an App Password, not Gmail login password
+                pass: config.emailPassword
             },
-            // logger: true, // Uncomment for debugging
-            // debug: true   // Uncomment for debugging
         });
 
         const mailoptions = {
-            from: `"Althub Support" <${config.emailUser}>`, // Better sender format
+            from: `"Althub Support" <${config.emailUser}>`,
             to: email,
             subject: 'For Reset Password',
             html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
         };
 
-        // Nodemailer v7 supports async/await natively
         const info = await transporter.sendMail(mailoptions);
         console.log("Mail sent: ", info.response);
         return info;
@@ -109,14 +106,13 @@ const registerUser = async (req, res) => {
             const user_data = await user.save();
             const token = await createtoken(user_data._id);
             
-            // --- FIX: Dynamic Cookie Configuration ---
             const isProduction = process.env.NODE_ENV === 'production';
             
             res.cookie("jwt_token", token, {
                 httpOnly: true,
                 maxAge: 24 * 60 * 60 * 1000,
-                secure: isProduction, // False on localhost, True in Prod
-                sameSite: isProduction ? 'None' : 'Lax' // None for Cross-Site (Vercel), Lax for Local
+                secure: isProduction,
+                sameSite: isProduction ? 'None' : 'Lax'
             });
 
             res.status(200).send({ success: true, data: user_data, token: token });
@@ -139,14 +135,13 @@ const userlogin = async (req, res) => {
             if (passwordMatch) {
                 const token = await createtoken(userData._id);
 
-                // --- FIX: Dynamic Cookie Configuration ---
                 const isProduction = process.env.NODE_ENV === 'production';
 
                 res.cookie("jwt_token", token, {
                     httpOnly: true,
                     maxAge: 24 * 60 * 60 * 1000, 
-                    secure: isProduction, // False on localhost, True in Prod
-                    sameSite: isProduction ? 'None' : 'Lax' // None for Cross-Site (Vercel), Lax for Local
+                    secure: isProduction,
+                    sameSite: isProduction ? 'None' : 'Lax'
                 });
 
                 const userResult = {
@@ -263,12 +258,9 @@ const deleteUser = async (req, res) => {
 const uploadUserImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
-            // Ensure connection and upload manually from buffer
             await connectToMongo();
             const filename = `user-${Date.now()}-${req.file.originalname}`;
             const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
-            
-            // Construct URL based on your server's image route
             const picture = { url: `/api/images/${fileId}` };
             res.status(200).send({ success: true, data: picture });
         } else { 
@@ -279,7 +271,6 @@ const uploadUserImage = async (req, res) => {
     }
 }
 
-// --- OPTIMIZED ADVANCED SEARCH ---
 const searchUser = async (req, res) => {
     try {
         const { search, location, skill, degree, year } = req.body;
@@ -403,9 +394,52 @@ const userLogout = async (req, res) => {
     catch (error) { res.status(400).send({ success: false }); }
 }
 
+// --- MODIFIED: Get Users with Degree Information ---
 const getUsers = async (req, res) => {
-    try { const data = await User.find({}).lean(); res.status(200).send({ success: true, data: data }); }
-    catch (error) { res.status(400).send({ success: false }); }
+    try { 
+        // Use Aggregation to fetch user + education
+        const user_data = await User.aggregate([
+            {
+                $lookup: {
+                    from: Education.collection.name, // Join with Education collection
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        {
+                            // Match User ID (User._id is ObjectId, Edu.userid is String)
+                            $match: {
+                                $expr: { $eq: ["$userid", { $toString: "$$userId" }] }
+                            }
+                        },
+                        { $project: { course: 1, enddate: 1 } } // Fetch only course and enddate
+                    ],
+                    as: "educationList"
+                }
+            },
+            {
+                $project: {
+                    fname: 1, 
+                    lname: 1,
+                    role: 1, 
+                    educationList: 1 
+                }
+            }
+        ]);
+
+        // Process each user to find their latest degree
+        const data = user_data.map(user => {
+             const latestEdu = getLatestEducation(user.educationList); 
+             return {
+                 ...user,
+                 degree: latestEdu.course // Attach degree to user object
+             };
+        });
+
+        res.status(200).send({ success: true, data: data }); 
+    }
+    catch (error) { 
+        console.error(error);
+        res.status(400).send({ success: false }); 
+    }
 }
 
 const getTopUsers = async (req, res) => {
@@ -454,7 +488,6 @@ const updateProfilePic = async (req, res) => {
             const filename = `profile-${Date.now()}-${req.file.originalname}`;
             fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
         } else {
-            // Fallback if existing logic uses a passed ID
             fileId = req.body.fileId;
         }
 
@@ -502,7 +535,6 @@ const searchFollowings = async (req, res) => {
     try {
         const { userId, query } = req.params;
         
-        // 1. Get the current user to access their following list
         const currentUser = await User.findById(userId);
         if (!currentUser) {
             return res.status(404).send({ success: false, msg: "User not found" });

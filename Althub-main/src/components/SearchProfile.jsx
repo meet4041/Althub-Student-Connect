@@ -4,6 +4,7 @@ import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import FilterModal from "./FilterModal";
 import ProtectedImage from "../ProtectedImage";
+import { toast } from "react-toastify"; // Import Toast
 
 // --- INJECTED STYLES ---
 const styles = `
@@ -28,10 +29,7 @@ const styles = `
   .sp-name:hover { color: #66bd9e; }
   .sp-alumni-badge { background-color: #e3f2fd; color: #1565c0; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; border: 1px solid #90caf9; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
   .sp-location { font-size: 0.85rem; color: #777; margin-bottom: 5px; min-height: 20px; }
-  
-  /* --- NEW STYLE FOR EDUCATION --- */
   .sp-education { font-size: 0.8rem; color: #66bd9e; font-weight: 500; margin-bottom: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  
   .sp-socials { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
   .sp-social-icon { font-size: 1.2rem; color: #bbb; transition: color 0.3s; }
   .sp-social-icon.github:hover { color: #333; }
@@ -42,28 +40,59 @@ const styles = `
   .sp-btn-view:hover { background-color: #e9ecef; }
   .sp-btn-follow { background-color: #66bd9e; color: #fff; }
   .sp-btn-follow:hover { background-color: #57a88a; }
-  .sp-btn-follow:disabled { background-color: #a5d6c5; cursor: default; }
+  
+  .sp-btn-following { background-color: #e0e0e0; color: #555; cursor: pointer; }
+  .sp-btn-following:hover { background-color: #d6d6d6; color: #333; }
+  
   .sp-no-results { text-align: center; margin-top: 80px; color: #888; }
   .sp-no-results img { max-width: 250px; margin-bottom: 20px; opacity: 0.7; }
+
+  /* --- NEW: Confirmation Modal Styles --- */
+  .confirm-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 1000;
+    backdrop-filter: blur(4px);
+    display: flex; justify-content: center; align-items: center;
+  }
+  .confirm-box {
+    background: #fff; padding: 30px; border-radius: 20px;
+    width: 90%; max-width: 400px; text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .confirm-title { font-size: 1.4rem; font-weight: 700; color: #2d3436; margin-bottom: 10px; }
+  .confirm-desc { font-size: 0.95rem; color: #636e72; margin-bottom: 25px; line-height: 1.5; }
+  .confirm-btns { display: flex; gap: 15px; }
+  .confirm-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+  .btn-no { background: #f1f3f5; color: #2d3436; }
+  .btn-no:hover { background: #dfe6e9; }
+  .btn-yes { background: #ff4757; color: #fff; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3); }
+  .btn-yes:hover { background: #e84118; transform: translateY(-2px); }
+  @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
   @media (max-width: 768px) { .sp-header { flex-direction: column; position: static; } .sp-search-bar { width: 100%; } .back-btn { width: 100%; justify-content: center; } .sp-filter-btn { display: none; } }
 `;
 
 export default function SearchProfile({ socket }) {
   const [name, setName] = useState("");
-  // REMOVED: unused 'users' state
   const [showUsers, setShowUsers] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const nav = useNavigate();
+  
+  // Filter Modal State
   const [modal, setModal] = useState(false);
   const closeModal = () => setModal(false);
   
+  // Confirmation Modal State
+  const [unfollowId, setUnfollowId] = useState(null); 
+
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
   const [degree, setDegree] = useState("");
   const [year, setYear] = useState("");
 
   const userID = localStorage.getItem("Althub_Id");
-  // REMOVED: unused 'self' state and its useEffect
+  const [self, setSelf] = useState({});
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -72,7 +101,18 @@ export default function SearchProfile({ socket }) {
     return () => { document.head.removeChild(styleSheet); };
   }, []);
 
-  // WRAPPED in useCallback to fix dependency warning
+  useEffect(() => {
+    if(userID) {
+      axios.get(`${WEB_URL}/api/searchUserById/${userID}`)
+        .then((Response) => {
+          if (Response?.data?.data && Response.data.data[0]) {
+            setSelf(Response.data.data[0]);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [userID]);
+
   const performSearch = useCallback((overrideParams = {}) => {
     setIsSearching(true);
     const payload = {
@@ -86,7 +126,6 @@ export default function SearchProfile({ socket }) {
     axios.post(`${WEB_URL}/api/searchUser`, payload)
       .then((Response) => {
         const data = Response.data.data || [];
-        // Removed setUsers(data) as it was unused
         setShowUsers(data);
         setIsSearching(false);
       })
@@ -97,7 +136,6 @@ export default function SearchProfile({ socket }) {
       });
   }, [name, add, skill, degree, year]);
 
-  // Added performSearch to dependency array
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
         performSearch({ name: name });
@@ -108,6 +146,62 @@ export default function SearchProfile({ socket }) {
   const handleFilter = () => {
     closeModal();
     performSearch();
+  };
+
+  // --- Follow Logic ---
+  const handleFollow = (targetId) => {
+    const msg = `${self.fname} ${self.lname} Started Following You`;
+    
+    if (socket) {
+      socket.emit("sendNotification", { receiverid: targetId, title: "New Follower", msg: msg });
+    }
+    
+    axios.post(`${WEB_URL}/api/addNotification`, {
+        userid: targetId, 
+        msg: msg, 
+        image: self.profilepic || "", 
+        title: "New Follower", 
+        date: new Date().toISOString()
+    }).catch(err => console.log(err));
+
+    axios.put(`${WEB_URL}/api/follow/${targetId}`, { userId: userID })
+        .then((Response) => {
+            toast.success("You are now following this user!");
+            performSearch(); 
+            
+            axios.post(`${WEB_URL}/api/searchConversations`, { person1: targetId, person2: userID })
+            .then((res) => {
+                if (res.data.data.length <= 0) {
+                    axios.post(`${WEB_URL}/api/newConversation`, { senderId: userID, receiverId: targetId }).catch(console.log);
+                }
+            });
+        })
+        .catch((error) => {
+            console.log(error);
+            toast.error("Unable to follow at this moment.");
+        });
+  };
+
+  // --- Unfollow Logic Phase 1: Open Modal ---
+  const initiateUnfollow = (targetId) => {
+    setUnfollowId(targetId); // Open confirmation modal
+  };
+
+  // --- Unfollow Logic Phase 2: Execute Action ---
+  const confirmUnfollow = () => {
+    if (!unfollowId) return;
+
+    axios.put(`${WEB_URL}/api/unfollow/${unfollowId}`, { userId: userID })
+        .then((Response) => {
+            toast.info("Unfollowed successfully.");
+            setUnfollowId(null); // Close modal
+            performSearch(); // Refresh list
+        })
+        .catch((error) => {
+            console.log(error);
+            toast.error("Failed to unfollow.");
+            setUnfollowId(null);
+        });
   };
 
   const getSocialLink = (input, platform) => {
@@ -176,10 +270,24 @@ export default function SearchProfile({ socket }) {
 
                   <div className="sp-actions">
                     <button className="sp-btn sp-btn-view" onClick={() => { elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } }) }}>View</button>
+                    
+                    {/* FOLLOW / UNFOLLOW BUTTONS */}
                     {elem._id !== userID && (
-                      <button className="sp-btn sp-btn-follow" disabled={elem.followers && elem.followers.includes(userID)}>
-                        {elem.followers && elem.followers.includes(userID) ? "Following" : "Follow"}
-                      </button>
+                      elem.followers && elem.followers.includes(userID) ? (
+                        <button 
+                            className="sp-btn sp-btn-follow sp-btn-following" 
+                            onClick={() => initiateUnfollow(elem._id)} // Opens Modal
+                        >
+                            Following
+                        </button>
+                      ) : (
+                        <button 
+                            className="sp-btn sp-btn-follow" 
+                            onClick={() => handleFollow(elem._id)} // Follows directly
+                        >
+                            Follow
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
@@ -197,6 +305,7 @@ export default function SearchProfile({ socket }) {
         )}
       </div>
       
+      {/* FILTER MODAL */}
       {modal && ( 
         <FilterModal 
             closeModal={closeModal} 
@@ -206,6 +315,20 @@ export default function SearchProfile({ socket }) {
             year={year} setYear={setYear} 
             handleFilter={handleFilter} 
         /> 
+      )}
+
+      {/* CONFIRMATION MODAL */}
+      {unfollowId && (
+        <div className="confirm-overlay">
+            <div className="confirm-box">
+                <div className="confirm-title">Unfollow User?</div>
+                <p className="confirm-desc">Are you sure you want to stop following this user? You won't see their updates in your feed anymore.</p>
+                <div className="confirm-btns">
+                    <button className="confirm-btn btn-no" onClick={() => setUnfollowId(null)}>Cancel</button>
+                    <button className="confirm-btn btn-yes" onClick={confirmUnfollow}>Yes, Unfollow</button>
+                </div>
+            </div>
+        </div>
       )}
     </>
   );
