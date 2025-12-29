@@ -12,22 +12,23 @@ const addPost = async (req, res) => {
             companyname: req.body.companyname,
             profilepic: req.body.profilepic,
             description: req.body.description,
-            date: req.body.date,
-            photos: req.images,
+            date: req.body.date || new Date(),
+            // FIX: Ensure photos is an array even if req.images is undefined
+            photos: req.images || [], 
         });
+
         const userData = await User.findOne({ _id: req.body.userid });
 
         if (!userData) {
             return res.status(400).send({ success: false, msg: "User not found..!" });
-        }
-        else {
+        } else {
             const post_data = await post.save();
             res.status(200).send({ success: true, data: post_data });
         }
 
     } catch (error) {
-        res.status(400).send(error.message);
-        console.log("Error in add post : " + error.message);
+        console.error("Error in add post : " + error.message);
+        res.status(400).send({ success: false, msg: error.message });
     }
 }
 
@@ -38,28 +39,28 @@ const instituteAddPost = async (req, res) => {
             fname: req.body.fname,
             profilepic: req.body.profilepic,
             description: req.body.description,
-            photos: req.images,
+            // FIX: Use req.images array populated by middleware
+            photos: req.images || [], 
             date: new Date()
         });
+
         const instituteData = await Institute.findOne({ _id: req.body.userid });
 
-        if (!instituteData || instituteData._id == '') {
-            res.status(400).send({ success: false, msg: "institute not found..!" });
-        }
-        else {
+        if (!instituteData) {
+            res.status(400).send({ success: false, msg: "Institute not found..!" });
+        } else {
             const post_data = await post.save();
             res.status(200).send({ success: true, data: post_data });
         }
 
     } catch (error) {
-        res.status(400).send(error.message);
-        console.log("Error in add post (Institute): " + error.message);
+        console.error("Error in add post (Institute): " + error.message);
+        res.status(400).send({ success: false, msg: error.message });
     }
 }
 
 const getPosts = async (req, res) => {
     try {
-        // --- OPTIMIZATION: .lean() added for performance ---
         const post_data = await Post.find({}).sort({ date: -1 }).limit(20).lean();
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
@@ -69,7 +70,6 @@ const getPosts = async (req, res) => {
 
 const getPostById = async (req, res) => {
     try {
-        // --- OPTIMIZATION: .lean() added for performance ---
         const post_data = await Post.find({ userid: req.params.userid }).sort({ date: -1 }).lean();
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
@@ -96,6 +96,7 @@ const editPost = async (req, res) => {
             updateData.description = req.body.description;
         }
 
+        // Logic to handle new images + existing images
         if (req.images && req.images.length > 0) {
             updateData.photos = req.images;
         } else if (req.body.existingPhotos) {
@@ -104,7 +105,7 @@ const editPost = async (req, res) => {
                 photosToKeep = [photosToKeep];
             }
             updateData.photos = photosToKeep;
-        } else if (req.body.photos === '[]' || (Array.isArray(req.body.photos) && req.body.photos.length ===0)){
+        } else if (req.body.photos === '[]' || (Array.isArray(req.body.photos) && req.body.photos.length === 0)){
              updateData.photos = [];
         }
 

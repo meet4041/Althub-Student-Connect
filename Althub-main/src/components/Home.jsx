@@ -5,7 +5,7 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import EditEducationModal from "./EditEducationModal";
-import ProtectedImage from "../ProtectedImage"; // IMPORT ADDED
+import ProtectedImage from "../ProtectedImage"; 
 
 // --- STYLES ---
 const styles = `
@@ -44,7 +44,6 @@ const styles = `
   .post-meta span { font-size: 0.85rem; color: #999; }
   .post-content { padding: 5px 20px 15px; font-size: 1rem; color: #333; white-space: pre-wrap; line-height: 1.5; }
   
-  /* --- FIX: Changed Background from #000 to #fff --- */
   .post-media { margin-bottom: 10px; background: #fff; }
   .post-media-item { width: 100%; max-height: 600px; object-fit: contain; background: #fff; display: block; margin: 0 auto; }
   
@@ -212,11 +211,17 @@ export default function Home({ socket }) {
     body.append("fname", user.fname);
     body.append("lname", user.lname);
     body.append("profilepic", user.profilepic || "");
-    if (fileList) {
-      const filesArray = Array.from(fileList);
-      const compressedFiles = await Promise.all(filesArray.map(file => compressImage(file)));
-      compressedFiles.forEach((file) => { body.append(`photos`, file, file.name); });
+    
+    // --- FIX START: Changed logic to handle single image upload matching backend ---
+    if (fileList && fileList.length > 0) {
+      // Backend uses uploadSingle('image'), so we only take the first file
+      const file = fileList[0];
+      const compressedFile = await compressImage(file);
+      // FIELD NAME CHANGED from 'photos' to 'image'
+      body.append("image", compressedFile, compressedFile.name);
     }
+    // --- FIX END ---
+
     axios({ url: `${WEB_URL}/api/addPost`, method: "post", headers: { "Content-type": "multipart/form-data" }, data: body })
       .then((Response) => {
         toast.success("Post Uploaded!!");
@@ -312,7 +317,8 @@ export default function Home({ socket }) {
               </div>
             )}
             <div className="cp-actions">
-              <label className="cp-upload-btn"><i className="fa-regular fa-image"></i> Media<input type="file" onChange={imgChange} id="myFileInput" hidden multiple accept="image/*,video/*" /></label>
+              {/* FIX: Removed 'multiple' attribute since backend now only accepts single image */}
+              <label className="cp-upload-btn"><i className="fa-regular fa-image"></i> Media<input type="file" onChange={imgChange} id="myFileInput" hidden accept="image/*,video/*" /></label>
               <button className="cp-post-btn" onClick={addPost} disabled={uploading}>{uploading ? "Posting..." : "Post"}</button>
             </div>
           </div>
