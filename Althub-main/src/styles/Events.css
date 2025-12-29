@@ -1,0 +1,211 @@
+/* ==========================================================================
+   EVENTS PAGE STYLES (.evt-)
+   ========================================================================== */
+
+/* --- Wrapper & Container --- */
+.evt-wrapper {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 30px 0;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .evt-container {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  
+  /* --- Header Card --- */
+  .evt-header-card {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #eee;
+  }
+  
+  .evt-header-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 6px;
+    background: linear-gradient(180deg, #66bd9e 0%, #479378 100%);
+  }
+  
+  .evt-header-title {
+    font-weight: 700 !important;
+    color: #2d3436;
+    margin-bottom: 5px !important;
+  }
+  
+  .evt-header-subtitle {
+    color: #636e72;
+    font-weight: 500 !important;
+  }
+  
+  .evt-header-img {
+    height: 120px;
+    object-fit: contain;
+    margin-right: 20px;
+  }
+  
+  .evt-back-btn {
+    border-radius: 30px !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    color: #555 !important;
+  }
+  
+  /* --- Tabs --- */
+  .evt-tabs {
+    margin-bottom: 30px !important;
+  }
+  
+  .evt-tabs .MuiTabs-indicator {
+    background-color: #66bd9e !important;
+    height: 3px !important;
+    border-radius: 3px;
+  }
+  
+  .evt-tab {
+    text-transform: none !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: #7f8c8d !important;
+    min-width: 100px !important;
+  }
+  
+  .evt-tab.Mui-selected {
+    color: #66bd9e !important;
+  }
+  
+  /* --- Event Card --- */
+  .evt-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important;
+    overflow: hidden;
+  }
+  
+  .evt-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.08) !important;
+    border-color: #e0e0e0;
+  }
+  
+  .evt-card-media {
+    height: 160px;
+    background-color: #f0f0f0;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Hover Effect on Image */
+  .evt-card:hover .evt-card-img {
+    transform: scale(1.05);
+  }
+  
+  .evt-card-content {
+    flex-grow: 1;
+    padding: 20px !important;
+  }
+  
+  .evt-card-title {
+    font-weight: 700 !important;
+    color: #2d3436;
+    margin-bottom: 12px !important;
+    line-height: 1.3 !important;
+  }
+  
+  .evt-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: #636e72;
+  }
+  
+  .evt-info-icon {
+    color: #66bd9e;
+    font-size: 1.1rem !important;
+  }
+  
+  .evt-info-text {
+    font-size: 0.85rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .evt-card-actions {
+    padding: 0 20px 20px !important;
+  }
+  
+  .evt-view-btn {
+    width: 100%;
+    border-radius: 8px !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    background-color: #f8f9fa !important;
+    color: #2d3436 !important;
+  }
+  
+  .evt-view-btn:hover {
+    background-color: #66bd9e !important;
+    color: #fff !important;
+  }
+  
+  /* --- Empty State --- */
+  .evt-no-events {
+    text-align: center;
+    padding: 80px;
+    background: #fff;
+    border-radius: 16px;
+    color: #b2bec3;
+    border: 2px dashed #f0f0f0;
+    margin-top: 20px;
+  }
+  
+  .evt-empty-icon {
+    font-size: 4rem !important;
+    margin-bottom: 15px;
+    color: #dfe6e9;
+  }
+  
+  /* Responsive */
+  @media (max-width: 900px) {
+    .evt-header-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 25px 20px;
+      gap: 20px;
+    }
+    .evt-header-card::before {
+      width: 100%;
+      height: 6px;
+    }
+    .evt-header-actions {
+      flex-direction: column-reverse;
+      align-items: center;
+      width: 100%;
+    }
+    .evt-header-img {
+      margin: 0;
+      height: 100px;
+    }
+    .evt-back-btn {
+      width: 100%;
+    }
+  }

@@ -1,549 +1,205 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import "../styles/Main.css"; // <--- Import CSS
 
-// --- INJECTED STYLES FOR MODERN LANDING PAGE ---
-const styles = `
-  /* Global Reset & Fonts */
-  .landing-wrapper {
-    font-family: 'Poppins', sans-serif;
-    color: #2d3436;
-    background-color: #fff;
-    overflow-x: hidden;
-  }
+// MUI Imports
+import {
+  AppBar, Toolbar, Button, Container, Grid, Typography, Box, 
+  Card, CardContent, Chip, List, ListItem, Link as MuiLink
+} from '@mui/material';
 
-  /* --- NAVBAR --- */
-  .landing-nav {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 5%;
-    z-index: 1000;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.05);
-  }
-
-  .nav-logo img {
-    height: 50px;
-    object-fit: contain;
-  }
-
-  .nav-buttons {
-    display: flex;
-    gap: 15px;
-  }
-
-  .btn-nav {
-    padding: 10px 25px;
-    border-radius: 30px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .btn-login {
-    background: transparent;
-    border: 2px solid #66bd9e;
-    color: #66bd9e;
-  }
-
-  .btn-login:hover {
-    background: #f0f9f6;
-  }
-
-  .btn-register {
-    background: #66bd9e;
-    border: 2px solid #66bd9e;
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(102, 189, 158, 0.3);
-  }
-
-  .btn-register:hover {
-    background: #479378;
-    border-color: #479378;
-    transform: translateY(-2px);
-  }
-
-  /* --- HERO SECTION --- */
-  .hero-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 120px 5% 60px; /* Top padding accounts for fixed nav */
-    min-height: 90vh;
-    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-  }
-
-  .hero-text {
-    flex: 1;
-    max-width: 600px;
-  }
-
-  .hero-text h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 20px;
-    background: linear-gradient(90deg, #2d3436 0%, #66bd9e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .hero-text p {
-    font-size: 1.2rem;
-    color: #636e72;
-    margin-bottom: 30px;
-    line-height: 1.6;
-  }
-
-  .hero-img {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-
-  .hero-img img {
-    width: 100%;
-    max-width: 600px;
-    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1));
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
-  }
-
-  /* --- FEATURES GRID --- */
-  .features-section {
-    padding: 80px 5%;
-    background: #fff;
-  }
-
-  .section-title {
-    text-align: center;
-    margin-bottom: 50px;
-  }
-
-  .section-title h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2d3436;
-    margin-bottom: 10px;
-  }
-
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .feature-card {
-    background: #fff;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    text-align: center;
-    transition: transform 0.3s;
-    border: 1px solid #f0f0f0;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-  }
-
-  .feature-icon {
-    height: 120px;
-    margin-bottom: 20px;
-    object-fit: contain;
-  }
-
-  .feature-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #66bd9e;
-  }
-
-  .feature-card p {
-    color: #636e72;
-    line-height: 1.5;
-  }
-
-  /* --- TAGS SECTION --- */
-  .tags-section {
-    padding: 80px 5%;
-    background: #f8f9fa;
-    text-align: center;
-  }
-
-  .tags-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-
-  .tag-pill {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    padding: 10px 25px;
-    border-radius: 50px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #555;
-    cursor: default;
-    transition: all 0.3s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-  }
-
-  .tag-pill:hover {
-    border-color: #66bd9e;
-    color: #66bd9e;
-    background: #f0f9f6;
-    transform: scale(1.05);
-  }
-
-  /* --- INFO SPLIT SECTION --- */
-  .info-section {
-    padding: 80px 5%;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .info-split {
-    display: flex;
-    align-items: center;
-    gap: 50px;
-    margin-bottom: 80px;
-  }
-
-  .info-split.reverse {
-    flex-direction: row-reverse;
-  }
-
-  .info-content {
-    flex: 1;
-  }
-
-  .info-content h2 {
-    font-size: 2.2rem;
-    margin-bottom: 20px;
-    color: #2d3436;
-  }
-
-  .info-list {
-    list-style: none;
-    padding: 0;
-  }
-
-  .info-list li {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 1.05rem;
-    color: #636e72;
-  }
-
-  .info-list i {
-    color: #66bd9e;
-    margin-top: 5px;
-  }
-
-  .info-img {
-    flex: 1;
-  }
-
-  .info-img img {
-    width: 100%;
-    max-width: 500px;
-  }
-
-  /* --- UPDATED FOOTER STYLES --- */
-  .modern-footer {
-    background: #2d3436;
-    color: #fff;
-    padding: 70px 5% 20px;
-    margin-top: 50px;
-  }
-
-  .footer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 50px;
-    max-width: 1200px;
-    margin: 0 auto 50px;
-    align-items: flex-start; /* Key fix for alignment */
-  }
-
-  .footer-col h3 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 25px;
-    color: #66bd9e;
-    position: relative;
-    padding-bottom: 10px;
-  }
-  
-  .footer-col h3::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 40px;
-    height: 3px;
-    background-color: #66bd9e;
-    border-radius: 2px;
-  }
-
-  .footer-col p {
-    color: #b2bec3;
-    line-height: 1.7;
-    font-size: 0.95rem;
-  }
-
-  /* List Styling - Removes default bullets and padding */
-  .contact-list, .social-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  /* List Items - Aligns icons and text */
-  .contact-list li, .social-list li {
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center; /* Vertically aligns icon with text */
-    gap: 12px;
-    color: #dfe6e9;
-    font-size: 0.95rem;
-  }
-
-  .contact-list li i, .social-list li i {
-    width: 20px; /* Fixed width for icons ensures text lines up */
-    text-align: center;
-    color: #66bd9e;
-    font-size: 1.1rem;
-  }
-
-  .contact-list a, .social-list a {
-    color: #dfe6e9;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .contact-list a:hover, .social-list a:hover {
-    color: #66bd9e;
-    padding-left: 5px; /* Subtle hover effect */
-  }
-
-  .footer-bottom {
-    text-align: center;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 25px;
-    color: #636e72;
-    font-size: 0.85rem;
-  }
-
-  /* Responsive Footer */
-  @media (max-width: 900px) {
-    .footer-grid {
-      grid-template-columns: 1fr;
-      text-align: center;
-      gap: 40px;
-    }
-    .footer-col h3::after {
-      left: 50%;
-      transform: translateX(-50%); /* Centers the underline */
-    }
-    .contact-list li, .social-list li, .social-list a {
-      justify-content: center;
-    }
-  }
-`;
+// Icons
+import {
+  CheckCircle, Phone, Email, LinkedIn, GitHub
+} from '@mui/icons-material';
 
 export default function Main() {
     const nav = useNavigate();
     
-    useEffect(() => {
-        window.scrollTo(0, 0);
-        // Inject styles
-        const styleSheet = document.createElement("style");
-        styleSheet.innerText = styles;
-        document.head.appendChild(styleSheet);
-        return () => document.head.removeChild(styleSheet);
-    }, []);
+    useEffect(() => { window.scrollTo(0, 0); }, []);
 
     return (
         <div className="landing-wrapper">
             
             {/* --- NAVBAR --- */}
-            <nav className="landing-nav">
-                <div className="nav-logo">
-                    <img src="images/Logo1.jpeg" alt="AltHub Logo" />
-                </div>
-                <div className="nav-buttons">
-                    <button className="btn-nav btn-login" onClick={() => nav('/login')}>Login</button>
-                    <button className="btn-nav btn-register" onClick={() => nav('/register')}>Register</button>
-                </div>
-            </nav>
+            <AppBar position="fixed" className="landing-appbar" elevation={0}>
+                <Toolbar className="landing-toolbar">
+                    <img src="images/Logo1.jpeg" alt="AltHub" className="landing-logo" />
+                    <Box>
+                        <Button variant="outlined" className="landing-nav-btn btn-nav-login" onClick={() => nav('/login')}>
+                            Login
+                        </Button>
+                        <Button variant="contained" className="landing-nav-btn btn-nav-register" onClick={() => nav('/register')}>
+                            Register
+                        </Button>
+                    </Box>
+                </Toolbar>
+            </AppBar>
 
             {/* --- HERO SECTION --- */}
-            <section className="hero-section">
-                <div className="hero-text">
-                    <h1>Connecting Students & Alumni Together</h1>
-                    <p>
-                        A comprehensive platform bridging the gap between college management, current students, and alumni. 
-                        Unlock career advice, mentorship, and job opportunities in one place.
-                    </p>
-                    <button className="btn-nav btn-register" onClick={() => nav('/register')} style={{padding: '15px 40px', fontSize: '1.1rem'}}>
-                        Get Started
-                    </button>
-                </div>
-                <div className="hero-img">
-                    <img src="images/connect.png" alt="Connection Illustration" />
-                </div>
-            </section>
+            <Box className="hero-section">
+                <Container maxWidth="lg">
+                    <Grid container spacing={4} alignItems="center">
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h2" className="hero-title">
+                                Connecting Students & Alumni Together
+                            </Typography>
+                            <Typography variant="h6" className="hero-subtitle">
+                                A comprehensive platform bridging the gap between college management, current students, and alumni. 
+                                Unlock career advice, mentorship, and job opportunities in one place.
+                            </Typography>
+                            <Button 
+                                variant="contained" 
+                                className="hero-cta-btn btn-nav-register" 
+                                onClick={() => nav('/register')}
+                            >
+                                Get Started
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12} md={6} display="flex" justifyContent="center">
+                            <img src="images/connect.png" alt="Connection" className="hero-img" />
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
 
             {/* --- FEATURES GRID --- */ }
-            <section className="features-section">
-                <div className="section-title">
-                    <h2>Explore Althub</h2>
-                    <p>Everything you need to stay connected</p>
-                </div>
-                
-                <div className="cards-grid">
-                    <div className="feature-card">
-                        <img src="images/event.png" alt="Events" className="feature-icon" />
-                        <h3>Events</h3>
-                        <p>Keep up with reunions, webinars, and casual hangouts happening at your alma mater.</p>
-                    </div>
-                    <div className="feature-card">
-                        <img src="images/alumini-directory.png" alt="Directory" className="feature-icon" />
-                        <h3>Alumni Directory</h3>
-                        <p>Find lost classmates, discover mentors, and build a professional network that matters.</p>
-                    </div>
-                    <div className="feature-card">
-                        <img src="images/content-library.png" alt="Connections" className="feature-icon" />
-                        <h3>Secure Messaging</h3>
-                        <p>Directly connect with like-minded people using our secure, on-demand messaging system.</p>
-                    </div>
-                </div>
-            </section>
+            <Box className="features-section">
+                <Container maxWidth="lg">
+                    <Box className="section-title">
+                        <Typography variant="h3" component="h2">Explore Althub</Typography>
+                        <Typography variant="h6">Everything you need to stay connected</Typography>
+                    </Box>
+                    
+                    <Grid container spacing={4}>
+                        {[
+                            { img: "images/event.png", title: "Events", desc: "Keep up with reunions, webinars, and casual hangouts happening at your alma mater." },
+                            { img: "images/alumini-directory.png", title: "Alumni Directory", desc: "Find lost classmates, discover mentors, and build a professional network that matters." },
+                            { img: "images/content-library.png", title: "Secure Messaging", desc: "Directly connect with like-minded people using our secure, on-demand messaging system." }
+                        ].map((feature, idx) => (
+                            <Grid item xs={12} md={4} key={idx}>
+                                <Card className="feature-card" elevation={0}>
+                                    <img src={feature.img} alt={feature.title} className="feature-icon" />
+                                    <CardContent>
+                                        <Typography variant="h5" color="primary" fontWeight={700} gutterBottom>
+                                            {feature.title}
+                                        </Typography>
+                                        <Typography variant="body1" color="textSecondary">
+                                            {feature.desc}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+            </Box>
 
             {/* --- JOB TAGS --- */}
-            <section className="tags-section">
-                <div className="section-title">
-                    <h2>Find the Right Connections</h2>
-                    <p>Connect with professionals across various fields</p>
-                </div>
-                <div className="tags-wrapper">
-                    {[
-                        "Network Administrator", "Designer", "System Analyst", 
-                        "Database Administrator", "Full-stack Developer", 
-                        "Software Engineer", "Data Scientist", "Cloud Engineer", 
-                        "IT Security Specialist", "Analytics Manager"
-                    ].map((job, index) => (
-                        <div key={index} className="tag-pill">{job}</div>
-                    ))}
-                </div>
-            </section>
+            <Box className="tags-section">
+                <Container maxWidth="md">
+                    <Box className="section-title">
+                        <Typography variant="h3" component="h2">Find the Right Connections</Typography>
+                        <Typography variant="h6">Connect with professionals across various fields</Typography>
+                    </Box>
+                    <Box display="flex" flexWrap="wrap" justifyContent="center" gap={1.5}>
+                        {[
+                            "Network Administrator", "Designer", "System Analyst", 
+                            "Database Administrator", "Full-stack Developer", 
+                            "Software Engineer", "Data Scientist", "Cloud Engineer", 
+                            "IT Security Specialist", "Analytics Manager"
+                        ].map((job, index) => (
+                            <Chip key={index} label={job} className="tag-chip" clickable />
+                        ))}
+                    </Box>
+                </Container>
+            </Box>
 
             {/* --- INFO SECTIONS --- */}
-            <section className="info-section">
-                {/* Why Althub */}
-                <div className="info-split">
-                    <div className="info-content">
-                        <h2>Why Choose Althub?</h2>
-                        <ul className="info-list">
-                            <li><i className="fa-solid fa-check-circle"></i> Provide alumni a reason to give back their time & talent.</li>
-                            <li><i className="fa-solid fa-check-circle"></i> Build alumni-centric programs designed for engagement.</li>
-                            <li><i className="fa-solid fa-check-circle"></i> No app downloads required – accessible everywhere.</li>
-                            <li><i className="fa-solid fa-check-circle"></i> Simple for any age group to participate from anywhere.</li>
-                        </ul>
-                    </div>
-                    <div className="info-img">
-                        <img src="images/Alumni-2.svg" alt="Why Althub" />
-                    </div>
-                </div>
+            <Box className="info-section">
+                <Container maxWidth="lg">
+                    {/* Why Althub */}
+                    <Grid container spacing={6} alignItems="center" className="info-container">
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h3" fontWeight={700} gutterBottom>Why Choose Althub?</Typography>
+                            <List>
+                                {[
+                                    "Provide alumni a reason to give back their time & talent.",
+                                    "Build alumni-centric programs designed for engagement.",
+                                    "No app downloads required – accessible everywhere.",
+                                    "Simple for any age group to participate from anywhere."
+                                ].map((text, i) => (
+                                    <ListItem key={i} className="info-list-item">
+                                        <CheckCircle className="info-icon" />
+                                        <Typography variant="body1" color="textSecondary">{text}</Typography>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Grid>
+                        <Grid item xs={12} md={6} className="info-img-wrapper">
+                            <img src="images/Alumni-2.svg" alt="Why Althub" className="info-img" />
+                        </Grid>
+                    </Grid>
 
-                {/* Alumni Center */}
-                <div className="info-split reverse">
-                    <div className="info-content">
-                        <h2>Alumni at the Center</h2>
-                        <p>
-                            We believe that a strong alumni network is the backbone of any institution. 
-                            In today's value-focused reality, we provide the technology and strategy to make connecting easier, 
-                            more meaningful, and mutually beneficial.
-                        </p>
-                    </div>
-                    <div className="info-img">
-                        <img src="images/Usability testing-bro.png" alt="Alumni Center" />
-                    </div>
-                </div>
-            </section>
+                    {/* Alumni Center */}
+                    <Grid container spacing={6} alignItems="center" direction={{xs: 'column-reverse', md: 'row'}}>
+                        <Grid item xs={12} md={6} className="info-img-wrapper">
+                            <img src="images/Usability testing-bro.png" alt="Alumni Center" className="info-img" />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h3" fontWeight={700} gutterBottom>Alumni at the Center</Typography>
+                            <Typography variant="body1" color="textSecondary" paragraph fontSize="1.1rem" lineHeight={1.8}>
+                                We believe that a strong alumni network is the backbone of any institution. 
+                                In today's value-focused reality, we provide the technology and strategy to make connecting easier, 
+                                more meaningful, and mutually beneficial.
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
 
-            {/* --- UPDATED FOOTER --- */}
-            <footer className="modern-footer">
-                <div className="footer-grid">
-                    {/* Column 1: About */}
-                    <div className="footer-col">
-                        <h3>About Althub</h3>
-                        <p>
-                            Althub bridges the gap between college management, current students, and alumni. 
-                            It enables seamless communication for job vacancies, career advice, and mentorship.
-                        </p>
-                    </div>
+            {/* --- FOOTER --- */}
+            <footer className="landing-footer">
+                <Container maxWidth="lg">
+                    <Grid container spacing={5}>
+                        {/* About */}
+                        <Grid item xs={12} md={4} className="footer-col">
+                            <Typography variant="h5" className="footer-heading">About Althub</Typography>
+                            <Typography variant="body2" color="grey.400" lineHeight={1.8}>
+                                Althub bridges the gap between college management, current students, and alumni. 
+                                It enables seamless communication for job vacancies, career advice, and mentorship.
+                            </Typography>
+                        </Grid>
 
-                    {/* Column 2: Contact */}
-                    <div className="footer-col">
-                        <h3>Contact Us</h3>
-                        <ul className="contact-list">
-                            <li>
-                                <i className="fa-solid fa-phone"></i>
-                                +91 6352314322
-                            </li>
-                            <li>
-                                <i className="fa-regular fa-envelope"></i>
-                                <a href="mailto:althub.daiict@gmail.com">althub.daiict@gmail.com</a>
-                            </li>
-                        </ul>
-                    </div>
+                        {/* Contact */}
+                        <Grid item xs={12} md={4} className="footer-col">
+                            <Typography variant="h5" className="footer-heading">Contact Us</Typography>
+                            <Box display="flex" flexDirection="column" gap={1}>
+                                <div className="footer-link"><Phone className="footer-icon" /> +91 6352314322</div>
+                                <MuiLink href="mailto:althub.daiict@gmail.com" className="footer-link" underline="none">
+                                    <Email className="footer-icon" /> althub.daiict@gmail.com
+                                </MuiLink>
+                            </Box>
+                        </Grid>
 
-                    {/* Column 3: Socials */}
-                    <div className="footer-col">
-                        <h3>Follow Us</h3>
-                        <ul className="social-list">
-                            <li>
-                                <a href="https://www.linkedin.com/in/meetgandhi4041/" target="_blank" rel="noreferrer">
-                                    <i className="fa-brands fa-linkedin"></i> LinkedIn
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://github.com/meet4041" target="_blank" rel="noreferrer">
-                                    <i className="fa-brands fa-github"></i> GitHub
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="footer-bottom">
-                    <p>&copy; {new Date().getFullYear()} Althub. All rights reserved.</p>
-                </div>
+                        {/* Socials */}
+                        <Grid item xs={12} md={4} className="footer-col">
+                            <Typography variant="h5" className="footer-heading">Follow Us</Typography>
+                            <Box display="flex" flexDirection="column" gap={1}>
+                                <MuiLink href="https://www.linkedin.com/in/meetgandhi4041/" target="_blank" className="footer-link" underline="none">
+                                    <LinkedIn className="footer-icon" /> LinkedIn
+                                </MuiLink>
+                                <MuiLink href="https://github.com/meet4041" target="_blank" className="footer-link" underline="none">
+                                    <GitHub className="footer-icon" /> GitHub
+                                </MuiLink>
+                            </Box>
+                        </Grid>
+                    </Grid>
+
+                    <Box className="footer-bottom">
+                        <Typography variant="body2">&copy; {new Date().getFullYear()} Althub. All rights reserved.</Typography>
+                    </Box>
+                </Container>
             </footer>
 
         </div>

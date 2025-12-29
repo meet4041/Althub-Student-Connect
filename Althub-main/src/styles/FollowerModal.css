@@ -1,0 +1,119 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000; /* High z-index to sit above navbar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* Modal Container */
+  .modal-card {
+    background: #fff;
+    width: 100%;
+    max-width: 500px;
+    height: 80vh; /* Fixed height relative to viewport */
+    max-height: 700px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden; /* Prevents card itself from scrolling */
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Header */
+  .modal-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2d3436;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: #b2bec3;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .close-btn:hover { color: #2d3436; }
+
+  /* Tabs */
+  .tab-container {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #888;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+  }
+
+  .tab-item:hover {
+    background-color: #f9f9f9;
+    color: #66bd9e;
+  }
+
+  .tab-item.active {
+    color: #66bd9e;
+    border-bottom-color: #66bd9e;
+    font-weight: 600;
+  }
+
+  /* Scrollable List Area */
+  .modal-list-body {
+    flex: 1;
+    overflow-y: auto; /* Enables scrolling inside the list */
+    padding: 15px;
+    background-color: #fff;
+  }
+
+  /* Scrollbar Styling */
+  .modal-list-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  .modal-list-body::-webkit-scrollbar-thumb {
+    background-color: #e0e0e0;
+    border-radius: 3px;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 0.9rem;
+  }

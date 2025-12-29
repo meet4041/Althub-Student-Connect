@@ -1,0 +1,202 @@
+/* ==========================================================================
+   VIEW PROFILE PAGE STYLES (.vp-)
+   ========================================================================== */
+
+/* --- Wrapper --- */
+.vp-wrapper {
+    background-color: #f3f2ef;
+    min-height: 100vh;
+    padding: 30px 0;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* --- Header Card --- */
+  .vp-header-card {
+    border-radius: 12px !important;
+    overflow: visible !important; /* Allow avatar to overflow */
+    margin-bottom: 20px;
+    position: relative;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .vp-cover {
+    height: 180px;
+    background: linear-gradient(135deg, #66bd9e 0%, #26a69a 100%);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+  
+  .vp-avatar-container {
+    margin-top: -90px;
+    margin-left: 30px;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .vp-avatar {
+    width: 160px !important;
+    height: 160px !important;
+    border: 5px solid #fff !important;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  .vp-header-actions {
+    position: absolute;
+    top: 20px; /* Below cover photo inside content area */
+    right: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .vp-details {
+    padding: 10px 30px 30px 30px;
+    margin-top: 10px;
+  }
+  
+  .vp-name {
+    font-weight: 700 !important;
+    color: #2d3436;
+  }
+  
+  .vp-role {
+    color: #636e72;
+    font-size: 1.1rem;
+  }
+  
+  .vp-location {
+    color: #b2bec3;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+    margin-top: 5px;
+  }
+  
+  .vp-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #66bd9e;
+  }
+  
+  .vp-stat-item {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .vp-stat-item:hover {
+    text-decoration: underline;
+    color: #479378;
+  }
+  
+  .vp-social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  
+  /* --- Sections (About, Experience, Education) --- */
+  .vp-section-card {
+    border-radius: 12px !important;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+  }
+  
+  .vp-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .vp-add-btn {
+    min-width: 0 !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
+  }
+  
+  /* List Items */
+  .vp-list-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .vp-list-item:last-child {
+    border-bottom: none;
+  }
+  
+  .vp-list-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-right: 15px;
+  }
+  
+  .vp-edit-icon {
+    color: #b2bec3;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .vp-edit-icon:hover {
+    color: #66bd9e;
+  }
+  
+  /* --- Right Sidebar --- */
+  .vp-sidebar-card {
+    border-radius: 12px !important;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .vp-chip {
+    margin: 3px;
+    background-color: #f0f9f6 !important;
+    color: #555 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Suggestion List */
+  .vp-suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f9f9f9;
+  }
+  
+  .vp-suggestion-item:last-child {
+    border-bottom: none;
+  }
+  
+  .vp-view-btn {
+    margin-left: auto;
+    text-transform: none !important;
+    color: #66bd9e !important;
+    background-color: #f0f9f6 !important;
+    border-radius: 20px !important;
+    padding: 2px 15px !important;
+    font-weight: 600 !important;
+  }
+  
+  .vp-view-btn:hover {
+    background-color: #66bd9e !important;
+    color: #fff !important;
+  }
+  
+  /* Responsive */
+  @media (max-width: 960px) {
+    .vp-header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+    }
+  }

@@ -1,0 +1,105 @@
+/* ==========================================================================
+   EDIT EXPERIENCE MODAL STYLES (.exp-modal-)
+   ========================================================================== */
+
+/* --- Header --- */
+.exp-modal-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 16px 24px !important;
+  }
+  
+  .exp-modal-content {
+    padding: 24px !important;
+  }
+  
+  /* --- List View --- */
+  .exp-list-item {
+    border-bottom: 1px solid #f9f9f9;
+    padding: 15px 0 !important;
+  }
+  
+  .exp-list-item:last-child {
+    border-bottom: none;
+  }
+  
+  .exp-logo-avatar {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 8px !important;
+    border: 1px solid #eee;
+  }
+  
+  .exp-list-primary {
+    font-weight: 600 !important;
+    color: #333;
+    font-size: 1rem !important;
+  }
+  
+  .exp-list-secondary {
+    color: #666;
+    font-size: 0.9rem !important;
+  }
+  
+  .exp-edit-btn {
+    color: #999 !important;
+  }
+  
+  .exp-edit-btn:hover {
+    color: #66bd9e !important;
+  }
+  
+  /* --- Empty State --- */
+  .exp-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+  }
+  
+  .exp-empty-icon {
+    font-size: 3rem !important;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+  
+  /* --- Add New Button Wrapper --- */
+  .exp-add-btn-wrapper {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  /* --- Form View --- */
+  .exp-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Logo Upload Area */
+  .exp-upload-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    border: 1px dashed #e0e0e0;
+  }
+  
+  .exp-upload-preview {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 8px !important;
+  }
+  
+  /* Form Actions */
+  .exp-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+  }

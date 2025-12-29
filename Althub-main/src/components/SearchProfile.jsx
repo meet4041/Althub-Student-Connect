@@ -2,90 +2,40 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
-import FilterModal from "./FilterModal";
 import ProtectedImage from "../ProtectedImage";
-import { toast } from "react-toastify"; // Import Toast
+import { toast } from "react-toastify";
+import FilterModal from "./FilterModal"; // We will refactor this next or keep as is, wrapper handles styling
 
-// --- INJECTED STYLES ---
-const styles = `
-  .sp-container { padding: 30px 5%; background-color: #f8f9fa; min-height: 100vh; display: flex; flex-direction: column; align-items: center; font-family: 'Poppins', sans-serif; }
-  .sp-header { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 40px; width: 100%; max-width: 1400px; position: sticky; top: 20px; z-index: 100; }
-  .sp-search-bar { flex: 1; background: #fff; border-radius: 50px; padding: 5px 25px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: box-shadow 0.3s ease; border: 1px solid #eee; height: 55px; }
-  .sp-search-bar:focus-within { box-shadow: 0 4px 20px rgba(102, 189, 158, 0.25); border-color: #66bd9e; }
-  .sp-search-bar input { border: none; outline: none; width: 100%; margin-left: 15px; font-size: 1rem; color: #555; }
-  .sp-filter-btn { background: #fff; border: none; border-radius: 50%; width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.08); color: #66bd9e; font-size: 1.2rem; transition: all 0.3s ease; position: relative; }
-  .sp-filter-btn:hover { background: #66bd9e; color: #fff; transform: translateY(-2px); }
-  .filter-active-dot { position: absolute; top: 14px; right: 14px; width: 10px; height: 10px; background-color: #ff4757; border-radius: 50%; border: 2px solid #fff; }
-  .back-btn { padding: 0 25px; height: 55px; background: #fff; border-radius: 30px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.08); color: #555; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-  .back-btn:hover { background: #f1f3f5; color: #333; transform: translateY(-2px); }
-  .sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; width: 100%; max-width: 1400px; }
-  .sp-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; border: 1px solid #f0f0f0; }
-  .sp-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); border-color: #e0e0e0; }
-  .sp-banner { height: 80px; background: linear-gradient(135deg, #66bd9e 0%, #479378 100%); }
-  .sp-avatar-container { display: flex; justify-content: center; margin-top: -45px; }
-  .sp-avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #fff; object-fit: cover; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-  .sp-content { padding: 15px 20px 25px; text-align: center; display: flex; flex-direction: column; flex: 1; }
-  .sp-name { font-size: 1.1rem; font-weight: 700; color: #333; margin: 10px 0 5px; cursor: pointer; transition: color 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; line-height: 1.3; }
-  .sp-name:hover { color: #66bd9e; }
-  .sp-alumni-badge { background-color: #e3f2fd; color: #1565c0; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; border: 1px solid #90caf9; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
-  .sp-location { font-size: 0.85rem; color: #777; margin-bottom: 5px; min-height: 20px; }
-  .sp-education { font-size: 0.8rem; color: #66bd9e; font-weight: 500; margin-bottom: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sp-socials { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
-  .sp-social-icon { font-size: 1.2rem; color: #bbb; transition: color 0.3s; }
-  .sp-social-icon.github:hover { color: #333; }
-  .sp-social-icon.website:hover { color: #66bd9e; }
-  .sp-actions { margin-top: auto; display: flex; gap: 10px; }
-  .sp-btn { flex: 1; padding: 10px 0; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
-  .sp-btn-view { background-color: #f8f9fa; color: #333; }
-  .sp-btn-view:hover { background-color: #e9ecef; }
-  .sp-btn-follow { background-color: #66bd9e; color: #fff; }
-  .sp-btn-follow:hover { background-color: #57a88a; }
-  
-  .sp-btn-following { background-color: #e0e0e0; color: #555; cursor: pointer; }
-  .sp-btn-following:hover { background-color: #d6d6d6; color: #333; }
-  
-  .sp-no-results { text-align: center; margin-top: 80px; color: #888; }
-  .sp-no-results img { max-width: 250px; margin-bottom: 20px; opacity: 0.7; }
-
-  /* --- NEW: Confirmation Modal Styles --- */
-  .confirm-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); z-index: 1000;
-    backdrop-filter: blur(4px);
-    display: flex; justify-content: center; align-items: center;
-  }
-  .confirm-box {
-    background: #fff; padding: 30px; border-radius: 20px;
-    width: 90%; max-width: 400px; text-align: center;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .confirm-title { font-size: 1.4rem; font-weight: 700; color: #2d3436; margin-bottom: 10px; }
-  .confirm-desc { font-size: 0.95rem; color: #636e72; margin-bottom: 25px; line-height: 1.5; }
-  .confirm-btns { display: flex; gap: 15px; }
-  .confirm-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
-  .btn-no { background: #f1f3f5; color: #2d3436; }
-  .btn-no:hover { background: #dfe6e9; }
-  .btn-yes { background: #ff4757; color: #fff; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3); }
-  .btn-yes:hover { background: #e84118; transform: translateY(-2px); }
-  @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-  @media (max-width: 768px) { .sp-header { flex-direction: column; position: static; } .sp-search-bar { width: 100%; } .back-btn { width: 100%; justify-content: center; } .sp-filter-btn { display: none; } }
-`;
+// MUI Imports
+import { 
+  Box, Container, Grid, Card, CardContent, Typography, Button, TextField, 
+  IconButton, Avatar, Chip, Dialog, DialogTitle, DialogContent, DialogActions, 
+  InputAdornment, useTheme
+} from '@mui/material';
+import { 
+  Search as SearchIcon, 
+  Tune as TuneIcon, 
+  ArrowBack, 
+  School, 
+  GitHub, 
+  Language, 
+  CheckCircle 
+} from '@mui/icons-material';
 
 export default function SearchProfile({ socket }) {
   const [name, setName] = useState("");
   const [showUsers, setShowUsers] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const nav = useNavigate();
+  const theme = useTheme();
   
-  // Filter Modal State
-  const [modal, setModal] = useState(false);
-  const closeModal = () => setModal(false);
+  // Filter Modal
+  const [showFilterModal, setShowFilterModal] = useState(false);
   
-  // Confirmation Modal State
+  // Unfollow Confirmation
   const [unfollowId, setUnfollowId] = useState(null); 
 
+  // Filter States
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
   const [degree, setDegree] = useState("");
@@ -95,20 +45,9 @@ export default function SearchProfile({ socket }) {
   const [self, setSelf] = useState({});
 
   useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-    return () => { document.head.removeChild(styleSheet); };
-  }, []);
-
-  useEffect(() => {
     if(userID) {
       axios.get(`${WEB_URL}/api/searchUserById/${userID}`)
-        .then((Response) => {
-          if (Response?.data?.data && Response.data.data[0]) {
-            setSelf(Response.data.data[0]);
-          }
-        })
+        .then((res) => { if (res?.data?.data) setSelf(res.data.data[0]); })
         .catch(console.error);
     }
   }, [userID]);
@@ -124,212 +63,203 @@ export default function SearchProfile({ socket }) {
     };
 
     axios.post(`${WEB_URL}/api/searchUser`, payload)
-      .then((Response) => {
-        const data = Response.data.data || [];
-        setShowUsers(data);
+      .then((res) => {
+        setShowUsers(res.data.data || []);
         setIsSearching(false);
       })
-      .catch((error) => {
-        console.log(error);
+      .catch(() => {
         setIsSearching(false);
         setShowUsers([]);
       });
   }, [name, add, skill, degree, year]);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-        performSearch({ name: name });
-    }, 300);
-    return () => clearTimeout(delayDebounceFn);
+    const delay = setTimeout(() => performSearch({ name }), 300);
+    return () => clearTimeout(delay);
   }, [name, performSearch]); 
 
-  const handleFilter = () => {
-    closeModal();
-    performSearch();
-  };
-
-  // --- Follow Logic ---
   const handleFollow = (targetId) => {
     const msg = `${self.fname} ${self.lname} Started Following You`;
+    if (socket) socket.emit("sendNotification", { receiverid: targetId, title: "New Follower", msg: msg });
     
-    if (socket) {
-      socket.emit("sendNotification", { receiverid: targetId, title: "New Follower", msg: msg });
-    }
-    
-    axios.post(`${WEB_URL}/api/addNotification`, {
-        userid: targetId, 
-        msg: msg, 
-        image: self.profilepic || "", 
-        title: "New Follower", 
-        date: new Date().toISOString()
-    }).catch(err => console.log(err));
+    axios.post(`${WEB_URL}/api/addNotification`, { 
+        userid: targetId, msg: msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() 
+    });
 
     axios.put(`${WEB_URL}/api/follow/${targetId}`, { userId: userID })
-        .then((Response) => {
-            toast.success("You are now following this user!");
+        .then(() => {
+            toast.success("Following!");
             performSearch(); 
-            
+            // Check/Create Conversation
             axios.post(`${WEB_URL}/api/searchConversations`, { person1: targetId, person2: userID })
             .then((res) => {
                 if (res.data.data.length <= 0) {
-                    axios.post(`${WEB_URL}/api/newConversation`, { senderId: userID, receiverId: targetId }).catch(console.log);
+                    axios.post(`${WEB_URL}/api/newConversation`, { senderId: userID, receiverId: targetId });
                 }
             });
         })
-        .catch((error) => {
-            console.log(error);
-            toast.error("Unable to follow at this moment.");
-        });
+        .catch(() => toast.error("Action failed."));
   };
 
-  // --- Unfollow Logic Phase 1: Open Modal ---
-  const initiateUnfollow = (targetId) => {
-    setUnfollowId(targetId); // Open confirmation modal
-  };
-
-  // --- Unfollow Logic Phase 2: Execute Action ---
   const confirmUnfollow = () => {
     if (!unfollowId) return;
-
     axios.put(`${WEB_URL}/api/unfollow/${unfollowId}`, { userId: userID })
-        .then((Response) => {
-            toast.info("Unfollowed successfully.");
-            setUnfollowId(null); // Close modal
-            performSearch(); // Refresh list
-        })
-        .catch((error) => {
-            console.log(error);
-            toast.error("Failed to unfollow.");
+        .then(() => {
+            toast.info("Unfollowed.");
             setUnfollowId(null);
-        });
+            performSearch();
+        })
+        .catch(() => { toast.error("Failed."); setUnfollowId(null); });
   };
 
   const getSocialLink = (input, platform) => {
     if (!input) return "#";
-    let cleanInput = input.trim();
-    if (cleanInput.startsWith("http://") || cleanInput.startsWith("https://")) return cleanInput;
-    if (platform === 'github') return `https://github.com/${cleanInput}`;
-    return `https://${cleanInput}`;
+    let clean = input.trim();
+    if (clean.startsWith("http")) return clean;
+    return platform === 'github' ? `https://github.com/${clean}` : `https://${clean}`;
   };
 
   return (
-    <>
-      <div className="sp-container">
-        <div className="sp-header">
-          <button className="back-btn" onClick={() => nav("/home")}><i className="fa-solid fa-arrow-left"></i> Back to Home</button>
-          <div className="sp-search-bar">
-            <i className="fa-sharp fa-solid fa-magnifying-glass" style={{ color: "#aaa" }}></i>
-            <input type="text" placeholder="Search people by name..." value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <button className="sp-filter-btn" onClick={() => setModal(true)} title="Filters">
-            <i className="fa-solid fa-sliders"></i>
-            {(add || skill || degree || year) && <div className="filter-active-dot"></div>}
-          </button>
-        </div>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 4, alignItems: 'center' }}>
+        <Button startIcon={<ArrowBack />} onClick={() => nav("/home")} sx={{ color: 'text.secondary' }}>
+            Back
+        </Button>
         
-        {isSearching && <div style={{width:'100%', textAlign:'center', marginBottom: '20px', color:'#66bd9e'}}>Searching...</div>}
+        <TextField
+            fullWidth
+            placeholder="Search people by name..."
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            InputProps={{
+                startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
+            }}
+            sx={{ flex: 1, bgcolor: 'background.paper', borderRadius: 1 }}
+        />
+        
+        <IconButton 
+            onClick={() => setShowFilterModal(true)} 
+            sx={{ 
+                bgcolor: 'background.paper', 
+                boxShadow: 2, 
+                width: 50, height: 50,
+                color: (add || skill || degree || year) ? 'primary.main' : 'text.secondary'
+            }}
+        >
+            <TuneIcon />
+        </IconButton>
+      </Box>
 
-        {showUsers && showUsers.length > 0 ? (
-          <div className="sp-grid">
-            {showUsers.map((elem) => (
-              <div key={elem._id} className="sp-card">
-                <div className="sp-banner"></div>
-                <div className="sp-avatar-container">
-                  <ProtectedImage
-                    imgSrc={elem.profilepic}
-                    alt="profile"
-                    className="sp-avatar"
-                    defaultImage="images/profile1.png"
-                  />
-                </div>
-                <div className="sp-content">
-                  <div className="sp-name" onClick={() => { elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } }) }}>
-                    {elem.fname} {elem.lname}
-                    {elem.isAlumni && ( <span className="sp-alumni-badge" title="Alumni"><i className="fa-solid fa-graduation-cap"></i> Alumni</span> )}
-                  </div>
-                  
-                  <p className="sp-location">{elem.city ? elem.city : ""}{elem.state ? `, ${elem.state}` : ""}{(!elem.city && !elem.state) ? "Student" : ""}</p>
+      {/* Grid */}
+      {isSearching ? <Typography textAlign="center">Searching...</Typography> : (
+        <Grid container spacing={3}>
+            {showUsers.length > 0 ? showUsers.map((elem) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={elem._id}>
+                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                        {/* Banner */}
+                        <Box sx={{ height: 80, background: `linear-gradient(135deg, ${theme.palette.primary.main}, #479378)` }} />
+                        
+                        {/* Avatar */}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: -6 }}>
+                            <Avatar 
+                                sx={{ width: 90, height: 90, border: '4px solid #fff', boxShadow: 3 }}
+                            >
+                                <ProtectedImage imgSrc={elem.profilepic} defaultImage="/images/profile1.png" style={{ width: '100%', height: '100%' }} />
+                            </Avatar>
+                        </Box>
 
-                  <div className="sp-education">
-                    {elem.latestCourse && (
-                      <span>
-                        <i className="fa-solid fa-book-open"></i> {elem.latestCourse}
-                        {elem.latestYear && ` • ${elem.latestYear}`}
-                      </span>
-                    )}
-                  </div>
+                        <CardContent sx={{ textAlign: 'center', flexGrow: 1, pt: 1 }}>
+                            <Typography 
+                                variant="h6" 
+                                onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
+                                sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                            >
+                                {elem.fname} {elem.lname}
+                            </Typography>
+                            
+                            {elem.isAlumni && (
+                                <Chip label="Alumni" size="small" icon={<School fontSize="small" />} color="primary" variant="outlined" sx={{ mt: 0.5, height: 24 }} />
+                            )}
 
-                  <div className="sp-socials">
-                    {elem.github && elem.github.trim() !== "" && (
-                      <a href={getSocialLink(elem.github, 'github')} target="_blank" rel="noopener noreferrer"><i className="fa-brands fa-github sp-social-icon github"></i></a>
-                    )}
-                    {elem.portfolioweb && elem.portfolioweb.trim() !== "" && (
-                      <a href={getSocialLink(elem.portfolioweb, 'website')} target="_blank" rel="noopener noreferrer"><i className="fa-solid fa-globe sp-social-icon website"></i></a>
-                    )}
-                  </div>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                {elem.city || "Student"}
+                            </Typography>
 
-                  <div className="sp-actions">
-                    <button className="sp-btn sp-btn-view" onClick={() => { elem._id === userID ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem._id } }) }}>View</button>
-                    
-                    {/* FOLLOW / UNFOLLOW BUTTONS */}
-                    {elem._id !== userID && (
-                      elem.followers && elem.followers.includes(userID) ? (
-                        <button 
-                            className="sp-btn sp-btn-follow sp-btn-following" 
-                            onClick={() => initiateUnfollow(elem._id)} // Opens Modal
-                        >
-                            Following
-                        </button>
-                      ) : (
-                        <button 
-                            className="sp-btn sp-btn-follow" 
-                            onClick={() => handleFollow(elem._id)} // Follows directly
-                        >
-                            Follow
-                        </button>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          !isSearching && (
-            <div className="sp-no-results">
-                <img src="images/search-bro.png" alt="No results" loading="lazy" />
-                <h3>No users found</h3>
-                <p>Try searching for a different name.</p>
-            </div>
-          )
-        )}
-      </div>
-      
-      {/* FILTER MODAL */}
-      {modal && ( 
+                            {elem.latestCourse && (
+                                <Typography variant="caption" color="primary" display="block" sx={{ mt: 1, fontWeight: 600 }}>
+                                    {elem.latestCourse}
+                                </Typography>
+                            )}
+
+                            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                                {elem.github && <IconButton size="small" href={getSocialLink(elem.github, 'github')} target="_blank"><GitHub fontSize="small" /></IconButton>}
+                                {elem.portfolioweb && <IconButton size="small" href={getSocialLink(elem.portfolioweb, 'website')} target="_blank"><Language fontSize="small" /></IconButton>}
+                            </Box>
+                        </CardContent>
+
+                        <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
+                            <Button 
+                                fullWidth 
+                                variant="outlined" 
+                                color="inherit"
+                                onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
+                            >
+                                View
+                            </Button>
+                            
+                            {elem._id !== userID && (
+                                elem.followers && elem.followers.includes(userID) ? (
+                                    <Button 
+                                        fullWidth 
+                                        variant="contained" 
+                                        sx={{ bgcolor: 'action.disabledBackground', color: 'text.secondary', '&:hover': { bgcolor: 'action.disabledBackground' } }}
+                                        onClick={() => setUnfollowId(elem._id)}
+                                        endIcon={<CheckCircle fontSize="small" />}
+                                    >
+                                        Following
+                                    </Button>
+                                ) : (
+                                    <Button fullWidth variant="contained" onClick={() => handleFollow(elem._id)}>
+                                        Follow
+                                    </Button>
+                                )
+                            )}
+                        </Box>
+                    </Card>
+                </Grid>
+            )) : (
+                <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
+                    <img src="images/search-bro.png" alt="No results" style={{ maxWidth: 250, opacity: 0.7 }} />
+                    <Typography variant="h6" color="text.secondary">No users found</Typography>
+                </Box>
+            )}
+        </Grid>
+      )}
+
+      {/* Unfollow Confirmation Dialog */}
+      <Dialog open={!!unfollowId} onClose={() => setUnfollowId(null)}>
+        <DialogTitle>Unfollow User?</DialogTitle>
+        <DialogContent>
+            <Typography>Are you sure you want to stop following this user?</Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setUnfollowId(null)} color="inherit">Cancel</Button>
+            <Button onClick={confirmUnfollow} color="error" variant="contained">Yes, Unfollow</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Render Filter Modal (passing props as before, assuming it wraps a Dialog or is a Dialog itself) */}
+      {showFilterModal && (
         <FilterModal 
-            closeModal={closeModal} 
-            add={add} setAdd={setAdd} 
-            skill={skill} setSkill={setSkill} 
-            degree={degree} setDegree={setDegree} 
-            year={year} setYear={setYear} 
-            handleFilter={handleFilter} 
-        /> 
+            closeModal={() => setShowFilterModal(false)}
+            add={add} setAdd={setAdd}
+            skill={skill} setSkill={setSkill}
+            degree={degree} setDegree={setDegree}
+            year={year} setYear={setYear}
+            handleFilter={() => { setShowFilterModal(false); performSearch(); }}
+        />
       )}
-
-      {/* CONFIRMATION MODAL */}
-      {unfollowId && (
-        <div className="confirm-overlay">
-            <div className="confirm-box">
-                <div className="confirm-title">Unfollow User?</div>
-                <p className="confirm-desc">Are you sure you want to stop following this user? You won't see their updates in your feed anymore.</p>
-                <div className="confirm-btns">
-                    <button className="confirm-btn btn-no" onClick={() => setUnfollowId(null)}>Cancel</button>
-                    <button className="confirm-btn btn-yes" onClick={confirmUnfollow}>Yes, Unfollow</button>
-                </div>
-            </div>
-        </div>
-      )}
-    </>
+    </Container>
   );
 }

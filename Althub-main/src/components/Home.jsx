@@ -5,82 +5,28 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import EditEducationModal from "./EditEducationModal";
-import ProtectedImage from "../ProtectedImage"; // IMPORT ADDED
+import ProtectedImage from "../ProtectedImage";
+import "../styles/Home.css"; // <--- Import CSS
 
-// --- STYLES ---
-const styles = `
-  .home-wrapper { background-color: #f3f2ef; min-height: 100vh; padding: 15px 0; font-family: 'Poppins', sans-serif; }
-  .home-content { display: flex; justify-content: center; gap: 20px; width: 98%; max-width: 1920px; margin: 0 auto; padding: 0 10px; align-items: flex-start; }
-  .sidebar-left { flex: 0 0 320px; position: sticky; top: 90px; display: flex; flex-direction: column; gap: 15px; }
-  .profile-mini-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; position: relative; border: 1px solid #e5e7eb; }
-  .profile-bg { background: linear-gradient(135deg, #66bd9e 0%, #479378 100%); height: 90px; }
-  .profile-img-wrapper { margin-top: -45px; display: inline-block; padding: 4px; background: #fff; border-radius: 50%; width:100px; }
-  .profile-img-wrapper img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; }
-  .profile-info { padding: 10px 15px 20px; }
-  .profile-name { font-weight: 700; font-size: 1.2rem; color: #333; display: block; }
-  .menu-box { background: #fff; border-radius: 12px; padding: 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
-  .menu-item { display: flex; align-items: center; padding: 12px 25px; color: #555; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
-  .menu-item:hover { background: #f0f9f6; color: #66bd9e; border-left-color: #66bd9e; }
-  .menu-item i { width: 30px; font-size: 1.2rem; margin-right: 10px; }
-  .menu-divider { height: 1px; background: #eee; margin: 5px 0; }
-  .feed-center { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; }
-  .create-post-card { background: #fff; border-radius: 12px; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
-  .cp-top { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-  .cp-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-  .cp-input { flex: 1; background: #f8f9fa; border: 1px solid #eee; border-radius: 50px; padding: 12px 20px; outline: none; font-size: 1rem; transition: background 0.2s; }
-  .cp-input:focus { background: #fff; border-color: #66bd9e; }
-  .cp-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #f0f0f0; }
-  .cp-upload-btn { display: flex; align-items: center; gap: 8px; color: #666; cursor: pointer; font-size: 0.95rem; font-weight: 500; padding: 8px 15px; border-radius: 8px; transition: background 0.2s; }
-  .cp-upload-btn:hover { background: #f0f0f0; }
-  .cp-upload-btn i { color: #66bd9e; font-size: 1.3rem; }
-  .cp-post-btn { background: #66bd9e; color: #fff; border: none; padding: 8px 30px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-  .cp-post-btn:hover { background: #479378; }
-  .preview-grid { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
-  .preview-media { height: 120px; width: auto; max-width: 200px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
-  .post-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; padding-bottom: 10px; border: 1px solid #e5e7eb; }
-  .post-header { padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
-  .post-header-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
-  .post-meta h4 { margin: 0; font-size: 1.05rem; font-weight: 600; color: #333; }
-  .post-meta span { font-size: 0.85rem; color: #999; }
-  .post-content { padding: 5px 20px 15px; font-size: 1rem; color: #333; white-space: pre-wrap; line-height: 1.5; }
-  
-  /* --- FIX: Changed Background from #000 to #fff --- */
-  .post-media { margin-bottom: 10px; background: #fff; }
-  .post-media-item { width: 100%; max-height: 600px; object-fit: contain; background: #fff; display: block; margin: 0 auto; }
-  
-  .post-actions { padding: 5px 20px 10px; display: flex; align-items: center; gap: 15px; border-top: 1px solid #f5f5f5; padding-top: 12px; }
-  .like-btn { cursor: pointer; font-size: 1.5rem; transition: transform 0.2s; }
-  .like-btn:active { transform: scale(1.2); }
-  .like-count { font-weight: 600; color: #555; font-size: 1rem; }
-  .sidebar-right { flex: 0 0 380px; display: flex; flex-direction: column; gap: 15px; position: sticky; top: 90px; }
-  .widget-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 20px; border: 1px solid #e5e7eb; }
-  .widget-title { font-size: 1.15rem; font-weight: 700; color: #333; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
-  .event-item { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #f9f9f9; padding-bottom: 12px; }
-  .event-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-  .event-thumb { width: 95px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; }
-  .event-details { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
-  .event-title { font-size: 1rem; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-  .event-meta { font-size: 0.85rem; color: #777; display: flex; flex-direction: column; gap: 2px; }
-  .aid-item { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; }
-  .aid-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; }
-  .aid-content { flex: 1; }
-  .aid-header { display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
-  .aid-progress-bg { height: 8px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
-  .aid-progress-fill { height: 100%; background: #66bd9e; border-radius: 10px; }
-  .aid-amounts { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px; font-weight: 500; }
-  .education-alert { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-  .alert-content { display: flex; align-items: center; gap: 12px; }
-  .alert-content i { font-size: 1.5rem; }
-  .alert-btn { background: #856404; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
-  .alert-btn:hover { background: #6d5203; }
-  @media (max-width: 1400px) { .sidebar-right { flex: 0 0 320px; } .sidebar-left { flex: 0 0 260px; } }
-  @media (max-width: 1100px) { .sidebar-right { display: none; } .feed-center { flex: 1; } }
-  @media (max-width: 850px) { .sidebar-left { display: none; } .home-content { padding: 0 10px; } }
-`;
+// MUI Imports
+import {
+  Grid, Box, Card, Typography, Avatar, List, ListItem, ListItemIcon, 
+  ListItemText, Divider, Button, TextField, IconButton, Container,
+  LinearProgress, Alert, AlertTitle
+} from "@mui/material";
+
+// Icons
+import {
+  Person, Event, VolunteerActivism, Feedback as FeedbackIcon, 
+  Logout as LogoutIcon, Image as ImageIcon, Favorite, FavoriteBorder,
+  CalendarMonth, MonetizationOn, School
+} from "@mui/icons-material";
 
 export default function Home({ socket }) {
   const settings = { dots: true, speed: 500, slidesToShow: 1, slidesToScroll: 1, arrows: false, lazyLoad: 'ondemand' };
   const nav = useNavigate();
+  
+  // State
   const [user, setUser] = useState({});
   const [post, setPost] = useState([]);
   const [description, setDescription] = useState("");
@@ -90,18 +36,12 @@ export default function Home({ socket }) {
   const [uploading, setUploading] = useState(false);
   const [hasEducation, setHasEducation] = useState(true);
   const [showEduModal, setShowEduModal] = useState(false);
+  
   const userid = localStorage.getItem("Althub_Id");
   const token = localStorage.getItem("Althub_Token");
-
   const emptyEducationList = useMemo(() => [], []);
 
-  useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-    return () => document.head.removeChild(styleSheet);
-  }, []);
-
+  // Image Compression & Helpers
   const compressImage = async (file) => {
     if (file.type.startsWith('video')) return file;
     return new Promise((resolve) => {
@@ -138,253 +78,235 @@ export default function Home({ socket }) {
     return false;
   };
 
+  // Data Fetching
   const getUser = useCallback(() => {
-    if (!userid) return;
-    axios.get(`${WEB_URL}/api/searchUserById/${userid}`)
-      .then((Response) => {
-        if (Response.data && Response.data.data && Response.data.data[0]) {
-          setUser(Response.data.data[0]);
-        }
-      })
-      .catch((error) => console.error("Error fetching user:", error));
+    if (userid) axios.get(`${WEB_URL}/api/searchUserById/${userid}`).then((res) => { if (res.data?.data) setUser(res.data.data[0]); });
   }, [userid]);
 
   const checkEducation = useCallback(() => {
-    if (!userid) return Promise.resolve();
-    return axios.post(`${WEB_URL}/api/getEducation`, { userid: userid })
-      .then((Response) => {
-        if (Response.data.data && Response.data.data.length === 0) {
-          setHasEducation(false);
-        } else {
-          setHasEducation(true);
-        }
-      })
-      .catch((error) => console.error("Error checking education:", error));
+    if (userid) axios.post(`${WEB_URL}/api/getEducation`, { userid }).then((res) => setHasEducation(res.data.data?.length > 0));
   }, [userid]);
 
-  const getAids = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getFinancialAid`).then((Response) => setAids(Response.data.data)).catch((error) => console.error("Error fetching aids:", error));
-  }, []);
+  useEffect(() => { 
+    getUser(); 
+    checkEducation();
+    axios.get(`${WEB_URL}/api/getPost`).then((res) => setPost(res.data.data));
+    axios.get(`${WEB_URL}/api/getEvents`).then((res) => setEvents(res.data.data));
+    axios.get(`${WEB_URL}/api/getFinancialAid`).then((res) => setAids(res.data.data));
+  }, [getUser, checkEducation]);
 
-  const getPost = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getPost`).then((Response) => setPost(Response.data.data)).catch((error) => console.error("Error fetching posts:", error));
-  }, []);
-
-  const getEvents = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getEvents`).then((Response) => setEvents(Response.data.data)).catch((error) => console.error("Error fetching events:", error));
-  }, []);
-
-  useEffect(() => { getUser(); getPost(); getEvents(); getAids(); checkEducation(); }, [getUser, getPost, getEvents, getAids, checkEducation]);
-
-  const imgChange = (e) => {
+  // Handlers
+  const handleFileChange = (e) => {
     const files = e.target.files;
-    if (!files || files.length === 0) return;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.type.startsWith("image/")) {
-        if (file.size > 3 * 1024 * 1024) { 
-          toast.error("Image size cannot exceed 3MB");
-          e.target.value = ""; 
-          setFileList(null);
-          return;
-        }
-      }
-      else if (file.type.startsWith("video/")) {
-        if (file.size > 20 * 1024 * 1024) { 
-          toast.error("Video size cannot exceed 20MB");
-          e.target.value = ""; 
-          setFileList(null);
-          return;
-        }
-      }
+    if (files && files.length > 0) {
+      if (files[0].size > 20 * 1024 * 1024) { toast.error("File too large"); return; }
+      setFileList(files);
     }
-    setFileList(files);
   };
 
   const addPost = async () => {
-    if (!user || !user.fname || !user.lname) { toast.error("User data not loaded. Please refresh."); return; }
-    if ((!description || description.trim() === "") && (!fileList || fileList.length === 0)) { toast.error("Empty post not allowed!"); return; }
+    if ((!description.trim()) && (!fileList)) { toast.error("Empty post!"); return; }
     setUploading(true);
     var body = new FormData();
-    body.append("userid", localStorage.getItem("Althub_Id"));
+    body.append("userid", userid);
     body.append("description", description);
     body.append("date", new Date().toISOString());
     body.append("fname", user.fname);
     body.append("lname", user.lname);
     body.append("profilepic", user.profilepic || "");
     if (fileList) {
-      const filesArray = Array.from(fileList);
-      const compressedFiles = await Promise.all(filesArray.map(file => compressImage(file)));
-      compressedFiles.forEach((file) => { body.append(`photos`, file, file.name); });
+      const compressedFiles = await Promise.all(Array.from(fileList).map(f => compressImage(f)));
+      compressedFiles.forEach(f => body.append(`photos`, f, f.name));
     }
-    axios({ url: `${WEB_URL}/api/addPost`, method: "post", headers: { "Content-type": "multipart/form-data" }, data: body })
-      .then((Response) => {
-        toast.success("Post Uploaded!!");
-        if (user && user.followers && user.followers.length > 0) {
-          user.followers.forEach((followerId) => {
-            socket.emit("sendNotification", { receiverid: followerId, title: "New Post", msg: `${user.fname} ${user.lname} added a new post` });
-          });
-        }
-        setFileList(null); setDescription(""); setUploading(false); getPost();
-        const fileInput = document.getElementById("myFileInput");
-        if (fileInput) fileInput.value = "";
-      })
-      .catch((error) => { toast.error("Something went wrong!!"); setUploading(false); });
+    axios.post(`${WEB_URL}/api/addPost`, body, { headers: { "Content-type": "multipart/form-data" } }).then(() => {
+      toast.success("Posted!"); setFileList(null); setDescription(""); setUploading(false);
+      axios.get(`${WEB_URL}/api/getPost`).then((res) => setPost(res.data.data));
+    }).catch(() => { toast.error("Failed"); setUploading(false); });
   };
 
-  const Logout = () => { localStorage.clear(); nav("/"); };
-
-  const handleLike = async (elem) => {
-    await axios.put(`${WEB_URL}/api/like/${elem._id}`, { userId: userid })
-      .then((response) => {
-        if (userid !== elem.userid && response.data.msg === "Like") {
-          socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` });
-        }
-        getPost();
-      }).catch((error) => console.error("Error:", error));
+  const handleLike = (elem) => {
+    axios.put(`${WEB_URL}/api/like/${elem._id}`, { userId: userid }).then((res) => {
+      if (userid !== elem.userid && res.data.msg === "Like") socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` });
+      axios.get(`${WEB_URL}/api/getPost`).then((r) => setPost(r.data.data));
+    });
   };
-
-  const formatPostTime = (timestamp) => {
-    const messageTime = new Date(timestamp);
-    const now = new Date();
-    const timeDiff = Math.abs(now - messageTime);
-    const minutesDiff = Math.floor(timeDiff / 60000);
-    if (minutesDiff < 1) return "Just now";
-    else if (minutesDiff < 60) return `${minutesDiff} minute${minutesDiff === 1 ? "" : "s"} ago`;
-    else if (messageTime.toDateString() === now.toDateString()) return `Today at ${messageTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric" })}`;
-    else return messageTime.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "numeric" });
-  };
-  const formatDate = (d) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const formatTime = (d) => new Date(d).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric" });
-  const calWidth = (aid, claimed) => { const ans = Number(claimed) / Number(aid) * 100; return ans > 100 ? "100%" : `${ans.toFixed(2)}%`; }
 
   const now = new Date();
   const upcomingEvents = events.filter(e => new Date(e.date) > now).slice(0, 3);
 
   return (
     <div className="home-wrapper">
-      <div className="home-content">
-        <div className="sidebar-left">
-          <div className="profile-mini-card">
-            <div className="profile-bg"></div>
-            <div className="profile-img-wrapper">
-              <ProtectedImage 
-                imgSrc={user?.profilepic} 
-                defaultImage="images/profile1.png"
-                alt="Profile"
-              />
-            </div>
-            <div className="profile-info"><span className="profile-name">{user.fname} {user.lname}</span><span style={{ fontSize: '0.9rem', color: '#777' }}>{user.designation || "Student"}</span></div>
-          </div>
-          <div className="menu-box">
-            <div className="menu-item" onClick={() => { nav("/view-profile"); window.scrollTo(0, 0); }}><i className="fa-solid fa-user"></i> Profile</div>
-            <div className="menu-item" onClick={() => nav("/events")}><i className="fa-solid fa-calendar"></i> Events</div>
-            <div className="menu-item" onClick={() => nav("/scholarship")}><i className="fa-solid fa-handshake-angle"></i> Scholarship</div>
-            <div className="menu-item" onClick={() => nav("/feedback")}><i className="fa-solid fa-star"></i> Feedback</div>
-            <div className="menu-divider"></div>
-            <div className="menu-item" onClick={Logout} style={{ color: '#ff4d4d' }}><i className="fa-solid fa-right-from-bracket"></i> Logout</div>
-          </div>
-        </div>
-
-        <div className="feed-center">
-          {!hasEducation && (
-            <div className="education-alert">
-              <div className="alert-content">
-                <i className="fa-solid fa-triangle-exclamation"></i>
-                <div><strong>Complete Your Profile</strong><div style={{ fontSize: '0.9rem' }}>Please add your education details to help us connect you better.</div></div>
+      <Container maxWidth="xl" className="home-container">
+        <Grid container spacing={3} justifyContent="center">
+          
+          {/* --- LEFT SIDEBAR --- */}
+          <Grid item md={3} lg={2.5} className="sidebar-left">
+            <div className="profile-mini-card">
+              <div className="profile-bg"></div>
+              <div className="profile-avatar-wrapper">
+                <Avatar src={user.profilepic ? `${WEB_URL}${user.profilepic}` : ""} className="profile-avatar" />
               </div>
-              <button className="alert-btn" onClick={() => setShowEduModal(true)}>Add Education</button>
+              <div className="profile-info">
+                <Typography variant="h6" className="profile-name">{user.fname} {user.lname}</Typography>
+                <Typography variant="body2" className="profile-role">{user.designation || "Student"}</Typography>
+              </div>
             </div>
-          )}
 
-          <div className="create-post-card">
-            <div className="cp-top">
-              <ProtectedImage imgSrc={user?.profilepic} defaultImage="images/profile1.png" className="cp-avatar" />
-              <input type="text" className="cp-input" placeholder={`What's on your mind, ${user.fname || 'User'}?`} value={description} onChange={(e) => setDescription(e.target.value)} />
+            <div className="menu-box">
+              <List disablePadding>
+                <ListItem button onClick={() => nav("/view-profile")} className="menu-list-item">
+                  <ListItemIcon><Person /></ListItemIcon> <ListItemText primary="Profile" />
+                </ListItem>
+                <ListItem button onClick={() => nav("/events")} className="menu-list-item">
+                  <ListItemIcon><Event /></ListItemIcon> <ListItemText primary="Events" />
+                </ListItem>
+                <ListItem button onClick={() => nav("/scholarship")} className="menu-list-item">
+                  <ListItemIcon><VolunteerActivism /></ListItemIcon> <ListItemText primary="Scholarship" />
+                </ListItem>
+                <ListItem button onClick={() => nav("/feedback")} className="menu-list-item">
+                  <ListItemIcon><FeedbackIcon /></ListItemIcon> <ListItemText primary="Feedback" />
+                </ListItem>
+                <Divider sx={{ my: 1 }} />
+                <ListItem button onClick={() => { localStorage.clear(); nav("/"); }} className="menu-list-item menu-list-item-logout">
+                  <ListItemIcon sx={{ color: 'inherit' }}><LogoutIcon /></ListItemIcon> <ListItemText primary="Logout" />
+                </ListItem>
+              </List>
             </div>
-            {fileList && fileList.length > 0 && (
-              <div className="preview-grid">
-                {Array.from(fileList).map((elem, index) => (
-                  <div key={index} style={{ position: 'relative' }}>
-                    {isVideo(elem) ? <video src={window.URL.createObjectURL(elem)} className="preview-media" muted /> : <img src={window.URL.createObjectURL(elem)} alt="" className="preview-media" />}
+          </Grid>
+
+          {/* --- CENTER FEED --- */}
+          <Grid item xs={12} md={6} lg={6}>
+            {!hasEducation && (
+              <Alert severity="warning" className="education-alert"
+                action={<Button color="inherit" size="small" onClick={() => setShowEduModal(true)}>ADD</Button>}
+              >
+                <AlertTitle>Complete Profile</AlertTitle>
+                Add education details to connect better.
+              </Alert>
+            )}
+
+            {/* Create Post */}
+            <div className="create-post-card">
+              <div className="cp-input-area">
+                <Avatar src={user.profilepic ? `${WEB_URL}${user.profilepic}` : ""} />
+                <TextField 
+                  fullWidth 
+                  placeholder={`What's on your mind, ${user.fname}?`} 
+                  variant="outlined" 
+                  size="small" 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="cp-textfield"
+                />
+              </div>
+              
+              {fileList && (
+                <div className="preview-grid">
+                  {Array.from(fileList).map((file, i) => (
+                    isVideo(file) 
+                      ? <video key={i} src={URL.createObjectURL(file)} className="preview-media" muted />
+                      : <img key={i} src={URL.createObjectURL(file)} alt="" className="preview-media" />
+                  ))}
+                </div>
+              )}
+
+              <div className="cp-actions">
+                <Button component="label" startIcon={<ImageIcon sx={{ color: '#66bd9e' }} />} sx={{ color: '#555', textTransform: 'none' }}>
+                  Media <input type="file" hidden multiple accept="image/*,video/*" onChange={handleFileChange} />
+                </Button>
+                <Button variant="contained" color="primary" onClick={addPost} disabled={uploading}>
+                  {uploading ? "Posting..." : "Post"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Posts Feed */}
+            {post.map((elem) => (
+              <div key={elem._id} className="post-card">
+                <div className="post-header">
+                  <Grid container alignItems="center" spacing={2}>
+                    <Grid item>
+                      <Avatar 
+                        src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : ""} 
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => nav(elem.userid === userid ? "/view-profile" : "/view-search-profile", { state: { id: elem.userid } })}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Typography variant="subtitle1" fontWeight="700">{elem.fname} {elem.lname}</Typography>
+                      <Typography variant="caption" color="text.secondary">{new Date(elem.date).toLocaleString()}</Typography>
+                    </Grid>
+                  </Grid>
+                </div>
+
+                <div className="post-content">{elem.description}</div>
+
+                {elem.photos.length > 0 && (
+                  <div className="post-media-container">
+                    <Slider {...settings}>
+                      {elem.photos.map((photo, idx) => (
+                        <div key={idx}>
+                          {isVideo(photo) ? (
+                            <video src={`${WEB_URL}${photo}?token=${token}`} className="post-media-item" controls />
+                          ) : (
+                            <ProtectedImage imgSrc={photo} className="post-media-item" defaultImage="images/error-page-pattern.png" />
+                          )}
+                        </div>
+                      ))}
+                    </Slider>
+                  </div>
+                )}
+
+                <div className="post-actions">
+                  <IconButton onClick={() => handleLike(elem)} color={elem.likes.includes(userid) ? "error" : "default"}>
+                    {elem.likes.includes(userid) ? <Favorite /> : <FavoriteBorder />}
+                  </IconButton>
+                  <Typography variant="body2" fontWeight="600">{elem.likes.length} Likes</Typography>
+                </div>
+              </div>
+            ))}
+          </Grid>
+
+          {/* --- RIGHT SIDEBAR --- */}
+          <Grid item md={3} lg={3} className="sidebar-right">
+            <div className="widget-card">
+              <div className="widget-title"><CalendarMonth sx={{ color: '#66bd9e' }} /> Upcoming Events</div>
+              {upcomingEvents.length > 0 ? upcomingEvents.map(evt => (
+                <div key={evt._id} className="event-item">
+                  <ProtectedImage imgSrc={evt.photos?.[0]} defaultImage="images/event1.png" className="event-thumb" />
+                  <div className="event-info">
+                    <Typography variant="subtitle2" noWrap>{evt.title}</Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">{new Date(evt.date).toLocaleDateString()}</Typography>
+                  </div>
+                </div>
+              )) : <Typography variant="body2" color="text.secondary">No upcoming events</Typography>}
+            </div>
+
+            {aids.length > 0 && (
+              <div className="widget-card">
+                <div className="widget-title"><MonetizationOn sx={{ color: '#66bd9e' }} /> Scholarships</div>
+                {aids.slice(0, 3).map(aid => (
+                  <div key={aid._id} className="aid-item">
+                    <Box display="flex" alignItems="center" gap={2} mb={1}>
+                      <Avatar variant="rounded" src={aid.image ? `${WEB_URL}${aid.image}` : ""} />
+                      <Box flex={1}>
+                        <Typography variant="subtitle2">{aid.name}</Typography>
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography variant="caption">₹{aid.claimed}</Typography>
+                          <Typography variant="caption">Target: ₹{aid.aid}</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                    <LinearProgress variant="determinate" value={(Number(aid.claimed)/Number(aid.aid))*100} className="aid-progress-bar" />
                   </div>
                 ))}
               </div>
             )}
-            <div className="cp-actions">
-              <label className="cp-upload-btn"><i className="fa-regular fa-image"></i> Media<input type="file" onChange={imgChange} id="myFileInput" hidden multiple accept="image/*,video/*" /></label>
-              <button className="cp-post-btn" onClick={addPost} disabled={uploading}>{uploading ? "Posting..." : "Post"}</button>
-            </div>
-          </div>
+          </Grid>
 
-          {post.map((elem) => (
-            <div key={elem._id} className="post-card">
-              <div className="post-header">
-                <div onClick={() => { elem.userid === userid ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem.userid } }); }} style={{cursor: 'pointer'}}>
-                  <ProtectedImage 
-                    imgSrc={elem.profilepic} 
-                    defaultImage="images/profile1.png" 
-                    className="post-header-img"
-                  />
-                </div>
-                <div className="post-meta"><h4>{elem.fname} {elem.lname}</h4><span>{formatPostTime(elem.date)}</span></div>
-              </div>
-              <div className="post-content">{elem.description}</div>
-              {elem.photos.length > 0 && (
-                <div className="post-media">
-                  <Slider {...settings}>
-                    {elem.photos.map((el, idx) => (
-                      <div key={idx} style={{ outline: 'none' }}>
-                        {isVideo(el) ? (
-                            <video src={`${WEB_URL}${el}${el.includes('?') ? '&' : '?'}token=${token}`} className="post-media-item" controls playsInline preload="metadata" /> 
-                        ) : (
-                            <ProtectedImage 
-                                imgSrc={el} 
-                                alt="Post Content" 
-                                className="post-media-item" 
-                                defaultImage="images/error-page-pattern.png" 
-                            />
-                        )}
-                      </div>
-                    ))}
-                  </Slider>
-                </div>
-              )}
-              <div className="post-actions">
-                <i className={`${elem.likes.includes(userid.toString()) ? "fa-solid fa-heart" : "fa-regular fa-heart"} like-btn`} style={{ color: elem.likes.includes(userid.toString()) ? "#e0245e" : "#555" }} onClick={() => handleLike(elem)}></i>
-                <span className="like-count">{elem.likes.length} Likes</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        </Grid>
+      </Container>
 
-        <div className="sidebar-right">
-          <div className="widget-card">
-            <div className="widget-title"><i className="fa-solid fa-calendar-day" style={{ color: '#66bd9e' }}></i> Upcoming Events</div>
-            {upcomingEvents.length > 0 ? upcomingEvents.map((elem) => (
-              <div key={elem._id} className="event-item">
-                <ProtectedImage imgSrc={elem.photos && elem.photos[0]} defaultImage="images/event1.png" className="event-thumb" />
-                <div className="event-details"><div className="event-title">{elem.title}</div><div className="event-meta"><span>{formatDate(elem.date)}</span><span>{formatTime(elem.date)}</span></div></div>
-              </div>
-            )) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No upcoming events</span>}
-          </div>
-          {aids.length > 0 && (
-            <div className="widget-card">
-              <div className="widget-title"><i className="fa-solid fa-hand-holding-dollar" style={{ color: '#66bd9e' }}></i> Scholarship Aid</div>
-              {aids.slice(0, 3).map((elem) => (
-                <div key={elem._id} className="aid-item">
-                  <ProtectedImage imgSrc={elem.image} defaultImage="images/profile1.png" className="aid-img" />
-                  <div className="aid-content">
-                    <div className="aid-header"><span>{elem.name}</span><span>{calWidth(elem.aid, elem.claimed)}</span></div>
-                    <div className="aid-progress-bg"><div className="aid-progress-fill" style={{ width: calWidth(elem.aid, elem.claimed) }}></div></div>
-                    <div className="aid-amounts"><span>₹{elem.claimed}</span><span>₹{elem.aid}</span></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
       {showEduModal && <EditEducationModal closeModal={() => setShowEduModal(false)} education={emptyEducationList} getEducation={checkEducation} modal="Add" />}
     </div>
   );

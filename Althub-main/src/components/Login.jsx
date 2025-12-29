@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios"; // Ensure this import exists
+import axios from "axios";
 import { 
   Box, 
   Button, 
@@ -9,77 +9,23 @@ import {
   TextField, 
   CircularProgress, 
   Container, 
-  Link 
+  Link,
+  Grid 
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'; 
 import { WEB_URL } from "../baseURL";
-
-// 1. The Left Side Visual Wrapper
-const VisualSide = styled(Box)(({ theme }) => ({
-  flex: 1,
-  background: 'linear-gradient(135deg, #e3fdf5 0%, #ffe6fa 100%)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-  // Responsive: Matches your @media (max-width: 900px)
-  [theme.breakpoints.down('md')]: {
-    minHeight: '300px',
-    flex: 'none',
-    order: -1, 
-  },
-  // The Circle Decoration (::before replacement)
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    width: '600px',
-    height: '600px',
-    background: '#fff',
-    opacity: 0.3,
-    borderRadius: '50%',
-    top: '-150px',
-    right: '-150px',
-  }
-}));
-
-// 2. Custom Styled TextField to match your "Modern Login" look
-const CustomTextField = styled(TextField)({
-  marginBottom: '20px',
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#f8f9fa',
-    borderRadius: '12px',
-    transition: 'all 0.3s',
-    '& fieldset': { 
-      border: '2px solid #f1f2f6', // Your specific border
-    },
-    '&:hover fieldset': { 
-      borderColor: '#66bd9e', 
-    },
-    '&.Mui-focused': {
-      backgroundColor: '#fff',
-      boxShadow: '0 4px 15px rgba(102, 189, 158, 0.1)',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#66bd9e',
-      borderWidth: '2px', // Prevent MUI from making it thicker
-    },
-  },
-  '& .MuiInputBase-input': {
-    padding: '15px 20px',
-    fontSize: '1rem',
-    color: '#333',
-  },
-});
+import "../styles/Login.css"; // <--- Import the CSS file here
 
 export default function Login() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({
-    email: "",
-    password: "",
-  });
+  const [user, setUser] = useState({ email: "", password: "" });
+
+  useEffect(() => {
+    if (localStorage.getItem("Althub_Id")) {
+      nav('/home');
+    }
+  }, [nav]);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -97,9 +43,9 @@ export default function Login() {
     return true;
   };
 
-  
   const handleLogin = () => {
     if (validate()) {
+      setLoading(true);
       axios({
         method: "post",
         data: {
@@ -107,108 +53,52 @@ export default function Login() {
           password: user.password,
         },
         url: `${WEB_URL}/api/userLogin`,
-        withCredentials: true // <--- FIX: Add this line
+        withCredentials: true 
       }).then((response) => {
         toast.success("Login Successful");
-        
         localStorage.setItem("Althub_Id", response.data.data._id);
         if (response.data.token) {
             localStorage.setItem("Althub_Token", response.data.token);
         }
-        setTimeout(() => {
-          nav("/home");
-        }, 1000)
+        setTimeout(() => nav("/home"), 1000);
       }).catch((err) => {
+        setLoading(false);
         const msg = err.response ? err.response.data.msg : "Login Failed";
         toast.error(msg);
       })
     }
   };
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (localStorage.getItem("Althub_Id")) {
-      nav('/home');
-    }
-  }, [nav]);
-
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: { xs: 'column', md: 'row' }, // Responsive Layout logic
-      fontFamily: "'Poppins', sans-serif",
-      bgcolor: '#fff' 
-    }}>
+    <Grid container sx={{ minHeight: '100vh', bgcolor: '#fff' }}>
       
-      {/* --- LEFT SIDE: VISUALS --- */}
-      <VisualSide>
-        <Box 
-          component="img" 
-          src="images/register-animate.svg" 
-          alt="Welcome" 
-          sx={{ 
-            width: { xs: '60%', md: '80%' }, 
-            maxWidth: '600px', 
-            position: 'relative', 
-            zIndex: 1, 
-            filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.1))',
-            mt: { xs: 2, md: 0 }
-          }} 
-        />
-      </VisualSide>
-
-      {/* --- RIGHT SIDE: FORM --- */}
-      <Box sx={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        p: { xs: 3, md: 5 }, 
-        position: 'relative',
-        bgcolor: '#fff' 
-      }}>
+      {/* --- LEFT SIDE (Visual) --- */}
+      <Grid item xs={12} md={7} sx={{ position: 'relative' }}>
+        <Box className="login-visual-side">
+          <Box 
+            component="img" 
+            src="images/register-animate.svg" 
+            alt="Welcome" 
+            sx={{ width: '80%', maxWidth: '600px', position: 'relative', zIndex: 1 }} 
+          />
+        </Box>
         
-        {/* Back Button (Absolute Position) */}
         <Button 
+          className="login-back-btn"
           startIcon={<ArrowBackIcon />} 
           onClick={() => nav("/")}
-          sx={{ 
-            position: 'absolute', 
-            top: 30, 
-            left: 30, 
-            color: '#666', 
-            bgcolor: '#f8f9fa',
-            borderRadius: '30px',
-            px: 3,
-            textTransform: 'none',
-            fontSize: '0.9rem',
-            fontWeight: 500,
-            '&:hover': { 
-              bgcolor: '#e9ecef', 
-              color: '#333',
-              transform: 'translateX(-3px)' 
-            },
-            transition: 'all 0.2s'
-          }}
         >
           Back to Main
         </Button>
+      </Grid>
 
-        <Container maxWidth="xs" sx={{ textAlign: 'center' }}>
+      {/* --- RIGHT SIDE (Form) --- */}
+      <Grid item xs={12} md={5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Container maxWidth="xs">
           
-          {/* Logo */}
-          <Box 
-            component="img" 
-            src="images/Logo1.jpeg" 
-            alt="Logo" 
-            sx={{ width: '200px', borderRadius: '12px', mb: 3 }} 
-          />
-          
-          {/* Title */}
-          <Box sx={{ mb: 5 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#2d3436', mb: 1, fontSize: '2rem' }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Box component="img" src="images/Logo1.jpeg" alt="Logo" sx={{ width: '180px', borderRadius: '12px', mb: 3 }} />
+            <Typography variant="h4" fontWeight="700" sx={{ color: '#2d3436', mb: 1 }}>
               Welcome Back
             </Typography>
             <Typography variant="body1" sx={{ color: '#b2bec3' }}>
@@ -216,101 +106,62 @@ export default function Login() {
             </Typography>
           </Box>
 
-          {/* Form Inputs */}
-          <CustomTextField
-            fullWidth
-            placeholder="Email Address"
-            name="email"
-            value={user.email}
-            onChange={handleChange}
-            variant="outlined"
-          />
+          <Box component="form" noValidate>
+            <TextField
+              fullWidth
+              className="login-textfield"
+              placeholder="Email Address"
+              name="email"
+              value={user.email}
+              onChange={handleChange}
+              variant="outlined"
+            />
 
-          <CustomTextField
-            fullWidth
-            placeholder="Password"
-            type="password"
-            name="password"
-            value={user.password}
-            onChange={handleChange}
-            variant="outlined"
-          />
+            <TextField
+              fullWidth
+              className="login-textfield"
+              placeholder="Password"
+              type="password"
+              name="password"
+              value={user.password}
+              onChange={handleChange}
+              variant="outlined"
+            />
 
-          {/* Login Button */}
-          <Button
-            fullWidth
-            onClick={handleLogin}
-            disabled={loading}
-            sx={{
-              mt: 1,
-              py: 1.8,
-              bgcolor: '#66bd9e',
-              color: '#fff',
-              borderRadius: '12px',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              textTransform: 'none',
-              boxShadow: '0 4px 15px rgba(102, 189, 158, 0.3)',
-              transition: 'all 0.3s',
-              display: 'flex',
-              gap: 1,
-              '&:hover': {
-                bgcolor: '#479378',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(102, 189, 158, 0.4)',
-              },
-              '&:disabled': {
-                bgcolor: '#a5d6c5',
-                color: '#fff',
-                cursor: 'not-allowed'
-              }
-            }}
-          >
-            {loading ? (
-              <>
-                <CircularProgress size={20} sx={{ color: '#fff' }} />
-                <span>Logging in...</span>
-              </>
-            ) : (
-              "Login"
-            )}
-          </Button>
-
-          {/* Footer Options */}
-          <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1.5, color: '#636e72', fontSize: '0.9rem' }}>
-            <Typography 
-              onClick={() => nav("/forget-password")}
-              sx={{ 
-                color: '#66bd9e', 
-                cursor: 'pointer', 
-                fontWeight: 500, 
-                transition: 'color 0.2s',
-                '&:hover': { textDecoration: 'underline' } 
-              }}
+            <Button
+              fullWidth
+              className="login-submit-btn"
+              onClick={handleLogin}
+              disabled={loading}
             >
-              Forgot Password?
-            </Typography>
-            
-            <Typography>
-              Don't have an account?{' '}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
+            </Button>
+
+            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
               <Link 
-                component="span" 
-                onClick={() => nav("/register")}
-                sx={{ 
-                  color: '#66bd9e', 
-                  fontWeight: 600, 
-                  cursor: 'pointer', 
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' }
-                }}
+                component="button"
+                className="login-link"
+                onClick={() => nav("/forget-password")}
+                sx={{ fontWeight: 500 }}
               >
-                Sign Up
+                Forgot Password?
               </Link>
-            </Typography>
+              
+              <Typography variant="body2" sx={{ color: '#636e72' }}>
+                Don't have an account?{' '}
+                <Link 
+                  component="button" 
+                  className="login-link"
+                  onClick={() => nav("/register")}
+                >
+                  Sign Up
+                </Link>
+              </Typography>
+            </Box>
           </Box>
 
         </Container>
-      </Box>
-    </Box>
+      </Grid>
+    </Grid>
   );
 }
