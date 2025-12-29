@@ -1,0 +1,64 @@
+/* ==========================================================================
+   FILTER MODAL STYLES (.filter-modal-)
+   ========================================================================== */
+
+/* --- Header --- */
+.filter-modal-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 16px 24px !important;
+  }
+  
+  .filter-modal-header-text {
+    font-weight: 700 !important;
+    color: #2d3436;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* --- Body --- */
+  .filter-modal-content {
+    padding: 24px !important;
+  }
+  
+  .filter-form-stack {
+    margin-top: 5px;
+  }
+  
+  /* Customizing Input Fields to match theme if needed */
+  .filter-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #66bd9e !important;
+  }
+  
+  .filter-input .MuiInputLabel-root.Mui-focused {
+    color: #66bd9e !important;
+  }
+  
+  /* --- Footer --- */
+  .filter-modal-actions {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .filter-reset-btn {
+    color: #636e72 !important;
+  }
+  
+  .filter-reset-btn:hover {
+    background-color: #f1f2f6 !important;
+  }
+  
+  .filter-apply-btn {
+    background-color: #66bd9e !important;
+    color: #fff !important;
+    box-shadow: 0 4px 10px rgba(102, 189, 158, 0.3) !important;
+  }
+  
+  .filter-apply-btn:hover {
+    background-color: #479378 !important;
+  }

@@ -1,0 +1,30 @@
+/* ==========================================================================
+   LOADER COMPONENT STYLES (.loader-)
+   ========================================================================== */
+
+/* --- Overlay --- */
+.loader-backdrop {
+    z-index: 9999 !important; /* Ensure it sits on top of everything */
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.8) !important; /* Semi-transparent white */
+    backdrop-filter: blur(4px); /* Modern blur effect */
+    display: flex !important;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* --- Text --- */
+  .loader-text {
+    font-family: 'Poppins', sans-serif !important;
+    color: #66bd9e !important; /* Theme Primary Color */
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 0.5px !important;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  /* Optional Pulse Animation for Text */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }

@@ -1,0 +1,104 @@
+/* ==========================================================================
+   EDIT EDUCATION MODAL STYLES (.edu-modal-)
+   ========================================================================== */
+
+/* --- Modal Layout --- */
+.edu-modal-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 16px 24px !important;
+  }
+  
+  .edu-modal-content {
+    padding: 24px !important;
+  }
+  
+  /* --- List View --- */
+  .edu-list-item {
+    border-bottom: 1px solid #f9f9f9;
+    padding: 15px 0 !important;
+  }
+  
+  .edu-list-item:last-child {
+    border-bottom: none;
+  }
+  
+  .edu-logo-avatar {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 8px !important;
+    border: 1px solid #eee;
+    background-color: #fff;
+  }
+  
+  .edu-list-text-primary {
+    font-weight: 600 !important;
+    color: #333;
+    font-size: 1rem !important;
+  }
+  
+  .edu-list-text-secondary {
+    color: #666;
+    font-size: 0.9rem !important;
+  }
+  
+  .edu-edit-icon-btn {
+    color: #999 !important;
+    transition: color 0.2s !important;
+  }
+  
+  .edu-edit-icon-btn:hover {
+    color: #66bd9e !important;
+  }
+  
+  /* --- Empty State --- */
+  .edu-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+  }
+  
+  .edu-empty-icon {
+    font-size: 3rem !important;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+  
+  /* --- Add New Button Wrapper --- */
+  .edu-add-btn-wrapper {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  /* --- Form View --- */
+  .edu-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Institute Dropdown Item */
+  .edu-institute-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .edu-institute-img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  /* Form Actions */
+  .edu-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+  }

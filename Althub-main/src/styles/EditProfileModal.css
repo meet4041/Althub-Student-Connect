@@ -1,0 +1,111 @@
+/* ==========================================================================
+   EDIT PROFILE MODAL STYLES (.ep-modal-)
+   ========================================================================== */
+
+/* --- Modal Layout --- */
+.ep-modal-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 16px 24px !important;
+  }
+  
+  .ep-modal-content {
+    padding: 24px !important;
+  }
+  
+  /* --- Avatar Section --- */
+  .ep-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .ep-avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    margin-bottom: 15px;
+  }
+  
+  .ep-avatar-img {
+    width: 100% !important;
+    height: 100% !important;
+    border: 4px solid #f8f9fa;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  .ep-upload-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #66bd9e;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    font-size: 1rem;
+  }
+  
+  .ep-remove-photo-btn {
+    font-size: 0.8rem !important;
+    color: #ff4757 !important;
+    text-transform: none !important;
+    font-weight: 500 !important;
+  }
+  
+  .ep-remove-photo-btn:hover {
+    text-decoration: underline;
+    background: transparent !important;
+  }
+  
+  /* --- Form Fields --- */
+  .ep-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* --- Danger Zone --- */
+  .ep-danger-zone {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ffeded;
+    background-color: #fff5f5;
+    border-radius: 12px;
+  }
+  
+  .ep-danger-title {
+    color: #c0392b !important;
+    font-weight: 700 !important;
+    margin-bottom: 5px !important;
+  }
+  
+  .ep-danger-desc {
+    color: #e74c3c !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .ep-delete-btn {
+    color: #c0392b !important;
+    border-color: #c0392b !important;
+  }
+  
+  .ep-delete-btn:hover {
+    background-color: #c0392b !important;
+    color: #fff !important;
+  }
+  
+  /* --- Footer --- */
+  .ep-modal-actions {
+    padding: 20px 24px !important;
+    border-top: 1px solid #f0f0f0;
+  }
