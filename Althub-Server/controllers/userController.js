@@ -5,10 +5,26 @@ const config = require("../config/config");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
-const cookieParser = require("cookie-parser");
 const mongoose = require('mongoose');
+const { uploadFromBuffer, connectToMongo } = require("../db/conn"); 
 
 // --- HELPER FUNCTIONS ---
+
+const createtoken = async (user) => {
+    try {
+        return jwt.sign({ 
+            _id: user._id,
+            version: user.tokenVersion || 0, 
+            role: user.role || 'student'     
+        }, config.secret_jwt, { expiresIn: '7d' }); 
+    } catch (error) { 
+        throw new Error(error.message); 
+    }
+}
+
+const securePassword = async (password) => {
+    try { return await bcryptjs.hash(password, 10); } catch (error) { throw new Error(error.message); }
+}
 
 const sendresetpasswordMail = async (name, email, token) => {
     try {
@@ -19,32 +35,24 @@ const sendresetpasswordMail = async (name, email, token) => {
             auth: {
                 user: config.emailUser,
                 pass: config.emailPassword
-            }
+            },
         });
+
         const mailoptions = {
-            from: config.emailUser,
+            from: `"Althub Support" <${config.emailUser}>`,
             to: email,
             subject: 'For Reset Password',
-            html: '<p>Hello ' + name + ', Please copy the link to <a href="http://localhost:3000/new-password?token=' + token + '">reset your password</a></p>'
+            html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
         };
-        return new Promise((resolve, reject) => {
-            transporter.sendMail(mailoptions, function (error, info) {
-                if (error) { console.log("Error sending email: ", error); reject(error); }
-                else { console.log("Mail sent: ", info.response); resolve(info); }
-            });
-        });
+
+        const info = await transporter.sendMail(mailoptions);
+        console.log("Mail sent: ", info.response);
+        return info;
+
     } catch (error) {
-        console.log("Nodemailer error:", error.message);
-        throw error;
+        console.error("Nodemailer Error:", error);
+        throw new Error("Failed to send email. Please try again later.");
     }
-}
-
-const createtoken = async (id) => {
-    try { return jwt.sign({ _id: id }, config.secret_jwt); } catch (error) { throw new Error(error.message); }
-}
-
-const securePassword = async (password) => {
-    try { return await bcryptjs.hash(password, 10); } catch (error) { throw new Error(error.message); }
 }
 
 const checkAlumniStatus = (educations) => {
@@ -62,7 +70,6 @@ const checkAlumniStatus = (educations) => {
 
 const getLatestEducation = (educations) => {
     if (!educations || educations.length === 0) return { course: "", year: "" };
-    // Sort by enddate descending (latest first)
     const sorted = educations.sort((a, b) => {
         const dateA = new Date(a.enddate || "1900-01-01");
         const dateB = new Date(b.enddate || "1900-01-01");
@@ -86,21 +93,35 @@ const registerUser = async (req, res) => {
     try {
         const spassword = await securePassword(req.body.password);
         const user = new User({
-            fname: req.body.fname, lname: req.body.lname, gender: req.body.gender,
-            dob: req.body.dob, city: req.body.city, state: req.body.state,
-            nation: req.body.nation, profilepic: req.body.profilepic, phone: req.body.phone,
-            email: req.body.email, password: spassword, languages: req.body.languages,
-            github: req.body.github, portfolioweb: req.body.portfolioweb, skills: req.body.skills,
-            institute: req.body.institute, role: req.body.role,
+            fname: req.body.fname, lname: req.body.lname, email: req.body.email, 
+            password: spassword, role: req.body.role,
+            tokenVersion: 0 
         });
+        
         const userData = await User.findOne({ email: req.body.email });
-        if (userData) { res.status(400).send({ success: false, msg: "User already exists" }); }
-        else {
-            const token = await createtoken();
+
+        if (userData) {
+            res.status(400).send({ success: false, msg: "User already exists" });
+        } else {
             const user_data = await user.save();
+            const token = await createtoken(user_data._id);
+            
+            const isProduction = process.env.NODE_ENV === 'production';
+            
+            res.cookie("jwt_token", token, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                secure: isProduction,
+                sameSite: isProduction ? 'None' : 'Lax'
+            });
+
             res.status(200).send({ success: true, data: user_data, token: token });
         }
-    } catch (error) { res.status(400).send(error.message); }
+
+    } catch (error) {
+        res.status(400).send(error.message);
+        console.log("Error in Registering User : " + error.message);
+    }
 }
 
 const userlogin = async (req, res) => {
@@ -108,24 +129,49 @@ const userlogin = async (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
         const userData = await User.findOne({ email: email });
+        
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                const { password, ...userResult } = userData._doc;
-                res.status(200).send({ success: true, msg: "user details", data: userResult });
-            } else { res.status(400).send({ success: false, msg: "Incorrect password" }); }
-        } else { res.status(400).send({ success: false, msg: "User not found" }); }
-    } catch (error) { res.status(400).send(error.message); }
+                const token = await createtoken(userData._id);
+
+                const isProduction = process.env.NODE_ENV === 'production';
+
+                res.cookie("jwt_token", token, {
+                    httpOnly: true,
+                    maxAge: 24 * 60 * 60 * 1000, 
+                    secure: isProduction,
+                    sameSite: isProduction ? 'None' : 'Lax'
+                });
+
+                const userResult = {
+                    _id: userData._id,
+                    fname: userData.fname,
+                    lname: userData.lname,
+                    email: userData.email,
+                    role: userData.role,
+                    profilepic: userData.profilepic,
+                }
+
+                res.status(200).send({
+                    success: true,
+                    msg: "Login Successful",
+                    data: userResult,
+                    token: token
+                });
+            } else {
+                res.status(400).send({ success: false, msg: "Invalid Credentials" });
+            }
+        } else {
+            res.status(400).send({ success: false, msg: "User not found. Please Register." });
+        }
+
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+        console.log("Error in Login User : " + error.message);
+    }
 }
 
-const uploadUserImage = async (req, res) => {
-    try {
-        if (req.file !== undefined) {
-            const picture = { url: '/userImages/' + req.file.filename };
-            res.status(200).send({ success: true, data: picture });
-        } else { res.status(400).send({ success: false, msg: "plz select a file" }); }
-    } catch (error) { res.status(400).send(error.message); }
-}
 const updatePassword = async (req, res) => {
     try {
         const user_id = req.body.user_id;
@@ -134,12 +180,22 @@ const updatePassword = async (req, res) => {
             const passwordMatch = await bcryptjs.compare(req.body.oldpassword, data.password);
             if (passwordMatch) {
                 const newpassword = await securePassword(req.body.newpassword);
-                const userData = await User.findByIdAndUpdate({ _id: user_id }, { $set: { password: newpassword } }, { new: true });
-                res.status(200).send({ success: true, msg: "Your password has been updated", data: userData });
+                
+                const userData = await User.findByIdAndUpdate(
+                    { _id: user_id }, 
+                    { 
+                        $set: { password: newpassword },
+                        $inc: { tokenVersion: 1 } 
+                    },
+                    { new: true }
+                );
+                
+                res.status(200).send({ success: true, msg: "Password updated. Please login again.", data: userData });
             } else { res.status(400).send({ success: false, msg: "Old password is incorrect" }); }
         } else { res.status(400).send({ success: false, msg: "User not found!" }); }
     } catch (error) { res.status(400).send(error.message); }
 }
+
 const forgetPassword = async (req, res) => {
     try {
         const email = req.body.email;
@@ -152,6 +208,7 @@ const forgetPassword = async (req, res) => {
         } else { res.status(200).send({ success: false, msg: "Email does not exist!" }); }
     } catch (error) { res.status(500).send({ success: false, msg: "Failed to send email." }); }
 }
+
 const resetpassword = async (req, res) => {
     try {
         const token = req.query.token;
@@ -163,11 +220,10 @@ const resetpassword = async (req, res) => {
         } else { res.status(200).send({ success: false, msg: "Invalid or expired link" }); }
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
+
 const userProfileEdit = async (req, res) => {
     try {
-        // ALWAYS use the ID from the token (req.user), NEVER from req.body
         const loggedInUserId = req.user._id;
-
         const new_data = await User.findByIdAndUpdate(
             { _id: loggedInUserId },
             { $set: req.body },
@@ -178,13 +234,13 @@ const userProfileEdit = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
+
 const deleteUser = async (req, res) => {
     try {
         const userIdToDelete = req.params.id;
-        const loggedInUserId = req.user._id; // Attached by your fixed middleware
+        const loggedInUserId = req.user._id; 
 
-        // SECURITY CHECK: Only allow users to delete their OWN account
-        if (userIdToDelete !== loggedInUserId) {
+        if (userIdToDelete !== loggedInUserId.toString()) {
             return res.status(403).send({
                 success: false,
                 msg: "Security Alert: Unauthorized deletion attempt!"
@@ -199,7 +255,22 @@ const deleteUser = async (req, res) => {
     }
 }
 
-// --- OPTIMIZED ADVANCED SEARCH ---
+const uploadUserImage = async (req, res) => {
+    try {
+        if (req.file !== undefined) {
+            await connectToMongo();
+            const filename = `user-${Date.now()}-${req.file.originalname}`;
+            const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
+            const picture = { url: `/api/images/${fileId}` };
+            res.status(200).send({ success: true, data: picture });
+        } else { 
+            res.status(400).send({ success: false, msg: "plz select a file" }); 
+        }
+    } catch (error) { 
+        res.status(400).send(error.message); 
+    }
+}
+
 const searchUser = async (req, res) => {
     try {
         const { search, location, skill, degree, year } = req.body;
@@ -258,10 +329,9 @@ const searchUser = async (req, res) => {
 
         pipeline.push({ $limit: 50 });
 
-        // --- FIXED LOOKUP: Uses the correct collection name dynamically ---
         pipeline.push({
             $lookup: {
-                from: Education.collection.name, // Dynamically gets 'educationtbs' (or whatever it is)
+                from: Education.collection.name,
                 let: { userId: "$_id" },
                 pipeline: [
                     {
@@ -279,13 +349,12 @@ const searchUser = async (req, res) => {
             $project: {
                 fname: 1, lname: 1, profilepic: 1, city: 1, state: 1,
                 followers: 1, github: 1, portfolioweb: 1, skills: 1,
-                educationList: 1
+                educationList: 1, isAlumni: 1
             }
         });
 
         const user_data = await User.aggregate(pipeline);
 
-        // --- FORMAT DATA ---
         const finalData = user_data.map(user => {
             const isAlumni = checkAlumniStatus(user.educationList);
             const latestEdu = getLatestEducation(user.educationList);
@@ -319,22 +388,70 @@ const searchUserById = async (req, res) => {
         return res.status(200).send({ success: true, data: user });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
+
 const userLogout = async (req, res) => {
     try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); }
     catch (error) { res.status(400).send({ success: false }); }
 }
+
+// --- MODIFIED: Get Users with Degree Information ---
 const getUsers = async (req, res) => {
-    try { const data = await User.find({}).lean(); res.status(200).send({ success: true, data: data }); }
-    catch (error) { res.status(400).send({ success: false }); }
+    try { 
+        // Use Aggregation to fetch user + education
+        const user_data = await User.aggregate([
+            {
+                $lookup: {
+                    from: Education.collection.name, // Join with Education collection
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        {
+                            // Match User ID (User._id is ObjectId, Edu.userid is String)
+                            $match: {
+                                $expr: { $eq: ["$userid", { $toString: "$$userId" }] }
+                            }
+                        },
+                        { $project: { course: 1, enddate: 1 } } // Fetch only course and enddate
+                    ],
+                    as: "educationList"
+                }
+            },
+            {
+                $project: {
+                    fname: 1, 
+                    lname: 1,
+                    role: 1, 
+                    educationList: 1 
+                }
+            }
+        ]);
+
+        // Process each user to find their latest degree
+        const data = user_data.map(user => {
+             const latestEdu = getLatestEducation(user.educationList); 
+             return {
+                 ...user,
+                 degree: latestEdu.course // Attach degree to user object
+             };
+        });
+
+        res.status(200).send({ success: true, data: data }); 
+    }
+    catch (error) { 
+        console.error(error);
+        res.status(400).send({ success: false }); 
+    }
 }
+
 const getTopUsers = async (req, res) => {
     try { const data = await User.find({ institute: req.body.institute }).limit(5); res.status(200).send({ success: true, data: data }); }
     catch (error) { res.status(400).send({ success: false }); }
 }
+
 const getUsersOfInstitute = async (req, res) => {
     try { const data = await User.find({ institute: req.params.institute }).lean(); res.status(200).send({ success: true, data: data }); }
     catch (error) { res.status(400).send({ success: false }); }
 }
+
 const followUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
         try {
@@ -348,6 +465,7 @@ const followUser = async (req, res) => {
         } catch (err) { res.status(500).json(err); }
     } else { res.status(403).json("cant follow self"); }
 };
+
 const unfollowUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
         try {
@@ -361,19 +479,36 @@ const unfollowUser = async (req, res) => {
         } catch (err) { res.status(500).json(err); }
     } else { res.status(403).json("cant unfollow self"); }
 };
+
 const updateProfilePic = async (req, res) => {
     try {
-        const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
-        const updatedUser = await User.findByIdAndUpdate(req.body.userid, { $set: { profilepic: `/api/images/${fileId}` } }, { new: true });
+        let fileId;
+        if (req.file) {
+            await connectToMongo();
+            const filename = `profile-${Date.now()}-${req.file.originalname}`;
+            fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
+        } else {
+            fileId = req.body.fileId;
+        }
+
+        if (!fileId) return res.status(400).send({ success: false, msg: "No file provided" });
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.body.userid, 
+            { $set: { profilepic: `/api/images/${fileId}` } }, 
+            { new: true }
+        );
         res.status(200).send({ success: true, msg: "Profile updated", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };
+
 const deleteProfilePic = async (req, res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(req.params.id, { $set: { profilepic: "" } }, { new: true });
         res.status(200).send({ success: true, msg: "Profile removed", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };
+
 const getRandomUsers = async (req, res) => {
     try {
         const currentUserId = req.body.userid;
@@ -395,9 +530,37 @@ const getRandomUsers = async (req, res) => {
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
 
+
+const searchFollowings = async (req, res) => {
+    try {
+        const { userId, query } = req.params;
+        
+        const currentUser = await User.findById(userId);
+        if (!currentUser) {
+            return res.status(404).send({ success: false, msg: "User not found" });
+        }
+
+        const regex = new RegExp(query, "i");
+
+        const matchedUsers = await User.find({
+            _id: { $in: currentUser.followings },
+            $or: [
+                { fname: { $regex: regex } },
+                { lname: { $regex: regex } }
+            ]
+        }).select("fname lname profilepic email");
+
+        res.status(200).send({ success: true, data: matchedUsers });
+
+    } catch (error) {
+        res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
+
 module.exports = {
     registerUser, userlogin, updatePassword, forgetPassword, resetpassword,
     userProfileEdit, searchUser, userLogout, uploadUserImage, getUsers,
     followUser, unfollowUser, searchUserById, deleteUser, getUsersOfInstitute,
     getTopUsers, updateProfilePic, deleteProfilePic, getRandomUsers
-}
+};

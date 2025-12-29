@@ -10,6 +10,10 @@ const getMimeType = (filename) => {
   if (filename.endsWith('.webm')) return 'video/webm';
   if (filename.endsWith('.ogg')) return 'video/ogg';
   if (filename.endsWith('.mov')) return 'video/quicktime';
+  if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) return 'image/jpeg';
+  if (filename.endsWith('.png')) return 'image/png';
+  if (filename.endsWith('.gif')) return 'image/gif';
+  if (filename.endsWith('.pdf')) return 'application/pdf';
   return 'application/octet-stream';
 };
 
@@ -28,6 +32,7 @@ router.get('/images/:id', requireAuth, async (req, res) => {
         return res.status(400).send({ success: false, msg: 'Invalid File ID format' });
     }
 
+    // 2. Fetch File Metadata from GridFS
     const file = await gridfs.getFileInfo(id);
     
     if (!file) {
@@ -42,6 +47,7 @@ router.get('/images/:id', requireAuth, async (req, res) => {
     const range = req.headers.range;
 
     if (range) {
+      // --- VIDEO STREAMING (Chunked) ---
       const parts = range.replace(/bytes=/, "").split("-");
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : file.length - 1;
@@ -54,8 +60,11 @@ router.get('/images/:id', requireAuth, async (req, res) => {
         'Content-Type': contentType,
       });
 
+      // Pass start/end options to your storage.js helper
       gridfs.streamToResponse(id, res, { start, end: end + 1 });
+
     } else {
+      // --- STANDARD IMAGE/FILE DOWNLOAD ---
       res.writeHead(200, {
         'Content-Length': file.length,
         'Content-Type': contentType,

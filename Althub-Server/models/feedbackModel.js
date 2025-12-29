@@ -5,7 +5,10 @@ const feedback = new mongoose.Schema({
         type: String,
     },
     name: { 
-        type: String, 
+        type: String, // Name of the person GIVING feedback
+    },
+    selected_user: {
+        type: String, // Name of the person BEING REVIEWED (New Field)
     },
     message: {
         type: String,

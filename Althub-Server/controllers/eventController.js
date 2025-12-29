@@ -1,18 +1,31 @@
 const Event = require("../models/EventModel");
-const Notification = require("../models/notificationModel"); // Import Notification
-const User = require("../models/userModel"); // Import User to notify them
+const Notification = require("../models/notificationModel");
+const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
+const { uploadFromBuffer, connectToMongo } = require("../db/conn"); // FIX: Imported helpers
 
 const addEvents = async (req, res) => {
-    // ... (Keep existing logic)
     try {
+        await connectToMongo();
+
+        // FIX: Process uploaded files from buffers (MemoryStorage)
+        // Original code used req.images, but standard Multer gives req.files
+        let photoIds = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `event-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photoIds.push(`/api/images/${fileId}`);
+            }
+        }
+
         const event = new Event({
             organizerid: req.body.organizerid,
             title: req.body.title,
             description: req.body.description,
             date: req.body.date,
             venue: req.body.venue,
-            photos: req.images
+            photos: photoIds // Use generated IDs/URLs
         });
 
         const event_data = await event.save();
@@ -39,7 +52,6 @@ const addEvents = async (req, res) => {
 
 const getEvents = async (req, res) => {
     try {
-        // --- OPTIMIZATION: .lean() ---
         const evet_data = await Event.find({}).lean();
         res.status(200).send({ success: true, data: evet_data });
     } catch (error) {
@@ -49,7 +61,6 @@ const getEvents = async (req, res) => {
 
 const getEventsByInstitute = async (req, res) => {
     try {
-        // --- OPTIMIZATION: .lean() ---
         const evet_data = await Event.find({ organizerid: req.params.organizerid }).lean();
         res.status(200).send({ success: true, data: evet_data });
     } catch (error) {
@@ -69,27 +80,48 @@ const deleteEvent = async (req, res) => {
 
 const editEvent = async (req, res) => {
     try {
-        if (req.images.length != '') {
-            var id = req.body.id;
-            var title = req.body.title;
-            var description = req.body.description;
-            var date = req.body.date;
-            var venue = req.body.venue;
-            var photos = req.images
-
-            const event_data = await Event.findByIdAndUpdate({ _id: id }, { $set: { title: title, description: description, date: date, venue: venue, photos: photos } }, { new: true });
-            res.status(200).send({ success: true, msg: 'Event Updated', data: event_data });
+        // FIX: Check req.files for new images
+        let photos = [];
+        
+        // If files were uploaded, process them
+        if (req.files && req.files.length > 0) {
+            await connectToMongo();
+            for (const file of req.files) {
+                const filename = `event-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photos.push(`/api/images/${fileId}`);
+            }
+        } 
+        // If no new files, check if old photos were passed in body (optional handling depending on frontend)
+        else if (req.body.photos) {
+            photos = req.body.photos;
         }
-        else {
-            var id = req.body.id;
-            var title = req.body.title;
-            var description = req.body.description;
-            var date = req.body.date;
-            var venue = req.body.venue;
 
-            const event_data = await Event.findByIdAndUpdate({ _id: id }, { $set: { title: title, description: description, date: date, venue: venue } }, { new: true });
-            res.status(200).send({ success: true, msg: 'Event Updated', data: event_data });
+        var id = req.body.id;
+        var title = req.body.title;
+        var description = req.body.description;
+        var date = req.body.date;
+        var venue = req.body.venue;
+
+        const updateData = { 
+            title, 
+            description, 
+            date, 
+            venue 
+        };
+
+        // Only update photos if new ones were provided
+        if (photos.length > 0) {
+            updateData.photos = photos;
         }
+
+        const event_data = await Event.findByIdAndUpdate(
+            { _id: id }, 
+            { $set: updateData }, 
+            { new: true }
+        );
+        res.status(200).send({ success: true, msg: 'Event Updated', data: event_data });
+
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -114,7 +146,6 @@ const searchEvent = async (req, res) => {
 const getUpcommingEvents = async (req, res) => {
     try {
         let start = Date.now();
-        // --- OPTIMIZATION: .lean() ---
         const event_data = await Event.find({ date: { $gte: start } }).lean();
         res.status(200).send({ success: true, data: event_data });
     } catch (error) {

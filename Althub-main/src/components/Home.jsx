@@ -5,8 +5,9 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import EditEducationModal from "./EditEducationModal";
+import ProtectedImage from "../ProtectedImage"; // IMPORT ADDED
 
-// --- STYLES REMAIN UNCHANGED ---
+// --- STYLES ---
 const styles = `
   .home-wrapper { background-color: #f3f2ef; min-height: 100vh; padding: 15px 0; font-family: 'Poppins', sans-serif; }
   .home-content { display: flex; justify-content: center; gap: 20px; width: 98%; max-width: 1920px; margin: 0 auto; padding: 0 10px; align-items: flex-start; }
@@ -37,13 +38,16 @@ const styles = `
   .preview-grid { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
   .preview-media { height: 120px; width: auto; max-width: 200px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
   .post-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; padding-bottom: 10px; border: 1px solid #e5e7eb; }
-  .post-header { margin-right:435px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
-  .post-header img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
+  .post-header { padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
+  .post-header-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid #eee; }
   .post-meta h4 { margin: 0; font-size: 1.05rem; font-weight: 600; color: #333; }
   .post-meta span { font-size: 0.85rem; color: #999; }
   .post-content { padding: 5px 20px 15px; font-size: 1rem; color: #333; white-space: pre-wrap; line-height: 1.5; }
-  .post-media { margin-bottom: 10px; background: #000; }
-  .post-media-item { width: 100%; max-height: 600px; object-fit: contain; background: #000; display: block; margin: 0 auto; }
+  
+  /* --- FIX: Changed Background from #000 to #fff --- */
+  .post-media { margin-bottom: 10px; background: #fff; }
+  .post-media-item { width: 100%; max-height: 600px; object-fit: contain; background: #fff; display: block; margin: 0 auto; }
+  
   .post-actions { padding: 5px 20px 10px; display: flex; align-items: center; gap: 15px; border-top: 1px solid #f5f5f5; padding-top: 12px; }
   .like-btn { cursor: pointer; font-size: 1.5rem; transition: transform 0.2s; }
   .like-btn:active { transform: scale(1.2); }
@@ -87,6 +91,7 @@ export default function Home({ socket }) {
   const [hasEducation, setHasEducation] = useState(true);
   const [showEduModal, setShowEduModal] = useState(false);
   const userid = localStorage.getItem("Althub_Id");
+  const token = localStorage.getItem("Althub_Token");
 
   const emptyEducationList = useMemo(() => [], []);
 
@@ -171,37 +176,28 @@ export default function Home({ socket }) {
 
   useEffect(() => { getUser(); getPost(); getEvents(); getAids(); checkEducation(); }, [getUser, getPost, getEvents, getAids, checkEducation]);
 
-  // --- UPDATED FILE SELECTION HANDLER ---
   const imgChange = (e) => {
     const files = e.target.files;
-
-    // Check if any file was selected
     if (!files || files.length === 0) return;
-
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-
-      // 1. Check Image Size (Limit: 3MB)
       if (file.type.startsWith("image/")) {
-        if (file.size > 3 * 1024 * 1024) { // 3MB in bytes
+        if (file.size > 3 * 1024 * 1024) { 
           toast.error("Image size cannot exceed 3MB");
-          e.target.value = ""; // Clear file input
+          e.target.value = ""; 
           setFileList(null);
           return;
         }
       }
-
-      // 2. Check Video Size (Limit: 20MB)
       else if (file.type.startsWith("video/")) {
-        if (file.size > 20 * 1024 * 1024) { // 20MB in bytes
+        if (file.size > 20 * 1024 * 1024) { 
           toast.error("Video size cannot exceed 20MB");
-          e.target.value = ""; // Clear file input
+          e.target.value = ""; 
           setFileList(null);
           return;
         }
       }
     }
-
     setFileList(files);
   };
 
@@ -230,7 +226,6 @@ export default function Home({ socket }) {
           });
         }
         setFileList(null); setDescription(""); setUploading(false); getPost();
-        // Clear input element manually
         const fileInput = document.getElementById("myFileInput");
         if (fileInput) fileInput.value = "";
       })
@@ -272,7 +267,13 @@ export default function Home({ socket }) {
         <div className="sidebar-left">
           <div className="profile-mini-card">
             <div className="profile-bg"></div>
-            <div className="profile-img-wrapper"><img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} alt="Profile" loading="lazy" /></div>
+            <div className="profile-img-wrapper">
+              <ProtectedImage 
+                imgSrc={user?.profilepic} 
+                defaultImage="images/profile1.png"
+                alt="Profile"
+              />
+            </div>
             <div className="profile-info"><span className="profile-name">{user.fname} {user.lname}</span><span style={{ fontSize: '0.9rem', color: '#777' }}>{user.designation || "Student"}</span></div>
           </div>
           <div className="menu-box">
@@ -298,7 +299,7 @@ export default function Home({ socket }) {
 
           <div className="create-post-card">
             <div className="cp-top">
-              <img src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} className="cp-avatar" alt="" loading="lazy" />
+              <ProtectedImage imgSrc={user?.profilepic} defaultImage="images/profile1.png" className="cp-avatar" />
               <input type="text" className="cp-input" placeholder={`What's on your mind, ${user.fname || 'User'}?`} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             {fileList && fileList.length > 0 && (
@@ -319,7 +320,13 @@ export default function Home({ socket }) {
           {post.map((elem) => (
             <div key={elem._id} className="post-card">
               <div className="post-header">
-                <img src={elem?.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"} alt="" onClick={() => { elem.userid === userid ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem.userid } }); }} loading="lazy" />
+                <div onClick={() => { elem.userid === userid ? nav("/view-profile") : nav("/view-search-profile", { state: { id: elem.userid } }); }} style={{cursor: 'pointer'}}>
+                  <ProtectedImage 
+                    imgSrc={elem.profilepic} 
+                    defaultImage="images/profile1.png" 
+                    className="post-header-img"
+                  />
+                </div>
                 <div className="post-meta"><h4>{elem.fname} {elem.lname}</h4><span>{formatPostTime(elem.date)}</span></div>
               </div>
               <div className="post-content">{elem.description}</div>
@@ -328,7 +335,16 @@ export default function Home({ socket }) {
                   <Slider {...settings}>
                     {elem.photos.map((el, idx) => (
                       <div key={idx} style={{ outline: 'none' }}>
-                        {isVideo(el) ? <video src={`${WEB_URL}${el}`} className="post-media-item" controls playsInline preload="metadata" /> : <img src={`${WEB_URL}${el}`} alt="Post Content" className="post-media-item" onDoubleClick={() => handleLike(elem)} loading="lazy" />}
+                        {isVideo(el) ? (
+                            <video src={`${WEB_URL}${el}${el.includes('?') ? '&' : '?'}token=${token}`} className="post-media-item" controls playsInline preload="metadata" /> 
+                        ) : (
+                            <ProtectedImage 
+                                imgSrc={el} 
+                                alt="Post Content" 
+                                className="post-media-item" 
+                                defaultImage="images/error-page-pattern.png" 
+                            />
+                        )}
                       </div>
                     ))}
                   </Slider>
@@ -347,7 +363,7 @@ export default function Home({ socket }) {
             <div className="widget-title"><i className="fa-solid fa-calendar-day" style={{ color: '#66bd9e' }}></i> Upcoming Events</div>
             {upcomingEvents.length > 0 ? upcomingEvents.map((elem) => (
               <div key={elem._id} className="event-item">
-                <img src={elem.photos && elem.photos.length > 0 ? `${WEB_URL}${elem.photos[0]}` : "images/event1.png"} className="event-thumb" alt="" loading="lazy" />
+                <ProtectedImage imgSrc={elem.photos && elem.photos[0]} defaultImage="images/event1.png" className="event-thumb" />
                 <div className="event-details"><div className="event-title">{elem.title}</div><div className="event-meta"><span>{formatDate(elem.date)}</span><span>{formatTime(elem.date)}</span></div></div>
               </div>
             )) : <span style={{ color: '#999', fontSize: '0.9rem' }}>No upcoming events</span>}
@@ -357,7 +373,7 @@ export default function Home({ socket }) {
               <div className="widget-title"><i className="fa-solid fa-hand-holding-dollar" style={{ color: '#66bd9e' }}></i> Scholarship Aid</div>
               {aids.slice(0, 3).map((elem) => (
                 <div key={elem._id} className="aid-item">
-                  <img src={elem.image ? `${WEB_URL}${elem.image}` : "images/profile1.png"} className="aid-img" alt="" loading="lazy" />
+                  <ProtectedImage imgSrc={elem.image} defaultImage="images/profile1.png" className="aid-img" />
                   <div className="aid-content">
                     <div className="aid-header"><span>{elem.name}</span><span>{calWidth(elem.aid, elem.claimed)}</span></div>
                     <div className="aid-progress-bg"><div className="aid-progress-fill" style={{ width: calWidth(elem.aid, elem.claimed) }}></div></div>

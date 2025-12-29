@@ -6,7 +6,7 @@ const conversation = new mongoose.Schema(
       type: Array,
     },
   },
-  { timestamps: true } // --- ADDED THIS ---
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("conversationTB", conversation);

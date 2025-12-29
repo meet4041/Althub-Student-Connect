@@ -213,8 +213,9 @@ export default function Register() {
       var lang = languages.map((elem) => elem.value);
       var skill = skills.map((elem) => elem.value);
       var body = { ...user, languages: JSON.stringify(lang), skills: JSON.stringify(skill) };
+      const myurl = `${WEB_URL}/api/register`;
 
-      axios.post(`${WEB_URL}/api/register`, body)
+      axios.post(myurl, body,{ withCredentials: true })
         .then((res) => { toast.success("Register Successful!"); nav("/login"); })
         .catch((err) => { toast.error(err.response?.data?.msg || "Registration failed"); });
     }

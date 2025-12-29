@@ -10,6 +10,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import axios from "axios";
+import ProtectedImage from "../ProtectedImage";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 
@@ -228,6 +229,7 @@ export default function Navbar({ socket }) {
   const [mesDot, setMesDot] = useState(false);
   const [notDot, setNotDot] = useState(false);
   const nav = useNavigate();
+  const token = localStorage.getItem("Althub_Token");
 
   // Inject Styles
   useEffect(() => {
@@ -430,10 +432,11 @@ export default function Navbar({ socket }) {
         {/* Right: Profile */}
         <div className="navbar-right">
           <div className="nav-profile" onClick={() => nav("/view-profile")}>
-            <img
+            <ProtectedImage
               src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
               alt="User"
               className="nav-profile-img"
+              defaultImage="/images/profile1.png"
             />
             <div className="user-profile">
               <span>{user.fname || "User"}</span>

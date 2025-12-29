@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { WEB_URL } from "../baseURL";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import ProtectedImage from "../ProtectedImage";
 
 // --- INJECTED STYLES FOR LIST ITEM ---
 const styles = `
@@ -152,17 +153,12 @@ function ChatUser({
     <div className="chat-user-card" onClick={handleClick}>
       
       {/* Avatar */}
-      <img
-        src={
-            user.profilepic && user.profilepic !== "" && user.profilepic !== "undefined" 
-            ? `${WEB_URL}${user.profilepic}` 
-            : "images/profile1.png"
-        }
-        alt="Profile"
-        className="chat-avatar"
-        onClick={handleProfileClick}
-        title="View Profile"
-      />
+      <ProtectedImage 
+          imgSrc={user.profilepic} // Verify the exact field name
+          defaultImage="/images/profile1.png" 
+          className="chat-avatar" // or "connection-avatar"
+          alt="User"
+        />
       
       {/* Info & Badge */}
       <div className="chat-info">
