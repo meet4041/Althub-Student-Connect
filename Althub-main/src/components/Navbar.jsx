@@ -433,7 +433,7 @@ export default function Navbar({ socket }) {
         <div className="navbar-right">
           <div className="nav-profile" onClick={() => nav("/view-profile")}>
             <ProtectedImage
-              src={user?.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"}
+              imgSrc={user?.profilepic ? user.profilepic : ""} 
               alt="User"
               className="nav-profile-img"
               defaultImage="/images/profile1.png"

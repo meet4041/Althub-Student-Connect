@@ -1,47 +1,45 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { WEB_URL } from "./baseURL"; // Import the shared URL
+import { WEB_URL } from "./baseURL"; 
 
 const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profile1.png" }) => {
   const [currentSrc, setCurrentSrc] = useState(defaultImage);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Validation
     if (!imgSrc || imgSrc === "undefined" || imgSrc === "") {
       setCurrentSrc(defaultImage);
       setLoading(false);
       return;
     }
 
-    // 2. Optimization: Static/External images don't need auth
-    if (imgSrc.startsWith("http") || !imgSrc.includes("/api/")) { 
-       // Checks if it's NOT an API route (assuming API routes have /api/)
-       // If your DB saves paths like "/uploads/..." that are static, this condition might need tweaking.
-       // But usually GridFS routes look like "/api/image/..."
-       if(imgSrc.startsWith("http")) {
-         setCurrentSrc(imgSrc);
-         setLoading(false);
-         return;
-       }
+    if (imgSrc.startsWith("http")) {
+       setCurrentSrc(imgSrc);
+       setLoading(false);
+       return;
     }
 
-    // 3. The Secure Fetch
     const fetchSecureImage = async () => {
       try {
         setLoading(true);
-        // Use WEB_URL instead of hardcoded localhost:5000
-        const fullUrl = imgSrc.startsWith("http") ? imgSrc : `${WEB_URL}${imgSrc}`;
+        // Ensure we don't get double slashes if WEB_URL ends with / and imgSrc starts with /
+        const cleanPath = imgSrc.startsWith("/") ? imgSrc : `/${imgSrc}`;
+        const fullUrl = `${WEB_URL}${cleanPath}`;
+
+        const token = localStorage.getItem("Althub_Token");
 
         const response = await axios.get(fullUrl, {
           responseType: "blob", 
-          withCredentials: true // Ensure cookies are sent if needed
+          withCredentials: false, // <--- CHANGED: Set to false to fix Chrome CORS
+          headers: {
+             "Authorization": token ? `Bearer ${token}` : "" 
+          }
         });
 
         const objectUrl = URL.createObjectURL(response.data);
         setCurrentSrc(objectUrl);
       } catch (error) {
-        // console.error("Error loading protected image:", error);
+        console.error("Image load failed:", error);
         setCurrentSrc(defaultImage); 
       } finally {
         setLoading(false);

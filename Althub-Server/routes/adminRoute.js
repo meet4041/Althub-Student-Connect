@@ -3,7 +3,8 @@ const admin_route = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
-const auth = require("../middleware/auth"); // ADDED: Import Auth Middleware
+
+const { requireAuth } = require("../middleware/authMiddleware");
 
 admin_route.use(cookieParser());
 admin_route.use(bodyParser.json());
@@ -31,21 +32,21 @@ const admin_controller = require("../controllers/adminController");
 // admin routes
 admin_route.post('/adminLogin', admin_controller.adminLogin); 
 
-// SECURED: Added 'auth' middleware so only logged-in admins can update passwords
-admin_route.post('/updatepassword', auth, admin_controller.updatePassword);
+// 2. FIXED: Changed 'auth' to 'requireAuth'
+admin_route.post('/updatepassword', requireAuth, admin_controller.updatePassword);
 
 // Apply the limiter specifically to the forget password route
 admin_route.post('/forgetpassword', resetPasswordLimiter, admin_controller.forgetPassword);
 
 admin_route.get('/resetpassword', admin_controller.resetpassword);
 
-// SECURED: Added 'auth' middleware to protect profile updates
-admin_route.post('/adminUpdate', auth, admin_controller.updateAdmin);
+// 3. FIXED: Changed 'auth' to 'requireAuth'
+admin_route.post('/adminUpdate', requireAuth, admin_controller.updateAdmin);
 
 admin_route.get('/adminLogout', admin_controller.adminLogout);
 
-// SECURED: Added 'auth' middleware to protect image uploads
-admin_route.post('/uploadAdminImage', auth, upload.single('profilepic'), async (req, res) => {
+// 4. FIXED: Changed 'auth' to 'requireAuth'
+admin_route.post('/uploadAdminImage', requireAuth, upload.single('profilepic'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
         const id = await gridfs.uploadFromBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
@@ -56,7 +57,6 @@ admin_route.post('/uploadAdminImage', auth, upload.single('profilepic'), async (
     }
 });
 
-// SECURED: Added 'auth' middleware. This is the specific fix for your issue.
-admin_route.get('/getAdminById/:_id', auth, admin_controller.getAdminById);
+admin_route.get('/getAdminById/:_id', requireAuth, admin_controller.getAdminById);
 
 module.exports = admin_route;

@@ -7,9 +7,7 @@ const bcryptjs = require("bcryptjs");
 
 // --- UTILITIES ---
 
-// 1. Password Policy Validator (New Addition)
 const validatePassword = (password) => {
-    // Policy: Min 8 chars, 1 Uppercase, 1 Lowercase, 1 Number
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     return regex.test(password);
 }

@@ -15,12 +15,16 @@ const port = process.env.PORT || 5001;
 // Required for Render/Vercel to handle secure cookies correctly behind proxies
 app.set("trust proxy", 1); 
 
+// 1. HELMET: Allow Cross-Origin Images
+// This specific policy allows modern browsers (Chrome/Safari) to render 
+// images from this server even if the frontend is on a different port.
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+
 app.use(compression()); 
-app.use(express.json({ limit: '5mb' })); // Increased limit slightly for base64 images if any
-app.use(express.urlencoded({ extended: true, limit: '5mb' })); 
+app.use(express.json({ limit: '10mb' })); // Increased limit for larger uploads
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); 
 app.use(cookieParser());
 
 // --- BRUTE FORCE PROTECTION ---
@@ -35,45 +39,41 @@ const loginLimiter = rateLimit({
   legacyHeaders: false, 
 });
 
-// --- SMART CORS CONFIGURATION (FIXED FOR COOKIES) ---
-// We explicitly define allowed origins. 
-// Using an array ensures the server returns the EXACT origin in the header, 
-// which is required for 'credentials: true' to work.
+// --- SMART CORS CONFIGURATION ---
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173',
-  'https://althub-student-connect.vercel.app'
+  'https://althub-student-connect.vercel.app' // Add your deployed frontend URL here
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // 1. Allow requests with no origin (like mobile apps, Postman, or server-to-server)
+    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) return callback(null, true);
     
-    // 2. Check if the origin is in our allowed list
+    // Check if the origin is in our allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     } 
 
-    // 3. Dynamic check for Vercel Preview Deployments (Optional but useful)
-    // This allows any subdomain of vercel.app (good for testing PRs)
+    // Dynamic check for Vercel Preview Deployments
     if (origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
 
-    // 4. If nothing matches, block it
     console.log("BLOCKED BY CORS -> Origin tried:", origin);
     callback(new Error('Not allowed by CORS'));
   },
-  credentials: true, // <--- CRITICAL: Allows cookies to be sent/received
+  credentials: true, // Allows cookies if needed
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  // 2. HEADERS: Explicitly allow 'Authorization' so ProtectedImage.js works
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 };
 
 // Apply CORS globally
 app.use(cors(corsOptions));
-// Handle preflight requests for complex operations
+// Handle preflight requests for complex operations (like sending custom headers)
 app.options('*', cors(corsOptions));
 
 // --- ROUTE IMPORTS ---
@@ -94,7 +94,6 @@ const financialaid_route = require("./routes/financialaidRoute");
 const images_route = require("./routes/imagesRoute");
 
 // --- PROTECTING LOGIN ROUTES ---
-// Note: Ensure these paths match your actual route definitions in route files
 app.use("/api/adminLogin", loginLimiter);
 app.use("/api/instituteLogin", loginLimiter);
 app.use("/api/userLogin", loginLimiter); 
@@ -114,7 +113,10 @@ app.use("/api", feedback_route);
 app.use("/api", company_route);
 app.use("/api", notification_route);
 app.use("/api", financialaid_route);
-app.use("/api/images", images_route); // Mounted specifically for images if needed, or stick to /api
+
+// 3. IMAGE ROUTE MOUNTING
+// This handles requests to /api/images/12345...
+app.use("/api/images", images_route); 
 
 // Health Check & Static Files
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
@@ -153,7 +155,6 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
-
   socket.on("addUser", (userId) => {
     if (userId) {
       addUser(userId, socket.id);
@@ -195,7 +196,6 @@ connectToMongo()
 
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err.message);
-  // server.close(() => process.exit(1)); // Optional: Restart on crash
 });
 
 module.exports = app;
