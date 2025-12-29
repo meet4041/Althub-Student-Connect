@@ -1,25 +1,33 @@
 const express = require("express");
 const post_route = express.Router();
-const { uploadArray } = require('../db/storage'); 
+// 1. IMPORT FIX: Import 'uploadSingle' instead of 'uploadArray'
+const { uploadSingle } = require('../db/storage'); 
 const post_controller = require("../controllers/postController");
 const { requireAuth } = require("../middleware/authMiddleware");
 
-// 2. MIDDLEWARE: This "unlocks" the FormData. 
-// It handles files if they exist, and parses text fields (like userid, description) into req.body
+// 2. MIDDLEWARE: The Bridge between Frontend and Database
 const uploadPic = (req, res, next) => {
-    // 'photos' matches the field name used in your Frontend: body.append(`photos`, ...)
-    const uploadMiddleware = uploadArray('photos', 5);
+    // FIX: Field name changed from 'photos' to 'image' to match frontend FormData
+    const uploadMiddleware = uploadSingle('image'); 
     
     uploadMiddleware(req, res, (err) => {
         if (err) {
             return res.status(400).send({ success: false, message: 'Upload error: ' + err.message });
         }
         
-        // Map uploaded files to a URL structure the frontend can use
-        req.images = (req.files || []).map((f) => {
-            const fid = f.id || f._id || (f.fileId && f.fileId.toString());
-            return `/api/images/${fid}?mime=${f.mimetype}`; // Matches your streamToResponse logic
-        });
+        // FIX: Handle the single file object (req.file)
+        if (req.file) {
+            // Get the GridFS ID
+            const fid = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
+            
+            // Create the URL
+            const imageUrl = `/api/images/${fid}`;
+            
+            // CRITICAL: Add the URL to req.body.image
+            // This ensures postController can see it and save it to MongoDB
+            req.body.image = imageUrl; 
+        }
+        
         next();
     });
 };
@@ -34,7 +42,7 @@ post_route.put('/like/:id', requireAuth, post_controller.likeUnlikePost);
 post_route.get('/getFriendsPost/all', requireAuth, post_controller.getFriendsPost);
 post_route.get('/getPostById/:userid', requireAuth, post_controller.getPostById);
 
-// 5. FIX: Apply to institute posts
+// Institute Route
 post_route.post('/instituteAddPost', requireAuth, uploadPic, post_controller.instituteAddPost);
 
 module.exports = post_route;
