@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect } from "react";
+import React, { useEffect, useState, useLayoutEffect, Suspense, lazy } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom"; 
 import { ToastContainer } from "react-toastify";
 import { socket } from "./socket";
@@ -6,26 +6,29 @@ import axios from "axios";
 
 // Components
 import Navbar from "./components/Navbar";
-import Main from "./components/Main";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Home from "./components/Home";
-import Events from "./components/Events";
-import Feedback from "./components/Feedback";
-import ViewProfile from "./components/ViewProfile";
-import ViewSearchProfile from "./components/ViewSearchProfile";
-import SearchProfile from "./components/SearchProfile";
-import Message from "./components/Message";
-import Notidfication from "./components/Notidfication";
-import ForgetPassword from "./components/ForgetPassword";
-import NewPassword from "./components/NewPassword";
-import Scholarship from "./components/Scholarship";
-import MyPosts from "./components/MyPosts";
 import Loader from "./components/Loader"; 
 import AuthGuard from "./components/AuthGuard";
 
+// --- LAZY LOAD PAGES (Code Splitting) ---
+// This prevents downloading the entire app just to see the Main page
+const Main = lazy(() => import("./components/Main"));
+const Login = lazy(() => import("./components/Login"));
+const Register = lazy(() => import("./components/Register"));
+const Home = lazy(() => import("./components/Home"));
+const Events = lazy(() => import("./components/Events"));
+const Feedback = lazy(() => import("./components/Feedback"));
+const ViewProfile = lazy(() => import("./components/ViewProfile"));
+const ViewSearchProfile = lazy(() => import("./components/ViewSearchProfile"));
+const SearchProfile = lazy(() => import("./components/SearchProfile"));
+const Message = lazy(() => import("./components/Message"));
+const Notidfication = lazy(() => import("./components/Notidfication"));
+const ForgetPassword = lazy(() => import("./components/ForgetPassword"));
+const NewPassword = lazy(() => import("./components/NewPassword"));
+const Scholarship = lazy(() => import("./components/Scholarship"));
+const MyPosts = lazy(() => import("./components/MyPosts"));
+
 function App() {
-  const [isLoading, setIsLoading] = useState(false);
+  // Removed global isLoading to stop blocking the UI on every request
   const [isAuthReady, setIsAuthReady] = useState(false); 
   const nav = useNavigate(); 
 
@@ -39,58 +42,32 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // --- AXIOS INTERCEPTORS ---
-    let requestCount = 0;
+    // --- OPTIMIZED AXIOS INTERCEPTORS ---
+    // Removed the global showLoader/hideLoader logic. 
+    // This allows the app to remain interactive while fetching data.
 
-    const showLoader = () => {
-      requestCount++;
-      setIsLoading(true);
-    };
-
-    const hideLoader = () => {
-      requestCount--;
-      if (requestCount <= 0) {
-        requestCount = 0;
-        setIsLoading(false);
-      }
-    };
-
-    // REQUEST INTERCEPTOR
     const reqInterceptor = axios.interceptors.request.use(
       (config) => {
-        showLoader();
         const token = localStorage.getItem("Althub_Token");
         if (token) {
            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => {
-        hideLoader();
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
-    // RESPONSE INTERCEPTOR
     const resInterceptor = axios.interceptors.response.use(
-      (response) => {
-        hideLoader();
-        return response;
-      },
+      (response) => response,
       (error) => {
-        hideLoader();
-        
         // Auto-logout on 401 error
         if (error.response && error.response.status === 401) {
             console.warn("Session Expired or Unauthorized - Logging out");
-            
             localStorage.removeItem("Althub_Token");
             localStorage.removeItem("Althub_Id");
             delete axios.defaults.headers.common["Authorization"];
-            
             nav("/login");
         }
-        
         return Promise.reject(error);
       }
     );
@@ -132,37 +109,34 @@ function App() {
     <>
       <ToastContainer />
       
-      {isLoading && <Loader />}
-
+      {/* Navbar is always present but handles its own visibility */}
       <Navbar socket={socket} />
       
-      <Routes>
-        {/* --- PUBLIC ROUTES --- */}
-        {/* These can be accessed without logging in */}
-        <Route path="/" element={<Main />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forget-password" element={<ForgetPassword />} />
-        {/* Assuming NewPassword is the reset page from email link, so it's public */}
-        <Route path="/new-password" element={<NewPassword />} />
+      {/* Suspense shows the Loader only while the specific page code is downloading */}
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          {/* --- PUBLIC ROUTES --- */}
+          <Route path="/" element={<Main />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forget-password" element={<ForgetPassword />} />
+          <Route path="/new-password" element={<NewPassword />} />
 
-        {/* --- PROTECTED ROUTES --- */}
-        {/* The AuthGuard checks for the token once. 
-            If valid, it renders the components below. 
-            If not, it redirects to /login. */}
-        <Route element={<AuthGuard />}>
-            <Route path="/events" element={<Events />} />
-            <Route path="/home" element={<Home socket={socket} />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/view-profile" element={<ViewProfile />} />
-            <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket} />} />
-            <Route path="/search-profile" element={<SearchProfile />} />
-            <Route path="/message" element={<Message socket={socket} />} />
-            <Route path="/notification" element={<Notidfication />} />
-            <Route path="/scholarship" element={<Scholarship />} />
-            <Route path="/my-posts" element={<MyPosts />} />
-        </Route>
-      </Routes>
+          {/* --- PROTECTED ROUTES --- */}
+          <Route element={<AuthGuard />}>
+              <Route path="/events" element={<Events />} />
+              <Route path="/home" element={<Home socket={socket} />} />
+              <Route path="/feedback" element={<Feedback />} />
+              <Route path="/view-profile" element={<ViewProfile />} />
+              <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket} />} />
+              <Route path="/search-profile" element={<SearchProfile />} />
+              <Route path="/message" element={<Message socket={socket} />} />
+              <Route path="/notification" element={<Notidfication />} />
+              <Route path="/scholarship" element={<Scholarship />} />
+              <Route path="/my-posts" element={<MyPosts />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../styles/Main.css"; // <--- Import CSS
+import "../styles/Main.css"; 
 
 // MUI Imports
 import {
@@ -57,7 +57,8 @@ export default function Main() {
                             </Button>
                         </Grid>
                         <Grid item xs={12} md={6} display="flex" justifyContent="center">
-                            <img src="images/connect.png" alt="Connection" className="hero-img" />
+                            {/* Priority loading for Hero Image */}
+                            <img src="images/connect.png" alt="Connection" className="hero-img" loading="eager" />
                         </Grid>
                     </Grid>
                 </Container>
@@ -79,7 +80,8 @@ export default function Main() {
                         ].map((feature, idx) => (
                             <Grid item xs={12} md={4} key={idx}>
                                 <Card className="feature-card" elevation={0}>
-                                    <img src={feature.img} alt={feature.title} className="feature-icon" />
+                                    {/* Lazy load feature icons */}
+                                    <img src={feature.img} alt={feature.title} className="feature-icon" loading="lazy" />
                                     <CardContent>
                                         <Typography variant="h5" color="primary" fontWeight={700} gutterBottom>
                                             {feature.title}
@@ -137,14 +139,15 @@ export default function Main() {
                             </List>
                         </Grid>
                         <Grid item xs={12} md={6} className="info-img-wrapper">
-                            <img src="images/Alumni-2.svg" alt="Why Althub" className="info-img" />
+                            {/* Lazy load secondary images */}
+                            <img src="images/Alumni-2.svg" alt="Why Althub" className="info-img" loading="lazy" />
                         </Grid>
                     </Grid>
 
                     {/* Alumni Center */}
                     <Grid container spacing={6} alignItems="center" direction={{xs: 'column-reverse', md: 'row'}}>
                         <Grid item xs={12} md={6} className="info-img-wrapper">
-                            <img src="images/Usability testing-bro.png" alt="Alumni Center" className="info-img" />
+                            <img src="images/Usability testing-bro.png" alt="Alumni Center" className="info-img" loading="lazy" />
                         </Grid>
                         <Grid item xs={12} md={6}>
                             <Typography variant="h3" fontWeight={700} gutterBottom>Alumni at the Center</Typography>
