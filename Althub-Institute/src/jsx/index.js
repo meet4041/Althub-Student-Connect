@@ -12,6 +12,7 @@ import Posts from './pages/Posts';
 import AddPost from './pages/AddPost';
 import EditEvent from './pages/EditEvent';
 import Register from './pages/Register';
+import EditPost from './pages/EditPost';
 import NewPassword from './pages/NewPassword';
 import FinancialPole from './pages/FinancialPole';
 import AddFinancialHelp from './pages/AddFinancialHelp';
@@ -34,6 +35,7 @@ const Markup = () => {
             <Route path='/events' element={<Events />} />
             <Route path='/add-event' element={<AddEvent />} />
             <Route path='/edit-event' element={<EditEvent />} />
+            <Route path='/edit-post' element={<EditPost />} />
             <Route path='/posts' element={<Posts />} />
             <Route path='/add-post' element={<AddPost />} />
             <Route path='/financial-aid' element={<FinancialPole />} />

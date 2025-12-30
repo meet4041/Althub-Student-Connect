@@ -67,16 +67,22 @@ const EditEvent = () => {
             body.append("description", data.description);
             body.append("date", data.date);
             body.append("venue", data.venue);
+            
+            // Append new files
             files.forEach((file, i) => {
                 body.append(`photos`, file, file.name);
             });
+
+            // FIX: Retrieve token from Local Storage
+            const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('user')) && JSON.parse(localStorage.getItem('user')).token);
 
             axios({
                 method: "post",
                 url: `${ALTHUB_API_URL}/api/editEvent`,
                 data: body,
                 headers: {
-                    "content-type": "multipart/form-data"
+                    "content-type": "multipart/form-data",
+                    "Authorization": `Bearer ${token}` // Added Token Here
                 },
             }).then((response) => {
                 setDisable(false);
@@ -86,7 +92,8 @@ const EditEvent = () => {
                 }, 1200);
             }).catch((error) => {
                 setDisable(false);
-                toast.error("Failed to update event");
+                console.error("Update error:", error);
+                toast.error(error.response?.data?.msg || "Failed to update event");
             });
         }
     };

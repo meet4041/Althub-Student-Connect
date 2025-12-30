@@ -2,75 +2,113 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
 const Notification = require("../models/notificationModel");
+const { uploadFromBuffer, connectToMongo } = require("../db/conn");
 
+// --- 1. ADD POST (FIXED) ---
 const addPost = async (req, res) => {
     try {
-        const post = new Post({
-            userid: req.body.userid,
-            fname: req.body.fname,
-            lname: req.body.lname,
-            companyname: req.body.companyname,
-            profilepic: req.body.profilepic,
+        await connectToMongo();
+
+        // Handle Images
+        let photoIds = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `post-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photoIds.push(`/api/images/${fileId}`);
+            }
+        }
+
+        const newPost = new Post({
+            // FIX: Save 'senderid' from frontend into 'userid' field in DB
+            // This ensures getPostById finds it later.
+            userid: req.body.senderid, 
+            senderid: req.body.senderid, // Optional: Keep both if needed for notifications
+            
+            title: req.body.title || "Update",
             description: req.body.description,
             date: req.body.date || new Date(),
-            // FIX: Ensure photos is an array even if req.images is undefined
-            photos: req.images || [], 
+            photos: photoIds
         });
 
-        const userData = await User.findOne({ _id: req.body.userid });
+        const savedPost = await newPost.save();
 
-        if (!userData) {
-            return res.status(400).send({ success: false, msg: "User not found..!" });
-        } else {
-            const post_data = await post.save();
-            res.status(200).send({ success: true, data: post_data });
-        }
+        res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 
     } catch (error) {
-        console.error("Error in add post : " + error.message);
+        console.error("Add Post Error:", error);
         res.status(400).send({ success: false, msg: error.message });
     }
-}
+};
 
-const instituteAddPost = async (req, res) => {
+// --- 2. GET POST BY ID (MATCHING FIX) ---
+const getPostById = async (req, res) => {
     try {
-        const post = new Post({
-            userid: req.body.userid,
-            fname: req.body.fname,
-            profilepic: req.body.profilepic,
-            description: req.body.description,
-            // FIX: Use req.images array populated by middleware
-            photos: req.images || [], 
-            date: new Date()
-        });
-
-        const instituteData = await Institute.findOne({ _id: req.body.userid });
-
-        if (!instituteData) {
-            res.status(400).send({ success: false, msg: "Institute not found..!" });
-        } else {
-            const post_data = await post.save();
-            res.status(200).send({ success: true, data: post_data });
-        }
-
-    } catch (error) {
-        console.error("Error in add post (Institute): " + error.message);
-        res.status(400).send({ success: false, msg: error.message });
-    }
-}
-
-const getPosts = async (req, res) => {
-    try {
-        const post_data = await Post.find({}).sort({ date: -1 }).limit(20).lean();
+        // We search by 'userid' because that is what we are now saving in addPost
+        // We also use $or to find old posts that might only have 'senderid'
+        const id = req.params.userid;
+        
+        const post_data = await Post.find({ 
+            $or: [
+                { userid: id }, 
+                { senderid: id }
+            ] 
+        }).sort({ date: -1 }).lean();
+        
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
 
-const getPostById = async (req, res) => {
+// --- 3. EDIT POST ---
+const editPost = async (req, res) => {
     try {
-        const post_data = await Post.find({ userid: req.params.userid }).sort({ date: -1 }).lean();
+        await connectToMongo();
+        
+        const { id, title, description } = req.body;
+        
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).send({ success: false, msg: "Post not found" });
+        }
+
+        let newPhotoUrls = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `post-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                newPhotoUrls.push(`/api/images/${fileId}`);
+            }
+        }
+
+        const updatedPhotos = [...(post.photos || []), ...newPhotoUrls];
+
+        const updateData = {
+            title,
+            description,
+            photos: updatedPhotos
+        };
+
+        const updatedPost = await Post.findByIdAndUpdate(
+            id, 
+            { $set: updateData }, 
+            { new: true }
+        );
+
+        res.status(200).send({ success: true, msg: "Post Updated", data: updatedPost });
+
+    } catch (error) {
+        console.error("Edit Post Error:", error);
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
+
+// --- OTHER FUNCTIONS (Keep as they are) ---
+
+const getPosts = async (req, res) => {
+    try {
+        const post_data = await Post.find({}).sort({ date: -1 }).limit(20).lean();
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -87,64 +125,30 @@ const deletePost = async (req, res) => {
     }
 }
 
-const editPost = async (req, res) => {
-    try {
-        const id = req.body.id;
-        const updateData = {};
-
-        if (req.body.description !== undefined) {
-            updateData.description = req.body.description;
-        }
-
-        // Logic to handle new images + existing images
-        if (req.images && req.images.length > 0) {
-            updateData.photos = req.images;
-        } else if (req.body.existingPhotos) {
-            let photosToKeep = req.body.existingPhotos;
-            if (!Array.isArray(photosToKeep)) {
-                photosToKeep = [photosToKeep];
-            }
-            updateData.photos = photosToKeep;
-        } else if (req.body.photos === '[]' || (Array.isArray(req.body.photos) && req.body.photos.length === 0)){
-             updateData.photos = [];
-        }
-
-        if (req.body.likes) updateData.likes = req.body.likes;
-        if (req.body.comments) updateData.comments = req.body.comments;
-
-        const post_data = await Post.findByIdAndUpdate(
-            { _id: id },
-            { $set: updateData },
-            { new: true }
-        );
-
-        res.status(200).send({ success: true, msg: 'Post Updated Successfully', data: post_data });
-
-    } catch (error) {
-        res.status(400).send({ success: false, msg: error.message });
-    }
-}
-
 const likeUnlikePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
-        
         if (!post.likes.includes(req.body.userId)) {
             await post.updateOne({ $push: { likes: req.body.userId } });
-
-            const liker = await User.findById(req.body.userId);
             
-            if (liker && post.userid !== req.body.userId) { 
-                const notification = new Notification({
-                    userid: post.userid,
-                    senderid: req.body.userId,
-                    image: liker.profilepic,
-                    title: "New Like",
-                    msg: `${liker.fname} ${liker.lname} liked your photo.`,
-                    date: new Date()
-                });
-                await notification.save();
+            // Notification logic
+            try {
+                const liker = await User.findById(req.body.userId);
+                if (liker && post.userid !== req.body.userId) { 
+                    const notification = new Notification({
+                        userid: post.userid || post.senderid, // Handle both
+                        senderid: req.body.userId,
+                        image: liker.profilepic,
+                        title: "New Like",
+                        msg: `${liker.fname} ${liker.lname} liked your photo.`,
+                        date: new Date()
+                    });
+                    await notification.save();
+                }
+            } catch (notifyErr) {
+                console.log("Notification error (non-fatal):", notifyErr.message);
             }
+
             res.status(200).send({ msg: "Like" });
         } else {
             await post.updateOne({ $pull: { likes: req.body.userId } });
@@ -158,6 +162,8 @@ const likeUnlikePost = async (req, res) => {
 const getFriendsPost = async (req, res) => {
     try {
         const currentUser = await User.findById(req.body.userId).lean();
+        if (!currentUser) return res.status(404).json("User not found");
+
         const userPosts = await Post.find({ userid: currentUser._id }).lean();
         const friendPosts = await Promise.all(
             currentUser.followings.map((friendId) => {
@@ -171,6 +177,10 @@ const getFriendsPost = async (req, res) => {
         res.status(500).json(err);
     }
 };
+
+const instituteAddPost = async (req, res) => {
+    return addPost(req, res);
+}
 
 module.exports = {
     addPost,

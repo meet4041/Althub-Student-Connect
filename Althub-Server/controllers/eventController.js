@@ -2,14 +2,13 @@ const Event = require("../models/EventModel");
 const Notification = require("../models/notificationModel");
 const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
-const { uploadFromBuffer, connectToMongo } = require("../db/conn"); // FIX: Imported helpers
+const { uploadFromBuffer, connectToMongo } = require("../db/conn");
+
+// ... [Keep your other functions like addEvents, getEvents, deleteEvent exactly as they were] ...
 
 const addEvents = async (req, res) => {
     try {
         await connectToMongo();
-
-        // FIX: Process uploaded files from buffers (MemoryStorage)
-        // Original code used req.images, but standard Multer gives req.files
         let photoIds = [];
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
@@ -18,21 +17,19 @@ const addEvents = async (req, res) => {
                 photoIds.push(`/api/images/${fileId}`);
             }
         }
-
         const event = new Event({
             organizerid: req.body.organizerid,
             title: req.body.title,
             description: req.body.description,
             date: req.body.date,
             venue: req.body.venue,
-            photos: photoIds // Use generated IDs/URLs
+            photos: photoIds
         });
-
         const event_data = await event.save();
-
+        
+        // Notifications Logic
         const institute = await Institute.findById(req.body.organizerid);
         const users = await User.find({});
-        
         const notifications = users.map(user => ({
             userid: user._id,
             senderid: req.body.organizerid,
@@ -41,14 +38,15 @@ const addEvents = async (req, res) => {
             msg: `New Event: ${req.body.title} has been added by ${institute ? institute.insname : 'Institute'}.`,
             date: new Date()
         }));
-        
         await Notification.insertMany(notifications);
-        res.status(200).send({ success: true, data: event_data });
 
+        res.status(200).send({ success: true, data: event_data });
     } catch (error) {
         res.status(400).send(error.message);
     }
 }
+
+// ... [Include getEvents, getEventsByInstitute, deleteEvent here] ...
 
 const getEvents = async (req, res) => {
     try {
@@ -71,61 +69,64 @@ const getEventsByInstitute = async (req, res) => {
 const deleteEvent = async (req, res) => {
     try {
         const id = req.params.id;
-        const result = await Event.deleteOne({ _id: id });
+        await Event.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'Event Deleted successfully' });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
 
+// --- FIXED EDIT EVENT FUNCTION ---
 const editEvent = async (req, res) => {
     try {
-        // FIX: Check req.files for new images
-        let photos = [];
-        
-        // If files were uploaded, process them
+        await connectToMongo();
+
+        const { id, title, description, date, venue } = req.body;
+
+        // 1. Find existing event to get current photos
+        const existingEvent = await Event.findById(id);
+        if (!existingEvent) {
+            return res.status(404).send({ success: false, msg: 'Event not found' });
+        }
+
+        // 2. Handle New File Uploads
+        let newPhotoUrls = [];
         if (req.files && req.files.length > 0) {
-            await connectToMongo();
             for (const file of req.files) {
                 const filename = `event-${Date.now()}-${file.originalname}`;
                 const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
-                photos.push(`/api/images/${fileId}`);
+                newPhotoUrls.push(`/api/images/${fileId}`);
             }
-        } 
-        // If no new files, check if old photos were passed in body (optional handling depending on frontend)
-        else if (req.body.photos) {
-            photos = req.body.photos;
         }
 
-        var id = req.body.id;
-        var title = req.body.title;
-        var description = req.body.description;
-        var date = req.body.date;
-        var venue = req.body.venue;
+        // 3. Combine existing photos with new ones (Appends new photos)
+        // If you want to completely replace photos, remove `...existingEvent.photos`
+        const updatedPhotos = [...(existingEvent.photos || []), ...newPhotoUrls];
 
-        const updateData = { 
-            title, 
-            description, 
-            date, 
-            venue 
+        // 4. Update the event
+        const updateData = {
+            title,
+            description,
+            date,
+            venue,
+            photos: updatedPhotos
         };
 
-        // Only update photos if new ones were provided
-        if (photos.length > 0) {
-            updateData.photos = photos;
-        }
-
         const event_data = await Event.findByIdAndUpdate(
-            { _id: id }, 
-            { $set: updateData }, 
+            id,
+            { $set: updateData },
             { new: true }
         );
-        res.status(200).send({ success: true, msg: 'Event Updated', data: event_data });
+
+        res.status(200).send({ success: true, msg: 'Event Updated Successfully', data: event_data });
 
     } catch (error) {
+        console.error("Edit Event Error:", error);
         res.status(400).send({ success: false, msg: error.message });
     }
 }
+
+// ... [Include searchEvent, getUpcommingEvents, participateInEvent here] ...
 
 const searchEvent = async (req, res) => {
     try {
@@ -137,7 +138,6 @@ const searchEvent = async (req, res) => {
         else {
             res.status(200).send({ success: true, msg: 'Event not Found' });
         }
-
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -170,10 +170,10 @@ const participateInEvent = async (req, res) => {
 module.exports = {
     addEvents,
     getEvents,
+    getEventsByInstitute,
     deleteEvent,
     editEvent,
     searchEvent,
     getUpcommingEvents,
-    getEventsByInstitute,
     participateInEvent
 }

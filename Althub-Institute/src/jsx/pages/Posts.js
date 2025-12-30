@@ -203,13 +203,25 @@ const Posts = () => {
                                                         <i className="far fa-clock mr-1"></i> {formatDate(elem.date)}
                                                     </span>
                                                 </td>
+                                                {/* --- MODIFIED ACTION COLUMN --- */}
                                                 <td className="align-middle text-center">
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
-                                                            onClick={() => { handleDeletePost(elem._id) }} 
-                                                            title="Delete Post">
-                                                        <i className="fa fa-trash-alt text-danger"></i>
-                                                    </button>
+                                                    <div className="d-flex justify-content-center">
+                                                        <Link 
+                                                            to="/edit-post" 
+                                                            state={{ post: elem }}
+                                                            className="btn btn-primary btn-sm shadow-sm mr-2"
+                                                            title="Edit Post"
+                                                        >
+                                                            <i className="fa fa-edit"></i>
+                                                        </Link>
+                                                        <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
+                                                                onClick={() => { handleDeletePost(elem._id) }} 
+                                                                title="Delete Post">
+                                                            <i className="fa fa-trash-alt text-danger"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
+                                                {/* ----------------------------- */}
                                             </tr>
                                         ) : <tr><td colSpan="5" className="text-center p-5 text-muted">No posts found.</td></tr>}
                                     </tbody>

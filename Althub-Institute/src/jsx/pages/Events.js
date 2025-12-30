@@ -13,11 +13,9 @@ const Events = () => {
     let navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [displayEvents, setDisplayEvents] = useState([]);
-    const rows = [10, 20, 30];
+    const rows = [10, 20, 50, 100]; // Increased options
     const [eventsPerPage, setEventsPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
 
     // Theme constant
     const themeColor = '#2563EB';
@@ -38,11 +36,16 @@ const Events = () => {
         if (institute_Id) {
             axios({
                 method: "get",
+                // Ensure backend endpoint returns ALL events for this institute
                 url: `${ALTHUB_API_URL}/api/getEventsByInstitute/${institute_Id}`,
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             }).then((response) => {
-                setEvents(response.data.data || []);
-            }).catch(() => {
+                if(response.data.success) {
+                    // Store all fetched events
+                    setEvents(response.data.data || []);
+                }
+            }).catch((err) => {
+                console.error("Error fetching events:", err);
                 setEvents([]);
             });
         }
@@ -58,6 +61,7 @@ const Events = () => {
         setDisplayEvents(events);
     }, [events]);
 
+    // Pagination Logic
     const indexOfLastEvent = currentPage * eventsPerPage;
     const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
     const currentEvents = displayEvents.slice(indexOfFirstEvent, indexOfLastEvent);
@@ -73,12 +77,13 @@ const Events = () => {
 
     const handleSearch = (e) => {
         if (e.target.value) {
-            let search = e.target.value;
+            let search = e.target.value.toLowerCase();
             setDisplayEvents(events.filter(
                 (elem) =>
-                    elem.title.toLowerCase().includes(search.toLowerCase()) ||
-                    elem.venue.toLowerCase().includes(search.toLowerCase())
+                    elem.title.toLowerCase().includes(search) ||
+                    elem.venue.toLowerCase().includes(search)
             ));
+            setCurrentPage(1); // Reset to page 1 on search
         } else {
             setDisplayEvents(events)
         }
@@ -104,7 +109,10 @@ const Events = () => {
                 setAlert(false);
                 setAlert2(true);
             }
-        })
+        }).catch(err => {
+             console.error(err);
+             setAlert(false);
+        });
     }
 
     return (
@@ -143,7 +151,15 @@ const Events = () => {
                                     </div>
                                     <div className="col-md-6 text-md-right mt-3 mt-md-0">
                                         <span className="text-muted mr-2">Show</span>
-                                        <select className="custom-select custom-select-sm w-auto border-0 shadow-sm" style={{borderRadius: '5px'}} onChange={(e) => setEventsPerPage(Number(e.target.value))}>
+                                        <select 
+                                            className="custom-select custom-select-sm w-auto border-0 shadow-sm" 
+                                            style={{borderRadius: '5px', cursor:'pointer'}} 
+                                            onChange={(e) => {
+                                                setEventsPerPage(Number(e.target.value));
+                                                setCurrentPage(1);
+                                            }}
+                                            value={eventsPerPage}
+                                        >
                                             {rows.map(value =>
                                                 <option key={value} value={value}>{value} Events</option>
                                             )}
@@ -166,13 +182,13 @@ const Events = () => {
                                     </thead>
                                     <tbody>
                                         {currentEvents.length > 0 ? currentEvents.map((elem, index) =>
-                                            <tr key={index}>
+                                            <tr key={elem._id || index}>
                                                 <td className="pl-4 align-middle text-muted">{indexOfFirstEvent + index + 1}</td>
                                                 <td className="align-middle">
-                                                    {elem.photos === '' || elem.photos === undefined || elem.photos.length <= 0 ? 
-                                                        <img src='assets/img/Events-amico.png' alt='default event' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} /> 
-                                                        : 
+                                                    {elem.photos && elem.photos.length > 0 ? 
                                                         <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='event-img' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} />
+                                                        : 
+                                                        <img src='assets/img/Events-amico.png' alt='default event' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} /> 
                                                     }
                                                 </td>
                                                 <td className="align-middle">
@@ -185,8 +201,8 @@ const Events = () => {
                                                     </span>
                                                 </td>
                                                 <td className="align-middle">
-                                                    <div className="text-dark font-weight-bold">{elem.date ? elem.date.split('T')[0] : 'N/A'}</div>
-                                                    <div className="small text-muted">{elem.date ? elem.date.split('T')[1] : 'N/A'}</div>
+                                                    <div className="text-dark font-weight-bold">{elem.date ? new Date(elem.date).toLocaleDateString() : 'N/A'}</div>
+                                                    <div className="small text-muted">{elem.date ? new Date(elem.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</div>
                                                 </td>
                                                 <td className="align-middle text-center">
                                                     <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm mr-2" 
