@@ -7,37 +7,34 @@ import { ALTHUB_API_URL } from '../../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axiosInstance, { fetchSecureImage } from '../../services/axios'; 
 
-// --- NEW COMPONENT: SecureImage ---
-// This component automatically fetches the image using the Admin Token
+// --- SecureImage Component ---
 const SecureImage = ({ src, alt, className, style }) => {
     const [imgUrl, setImgUrl] = useState('assets/img/login-bg/profile1.png');
 
     useEffect(() => {
         let isMounted = true;
         
-        if (src) {
-            // If src is already a full URL (like local assets), use it
-            if (!src.includes('/api/images/')) {
+        if (src && src !== 'undefined' && src !== 'null') {
+            // If it's a full URL or a relative path from API
+            if (src.includes('/api/images/')) {
+                fetchSecureImage(src).then(url => {
+                    if (isMounted && url) setImgUrl(url);
+                });
+            } else {
                  setImgUrl(src);
-                 return;
             }
-
-            // Otherwise, fetch it securely
-            fetchSecureImage(src).then(url => {
-                if (isMounted && url) setImgUrl(url);
-            });
         }
-
         return () => { isMounted = false; };
     }, [src]);
 
     return <img src={imgUrl} alt={alt} className={className} style={style} />;
 };
-// ----------------------------------
 
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [displayUsers, setDisplayUsers] = useState([]);
+    
+    // Pagination state
     const rows = [10, 20, 30];
     const [usersPerPage, setUsersPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -60,29 +57,17 @@ const Users = () => {
         axiosInstance.get(`/api/getUsers`).then((response) => {
             if (response.data.success === true) {
                 setUsers(response.data.data);
+                setDisplayUsers(response.data.data);
             }
         }).catch(err => console.error("Fetch users error:", err));
     };
-
-    useEffect(() => {
-        setDisplayUsers(users);
-    }, [users]);
-
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentUsers = displayUsers.slice(indexOfFirstUser, indexOfLastUser);
-    const pageNumbers = [];
-
-    for (let i = 1; i <= Math.ceil(displayUsers.length / usersPerPage); i++) {
-        pageNumbers.push(i);
-    }
 
     const handleSearch = (e) => {
         let search = e.target.value.toLowerCase();
         if (search) {
             setDisplayUsers(users.filter(
                 (elem) =>
-                    elem.email.toLowerCase().includes(search) ||
+                    (elem.email && elem.email.toLowerCase().includes(search)) ||
                     (elem.fname && elem.fname.toLowerCase().includes(search)) ||
                     (elem.lname && elem.lname.toLowerCase().includes(search))
             ));
@@ -109,6 +94,16 @@ const Users = () => {
             console.error(err);
         });
     };
+
+    // Pagination Logic
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = displayUsers.slice(indexOfFirstUser, indexOfLastUser);
+    const pageNumbers = [];
+
+    for (let i = 1; i <= Math.ceil(displayUsers.length / usersPerPage); i++) {
+        pageNumbers.push(i);
+    }
 
     return (
         <Fragment>
@@ -156,9 +151,8 @@ const Users = () => {
                                             <tr key={index}>
                                                 <td className="font-weight-bold text-muted">{indexOfFirstUser + index + 1}</td>
                                                 <td>
-                                                    {/* UPDATED: Using SecureImage Component */}
                                                     <SecureImage
-                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/login-bg/profile1.png'}
+                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : ''}
                                                         alt='User'
                                                         className="rounded-circle shadow-sm border"
                                                         style={{ width: '45px', height: '45px', objectFit: 'cover' }}
@@ -166,7 +160,10 @@ const Users = () => {
                                                 </td>
                                                 <td>
                                                     <div className="font-weight-600 text-dark">{elem.fname} {elem.lname || ''}</div>
-                                                    <div className="text-muted small">{elem.phone || 'No Phone'}</div>
+                                                    <div className="text-muted small">
+                                                        <i className="fa fa-phone fa-fw mr-1"></i>
+                                                        {elem.phone ? elem.phone : 'No Contact'}
+                                                    </div>
                                                 </td>
                                                 <td>{elem.email}</td>
                                                 <td>

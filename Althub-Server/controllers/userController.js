@@ -6,19 +6,19 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
 const mongoose = require('mongoose');
-const { uploadFromBuffer, connectToMongo } = require("../db/conn"); 
+const { uploadFromBuffer, connectToMongo } = require("../db/conn");
 
 // --- HELPER FUNCTIONS ---
 
 const createtoken = async (user) => {
     try {
-        return jwt.sign({ 
+        return jwt.sign({
             _id: user._id,
-            version: user.tokenVersion || 0, 
-            role: user.role || 'student'     
-        }, config.secret_jwt, { expiresIn: '7d' }); 
-    } catch (error) { 
-        throw new Error(error.message); 
+            version: user.tokenVersion || 0,
+            role: user.role || 'student'
+        }, config.secret_jwt, { expiresIn: '7d' });
+    } catch (error) {
+        throw new Error(error.message);
     }
 }
 
@@ -93,11 +93,11 @@ const registerUser = async (req, res) => {
     try {
         const spassword = await securePassword(req.body.password);
         const user = new User({
-            fname: req.body.fname, lname: req.body.lname, email: req.body.email, 
+            fname: req.body.fname, lname: req.body.lname, email: req.body.email,
             password: spassword, role: req.body.role,
-            tokenVersion: 0 
+            tokenVersion: 0
         });
-        
+
         const userData = await User.findOne({ email: req.body.email });
 
         if (userData) {
@@ -105,9 +105,9 @@ const registerUser = async (req, res) => {
         } else {
             const user_data = await user.save();
             const token = await createtoken(user_data._id);
-            
+
             const isProduction = process.env.NODE_ENV === 'production';
-            
+
             res.cookie("jwt_token", token, {
                 httpOnly: true,
                 maxAge: 24 * 60 * 60 * 1000,
@@ -129,7 +129,7 @@ const userlogin = async (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
         const userData = await User.findOne({ email: email });
-        
+
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
@@ -139,7 +139,7 @@ const userlogin = async (req, res) => {
 
                 res.cookie("jwt_token", token, {
                     httpOnly: true,
-                    maxAge: 24 * 60 * 60 * 1000, 
+                    maxAge: 24 * 60 * 60 * 1000,
                     secure: isProduction,
                     sameSite: isProduction ? 'None' : 'Lax'
                 });
@@ -180,16 +180,16 @@ const updatePassword = async (req, res) => {
             const passwordMatch = await bcryptjs.compare(req.body.oldpassword, data.password);
             if (passwordMatch) {
                 const newpassword = await securePassword(req.body.newpassword);
-                
+
                 const userData = await User.findByIdAndUpdate(
-                    { _id: user_id }, 
-                    { 
+                    { _id: user_id },
+                    {
                         $set: { password: newpassword },
-                        $inc: { tokenVersion: 1 } 
+                        $inc: { tokenVersion: 1 }
                     },
                     { new: true }
                 );
-                
+
                 res.status(200).send({ success: true, msg: "Password updated. Please login again.", data: userData });
             } else { res.status(400).send({ success: false, msg: "Old password is incorrect" }); }
         } else { res.status(400).send({ success: false, msg: "User not found!" }); }
@@ -238,7 +238,7 @@ const userProfileEdit = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const userIdToDelete = req.params.id;
-        const loggedInUserId = req.user._id; 
+        const loggedInUserId = req.user._id;
 
         if (userIdToDelete !== loggedInUserId.toString()) {
             return res.status(403).send({
@@ -263,11 +263,11 @@ const uploadUserImage = async (req, res) => {
             const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
             const picture = { url: `/api/images/${fileId}` };
             res.status(200).send({ success: true, data: picture });
-        } else { 
-            res.status(400).send({ success: false, msg: "plz select a file" }); 
+        } else {
+            res.status(400).send({ success: false, msg: "plz select a file" });
         }
-    } catch (error) { 
-        res.status(400).send(error.message); 
+    } catch (error) {
+        res.status(400).send(error.message);
     }
 }
 
@@ -395,50 +395,53 @@ const userLogout = async (req, res) => {
 }
 
 // --- MODIFIED: Get Users with Degree Information ---
+// In Althub-Server/controllers/userController.js
+
 const getUsers = async (req, res) => {
-    try { 
-        // Use Aggregation to fetch user + education
+    try {
         const user_data = await User.aggregate([
             {
                 $lookup: {
-                    from: Education.collection.name, // Join with Education collection
+                    from: Education.collection.name,
                     let: { userId: "$_id" },
                     pipeline: [
                         {
-                            // Match User ID (User._id is ObjectId, Edu.userid is String)
                             $match: {
                                 $expr: { $eq: ["$userid", { $toString: "$$userId" }] }
                             }
                         },
-                        { $project: { course: 1, enddate: 1 } } // Fetch only course and enddate
+                        { $project: { course: 1, enddate: 1 } }
                     ],
                     as: "educationList"
                 }
             },
             {
+                // UPDATE THIS PROJECT STAGE TO INCLUDE ALL FIELDS
                 $project: {
-                    fname: 1, 
+                    fname: 1,
                     lname: 1,
-                    role: 1, 
-                    educationList: 1 
+                    role: 1,
+                    email: 1,        // <--- Added
+                    phone: 1,        // <--- Added
+                    profilepic: 1,   // <--- Added
+                    educationList: 1
                 }
             }
         ]);
 
-        // Process each user to find their latest degree
         const data = user_data.map(user => {
-             const latestEdu = getLatestEducation(user.educationList); 
-             return {
-                 ...user,
-                 degree: latestEdu.course // Attach degree to user object
-             };
+            const latestEdu = getLatestEducation(user.educationList);
+            return {
+                ...user,
+                degree: latestEdu.course
+            };
         });
 
-        res.status(200).send({ success: true, data: data }); 
+        res.status(200).send({ success: true, data: data });
     }
-    catch (error) { 
+    catch (error) {
         console.error(error);
-        res.status(400).send({ success: false }); 
+        res.status(400).send({ success: false });
     }
 }
 
@@ -494,8 +497,8 @@ const updateProfilePic = async (req, res) => {
         if (!fileId) return res.status(400).send({ success: false, msg: "No file provided" });
 
         const updatedUser = await User.findByIdAndUpdate(
-            req.body.userid, 
-            { $set: { profilepic: `/api/images/${fileId}` } }, 
+            req.body.userid,
+            { $set: { profilepic: `/api/images/${fileId}` } },
             { new: true }
         );
         res.status(200).send({ success: true, msg: "Profile updated", data: updatedUser });
@@ -534,7 +537,7 @@ const getRandomUsers = async (req, res) => {
 const searchFollowings = async (req, res) => {
     try {
         const { userId, query } = req.params;
-        
+
         const currentUser = await User.findById(userId);
         if (!currentUser) {
             return res.status(404).send({ success: false, msg: "User not found" });
