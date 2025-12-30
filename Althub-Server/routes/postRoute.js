@@ -1,11 +1,44 @@
 const express = require("express");
 const post_route = express.Router();
-
-// --- FIX: Import 'uploadArray' from storage ---
-const { uploadArray } = require('../db/storage'); 
-
+// 1. IMPORT FIX: Import 'uploadFromBuffer' to save the file
+const { uploadSingle, uploadFromBuffer } = require('../db/storage'); 
 const post_controller = require("../controllers/postController");
 const { requireAuth } = require("../middleware/authMiddleware");
+
+// 2. MIDDLEWARE: Handle File Upload & Save to GridFS
+const uploadPic = (req, res, next) => {
+    const uploadMiddleware = uploadSingle('image'); 
+    
+    // Note: Callback is now async to handle the database save
+    uploadMiddleware(req, res, async (err) => {
+        if (err) {
+            return res.status(400).send({ success: false, message: 'Upload error: ' + err.message });
+        }
+        
+        if (req.file) {
+            try {
+                // FIX: Manually upload the buffer to GridFS to get a real ID
+                const fid = await uploadFromBuffer(
+                    req.file.buffer, 
+                    req.file.originalname, 
+                    req.file.mimetype
+                );
+
+                const imageUrl = `/api/images/${fid}`;
+                
+                // Assign to both places for compatibility
+                req.body.image = imageUrl; 
+                req.images = [imageUrl]; 
+
+            } catch (uploadError) {
+                console.error("GridFS Upload Error:", uploadError);
+                return res.status(500).send({ success: false, message: 'Image saving failed' });
+            }
+        }
+        
+        next();
+    });
+};
 
 // --- ROUTES ---
 
