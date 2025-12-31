@@ -9,8 +9,6 @@ import Navbar from "./components/Navbar";
 import Loader from "./components/Loader"; 
 import AuthGuard from "./components/AuthGuard";
 
-// --- LAZY LOAD PAGES (Code Splitting) ---
-// This prevents downloading the entire app just to see the Main page
 const Main = lazy(() => import("./components/Main"));
 const Login = lazy(() => import("./components/Login"));
 const Register = lazy(() => import("./components/Register"));
@@ -27,102 +25,83 @@ const NewPassword = lazy(() => import("./components/NewPassword"));
 const Scholarship = lazy(() => import("./components/Scholarship"));
 const MyPosts = lazy(() => import("./components/MyPosts"));
 
+axios.defaults.withCredentials = true;
+
 function App() {
-  // Removed global isLoading to stop blocking the UI on every request
   const [isAuthReady, setIsAuthReady] = useState(false); 
   const nav = useNavigate(); 
 
-  // --- 1. IMMEDIATE TOKEN RESTORATION ---
   useLayoutEffect(() => {
-    const token = localStorage.getItem("Althub_Token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
     setIsAuthReady(true); 
   }, []);
 
   useEffect(() => {
-    // --- OPTIMIZED AXIOS INTERCEPTORS ---
-    // Removed the global showLoader/hideLoader logic. 
-    // This allows the app to remain interactive while fetching data.
-
+    // --- AXIOS INTERCEPTORS ---
     const reqInterceptor = axios.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem("Althub_Token");
-        if (token) {
-           config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
+      (config) => config,
       (error) => Promise.reject(error)
     );
 
     const resInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Auto-logout on 401 error
-        if (error.response && error.response.status === 401) {
-            console.warn("Session Expired or Unauthorized - Logging out");
-            localStorage.removeItem("Althub_Token");
-            localStorage.removeItem("Althub_Id");
-            delete axios.defaults.headers.common["Authorization"];
-            nav("/login");
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            handleSecurityLogout();
         }
         return Promise.reject(error);
       }
     );
 
-    // --- SOCKET CONNECTION ---
-    const token = localStorage.getItem("Althub_Token");
+    // --- CENTRALIZED LOGOUT LOGIC ---
+    const handleSecurityLogout = () => {
+      console.warn("Security Event: Logging out");
+      localStorage.removeItem("Althub_Token");
+      localStorage.removeItem("Althub_Id");
+      if (socket.connected) socket.disconnect();
+      nav("/login");
+    };
+
+    // --- SOCKET CONNECTION & SECURITY LISTENERS ---
     const userId = localStorage.getItem("Althub_Id");
 
-    if (token && userId && !socket.connected) {
-      socket.auth = { token };
+    if (userId && !socket.connected) {
       socket.connect();
     }
 
     const onConnect = () => {
-      console.log("Socket Connected:", socket.id);
       if(userId) socket.emit("addUser", userId);
     };
 
-    const onConnectError = (err) => {
-      console.warn("Socket Connection Failed:", err.message);
+    // SECURITY: Listen for a forced logout from the server
+    const onForceLogout = () => {
+      handleSecurityLogout();
     };
 
     socket.on("connect", onConnect);
-    socket.on("connect_error", onConnectError);
+    socket.on("forceLogout", onForceLogout); // Point 3 implementation
 
     return () => {
       axios.interceptors.request.eject(reqInterceptor);
       axios.interceptors.response.eject(resInterceptor);
       socket.off("connect", onConnect);
-      socket.off("connect_error", onConnectError);
+      socket.off("forceLogout", onForceLogout);
     };
   }, [nav]);
 
-  if (!isAuthReady) {
-      return null; 
-  }
+  if (!isAuthReady) return null; 
 
   return (
     <>
       <ToastContainer />
-      
-      {/* Navbar is always present but handles its own visibility */}
       <Navbar socket={socket} />
-      
-      {/* Suspense shows the Loader only while the specific page code is downloading */}
       <Suspense fallback={<Loader />}>
         <Routes>
-          {/* --- PUBLIC ROUTES --- */}
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forget-password" element={<ForgetPassword />} />
           <Route path="/new-password" element={<NewPassword />} />
 
-          {/* --- PROTECTED ROUTES --- */}
           <Route element={<AuthGuard />}>
               <Route path="/events" element={<Events />} />
               <Route path="/home" element={<Home socket={socket} />} />

@@ -2,17 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  TextField, 
-  CircularProgress, 
-  Container, 
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  CircularProgress,
+  Container,
   Link,
-  Grid 
+  Grid
 } from "@mui/material";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'; 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { WEB_URL } from "../baseURL";
 import "../styles/Login.css"; // <--- Import the CSS file here
 
@@ -53,13 +53,22 @@ export default function Login() {
           password: user.password,
         },
         url: `${WEB_URL}/api/userLogin`,
-        withCredentials: true 
+        withCredentials: true // MANDATORY: Allows the browser to receive/send cookies
       }).then((response) => {
         toast.success("Login Successful");
+
+        // 1. Store the ID (less sensitive) in localStorage for the AuthGuard
         localStorage.setItem("Althub_Id", response.data.data._id);
+
+        // 2. The Token is now handled by the browser cookie (HttpOnly)
+        // We temporarily keep this for Step 1 compatibility
         if (response.data.token) {
-            localStorage.setItem("Althub_Token", response.data.token);
+          localStorage.setItem("Althub_Token", response.data.token);
         }
+
+        // SECURITY: Wipe the sensitive user state (email/password) from memory immediately
+        setUser({ email: "", password: "" });
+
         setTimeout(() => nav("/home"), 1000);
       }).catch((err) => {
         setLoading(false);
@@ -71,21 +80,21 @@ export default function Login() {
 
   return (
     <Grid container sx={{ minHeight: '100vh', bgcolor: '#fff' }}>
-      
+
       {/* --- LEFT SIDE (Visual) --- */}
       <Grid item xs={12} md={7} sx={{ position: 'relative' }}>
         <Box className="login-visual-side">
-          <Box 
-            component="img" 
-            src="images/register-animate.svg" 
-            alt="Welcome" 
-            sx={{ width: '80%', maxWidth: '600px', position: 'relative', zIndex: 1 }} 
+          <Box
+            component="img"
+            src="images/register-animate.svg"
+            alt="Welcome"
+            sx={{ width: '80%', maxWidth: '600px', position: 'relative', zIndex: 1 }}
           />
         </Box>
-        
-        <Button 
+
+        <Button
           className="login-back-btn"
-          startIcon={<ArrowBackIcon />} 
+          startIcon={<ArrowBackIcon />}
           onClick={() => nav("/")}
         >
           Back to Main
@@ -95,7 +104,7 @@ export default function Login() {
       {/* --- RIGHT SIDE (Form) --- */}
       <Grid item xs={12} md={5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Container maxWidth="xs">
-          
+
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Box component="img" src="images/Logo1.jpeg" alt="Logo" sx={{ width: '180px', borderRadius: '12px', mb: 3 }} />
             <Typography variant="h4" fontWeight="700" sx={{ color: '#2d3436', mb: 1 }}>
@@ -138,7 +147,7 @@ export default function Login() {
             </Button>
 
             <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-              <Link 
+              <Link
                 component="button"
                 className="login-link"
                 onClick={() => nav("/forget-password")}
@@ -146,11 +155,11 @@ export default function Login() {
               >
                 Forgot Password?
               </Link>
-              
+
               <Typography variant="body2" sx={{ color: '#636e72' }}>
                 Don't have an account?{' '}
-                <Link 
-                  component="button" 
+                <Link
+                  component="button"
                   className="login-link"
                   onClick={() => nav("/register")}
                 >

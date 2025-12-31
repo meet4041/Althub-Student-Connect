@@ -8,13 +8,21 @@ const randomstring = require("randomstring");
 const mongoose = require('mongoose');
 const { uploadFromBuffer, connectToMongo } = require("../db/conn");
 
+// --- SECURITY UTILITIES ---
+const sanitizeInput = (text) => {
+    if (typeof text !== 'string') return text;
+    return text.replace(/<[^>]*>?/gm, '');
+};
+
 // --- HELPER FUNCTIONS ---
 
 const createtoken = async (user) => {
     try {
+        // FIX: Ensure we use the current version from the user object
+        // If user is just an ID, this fails. We need the full object.
         return jwt.sign({
             _id: user._id,
-            version: user.tokenVersion || 0,
+            version: user.tokenVersion || 0, // Captures the incremented version
             role: user.role || 'student'
         }, config.secret_jwt, { expiresIn: '7d' });
     } catch (error) {
@@ -37,24 +45,21 @@ const sendresetpasswordMail = async (name, email, token) => {
                 pass: config.emailPassword
             },
         });
-
         const mailoptions = {
             from: `"Althub Support" <${config.emailUser}>`,
             to: email,
             subject: 'For Reset Password',
             html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
         };
-
         const info = await transporter.sendMail(mailoptions);
-        console.log("Mail sent: ", info.response);
         return info;
-
     } catch (error) {
         console.error("Nodemailer Error:", error);
         throw new Error("Failed to send email. Please try again later.");
     }
 }
 
+// ... (Keep existing helpers: checkAlumniStatus, getLatestEducation, createFlexibleRegex) ...
 const checkAlumniStatus = (educations) => {
     if (!educations || educations.length === 0) return false;
     const isStudying = educations.some(edu => !edu.enddate || edu.enddate === "");
@@ -87,61 +92,72 @@ const createFlexibleRegex = (text) => {
     return new RegExp(pattern, "i");
 };
 
+
 // --- CONTROLLERS ---
 
 const registerUser = async (req, res) => {
     try {
+        const fname = sanitizeInput(req.body.fname);
+        const lname = sanitizeInput(req.body.lname);
+        const email = sanitizeInput(req.body.email);
+
+        const userData = await User.findOne({ email: email });
+
+        if (userData) {
+            return res.status(400).send({ success: false, msg: "User already exists" });
+        }
+
         const spassword = await securePassword(req.body.password);
         const user = new User({
-            fname: req.body.fname, lname: req.body.lname, email: req.body.email,
+            fname, lname, email,
             password: spassword, role: req.body.role,
             tokenVersion: 0
         });
 
-        const userData = await User.findOne({ email: req.body.email });
+        const user_data = await user.save();
+        
+        // FIX: Pass the FULL user object, not just the ID
+        const token = await createtoken(user_data); 
 
-        if (userData) {
-            res.status(400).send({ success: false, msg: "User already exists" });
-        } else {
-            const user_data = await user.save();
-            const token = await createtoken(user_data._id);
+        const isProduction = process.env.NODE_ENV === 'production';
 
-            const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie("jwt_token", token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            path: '/'
+        });
 
-            res.cookie("jwt_token", token, {
-                httpOnly: true,
-                maxAge: 24 * 60 * 60 * 1000,
-                secure: isProduction,
-                sameSite: isProduction ? 'None' : 'Lax'
-            });
-
-            res.status(200).send({ success: true, data: user_data, token: token });
-        }
-
+        res.status(200).send({ success: true, data: user_data, token: token });
     } catch (error) {
-        res.status(400).send(error.message);
-        console.log("Error in Registering User : " + error.message);
+        res.status(400).send({ success: false, msg: error.message });
     }
 }
 
 const userlogin = async (req, res) => {
     try {
-        const email = req.body.email;
+        const email = sanitizeInput(req.body.email);
         const password = req.body.password;
-        const userData = await User.findOne({ email: email });
+        
+        // Ensure we fetch tokenVersion
+        const userData = await User.findOne({ email: email }).select("+tokenVersion +password"); 
 
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                const token = await createtoken(userData._id);
-
+                
+                // FIX: Pass the FULL userData object so 'tokenVersion' is included in the token
+                const token = await createtoken(userData); 
+                
                 const isProduction = process.env.NODE_ENV === 'production';
 
                 res.cookie("jwt_token", token, {
                     httpOnly: true,
-                    maxAge: 24 * 60 * 60 * 1000,
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
                     secure: isProduction,
-                    sameSite: isProduction ? 'None' : 'Lax'
+                    sameSite: isProduction ? 'None' : 'Lax',
+                    path: '/'
                 });
 
                 const userResult = {
@@ -165,40 +181,57 @@ const userlogin = async (req, res) => {
         } else {
             res.status(400).send({ success: false, msg: "User not found. Please Register." });
         }
-
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
-        console.log("Error in Login User : " + error.message);
     }
 }
 
 const updatePassword = async (req, res) => {
     try {
-        const user_id = req.body.user_id;
-        const data = await User.findOne({ _id: user_id });
-        if (data) {
-            const passwordMatch = await bcryptjs.compare(req.body.oldpassword, data.password);
-            if (passwordMatch) {
-                const newpassword = await securePassword(req.body.newpassword);
+        const loggedInUserId = req.user._id;
+        const { oldpassword, newpassword } = req.body;
 
-                const userData = await User.findByIdAndUpdate(
-                    { _id: user_id },
+        // Use constructor to find user in the correct collection (User/Admin/Institute)
+        const CurrentUserModel = req.user.constructor;
+        const data = await CurrentUserModel.findById(loggedInUserId).select('+password');
+
+        if (data) {
+            const passwordMatch = await bcryptjs.compare(oldpassword, data.password);
+            
+            if (passwordMatch) {
+                const hashedNewPassword = await securePassword(newpassword);
+
+                // Increment tokenVersion to invalidate old tokens
+                await CurrentUserModel.findByIdAndUpdate(
+                    { _id: loggedInUserId },
                     {
-                        $set: { password: newpassword },
-                        $inc: { tokenVersion: 1 }
-                    },
-                    { new: true }
+                        $set: { password: hashedNewPassword },
+                        $inc: { tokenVersion: 1 } 
+                    }
                 );
 
-                res.status(200).send({ success: true, msg: "Password updated. Please login again.", data: userData });
-            } else { res.status(400).send({ success: false, msg: "Old password is incorrect" }); }
-        } else { res.status(400).send({ success: false, msg: "User not found!" }); }
-    } catch (error) { res.status(400).send(error.message); }
+                res.clearCookie("jwt_token");
+
+                res.status(200).send({ 
+                    success: true, 
+                    msg: "Password updated successfully. Please login again." 
+                });
+            } else { 
+                res.status(400).send({ success: false, msg: "Current password is incorrect" }); 
+            }
+        } else { 
+            res.status(400).send({ success: false, msg: "User not found!" }); 
+        }
+    } catch (error) { 
+        res.status(500).send({ success: false, msg: error.message }); 
+    }
 }
+
+// ... (Keep the rest of your controllers: forgetPassword, resetpassword, userProfileEdit, etc. exactly as they were) ...
 
 const forgetPassword = async (req, res) => {
     try {
-        const email = req.body.email;
+        const email = sanitizeInput(req.body.email);
         const userData = await User.findOne({ email: email });
         if (userData) {
             const randomString = randomstring.generate();
@@ -224,9 +257,13 @@ const resetpassword = async (req, res) => {
 const userProfileEdit = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
+        const sanitizedBody = {};
+        for (let key in req.body) {
+            sanitizedBody[key] = sanitizeInput(req.body[key]);
+        }
         const new_data = await User.findByIdAndUpdate(
             { _id: loggedInUserId },
-            { $set: req.body },
+            { $set: sanitizedBody },
             { new: true }
         );
         res.status(200).send({ success: true, msg: 'Profile Updated', data: new_data });
@@ -239,20 +276,13 @@ const deleteUser = async (req, res) => {
     try {
         const userIdToDelete = req.params.id;
         const loggedInUserId = req.user._id;
-
         if (userIdToDelete !== loggedInUserId.toString()) {
-            return res.status(403).send({
-                success: false,
-                msg: "Security Alert: Unauthorized deletion attempt!"
-            });
+            return res.status(403).send({ success: false, msg: "Security Alert: Unauthorized deletion attempt!" });
         }
-
         await User.deleteOne({ _id: userIdToDelete });
         res.clearCookie("jwt_token");
         res.status(200).send({ success: true, msg: 'Deleted successfully' });
-    } catch (error) {
-        res.status(400).send({ success: false, msg: error.message });
-    }
+    } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
 
 const uploadUserImage = async (req, res) => {
@@ -263,88 +293,51 @@ const uploadUserImage = async (req, res) => {
             const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
             const picture = { url: `/api/images/${fileId}` };
             res.status(200).send({ success: true, data: picture });
-        } else {
-            res.status(400).send({ success: false, msg: "plz select a file" });
-        }
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+        } else { res.status(400).send({ success: false, msg: "plz select a file" }); }
+    } catch (error) { res.status(400).send(error.message); }
 }
 
 const searchUser = async (req, res) => {
     try {
         const { search, location, skill, degree, year } = req.body;
-
         let educationUserIds = null;
-
         if (degree || year) {
             const eduQuery = {};
-            if (degree) {
-                eduQuery.course = { $regex: createFlexibleRegex(degree) };
-            }
-            if (year) {
-                eduQuery.enddate = { $regex: new RegExp(year.toString()) };
-            }
+            if (degree) eduQuery.course = { $regex: createFlexibleRegex(degree) };
+            if (year) eduQuery.enddate = { $regex: new RegExp(year.toString()) };
             educationUserIds = await Education.find(eduQuery).distinct('userid');
-
-            if (educationUserIds.length === 0) {
-                return res.status(200).send({ success: true, msg: 'No User Found', data: [] });
-            }
+            if (educationUserIds.length === 0) return res.status(200).send({ success: true, msg: 'No User Found', data: [] });
         }
-
         const pipeline = [];
         const matchStage = {};
-
         if (educationUserIds !== null) {
             const objectIds = educationUserIds.map(id => new mongoose.Types.ObjectId(id));
             matchStage._id = { $in: objectIds };
         }
-
         if (search) {
             const nameRegex = new RegExp(search, "i");
-            matchStage.$or = [
-                { fname: { $regex: nameRegex } },
-                { lname: { $regex: nameRegex } }
-            ];
+            matchStage.$or = [{ fname: { $regex: nameRegex } }, { lname: { $regex: nameRegex } }];
         }
-
         if (location) {
             const locRegex = new RegExp(location, "i");
             const locQuery = { $or: [{ city: { $regex: locRegex } }, { state: { $regex: locRegex } }] };
-            if (matchStage.$or) {
-                matchStage.$and = [{ $or: matchStage.$or }, locQuery];
-                delete matchStage.$or;
-            } else {
-                Object.assign(matchStage, locQuery);
-            }
+            if (matchStage.$or) { matchStage.$and = [{ $or: matchStage.$or }, locQuery]; delete matchStage.$or; }
+            else { Object.assign(matchStage, locQuery); }
         }
-
-        if (skill) {
-            matchStage.skills = { $regex: new RegExp(skill, "i") };
-        }
-
-        if (Object.keys(matchStage).length > 0) {
-            pipeline.push({ $match: matchStage });
-        }
-
+        if (skill) matchStage.skills = { $regex: new RegExp(skill, "i") };
+        if (Object.keys(matchStage).length > 0) pipeline.push({ $match: matchStage });
         pipeline.push({ $limit: 50 });
-
         pipeline.push({
             $lookup: {
                 from: Education.collection.name,
                 let: { userId: "$_id" },
                 pipeline: [
-                    {
-                        $match: {
-                            $expr: { $eq: ["$userid", { $toString: "$$userId" }] }
-                        }
-                    },
+                    { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
                     { $project: { course: 1, enddate: 1 } }
                 ],
                 as: "educationList"
             }
         });
-
         pipeline.push({
             $project: {
                 fname: 1, lname: 1, profilepic: 1, city: 1, state: 1,
@@ -352,32 +345,16 @@ const searchUser = async (req, res) => {
                 educationList: 1, isAlumni: 1
             }
         });
-
         const user_data = await User.aggregate(pipeline);
-
         const finalData = user_data.map(user => {
             const isAlumni = checkAlumniStatus(user.educationList);
             const latestEdu = getLatestEducation(user.educationList);
             delete user.educationList;
-
-            return {
-                ...user,
-                isAlumni,
-                latestCourse: latestEdu.course,
-                latestYear: latestEdu.year
-            };
+            return { ...user, isAlumni, latestCourse: latestEdu.course, latestYear: latestEdu.year };
         });
-
-        if (finalData.length > 0) {
-            res.status(200).send({ success: true, msg: "User Details", data: finalData });
-        } else {
-            res.status(200).send({ success: true, msg: 'No User Found', data: [] });
-        }
-
-    } catch (error) {
-        console.error("Search Error:", error);
-        res.status(400).send({ success: false, msg: error.message });
-    }
+        if (finalData.length > 0) res.status(200).send({ success: true, msg: "User Details", data: finalData });
+        else res.status(200).send({ success: true, msg: 'No User Found', data: [] });
+    } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
 
 const searchUserById = async (req, res) => {
@@ -394,9 +371,6 @@ const userLogout = async (req, res) => {
     catch (error) { res.status(400).send({ success: false }); }
 }
 
-// --- MODIFIED: Get Users with Degree Information ---
-// In Althub-Server/controllers/userController.js
-
 const getUsers = async (req, res) => {
     try {
         const user_data = await User.aggregate([
@@ -405,44 +379,21 @@ const getUsers = async (req, res) => {
                     from: Education.collection.name,
                     let: { userId: "$_id" },
                     pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$userid", { $toString: "$$userId" }] }
-                            }
-                        },
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
                         { $project: { course: 1, enddate: 1 } }
                     ],
                     as: "educationList"
                 }
             },
-            {
-                // UPDATE THIS PROJECT STAGE TO INCLUDE ALL FIELDS
-                $project: {
-                    fname: 1,
-                    lname: 1,
-                    role: 1,
-                    email: 1,        // <--- Added
-                    phone: 1,        // <--- Added
-                    profilepic: 1,   // <--- Added
-                    educationList: 1
-                }
-            }
+            { $project: { fname: 1, lname: 1, role: 1, email: 1, phone: 1, profilepic: 1, educationList: 1 } }
         ]);
-
         const data = user_data.map(user => {
             const latestEdu = getLatestEducation(user.educationList);
-            return {
-                ...user,
-                degree: latestEdu.course
-            };
+            return { ...user, degree: latestEdu.course };
         });
-
         res.status(200).send({ success: true, data: data });
     }
-    catch (error) {
-        console.error(error);
-        res.status(400).send({ success: false });
-    }
+    catch (error) { res.status(400).send({ success: false }); }
 }
 
 const getTopUsers = async (req, res) => {
@@ -490,12 +441,8 @@ const updateProfilePic = async (req, res) => {
             await connectToMongo();
             const filename = `profile-${Date.now()}-${req.file.originalname}`;
             fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
-        } else {
-            fileId = req.body.fileId;
-        }
-
+        } else { fileId = req.body.fileId; }
         if (!fileId) return res.status(400).send({ success: false, msg: "No file provided" });
-
         const updatedUser = await User.findByIdAndUpdate(
             req.body.userid,
             { $set: { profilepic: `/api/images/${fileId}` } },
@@ -532,34 +479,6 @@ const getRandomUsers = async (req, res) => {
         res.status(200).send({ success: true, data: user_data });
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
-
-
-const searchFollowings = async (req, res) => {
-    try {
-        const { userId, query } = req.params;
-
-        const currentUser = await User.findById(userId);
-        if (!currentUser) {
-            return res.status(404).send({ success: false, msg: "User not found" });
-        }
-
-        const regex = new RegExp(query, "i");
-
-        const matchedUsers = await User.find({
-            _id: { $in: currentUser.followings },
-            $or: [
-                { fname: { $regex: regex } },
-                { lname: { $regex: regex } }
-            ]
-        }).select("fname lname profilepic email");
-
-        res.status(200).send({ success: true, data: matchedUsers });
-
-    } catch (error) {
-        res.status(500).send({ success: false, msg: error.message });
-    }
-};
-
 
 module.exports = {
     registerUser, userlogin, updatePassword, forgetPassword, resetpassword,

@@ -12,7 +12,7 @@ user_route.post('/userResetPassword', user_controller.resetpassword);
 user_route.get('/userLogout', user_controller.userLogout);
 
 // --- PROTECTED ROUTES ---
-user_route.post('/userUpdatePassword', requireAuth, user_controller.updatePassword);
+user_route.post('/updatePassword', requireAuth, user_controller.updatePassword);
 user_route.post('/userProfileEdit', requireAuth, user_controller.userProfileEdit);
 user_route.put('/deleteProfilePic/:id', requireAuth, user_controller.deleteProfilePic);
 user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);

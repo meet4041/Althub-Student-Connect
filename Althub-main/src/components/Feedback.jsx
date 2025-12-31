@@ -18,12 +18,11 @@ export default function Feedback() {
     const location = useLocation();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        // Updated to use withCredentials for secure cookie access
         axios.get(`${WEB_URL}/api/getUsers`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            withCredentials: true 
         }).then((res) => {
             if(res.data.success) {
-                // Map data for MUI Autocomplete
                 const formattedOptions = res.data.data.map(user => ({
                     label: `${user.fname} ${user.lname} ${user.degree ? `(${user.degree})` : ""}`,
                     id: user._id
@@ -51,11 +50,19 @@ export default function Feedback() {
             return;
         }
 
+        // --- SECURITY: PREVENT XSS INJECTION ---
+        const htmlPattern = /<(.|\n)*?>/g;
+        if (htmlPattern.test(feedback)) {
+            toast.error("HTML tags/scripts are not allowed in feedback!");
+            return;
+        }
+
         setIsSubmitting(true);
 
         axios({
             url: `${WEB_URL}/api/addFeedback`,
             method: 'post',
+            withCredentials: true, // Ensures the secure cookie is sent
             data: {
                 userid: userID,
                 selected_user_id: selectedUser.id,
@@ -65,6 +72,12 @@ export default function Feedback() {
         }).then((Response) => {
             setIsSubmitting(false);
             toast.success("Feedback submitted successfully!");
+            
+            // SECURITY: Wipe local component state after success
+            setFeedback("");
+            setSelectedUser(null);
+            setRate(0);
+
             setTimeout(() => nav("/home"), 1000); 
         }).catch((error) => {
             setIsSubmitting(false);
