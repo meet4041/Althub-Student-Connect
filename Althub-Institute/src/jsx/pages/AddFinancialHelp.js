@@ -12,9 +12,10 @@ const AddFinancialHelp = () => {
     const navigate = useNavigate();
     const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState(null);
+    const [users, setUsers] = useState([]);
 
     // Theme Constant
-    const themeColor = '#2563EB'; // Royal Blue
+    const themeColor = '#2563EB'; 
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -29,6 +30,27 @@ const AddFinancialHelp = () => {
             setInstitute_Name(name);
         }
     }, []);
+
+    // Fetch Users for Dropdown
+    useEffect(() => {
+        const getUsersData = () => {
+            if (!institute_Name) return;
+            const token = localStorage.getItem('token');
+            axios({
+                method: "get",
+                url: `${ALTHUB_API_URL}/api/getUsersOfInstitute/${institute_Name}`, 
+                headers: { 'Authorization': `Bearer ${token}` },
+            }).then((response) => {
+                if (response.data.success) {
+                    setUsers(response.data.data || []);
+                }
+            }).catch((err) => {
+                console.error("Failed to fetch users", err);
+            });
+        };
+        getUsersData();
+    }, [institute_Name]);
+
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
 
@@ -41,8 +63,29 @@ const AddFinancialHelp = () => {
         dueDate: ""
     });
 
+    // Handle normal changes
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
+    };
+
+    // [NEW] Special handler for Name selection to auto-fetch image
+    const handleNameChange = (e) => {
+        const selectedName = e.target.value;
+        let newImage = data.image; // Keep existing image by default
+
+        // Find user by name (exact match logic based on the datalist value)
+        const selectedUser = users.find(u => {
+            const fullName = `${u.fname} ${u.lname || ''}`.trim();
+            return fullName === selectedName;
+        });
+
+        // If user found and has a profile pic, use it
+        if (selectedUser && selectedUser.profilepic) {
+            newImage = selectedUser.profilepic;
+            toast.info("User profile image auto-selected");
+        }
+
+        setData({ ...data, name: selectedName, image: newImage });
     };
 
     const handleReset = () => {
@@ -54,30 +97,26 @@ const AddFinancialHelp = () => {
             image: "",
             dueDate: ""
         });
-        document.getElementById('imageInput').value = ""; // Reset file input visual
+        document.getElementById('imageInput').value = ""; 
     }
 
     const handleImgChange = (e) => {
         const file = e.target.files[0];
-
-        // 1. Check if file exists
         if (!file) return;
 
-        // 2. Validate File Extension (jpg, jpeg, png, gif)
         if (!file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
-            toast.error("Invalid file format. Only .jpg, .jpeg, .png, .gif allowed.");
-            e.target.value = null; // Clear the input so user can retry
+            toast.error("Invalid file format.");
+            e.target.value = null;
             return;
         }
 
-        // 3. Proceed with Upload if valid
         var body = new FormData();
-        body.append("profilepic", file); // Using the validated 'file' variable
+        body.append("profilepic", file); 
 
         axios({
             method: "post",
             headers: { "Content-Type": "multipart/form-data" },
-            url: `${ALTHUB_API_URL}/api/uploadUserImage`, // Ensure this endpoint matches your backend route
+            url: `${ALTHUB_API_URL}/api/uploadUserImage`, 
             data: body,
         }).then((response) => {
             if (response.data.success) {
@@ -85,13 +124,12 @@ const AddFinancialHelp = () => {
                 toast.success("Image uploaded successfully");
             }
         }).catch((error) => {
-            console.error(error);
             toast.error("Image upload failed");
         });
     };
 
     const submitHandler = (e) => {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault(); 
         if (validate()) {
             setDisable(true)
             axios({
@@ -110,9 +148,7 @@ const AddFinancialHelp = () => {
                 handleReset();
                 setDisable(false);
                 toast.success("Financial aid added successfully");
-                setTimeout(() => {
-                    navigate('/financial-aid');
-                }, 1500);
+                setTimeout(() => navigate('/financial-aid'), 1500);
             }).catch((error) => {
                 setDisable(false);
                 toast.error("Failed to add financial aid");
@@ -127,7 +163,7 @@ const AddFinancialHelp = () => {
 
         if (!input["name"]) {
             isValid = false;
-            errors["name_err"] = "Please Enter Student Name";
+            errors["name_err"] = "Please Select/Enter Student Name";
         }
         if (!input["aid"]) {
             isValid = false;
@@ -145,7 +181,6 @@ const AddFinancialHelp = () => {
             isValid = false;
             errors["dueDate_err"] = "Please Enter Due Date";
         }
-
         setErrors(errors);
         return isValid;
     }
@@ -179,7 +214,25 @@ const AddFinancialHelp = () => {
                                         <fieldset>
                                             <div className="form-group mb-3">
                                                 <label className="font-weight-bold" htmlFor="exampleInputName">Student Name</label>
-                                                <input type="text" className="form-control" id="exampleInputName" placeholder="e.g. John Doe" name="name" value={data.name} onChange={handleChange} style={{ height: '45px' }} />
+                                                <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    id="exampleInputName" 
+                                                    list="studentList" 
+                                                    placeholder="Search and Select Student..." 
+                                                    name="name" 
+                                                    value={data.name} 
+                                                    onChange={handleNameChange} 
+                                                    style={{ height: '45px' }} 
+                                                    autoComplete="off"
+                                                />
+                                                <datalist id="studentList">
+                                                    {users.map((user) => (
+                                                        <option key={user._id} value={`${user.fname} ${user.lname || ''}`.trim()}>
+                                                            {user.email}
+                                                        </option>
+                                                    ))}
+                                                </datalist>
                                                 <div className="text-danger small mt-1">{errors.name_err}</div>
                                             </div>
 
@@ -213,6 +266,7 @@ const AddFinancialHelp = () => {
                                                 <label className="font-weight-bold">Student/Banner Image</label>
                                                 <div className="custom-file-container p-3 border rounded bg-light">
                                                     <input type="file" id="imageInput" className='form-control-file' name="image" onChange={handleImgChange} />
+                                                    <small className="form-text text-muted">Auto-filled if user has a profile picture. Can be overwritten.</small>
 
                                                     {data.image && (
                                                         <div className="mt-3 shadow-sm rounded overflow-hidden" style={{ width: '120px', height: '120px', border: '1px solid #e2e8f0' }}>

@@ -11,14 +11,19 @@ import axios from 'axios';
 const FinancialPole = () => {
     const [institute_Name, setInstitute_Name] = useState(null);
     let navigate = useNavigate();
-    const [data, setData] = useState([]);
+    const [data, setData] = useState([]); // Financial Aid Data
+    const [users, setUsers] = useState([]); // Full User List
     const [displayCourses, setDisplayCourses] = useState([]); 
     const rows = [10, 20, 30];
     const [coursesPerPage, setCoursesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
     
+    // Modal State
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [associatedUser, setAssociatedUser] = useState(null);
+
     // Theme Constant
-    const themeColor = '#2563EB'; // Royal Blue
+    const themeColor = '#2563EB'; 
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -35,28 +40,34 @@ const FinancialPole = () => {
     useEffect(() => {
         if (institute_Name) {
             getAidData();
+            getUsersData(); 
         }
     }, [institute_Name]);
 
-    // 1. UPDATED: Added Authorization Header
     const getAidData = () => {
         const token = localStorage.getItem('token');
         axios({
             method: "get",
             url: `${ALTHUB_API_URL}/api/getFinancialAidByInstitute/${institute_Name}`,
-            headers: { 
-                'Authorization': `Bearer ${token}` 
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         }).then((response) => {
             setData(response.data.data || []);
         }).catch(err => {
             console.error(err);
             setData([]);
-            // Optional: Redirect if unauthorized
-            if (err.response && err.response.status === 401) {
-                navigate('/login');
-            }
         });
+    };
+
+    // Fetch Users List to link financial records to contact details
+    const getUsersData = () => {
+        const token = localStorage.getItem('token');
+        axios({
+            method: "get",
+            url: `${ALTHUB_API_URL}/api/getUsersOfInstitute/${institute_Name}`,
+            headers: { 'Authorization': `Bearer ${token}` },
+        }).then((response) => {
+            setUsers(response.data.data || []);
+        }).catch(() => {});
     };
 
     useEffect(() => {
@@ -68,14 +79,11 @@ const FinancialPole = () => {
     const currentCourses = displayCourses.slice(indexOfFirstCourse, indexOfLastCourse);
 
     const pageNumbers = [];
-
     for (let i = 1; i <= Math.ceil(displayCourses.length / coursesPerPage); i++) {
         pageNumbers.push(i);
     }
 
-    const paginate = (num) => {
-        setCurrentPage(num);
-    }
+    const paginate = (num) => setCurrentPage(num);
 
     const handleSearch = (e) => {
         if (e.target.value) {
@@ -94,31 +102,48 @@ const FinancialPole = () => {
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
 
+    // Triggered from inside the Modal
     const handleDeleteAid = (id) => {
         setDeleteId(id);
         setAlert(true);
+        // We keep the modal open or close it? Let's close it to avoid confusion
+        // But the delete alert will show on top.
     }
 
-    // 2. UPDATED: Added Authorization Header for Delete
     const DeleteAid = () => {
         const token = localStorage.getItem('token');
         axios({
             method: "delete",
             url: `${ALTHUB_API_URL}/api/deleteFinancialAid/${deleteId}`,
-            headers: { 
-                'Authorization': `Bearer ${token}` 
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         }).then((response) => {
             if (response.data.success === true) {
                 getAidData();
                 setDeleteId('');
                 setAlert(false);
                 setAlert2(true);
+                closeDetails(); // Close modal on success
             }
         }).catch(err => {
-            console.error("Delete failed", err);
             setAlert(false);
         });
+    }
+
+    // Open Modal
+    const openDetails = (record) => {
+        setSelectedRecord(record);
+        // Find associated user details from the fetched users list
+        if (users && users.length > 0) {
+            const user = users.find(u => `${u.fname} ${u.lname || ''}`.trim() === record.name.trim());
+            setAssociatedUser(user);
+        } else {
+            setAssociatedUser(null);
+        }
+    }
+
+    const closeDetails = () => {
+        setSelectedRecord(null);
+        setAssociatedUser(null);
     }
 
     return (
@@ -135,7 +160,6 @@ const FinancialPole = () => {
                             </ol>
                             <h1 className="page-header mb-0">Scholarship Management</h1>
                         </div>
-                        {/* Primary Blue Button */}
                         <Link to="/add-financial-aid" className="btn btn-primary btn-lg shadow-sm" 
                               style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
                             <i className="fa fa-plus mr-2"></i> Add Scholarship
@@ -171,56 +195,40 @@ const FinancialPole = () => {
                                 <table className="table table-hover mb-0">
                                     <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
                                         <tr>
-                                            <th className="border-0 pl-4">Sr. No.</th>
+                                            <th className="border-0 pl-4" style={{width: '10%'}}>Sr. No.</th>
+                                            {/* Simplified Columns */}
                                             <th className="border-0">Student Profile</th>
-                                            <th className="border-0">Aid Amount</th>
-                                            <th className="border-0">Claimed</th>
-                                            <th className="border-0">Due Date</th>
-                                            <th className="border-0">Description</th>
-                                            <th className="border-0 text-center">Action</th>
+                                            <th className="border-0 text-center">Due Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {currentCourses.length > 0 ? currentCourses.map((elem, index) =>
-                                            <tr key={index}>
+                                            <tr key={index} style={{cursor: 'pointer'}} onClick={() => openDetails(elem)}>
                                                 <td className="pl-4 align-middle text-muted">{indexOfFirstCourse + index + 1}</td>
+                                                
+                                                {/* Student Profile Column */}
                                                 <td className="align-middle">
                                                     <div className="d-flex align-items-center">
                                                         {elem.image === '' || elem.image === undefined ? 
-                                                            <img src='assets/img/profile1.png' alt='default' className="rounded shadow-sm mr-2" style={{ width: '40px', height: '40px', objectFit: 'cover' }} /> 
+                                                            <img src='assets/img/profile1.png' alt='default' className="rounded-circle shadow-sm mr-3" style={{ width: '45px', height: '45px', objectFit: 'cover', border: '2px solid #fff' }} /> 
                                                             : 
-                                                            <img src={`${ALTHUB_API_URL}${elem.image}`} alt='user' className="rounded shadow-sm mr-2" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                                            <img src={`${ALTHUB_API_URL}${elem.image}`} alt='user' className="rounded-circle shadow-sm mr-3" style={{ width: '45px', height: '45px', objectFit: 'cover', border: '2px solid #fff' }} />
                                                         }
-                                                        <span className="font-weight-bold text-dark">{elem.name}</span>
+                                                        <div>
+                                                            <div className="font-weight-bold text-dark" style={{fontSize: '15px'}}>{elem.name}</div>
+                                                            <small className="text-muted">Click to view details</small>
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td className="align-middle text-dark">₹{elem.aid}</td>
-                                                <td className="align-middle">
-                                                    <span className={`badge p-2 ${parseInt(elem.claimed) > 0 ? 'badge-soft-success' : 'badge-soft-secondary'}`} 
-                                                          style={{backgroundColor: parseInt(elem.claimed) > 0 ? '#DCFCE7' : '#F1F5F9', color: parseInt(elem.claimed) > 0 ? '#166534' : '#64748B'}}>
-                                                        ₹{elem.claimed}
-                                                    </span>
-                                                </td>
-                                                <td className="align-middle">{elem.dueDate ? elem.dueDate.split('T')[0] : 'N/A'}</td>
-                                                <td className="align-middle">
-                                                    <span className="text-muted text-truncate d-inline-block" style={{maxWidth: '150px'}} title={elem.description}>
-                                                        {elem.description}
-                                                    </span>
-                                                </td>
+
+                                                {/* Due Date Column */}
                                                 <td className="align-middle text-center">
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm mr-2" 
-                                                            onClick={() => { navigate('/edit-financial-aid', { state: { data: elem } }) }} 
-                                                            title="Edit">
-                                                        <i className="fa fa-pencil-alt" style={{ color: themeColor }}></i>
-                                                    </button>
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
-                                                            onClick={() => { handleDeleteAid(elem._id) }} 
-                                                            title="Delete">
-                                                        <i className="fa fa-trash-alt text-danger"></i>
-                                                    </button>
+                                                    <span className="badge p-2 font-weight-normal" style={{backgroundColor: '#F1F5F9', color: '#475569'}}>
+                                                        {elem.dueDate ? elem.dueDate.split('T')[0] : 'N/A'}
+                                                    </span>
                                                 </td>
                                             </tr>
-                                        ) : <tr><td colSpan="7" className="text-center p-5 text-muted">No records found.</td></tr>}
+                                        ) : <tr><td colSpan="3" className="text-center p-5 text-muted">No records found.</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
@@ -251,6 +259,101 @@ const FinancialPole = () => {
                     </div>
                 </div>
 
+                {/* --- DETAILED INFO MODAL --- */}
+                {selectedRecord && (
+                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+                        <div className="modal-dialog modal-dialog-centered modal-lg">
+                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '15px'}}>
+                                <div className="modal-header border-0 pb-0">
+                                    <h5 className="modal-title font-weight-bold ml-2 mt-2">Scholarship Details</h5>
+                                    <button type="button" className="close" onClick={closeDetails} style={{outline: 'none'}}>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body p-4">
+                                    <div className="row">
+                                        {/* Left Side: Student Info */}
+                                        <div className="col-md-5 border-right">
+                                            <div className="text-center mb-4">
+                                                {selectedRecord.image === '' || selectedRecord.image === undefined ? 
+                                                    <img src='assets/img/profile1.png' alt='default' className="rounded-circle shadow mb-3" style={{ width: '100px', height: '100px', objectFit: 'cover' }} /> 
+                                                    : 
+                                                    <img src={`${ALTHUB_API_URL}${selectedRecord.image}`} alt='user' className="rounded-circle shadow mb-3" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                                                }
+                                                <h4 className="font-weight-bold text-dark mb-0">{selectedRecord.name}</h4>
+                                                <small className="text-muted">Beneficiary</small>
+                                            </div>
+                                            
+                                            <h6 className="text-uppercase text-muted small font-weight-bold mb-3">Contact Details</h6>
+                                            <div className="mb-2">
+                                                <i className="far fa-envelope mr-2 text-muted"></i>
+                                                <span className="text-dark font-weight-bold">
+                                                    {associatedUser ? associatedUser.email : <span className="text-muted font-italic">N/A</span>}
+                                                </span>
+                                            </div>
+                                            <div className="mb-2">
+                                                <i className="fa fa-phone mr-2 text-muted"></i>
+                                                <span className="text-dark">
+                                                    {associatedUser ? (associatedUser.phone || '-') : <span className="text-muted font-italic">N/A</span>}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Right Side: Financial Info */}
+                                        <div className="col-md-7 pl-md-4 mt-3 mt-md-0">
+                                            <h6 className="text-uppercase text-muted small font-weight-bold mb-3">Financial Aid Information</h6>
+                                            
+                                            <div className="row mb-4">
+                                                <div className="col-6">
+                                                    <div className="p-3 rounded bg-light text-center">
+                                                        <small className="d-block text-muted mb-1">Total Aid</small>
+                                                        <h4 className="mb-0 text-primary font-weight-bold">₹{selectedRecord.aid}</h4>
+                                                    </div>
+                                                </div>
+                                                <div className="col-6">
+                                                    <div className="p-3 rounded bg-light text-center">
+                                                        <small className="d-block text-muted mb-1">Claimed</small>
+                                                        <h4 className="mb-0 text-success font-weight-bold">₹{selectedRecord.claimed}</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-3">
+                                                <label className="text-muted small font-weight-bold mb-0">DUE DATE</label>
+                                                <div className="text-dark font-weight-bold">
+                                                    <i className="far fa-calendar-alt mr-2" style={{color: themeColor}}></i>
+                                                    {selectedRecord.dueDate ? selectedRecord.dueDate.split('T')[0] : 'N/A'}
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-3">
+                                                <label className="text-muted small font-weight-bold mb-0">DESCRIPTION</label>
+                                                <p className="text-dark bg-light p-3 rounded" style={{whiteSpace: 'pre-wrap', fontSize: '14px'}}>
+                                                    {selectedRecord.description || 'No description provided.'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer bg-light border-0" style={{borderRadius: '0 0 15px 15px'}}>
+                                    <button type="button" className="btn btn-white shadow-sm font-weight-bold" onClick={closeDetails}>Close</button>
+                                    
+                                    <button className="btn btn-primary shadow-sm font-weight-bold ml-2" 
+                                            onClick={() => { navigate('/edit-financial-aid', { state: { data: selectedRecord } }) }} 
+                                            style={{backgroundColor: themeColor, borderColor: themeColor}}>
+                                        <i className="fa fa-pencil-alt mr-2"></i> Edit
+                                    </button>
+                                    
+                                    <button className="btn btn-danger shadow-sm font-weight-bold ml-2" 
+                                            onClick={() => handleDeleteAid(selectedRecord._id)}>
+                                        <i className="fa fa-trash-alt mr-2"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {alert === true && (
                     <SweetAlert
                         warning
@@ -260,6 +363,7 @@ const FinancialPole = () => {
                         title="Delete Record?"
                         onConfirm={DeleteAid}
                         onCancel={() => { setAlert(false); setDeleteId(''); }}
+                        style={{zIndex: 2000}} 
                     >
                         This financial aid record will be permanently removed.
                     </SweetAlert>
@@ -270,6 +374,7 @@ const FinancialPole = () => {
                         success
                         title="Deleted Successfully!"
                         onConfirm={() => { setAlert2(false); getAidData(); }}
+                        style={{zIndex: 2000}}
                     >
                         The record has been removed.
                     </SweetAlert>

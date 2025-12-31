@@ -18,11 +18,9 @@ const sanitizeInput = (text) => {
 
 const createtoken = async (user) => {
     try {
-        // FIX: Ensure we use the current version from the user object
-        // If user is just an ID, this fails. We need the full object.
         return jwt.sign({
             _id: user._id,
-            version: user.tokenVersion || 0, // Captures the incremented version
+            version: user.tokenVersion || 0,
             role: user.role || 'student'
         }, config.secret_jwt, { expiresIn: '7d' });
     } catch (error) {
@@ -59,18 +57,55 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
-// ... (Keep existing helpers: checkAlumniStatus, getLatestEducation, createFlexibleRegex) ...
+// --- STATUS CALCULATION LOGIC ---
+const determineUserStatus = (educations) => {
+    if (!educations || educations.length === 0) return "-";
+
+    const now = new Date();
+    let isStudent = false;
+
+    for (let edu of educations) {
+        let gradYear = 0;
+
+        // 1. Try to use End Date
+        if (edu.enddate) {
+            const d = new Date(edu.enddate);
+            if (!isNaN(d.getTime())) gradYear = d.getFullYear();
+        } 
+        // 2. Try to use Join Date + Duration
+        // [FIX] Changed 'startdate' to 'joindate' to match your Schema
+        else if (edu.joindate && edu.course) {
+            const s = new Date(edu.joindate);
+            if (!isNaN(s.getTime())) {
+                const startYear = s.getFullYear();
+                const courseName = edu.course.toLowerCase();
+                let duration = 0;
+                
+                if (courseName.includes('b.tech') || courseName.includes('btech') || courseName.includes('bachelor')) {
+                    duration = 4;
+                } else if (courseName.includes('m.tech') || courseName.includes('mtech') || courseName.includes('master')) {
+                    duration = 2;
+                } else {
+                    duration = 4; // Default fallback
+                }
+                gradYear = startYear + duration;
+            }
+        }
+
+        if (gradYear > 0) {
+            const cutoffDate = new Date(gradYear, 4, 15); // May 15th
+            if (now <= cutoffDate) {
+                isStudent = true;
+                break; 
+            }
+        }
+    }
+
+    return isStudent ? "Student" : "Alumni";
+};
+
 const checkAlumniStatus = (educations) => {
-    if (!educations || educations.length === 0) return false;
-    const isStudying = educations.some(edu => !edu.enddate || edu.enddate === "");
-    if (isStudying) return false;
-    let maxYear = 0;
-    educations.forEach(edu => {
-        const d = new Date(edu.enddate);
-        if (!isNaN(d.getTime()) && d.getFullYear() > maxYear) maxYear = d.getFullYear();
-    });
-    const cutoffDate = new Date(maxYear, 4, 15);
-    return new Date() > cutoffDate;
+    return determineUserStatus(educations) === "Alumni";
 };
 
 const getLatestEducation = (educations) => {
@@ -115,8 +150,6 @@ const registerUser = async (req, res) => {
         });
 
         const user_data = await user.save();
-        
-        // FIX: Pass the FULL user object, not just the ID
         const token = await createtoken(user_data); 
 
         const isProduction = process.env.NODE_ENV === 'production';
@@ -140,14 +173,11 @@ const userlogin = async (req, res) => {
         const email = sanitizeInput(req.body.email);
         const password = req.body.password;
         
-        // Ensure we fetch tokenVersion
         const userData = await User.findOne({ email: email }).select("+tokenVersion +password"); 
 
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                
-                // FIX: Pass the FULL userData object so 'tokenVersion' is included in the token
                 const token = await createtoken(userData); 
                 
                 const isProduction = process.env.NODE_ENV === 'production';
@@ -191,7 +221,6 @@ const updatePassword = async (req, res) => {
         const loggedInUserId = req.user._id;
         const { oldpassword, newpassword } = req.body;
 
-        // Use constructor to find user in the correct collection (User/Admin/Institute)
         const CurrentUserModel = req.user.constructor;
         const data = await CurrentUserModel.findById(loggedInUserId).select('+password');
 
@@ -201,7 +230,6 @@ const updatePassword = async (req, res) => {
             if (passwordMatch) {
                 const hashedNewPassword = await securePassword(newpassword);
 
-                // Increment tokenVersion to invalidate old tokens
                 await CurrentUserModel.findByIdAndUpdate(
                     { _id: loggedInUserId },
                     {
@@ -226,8 +254,6 @@ const updatePassword = async (req, res) => {
         res.status(500).send({ success: false, msg: error.message }); 
     }
 }
-
-// ... (Keep the rest of your controllers: forgetPassword, resetpassword, userProfileEdit, etc. exactly as they were) ...
 
 const forgetPassword = async (req, res) => {
     try {
@@ -275,14 +301,26 @@ const userProfileEdit = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const userIdToDelete = req.params.id;
-        const loggedInUserId = req.user._id;
-        if (userIdToDelete !== loggedInUserId.toString()) {
+        const loggedInUser = req.user;
+        const loggedInUserId = loggedInUser._id.toString();
+
+        const isSelfDelete = userIdToDelete === loggedInUserId;
+        const isInstituteOrAdmin = loggedInUser.name || loggedInUser.role === 'admin';
+
+        if (!isSelfDelete && !isInstituteOrAdmin) {
             return res.status(403).send({ success: false, msg: "Security Alert: Unauthorized deletion attempt!" });
         }
+
         await User.deleteOne({ _id: userIdToDelete });
-        res.clearCookie("jwt_token");
+        
+        if (isSelfDelete) {
+            res.clearCookie("jwt_token");
+        }
+        
         res.status(200).send({ success: true, msg: 'Deleted successfully' });
-    } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
+    } catch (error) { 
+        res.status(400).send({ success: false, msg: error.message }); 
+    }
 }
 
 const uploadUserImage = async (req, res) => {
@@ -401,9 +439,57 @@ const getTopUsers = async (req, res) => {
     catch (error) { res.status(400).send({ success: false }); }
 }
 
+// [UPDATED] - Fetches Users & Calculates Status + Dates (using 'joindate')
 const getUsersOfInstitute = async (req, res) => {
-    try { const data = await User.find({ institute: req.params.institute }).lean(); res.status(200).send({ success: true, data: data }); }
-    catch (error) { res.status(400).send({ success: false }); }
+    try {
+        const data = await User.aggregate([
+            {
+                $lookup: {
+                    from: Education.collection.name, 
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        // [FIX] Changed 'startdate' to 'joindate'
+                        { $project: { course: 1, joindate: 1, enddate: 1 } } 
+                    ],
+                    as: "educationList"
+                }
+            }
+        ]);
+
+        const finalData = data.map(user => {
+            // 1. Calculate Status
+            const type = determineUserStatus(user.educationList);
+            
+            // 2. Get Dates from the most recent education record
+            let eduStart = "-";
+            let eduEnd = "-";
+            
+            if (user.educationList && user.educationList.length > 0) {
+                // Sort by end date descending
+                const sortedEdu = user.educationList.sort((a, b) => {
+                    const dateA = new Date(a.enddate || "1900-01-01");
+                    const dateB = new Date(b.enddate || "1900-01-01");
+                    return dateB - dateA;
+                });
+                
+                const latest = sortedEdu[0];
+                // [FIX] Use 'joindate' to populate eduStart
+                if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+            }
+            
+            delete user.educationList;
+            
+            return { ...user, type, eduStart, eduEnd };
+        });
+
+        res.status(200).send({ success: true, data: finalData });
+    }
+    catch (error) { 
+        console.error(error);
+        res.status(400).send({ success: false }); 
+    }
 }
 
 const followUser = async (req, res) => {

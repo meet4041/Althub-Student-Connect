@@ -13,9 +13,12 @@ const Events = () => {
     let navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [displayEvents, setDisplayEvents] = useState([]);
-    const rows = [10, 20, 50, 100]; // Increased options
+    const rows = [10, 20, 50, 100]; 
     const [eventsPerPage, setEventsPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Modal State
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     // Theme constant
     const themeColor = '#2563EB';
@@ -36,12 +39,10 @@ const Events = () => {
         if (institute_Id) {
             axios({
                 method: "get",
-                // Ensure backend endpoint returns ALL events for this institute
                 url: `${ALTHUB_API_URL}/api/getEventsByInstitute/${institute_Id}`,
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             }).then((response) => {
                 if(response.data.success) {
-                    // Store all fetched events
                     setEvents(response.data.data || []);
                 }
             }).catch((err) => {
@@ -83,7 +84,7 @@ const Events = () => {
                     elem.title.toLowerCase().includes(search) ||
                     elem.venue.toLowerCase().includes(search)
             ));
-            setCurrentPage(1); // Reset to page 1 on search
+            setCurrentPage(1); 
         } else {
             setDisplayEvents(events)
         }
@@ -108,12 +109,29 @@ const Events = () => {
                 setDeleteId('');
                 setAlert(false);
                 setAlert2(true);
+                setSelectedEvent(null);
             }
         }).catch(err => {
              console.error(err);
              setAlert(false);
         });
     }
+
+    const openEventDetails = (event) => {
+        setSelectedEvent(event);
+    }
+
+    const closeEventDetails = () => {
+        setSelectedEvent(null);
+    }
+
+    // [NEW] Helper to check if event is in the future
+    const isUpcoming = (dateString) => {
+        if (!dateString) return false;
+        const eventDate = new Date(dateString);
+        const now = new Date();
+        return eventDate > now;
+    };
 
     return (
         <Fragment>
@@ -138,7 +156,6 @@ const Events = () => {
                     <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
                         <div className="card-body p-0">
                             
-                            {/* Search & Filter Bar */}
                             <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
                                 <div className="row align-items-center">
                                     <div className="col-md-6">
@@ -146,7 +163,7 @@ const Events = () => {
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
                                             </div>
-                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search events by title or venue..." onChange={handleSearch} />
+                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search events..." onChange={handleSearch} />
                                         </div>
                                     </div>
                                     <div className="col-md-6 text-md-right mt-3 mt-md-0">
@@ -172,57 +189,55 @@ const Events = () => {
                                 <table className="table table-hover mb-0">
                                     <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
                                         <tr>
-                                            <th className="border-0 pl-4">Sr. No.</th>
-                                            <th className="border-0">Banner</th>
-                                            <th className="border-0">Event Details</th>
-                                            <th className="border-0">Description</th>
-                                            <th className="border-0">Date & Time</th>
-                                            <th className="border-0 text-center">Action</th>
+                                            <th className="border-0 pl-4" style={{width: '120px'}}>Image</th>
+                                            <th className="border-0">Event Name</th>
+                                            <th className="border-0 text-center">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {currentEvents.length > 0 ? currentEvents.map((elem, index) =>
                                             <tr key={elem._id || index}>
-                                                <td className="pl-4 align-middle text-muted">{indexOfFirstEvent + index + 1}</td>
-                                                <td className="align-middle">
+                                                <td className="pl-4 align-middle">
                                                     {elem.photos && elem.photos.length > 0 ? 
-                                                        <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='event-img' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} />
+                                                        <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='event-img' className="shadow-sm" style={{ width: '70px', height: '50px', borderRadius: '6px', objectFit: 'cover' }} />
                                                         : 
-                                                        <img src='assets/img/Events-amico.png' alt='default event' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} /> 
+                                                        <img src='assets/img/Events-amico.png' alt='default event' className="shadow-sm" style={{ width: '70px', height: '50px', borderRadius: '6px', objectFit: 'cover' }} /> 
                                                     }
                                                 </td>
+                                                
                                                 <td className="align-middle">
-                                                    <div className="font-weight-bold text-dark">{elem.title}</div>
-                                                    <div className="small text-muted"><i className="fa fa-map-marker-alt mr-1"></i> {elem.venue}</div>
+                                                    <div 
+                                                        onClick={() => openEventDetails(elem)}
+                                                        className="font-weight-bold text-dark"
+                                                        style={{ cursor: 'pointer', fontSize: '15px' }}
+                                                        onMouseOver={(e) => e.currentTarget.style.color = themeColor}
+                                                        onMouseOut={(e) => e.currentTarget.style.color = '#2d353c'}
+                                                    >
+                                                        {elem.title}
+                                                    </div>
+                                                    <small className="text-muted">Click to view details</small>
                                                 </td>
-                                                <td className="align-middle">
-                                                    <span className="text-muted" style={{display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden', maxWidth: '300px'}}>
-                                                        {elem.description}
-                                                    </span>
-                                                </td>
-                                                <td className="align-middle">
-                                                    <div className="text-dark font-weight-bold">{elem.date ? new Date(elem.date).toLocaleDateString() : 'N/A'}</div>
-                                                    <div className="small text-muted">{elem.date ? new Date(elem.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</div>
-                                                </td>
+
+                                                {/* [UPDATED] Date Column with Upcoming Badge */}
                                                 <td className="align-middle text-center">
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm mr-2" 
-                                                            onClick={() => { navigate('/edit-event', { state: { data: elem } }) }} 
-                                                            title="Edit">
-                                                        <i className="fa fa-pencil-alt" style={{ color: themeColor }}></i>
-                                                    </button>
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
-                                                            onClick={() => { handleDeleteEvent(elem._id) }} 
-                                                            title="Delete">
-                                                        <i className="fa fa-trash-alt text-danger"></i>
-                                                    </button>
+                                                    <span className="badge p-2 font-weight-normal" style={{backgroundColor: '#EFF6FF', color: themeColor}}>
+                                                        {elem.date ? new Date(elem.date).toLocaleDateString() : 'N/A'}
+                                                    </span>
+                                                    {isUpcoming(elem.date) && (
+                                                        <div className="mt-1">
+                                                            <span className="badge badge-pill badge-success shadow-sm" style={{fontSize: '10px', padding: '4px 8px'}}>
+                                                                Upcoming
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
-                                        ) : <tr><td colSpan="6" className="text-center p-5 text-muted">No events found.</td></tr>}
+                                        ) : <tr><td colSpan="3" className="text-center p-5 text-muted">No events found.</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
                             
-                            {/* Pagination Footer */}
+                            {/* Pagination */}
                             <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
                                 <div className="text-muted small">
                                     Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length} events
@@ -254,6 +269,92 @@ const Events = () => {
                     </div>
                 </div>
 
+                {/* Event Details Modal */}
+                {selectedEvent && (
+                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+                        <div className="modal-dialog modal-dialog-centered modal-lg">
+                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '15px'}}>
+                                <div className="modal-header border-0 pb-0">
+                                    <h5 className="modal-title font-weight-bold ml-2 mt-2">Event Details</h5>
+                                    <button type="button" className="close" onClick={closeEventDetails} style={{outline: 'none'}}>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body p-4">
+                                    <div className="row">
+                                        <div className="col-md-5 mb-3 mb-md-0">
+                                            {selectedEvent.photos && selectedEvent.photos.length > 0 ? (
+                                                <img 
+                                                    src={`${ALTHUB_API_URL}${selectedEvent.photos[0]}`} 
+                                                    alt="Event Banner" 
+                                                    className="img-fluid shadow-sm w-100" 
+                                                    style={{borderRadius: '10px', objectFit: 'cover', height: '250px'}}
+                                                />
+                                            ) : (
+                                                <div className="d-flex align-items-center justify-content-center bg-light text-muted" style={{height: '250px', borderRadius: '10px'}}>
+                                                    No Image Available
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="col-md-7">
+                                            <h3 className="font-weight-bold text-dark mb-3">
+                                                {selectedEvent.title}
+                                                {isUpcoming(selectedEvent.date) && (
+                                                    <span className="badge badge-success ml-2" style={{fontSize: '12px', verticalAlign: 'middle'}}>Upcoming</span>
+                                                )}
+                                            </h3>
+                                            
+                                            <div className="mb-3">
+                                                <label className="text-muted small font-weight-bold mb-0">DATE & TIME</label>
+                                                <div className="d-flex align-items-center">
+                                                    <i className="far fa-calendar-alt mr-2" style={{color: themeColor}}></i>
+                                                    <span className="text-dark font-weight-bold mr-3">
+                                                        {selectedEvent.date ? new Date(selectedEvent.date).toLocaleDateString() : 'N/A'}
+                                                    </span>
+                                                    <i className="far fa-clock mr-2" style={{color: themeColor}}></i>
+                                                    <span className="text-dark font-weight-bold">
+                                                        {selectedEvent.date ? new Date(selectedEvent.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-3">
+                                                <label className="text-muted small font-weight-bold mb-0">VENUE</label>
+                                                <div className="text-dark">
+                                                    <i className="fa fa-map-marker-alt mr-2" style={{color: themeColor}}></i>
+                                                    {selectedEvent.venue || 'No venue provided'}
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-3">
+                                                <label className="text-muted small font-weight-bold mb-0">DESCRIPTION</label>
+                                                <p className="text-dark" style={{whiteSpace: 'pre-wrap'}}>
+                                                    {selectedEvent.description || 'No description provided.'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer bg-light border-0" style={{borderRadius: '0 0 15px 15px'}}>
+                                    <button type="button" className="btn btn-white shadow-sm font-weight-bold" onClick={closeEventDetails}>Close</button>
+                                    
+                                    <button className="btn btn-primary shadow-sm font-weight-bold ml-2" 
+                                            onClick={() => { navigate('/edit-event', { state: { data: selectedEvent } }) }} 
+                                            style={{backgroundColor: themeColor, borderColor: themeColor}}>
+                                        <i className="fa fa-pencil-alt mr-2"></i> Edit
+                                    </button>
+                                    
+                                    <button className="btn btn-danger shadow-sm font-weight-bold ml-2" 
+                                            onClick={() => handleDeleteEvent(selectedEvent._id)}>
+                                        <i className="fa fa-trash-alt mr-2"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {alert === true && (
                     <SweetAlert
                         warning
@@ -263,6 +364,7 @@ const Events = () => {
                         title="Delete Event?"
                         onConfirm={DeleteEvent}
                         onCancel={() => { setAlert(false); setDeleteId(''); }}
+                        style={{zIndex: 2000}} 
                     >
                         You will not be able to recover this event data.
                     </SweetAlert>
@@ -273,6 +375,7 @@ const Events = () => {
                         success
                         title="Deleted Successfully!"
                         onConfirm={() => { setAlert2(false); getEventsData(); }}
+                        style={{zIndex: 2000}}
                     >
                         The event has been removed from the listing.
                     </SweetAlert>

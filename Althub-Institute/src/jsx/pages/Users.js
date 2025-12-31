@@ -14,13 +14,19 @@ const Users = () => {
     const [displayUsers, setDisplayUsers] = useState([]);
     const [isTableLoading, setIsTableLoading] = useState(true);
     
+    // Modal State
+    const [selectedUser, setSelectedUser] = useState(null);
+
     const rows = [10, 20, 30];
     const [usersPerPage, setUsersPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Theme constants used for consistent styling
-    const themeColor = '#2563EB'; // Royal Blue
+    // Sorting State
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+    // Theme constant
+    const themeColor = '#2563EB';
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -49,14 +55,48 @@ const Users = () => {
         }).catch(() => setIsTableLoading(false));
     };
 
+    // Filter and Sort Logic
     useEffect(() => {
-        const filtered = users.filter(user => 
-            user.fname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setDisplayUsers(filtered);
+        let processedUsers = [...users];
+
+        // 1. Filter
+        if (searchTerm) {
+            processedUsers = processedUsers.filter(user => 
+                user.fname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // 2. Sort (Name Only)
+        if (sortConfig.key === 'fname') {
+            processedUsers.sort((a, b) => {
+                let aValue = a.fname ? a.fname.toLowerCase() : '';
+                let bValue = b.fname ? b.fname.toLowerCase() : '';
+
+                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setDisplayUsers(processedUsers);
         setCurrentPage(1);
-    }, [searchTerm, users]);
+    }, [searchTerm, users, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <i className="fa fa-sort text-muted ml-2" style={{ opacity: 0.3 }}></i>;
+        return sortConfig.direction === 'asc' 
+            ? <i className="fa fa-sort-up text-primary ml-2"></i> 
+            : <i className="fa fa-sort-down text-primary ml-2"></i>;
+    };
 
     const indexOfLastUser = currentPage * usersPerPage;
     const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -67,9 +107,11 @@ const Users = () => {
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
 
+    // Triggered from inside the Modal
     const handleDeleteUser = (id) => {
         setDeleteId(id);
         setAlert(true);
+        setSelectedUser(null); // Close modal when deleting
     }
 
     const DeleteUser = () => {
@@ -86,6 +128,21 @@ const Users = () => {
         });
     }
 
+    const getStatusBadge = (type) => {
+        if (type === 'Student') return <span className="badge badge-pill badge-primary px-3 py-2">Student</span>;
+        if (type === 'Alumni') return <span className="badge badge-pill badge-success px-3 py-2">Alumni</span>;
+        return <span className="text-muted font-weight-bold" style={{fontSize: '16px'}}>-</span>;
+    };
+
+    // --- Detail Modal Functions ---
+    const openUserDetails = (user) => {
+        setSelectedUser(user);
+    }
+
+    const closeUserDetails = () => {
+        setSelectedUser(null);
+    }
+
     return (
         <Fragment>
             <Loader />
@@ -100,7 +157,6 @@ const Users = () => {
                             </ol>
                             <h1 className="page-header mb-0">Member Directory</h1>
                         </div>
-                        {/* Changed Button from Green to Blue Theme */}
                         <Link to="/add-user" className="btn btn-primary btn-lg shadow-sm" 
                               style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
                             <i className="fa fa-user-plus mr-2"></i> Add New User
@@ -117,7 +173,7 @@ const Users = () => {
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
                                             </div>
-                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search by name or email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                         </div>
                                     </div>
                                     <div className="col-md-6 text-md-right mt-3 mt-md-0">
@@ -133,60 +189,58 @@ const Users = () => {
                                 <table className="table table-hover mb-0">
                                     <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
                                         <tr>
-                                            <th className="border-0 pl-4">ID</th>
-                                            <th className="border-0">User Profile</th>
-                                            <th className="border-0">Contact Information</th>
-                                            <th className="border-0 text-center">DOB</th>
-                                            <th className="border-0 text-center">Actions</th>
+                                            <th className="border-0 pl-4" style={{width: '100px'}}>Avatar</th>
+                                            <th className="border-0" 
+                                                onClick={() => requestSort('fname')} 
+                                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                                title="Sort by Name">
+                                                Username {getSortIcon('fname')}
+                                            </th>
+                                            <th className="border-0 text-center">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {isTableLoading ? (
-                                            <tr><td colSpan="5" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x" style={{color: themeColor}}></i></td></tr>
+                                            <tr><td colSpan="3" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x" style={{color: themeColor}}></i></td></tr>
                                         ) : currentUsers.length > 0 ? currentUsers.map((elem, index) => (
                                             <tr key={elem._id}>
-                                                <td className="pl-4 align-middle text-muted" style={{fontSize: '12px'}}>{indexOfFirstUser + index + 1}</td>
+                                                {/* 1. Avatar */}
+                                                <td className="pl-4 align-middle">
+                                                    <img 
+                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/profile1.png'} 
+                                                        alt='profile' 
+                                                        className="rounded-circle shadow-sm" 
+                                                        style={{ width: '45px', height: '45px', objectFit: 'cover', border: '2px solid #fff' }} 
+                                                    />
+                                                </td>
+                                                
+                                                {/* 2. Username (Clickable) */}
                                                 <td className="align-middle">
-                                                    <div className="d-flex align-items-center">
-                                                        <img 
-                                                            src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/profile1.png'} 
-                                                            alt='profile' 
-                                                            className="rounded-circle shadow-sm mr-3" 
-                                                            style={{ width: '45px', height: '45px', objectFit: 'cover', border: '2px solid #fff' }} 
-                                                        />
-                                                        <div>
-                                                            <div className="font-weight-bold text-dark">{elem.fname}</div>
-                                                            {/* Changed from text-success to text-primary for Blue theme */}
-                                                            <small className="text-primary" style={{color: themeColor}}>Verified Member</small>
-                                                        </div>
+                                                    <div 
+                                                        onClick={() => openUserDetails(elem)}
+                                                        className="font-weight-bold text-dark" 
+                                                        style={{ cursor: 'pointer', fontSize: '15px' }}
+                                                        onMouseOver={(e) => e.currentTarget.style.color = themeColor}
+                                                        onMouseOut={(e) => e.currentTarget.style.color = '#2d353c'}
+                                                    >
+                                                        {elem.fname}
                                                     </div>
+                                                    <small className="text-muted">Click to view details</small>
                                                 </td>
-                                                <td className="align-middle">
-                                                    <div className="text-dark"><i className="far fa-envelope mr-2 text-muted"></i>{elem.email}</div>
-                                                    {elem.phone && <div className="small text-muted"><i className="fa fa-phone mr-2"></i>{elem.phone}</div>}
-                                                </td>
+
+                                                {/* 3. Status */}
                                                 <td className="align-middle text-center">
-                                                    <span className="badge p-2 font-weight-normal" style={{backgroundColor: '#EFF6FF', color: themeColor}}>
-                                                        {elem.dob ? elem.dob.split('T')[0] : 'N/A'}
-                                                    </span>
-                                                </td>
-                                                <td className="align-middle text-center">
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm mr-2" title="Edit">
-                                                        <i className="fa fa-pencil-alt" style={{color: themeColor}}></i>
-                                                    </button>
-                                                    <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" onClick={() => handleDeleteUser(elem._id)} title="Delete">
-                                                        <i className="fa fa-trash-alt text-danger"></i>
-                                                    </button>
+                                                    {getStatusBadge(elem.type)}
                                                 </td>
                                             </tr>
                                         )) : (
-                                            <tr><td colSpan="5" className="text-center p-5 text-muted">No members found match your search criteria.</td></tr>
+                                            <tr><td colSpan="3" className="text-center p-5 text-muted">No members found.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
 
-                            {/* Custom Pagination Footer */}
+                            {/* Pagination */}
                             <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
                                 <div className="text-muted small">
                                     Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length} users
@@ -216,6 +270,72 @@ const Users = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* --- USER DETAILS MODAL --- */}
+                {selectedUser && (
+                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                        <div className="modal-dialog modal-dialog-centered modal-lg">
+                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '15px'}}>
+                                <div className="modal-header border-0 pb-0">
+                                    <h5 className="modal-title font-weight-bold ml-2 mt-2">Member Profile</h5>
+                                    <button type="button" className="close" onClick={closeUserDetails} style={{outline: 'none'}}>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body p-4">
+                                    <div className="row align-items-center mb-4">
+                                        <div className="col-md-4 text-center border-right">
+                                            <img 
+                                                src={selectedUser.profilepic ? `${ALTHUB_API_URL}${selectedUser.profilepic}` : 'assets/img/profile1.png'} 
+                                                alt='profile' 
+                                                className="rounded-circle shadow mb-3" 
+                                                style={{ width: '120px', height: '120px', objectFit: 'cover' }} 
+                                            />
+                                            <h4 className="mb-1 font-weight-bold text-dark">{selectedUser.fname}</h4>
+                                            <div className="mb-2">{getStatusBadge(selectedUser.type)}</div>
+                                        </div>
+                                        <div className="col-md-8 pl-md-4 mt-3 mt-md-0">
+                                            <h6 className="text-uppercase text-muted small font-weight-bold mb-3" style={{letterSpacing: '1px'}}>Contact & Personal Info</h6>
+                                            <div className="row mb-3">
+                                                <div className="col-sm-4 text-muted"><i className="far fa-envelope mr-2"></i> Email:</div>
+                                                <div className="col-sm-8 text-dark font-weight-bold">{selectedUser.email}</div>
+                                            </div>
+                                            <div className="row mb-3">
+                                                <div className="col-sm-4 text-muted"><i className="fa fa-phone mr-2"></i> Phone:</div>
+                                                <div className="col-sm-8 text-dark">{selectedUser.phone || <span className="text-muted">-</span>}</div>
+                                            </div>
+                                            <div className="row mb-3">
+                                                <div className="col-sm-4 text-muted"><i className="fa fa-birthday-cake mr-2"></i> DOB:</div>
+                                                <div className="col-sm-8 text-dark">{selectedUser.dob ? selectedUser.dob.split('T')[0] : <span className="text-muted">-</span>}</div>
+                                            </div>
+                                            
+                                            <hr className="my-4" />
+                                            
+                                            <h6 className="text-uppercase text-muted small font-weight-bold mb-3" style={{letterSpacing: '1px'}}>Education Timeline</h6>
+                                            <div className="d-flex align-items-center">
+                                                <div className="p-3 rounded bg-light mr-3 text-center" style={{minWidth: '100px'}}>
+                                                    <small className="d-block text-muted">Start Date</small>
+                                                    <strong style={{color: themeColor}}>{selectedUser.eduStart}</strong>
+                                                </div>
+                                                <i className="fa fa-arrow-right text-muted"></i>
+                                                <div className="p-3 rounded bg-light ml-3 text-center" style={{minWidth: '100px'}}>
+                                                    <small className="d-block text-muted">End Date</small>
+                                                    <strong style={{color: themeColor}}>{selectedUser.eduEnd}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer bg-light border-0" style={{borderRadius: '0 0 15px 15px'}}>
+                                    <button type="button" className="btn btn-white shadow-sm font-weight-bold" onClick={closeUserDetails}>Close</button>
+                                    <button type="button" className="btn btn-danger shadow-sm font-weight-bold ml-2" onClick={() => handleDeleteUser(selectedUser._id)}>
+                                        <i className="fa fa-trash-alt mr-2"></i> Delete User
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <SweetAlert
                     warning
