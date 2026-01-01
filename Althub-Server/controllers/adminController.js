@@ -1,4 +1,6 @@
 const Admin = require("../models/adminModel");
+const User = require("../models/userModel");
+const Education = require("../models/educationModel"); // Ensure Education model is imported
 const config = require("../config/config");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -12,7 +14,6 @@ const validatePassword = (password) => {
     return regex.test(password);
 }
 
-// 2. Mailer: Reset Password
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -37,6 +38,55 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
+// --- STATUS CALCULATION LOGIC ---
+const determineUserStatus = (educations) => {
+    if (!educations || educations.length === 0) return "-";
+
+    const now = new Date();
+    let isStudent = false;
+
+    for (let edu of educations) {
+        let gradYear = 0;
+
+        // 1. Try to use End Date
+        if (edu.enddate) {
+            const d = new Date(edu.enddate);
+            if (!isNaN(d.getTime())) gradYear = d.getFullYear();
+        } 
+        // 2. Try to use Join Date + Duration
+        // [FIXED] Using 'joindate' as seen in your DB screenshot
+        else if (edu.joindate && edu.course) {
+            const s = new Date(edu.joindate);
+            if (!isNaN(s.getTime())) {
+                const startYear = s.getFullYear();
+                const courseName = edu.course.toLowerCase();
+                let duration = 0;
+                
+                if (courseName.includes('b.tech') || courseName.includes('btech') || courseName.includes('bachelor')) {
+                    duration = 4;
+                } else if (courseName.includes('m.tech') || courseName.includes('mtech') || courseName.includes('master')) {
+                    duration = 2;
+                } else {
+                    duration = 4;
+                }
+                gradYear = startYear + duration;
+            }
+        }
+
+        // If we found a valid graduation year
+        if (gradYear > 0) {
+            const cutoffDate = new Date(gradYear, 4, 15); // May 15th
+            // If today is BEFORE the cutoff date, they are still a student
+            if (now <= cutoffDate) {
+                isStudent = true;
+                break; 
+            }
+        }
+    }
+
+    return isStudent ? "Student" : "Alumni";
+};
+
 // --- CONTROLLERS ---
 
 const registerAdmin = async (req, res) => {
@@ -44,12 +94,10 @@ const registerAdmin = async (req, res) => {
         const { lname, email, phone, password, admin_secret_key } = req.body;
         const MASTER_KEY = process.env.ADMIN_REGISTRATION_SECRET || "Althub_Default_Secret_2024";
 
-        // 1. Master Key Check
         if (admin_secret_key !== MASTER_KEY) {
             return res.status(403).send({ success: false, msg: "Registration Failed: Invalid Secret Master Key" });
         }
 
-        // 2. Password Strength Check (New)
         if (!validatePassword(password)) {
             return res.status(400).send({ 
                 success: false, 
@@ -68,7 +116,7 @@ const registerAdmin = async (req, res) => {
             phone: phone,
             email: email,
             password: hashedPassword,
-            tokenVersion: 0 // Initialize version
+            tokenVersion: 0
         });
 
         const savedAdmin = await admin.save();
@@ -82,23 +130,19 @@ const registerAdmin = async (req, res) => {
 const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        // 1. HARDENING: Re-fetch user including password and tokenVersion
         const adminData = await Admin.findOne({ email }).select("+password +tokenVersion");
 
         if (!adminData) {
             return res.status(401).send({ success: false, msg: "Invalid credentials" });
         }
 
-        // 2. HARDENING: Re-verify hashed password every time
         const isMatch = await bcryptjs.compare(password, adminData.password);
         if (!isMatch) {
             return res.status(401).send({ success: false, msg: "Invalid credentials" });
         }
 
-        // 3. JWT includes tokenVersion to prevent replay bypass
         const token = jwt.sign(
-            { _id: adminData._id, version: adminData.tokenVersion },
+            { _id: adminData._id, version: adminData.tokenVersion, role: "admin" },
             config.secret_jwt,
             { expiresIn: '24h' }
         );
@@ -112,62 +156,97 @@ const adminLogin = async (req, res) => {
 
         const { password: _, tokenVersion: __, ...data } = adminData._doc;
 
-        // MASKED: Sending 200 for success as requested
         return res.status(200).send({
             success: true,
             msg: "Login Successful",
-            data: { ...data, token }
+            data: { ...data },
+            token: token
         });
 
     } catch (error) {
-        console.error("Login Security Error:", error.stack);
-        res.status(401).send({ success: false, msg: "Internal Error" });
+        res.status(500).send({ success: false, msg: "Internal Error" });
+    }
+}
+
+// [UPDATED] Get Users with Education Aggregation & Status Calculation
+const getUsers = async (req, res) => {
+    try {
+        const data = await User.aggregate([
+            {
+                $lookup: {
+                    from: Education.collection.name, // "educations"
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        // [FIXED] Fetch 'joindate' (as per your DB screenshot) and 'enddate'
+                        { $project: { course: 1, joindate: 1, enddate: 1 } }
+                    ],
+                    as: "educationList"
+                }
+            }
+        ]);
+
+        const finalData = data.map(user => {
+            // 1. Calculate Status
+            const type = determineUserStatus(user.educationList);
+            
+            // 2. Get Dates
+            let eduStart = "-";
+            let eduEnd = "-";
+            
+            if (user.educationList && user.educationList.length > 0) {
+                // Sort by end date descending to find the latest education
+                const sortedEdu = user.educationList.sort((a, b) => {
+                    const dateA = new Date(a.enddate || "1900-01-01");
+                    const dateB = new Date(b.enddate || "1900-01-01");
+                    return dateB - dateA;
+                });
+                
+                const latest = sortedEdu[0];
+                
+                // [FIXED] Use 'joindate' for the start date
+                if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                // Use 'enddate' for the end date
+                if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+            }
+            
+            delete user.educationList;
+            
+            return { ...user, type, eduStart, eduEnd };
+        });
+
+        res.status(200).send({ success: true, data: finalData });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
     }
 }
 
 const updatePassword = async (req, res) => {
     try {
         const { admin_id, oldpassword, newpassword } = req.body;
-        
-        // 1. Fetch admin including the password field (hidden by default)
         const data = await Admin.findById(admin_id).select("+password");
         
         if (data) {
             const match = await bcryptjs.compare(oldpassword, data.password);
             if (match) {
-                // 2. Password Strength Check (New)
                 if (!validatePassword(newpassword)) {
-                    return res.status(400).send({ 
-                        success: false, 
-                        msg: "New password is too weak. Requires 1 Upper, 1 Lower, 1 Number, Min 8 chars." 
-                    });
+                    return res.status(400).send({ success: false, msg: "New password is too weak." });
                 }
 
                 const hashedPassword = await bcryptjs.hash(newpassword, 10);
                 
-                // 3. GLOBAL LOGOUT: Increment tokenVersion to invalidate all existing sessions
-                // Also clear any reset tokens for security
                 await Admin.findByIdAndUpdate(admin_id, { 
                     $set: { password: hashedPassword, token: '' },
                     $inc: { tokenVersion: 1 } 
                 });
                 
-                // 4. LOCAL LOGOUT: Clear the JWT cookie from the current browser
-                res.clearCookie("jwt_token", { 
-                    httpOnly: true, 
-                    secure: true, 
-                    sameSite: "none" 
-                });
-
-                return res.status(200).send({ 
-                    success: true, 
-                    msg: "Password updated. You have been logged out from all devices for security." 
-                });
+                res.clearCookie("jwt_token", { httpOnly: true, secure: true, sameSite: "none" });
+                return res.status(200).send({ success: true, msg: "Password updated successfully." });
             } else {
                 return res.status(400).send({ success: false, msg: "Old password incorrect" });
             }
         } else {
-            return res.status(400).send({ success: false, msg: "Admin not found" });
+            return res.status(404).send({ success: false, msg: "Admin not found" });
         }
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -196,22 +275,14 @@ const resetpassword = async (req, res) => {
         const token = req.query.token;
         const tokenData = await Admin.findOne({ token: token });
         if (tokenData) {
-            // 1. Password Strength Check (New)
             if (!validatePassword(req.body.password)) {
-                return res.status(400).send({ 
-                    success: false, 
-                    msg: "Password is too weak. Requires 1 Upper, 1 Lower, 1 Number, Min 8 chars." 
-                });
+                return res.status(400).send({ success: false, msg: "Password is too weak." });
             }
-
             const hashedPassword = await bcryptjs.hash(req.body.password, 10);
-
-            // 2. HARDENING: Kill previous sessions on reset
             await Admin.findByIdAndUpdate(tokenData._id, {
                 $set: { password: hashedPassword, token: '' },
                 $inc: { tokenVersion: 1 }
             });
-
             res.status(200).send({ success: true, msg: "Password reset successfully" });
         } else {
             res.status(400).send({ success: false, msg: "Token expired" });
@@ -224,47 +295,19 @@ const resetpassword = async (req, res) => {
 const updateAdmin = async (req, res) => {
     try {
         const { id } = req.body;
-
         if (!req.body || Object.keys(req.body).length === 0) {
-            return res.status(400).send({ success: false, msg: "No data provided for update" });
+            return res.status(400).send({ success: false, msg: "No data provided" });
         }
-
         const updateData = {};
-        const emptyFields = [];
         const fieldsToUpdate = ['name', 'phone', 'email'];
-
         fieldsToUpdate.forEach(field => {
-            if (Object.prototype.hasOwnProperty.call(req.body, field)) {
-                const value = req.body[field];
-                if (value === "" || value === null || value === undefined) {
-                    emptyFields.push(field);
-                } else {
-                    updateData[field] = value;
-                }
-            }
+            if (req.body[field]) updateData[field] = req.body[field];
         });
-
-        if (emptyFields.length > 0) {
-            return res.status(400).send({
-                success: false,
-                msg: `Fields cannot be empty: ${emptyFields.join(", ")}`
-            });
-        }
-
-        if (Object.keys(updateData).length === 0) {
-            return res.status(400).send({ success: false, msg: "No valid fields provided to update" });
-        }
-
         const admin_data = await Admin.findByIdAndUpdate(
-            id,
-            { $set: updateData },
-            { new: true }
+            id, { $set: updateData }, { new: true }
         ).select("-password");
 
-        if (!admin_data) {
-            return res.status(404).send({ success: false, msg: "Admin not found" });
-        }
-
+        if (!admin_data) return res.status(404).send({ success: false, msg: "Admin not found" });
         res.status(200).send({ success: true, msg: 'Admin Updated', data: admin_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -289,6 +332,16 @@ const getAdminById = async (req, res) => {
     }
 }
 
+const deleteUser = async (req, res) => {
+    try {
+        const id = req.params.id;
+        await User.deleteOne({ _id: id });
+        res.status(200).send({ success: true, msg: "User Deleted Successfully" });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
 module.exports = {
     registerAdmin,
     adminLogin,
@@ -297,5 +350,7 @@ module.exports = {
     updatePassword,
     adminLogout,
     updateAdmin,
-    getAdminById
-}
+    getAdminById,
+    getUsers,
+    deleteUser
+};
