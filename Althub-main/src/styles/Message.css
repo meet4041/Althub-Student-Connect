@@ -4,208 +4,254 @@
 
 /* --- Layout --- */
 .msg-wrapper {
-    height: calc(100vh - 80px); /* Adjust based on navbar height */
-    overflow: hidden;
-    background-color: #fff;
-    font-family: 'Poppins', sans-serif;
-    display: flex;
-  }
-  
-  /* --- Sidebar (User List) --- */
+  height: calc(100vh - 80px);
+  /* Adjust based on your navbar height */
+  overflow: hidden;
+  background-color: #fff;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+}
+
+/* --- Sidebar (User List) --- */
+.msg-sidebar {
+  border-right: 1px solid #f0f0f0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.msg-sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.msg-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: #2d3436;
+  margin-bottom: 15px;
+}
+
+.msg-search-field .MuiOutlinedInput-root {
+  border-radius: 20px !important;
+  background-color: #f8f9fa;
+  padding-right: 10px;
+}
+
+.msg-search-field .MuiOutlinedInput-notchedOutline {
+  border-color: transparent;
+}
+
+.msg-search-field .Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #66bd9e !important;
+}
+
+.msg-user-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Chat User Item */
+.msg-user-item {
+  transition: background-color 0.2s;
+  cursor: pointer;
+  padding: 15px 20px !important;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+.msg-user-item:hover {
+  background-color: #f9f9f9;
+}
+
+.msg-user-item.active {
+  background-color: #f0f9f6;
+  border-right: 4px solid #66bd9e;
+}
+
+/* --- Profile Image / Avatar Fixes --- */
+
+.msg-avatar {
+  border: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: #f5f5f5 !important;
+  overflow: hidden !important;
+}
+
+/* FIX: Ensures image is NOT zoomed and fits entire circle */
+.msg-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+/* --- Chat Area Layout (Main Window) --- */
+.msg-chat-area {
+  display: flex;
+  flex-direction: column;
+  /* Stacks Header, Body, Footer vertically */
+  height: 100%;
+  background-color: #fff;
+  flex: 1;
+  position: relative;
+}
+
+/* Header stays at the top */
+.msg-chat-header {
+  padding: 10px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  height: 70px;
+  background-color: #fff;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.msg-chat-header .MuiAvatar-root {
+  background-color: #f5f5f5 !important;
+  overflow: hidden !important;
+  border: 1px solid #eee;
+  margin-right: 15px;
+}
+
+/* FIX: Ensures header image is NOT zoomed */
+.msg-chat-header .MuiAvatar-root img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.msg-chat-name {
+  font-weight: 600 !important;
+  color: #2d3436;
+}
+
+/* Body expands to push Footer to the bottom */
+.msg-body {
+  flex: 1;
+  /* Key fix: Grows to occupy available space */
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #f4f6f8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- Message Bubbles --- */
+.msg-bubble {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 12px;
+  position: relative;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.msg-sent {
+  align-self: flex-end;
+  background-color: #66bd9e;
+  color: #fff;
+  border-bottom-right-radius: 0;
+}
+
+.msg-received {
+  align-self: flex-start;
+  background-color: #fff;
+  color: #333;
+  border-bottom-left-radius: 0;
+}
+
+.msg-timestamp {
+  font-size: 0.7rem;
+  margin-top: 4px;
+  opacity: 0.8;
+  text-align: right;
+  display: block;
+}
+
+/* --- Footer (Fixed at the Bottom) --- */
+.msg-footer {
+  padding: 15px 20px;
+  background-color: #fff;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  /* Ensures it doesn't squash */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.msg-input-field {
+  flex: 1;
+}
+
+.msg-input-field .MuiOutlinedInput-root {
+  border-radius: 25px !important;
+  background-color: #f0f2f5;
+  padding-right: 5px;
+}
+
+.msg-input-field .MuiOutlinedInput-notchedOutline {
+  border-color: transparent;
+}
+
+.msg-input-field .Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #ccc;
+}
+
+.msg-send-btn {
+  background-color: #66bd9e !important;
+  color: #fff !important;
+  width: 45px !important;
+  height: 45px !important;
+  flex-shrink: 0;
+}
+
+.msg-send-btn:hover {
+  background-color: #479378 !important;
+}
+
+/* --- Empty State --- */
+.msg-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  color: #b2bec3;
+  text-align: center;
+  height: 100%;
+}
+
+.msg-empty-img {
+  width: 250px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+  filter: grayscale(100%);
+}
+
+/* --- Responsive Helpers --- */
+@media (max-width: 900px) {
   .msg-sidebar {
-    border-right: 1px solid #f0f0f0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
+    border-right: none;
+    width: 100%;
   }
-  
-  .msg-sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .msg-sidebar-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    color: #2d3436;
-    margin-bottom: 15px;
-  }
-  
-  .msg-search-field .MuiOutlinedInput-root {
-    border-radius: 20px !important;
-    background-color: #f8f9fa;
-    padding-right: 10px;
-  }
-  
-  .msg-search-field .MuiOutlinedInput-notchedOutline {
-    border-color: transparent;
-  }
-  
-  .msg-search-field .Mui-focused .MuiOutlinedInput-notchedOutline {
-    border-color: #66bd9e !important;
-  }
-  
-  .msg-user-list {
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  /* Chat User Item */
-  .msg-user-item {
-    transition: background-color 0.2s;
-    cursor: pointer;
-    padding: 15px 20px !important;
-    border-bottom: 1px solid #f9f9f9;
-  }
-  
-  .msg-user-item:hover {
-    background-color: #f9f9f9;
-  }
-  
-  .msg-user-item.active {
-    background-color: #f0f9f6;
-    border-right: 4px solid #66bd9e;
-  }
-  
-  .msg-avatar {
-    border: 1px solid #eee;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
-  
-  /* --- Chat Area --- */
+
   .msg-chat-area {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background-color: #fff;
-    flex: 1;
+    width: 100%;
   }
-  
-  /* Header */
-  .msg-chat-header {
-    padding: 10px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    height: 70px;
-    background-color: #fff;
-    z-index: 10;
-  }
-  
-  .msg-back-btn {
-    margin-right: 10px !important;
-    color: #555 !important;
-  }
-  
-  .msg-chat-name {
-    font-weight: 600 !important;
-    color: #2d3436;
-  }
-  
-  /* Body (Messages) */
-  .msg-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    background-color: #f4f6f8;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  /* Message Bubbles */
+
   .msg-bubble {
-    max-width: 70%;
-    padding: 10px 15px;
-    border-radius: 12px;
-    position: relative;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    max-width: 85%;
   }
-  
-  .msg-sent {
-    align-self: flex-end;
-    background-color: #66bd9e;
-    color: #fff;
-    border-bottom-right-radius: 0;
-  }
-  
-  .msg-received {
-    align-self: flex-start;
-    background-color: #fff;
-    color: #333;
-    border-bottom-left-radius: 0;
-  }
-  
-  .msg-timestamp {
-    font-size: 0.7rem;
-    margin-top: 4px;
-    opacity: 0.8;
-    text-align: right;
-    display: block;
-  }
-  
-  /* Footer (Input) */
-  .msg-footer {
-    padding: 15px 20px;
-    background-color: #fff;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .msg-input-field .MuiOutlinedInput-root {
-    border-radius: 25px !important;
-    background-color: #f0f2f5;
-    padding-right: 5px;
-  }
-  
-  .msg-input-field .MuiOutlinedInput-notchedOutline {
-    border-color: transparent;
-  }
-  
-  .msg-input-field .Mui-focused .MuiOutlinedInput-notchedOutline {
-    border-color: #ccc;
-  }
-  
-  .msg-send-btn {
-    background-color: #66bd9e !important;
-    color: #fff !important;
-    width: 45px !important;
-    height: 45px !important;
-  }
-  
-  .msg-send-btn:hover {
-    background-color: #479378 !important;
-  }
-  
-  /* --- Empty State --- */
-  .msg-empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    color: #b2bec3;
-    text-align: center;
-    height: 100%;
-  }
-  
-  .msg-empty-img {
-    width: 250px;
-    margin-bottom: 20px;
-    opacity: 0.6;
-    filter: grayscale(100%);
-  }
-  
-  /* Responsive */
-  @media (max-width: 900px) {
-    /* Logic handled in JS via Grid visibility, but styles here support mobile */
-    .msg-sidebar { border-right: none; width: 100%; }
-  }
+}
