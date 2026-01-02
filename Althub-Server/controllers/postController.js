@@ -2,12 +2,11 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
 const Notification = require("../models/notificationModel");
-const { uploadFromBuffer, connectToMongo } = require("../db/conn");
+const { uploadSingle, uploadFromBuffer, uploadArray } = require('../db/storage');
 
 // --- 1. ADD POST ---
 const addPost = async (req, res) => {
     try {
-
         let photos = [];
         if (req.body.image) {
             photos = [req.body.image];
@@ -23,10 +22,11 @@ const addPost = async (req, res) => {
             profilepic: req.body.profilepic,
             description: req.body.description,
             date: req.body.date || new Date(),
-            photos: photos, // <--- Assign the fixed array here
+            photos: photos, 
         });
 
-        const savedPost = await newPost.save();
+        // FIXED: Changed 'newPost.save()' to 'post.save()'
+        const savedPost = await post.save();
 
         res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 
@@ -36,11 +36,9 @@ const addPost = async (req, res) => {
     }
 };
 
-// --- 2. GET POST BY ID (MATCHING FIX) ---
+// --- 2. GET POST BY ID ---
 const getPostById = async (req, res) => {
     try {
-        // We search by 'userid' because that is what we are now saving in addPost
-        // We also use $or to find old posts that might only have 'senderid'
         const id = req.params.userid;
         
         const post_data = await Post.find({ 
@@ -56,50 +54,7 @@ const getPostById = async (req, res) => {
     }
 }
 
-// --- 3. EDIT POST ---
-const editPost = async (req, res) => {
-    try {
-        // FIX: Handle the single image string for institutes as well
-        let photos = [];
-        if (req.body.image) {
-            photos = [req.body.image];
-        } else if (req.images) {
-            photos = req.images;
-        }
-
-        const post = new Post({
-            userid: req.body.userid,
-            fname: req.body.fname,
-            profilepic: req.body.profilepic,
-            description: req.body.description,
-            photos: photos, // <--- Assign the fixed array here
-            date: new Date()
-        });
-
-        const updatedPhotos = [...(post.photos || []), ...newPhotoUrls];
-
-        const updateData = {
-            title,
-            description,
-            photos: updatedPhotos
-        };
-
-        const updatedPost = await Post.findByIdAndUpdate(
-            id, 
-            { $set: updateData }, 
-            { new: true }
-        );
-
-        res.status(200).send({ success: true, msg: "Post Updated", data: updatedPost });
-
-    } catch (error) {
-        console.error("Edit Post Error:", error);
-        res.status(400).send({ success: false, msg: error.message });
-    }
-};
-
-// --- OTHER FUNCTIONS (Keep as they are) ---
-
+// --- 3. GET ALL POSTS ---
 const getPosts = async (req, res) => {
     try {
         const post_data = await Post.find({}).sort({ date: -1 }).limit(20).lean();
@@ -109,6 +64,7 @@ const getPosts = async (req, res) => {
     }
 }
 
+// --- 4. DELETE POST ---
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
@@ -119,6 +75,7 @@ const deletePost = async (req, res) => {
     }
 }
 
+// --- 5. EDIT POST (The Correct Version) ---
 const editPost = async (req, res) => {
     try {
         const id = req.body.id;
@@ -128,7 +85,7 @@ const editPost = async (req, res) => {
             updateData.description = req.body.description;
         }
 
-        // FIX: Logic to handle new single image + existing images
+        // Logic to handle new single image + existing images
         let photos = [];
 
         // 1. Add existing photos (that the user didn't delete)
@@ -169,10 +126,12 @@ const editPost = async (req, res) => {
         res.status(200).send({ success: true, msg: 'Post Updated Successfully', data: post_data });
 
     } catch (error) {
+        console.error("Edit Post Error:", error);
         res.status(400).send({ success: false, msg: error.message });
     }
 }
 
+// --- 6. LIKE / UNLIKE POST ---
 const likeUnlikePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -207,6 +166,7 @@ const likeUnlikePost = async (req, res) => {
     }
 };
 
+// --- 7. GET FRIENDS POSTS ---
 const getFriendsPost = async (req, res) => {
     try {
         const currentUser = await User.findById(req.body.userId).lean();
