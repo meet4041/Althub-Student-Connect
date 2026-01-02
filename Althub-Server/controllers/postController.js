@@ -4,10 +4,10 @@ const Institute = require("../models/instituteModel");
 const Notification = require("../models/notificationModel");
 const { uploadFromBuffer, connectToMongo } = require("../db/conn");
 
-// --- 1. ADD POST (FIXED) ---
+// --- 1. ADD POST ---
 const addPost = async (req, res) => {
     try {
-        // FIX: Handle the single image string from middleware and wrap it in an array
+
         let photos = [];
         if (req.body.image) {
             photos = [req.body.image];
