@@ -60,11 +60,8 @@ export default function Login() {
         // 1. Store the ID (less sensitive) in localStorage for the AuthGuard
         localStorage.setItem("Althub_Id", response.data.data._id);
 
-        // 2. The Token is now handled by the browser cookie (HttpOnly)
-        // We temporarily keep this for Step 1 compatibility
-        if (response.data.token) {
-          localStorage.setItem("Althub_Token", response.data.token);
-        }
+        // 2. The Token is handled by the browser cookie (HttpOnly).
+        // Do NOT persist the raw token in localStorage for security.
 
         // SECURITY: Wipe the sensitive user state (email/password) from memory immediately
         setUser({ email: "", password: "" });

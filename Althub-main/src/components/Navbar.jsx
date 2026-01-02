@@ -29,8 +29,7 @@ export default function Navbar({ socket }) {
   const [hasNotif, setHasNotif] = useState(false);
 
   const nav = useNavigate();
-  const location = useLocation();
-  const pathname = location.pathname;
+  const { pathname } = useLocation();
 
   // --- Handlers ---
   const toggleDrawer = (open) => (event) => {

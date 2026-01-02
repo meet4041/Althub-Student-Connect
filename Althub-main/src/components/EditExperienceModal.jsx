@@ -27,6 +27,7 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
   const [errors, setErrors] = useState({});
   const [experiences, setExperiences] = useState([]);
   const [modalType, setModalType] = useState("");
+const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setExperiences(experience);
@@ -46,29 +47,42 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
     else closeModal();
   };
 
-  // --- UPDATED IMAGE UPLOAD LOGIC ---
+  // --- IMAGE UPLOAD LOGIC ---
   const handleCompanyLogoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const body = new FormData();
-    body.append("image", file); // Using "image" as key to match common backend storage logic
+    // Validate file size (max 3MB)
+    if (file.size > 3 * 1024 * 1024) { 
+      toast.error("Logo size cannot exceed 3MB");
+      e.target.value = "";
+      return;
+    }
 
-    axios.post(`${WEB_URL}/api/uploadExperienceImage`, body, { 
+    setUploading(true);
+
+    const body = new FormData();
+    body.append("companylogo", file); // Key must match backend storage setup
+
+    axios.post(`${WEB_URL}/api/uploadCompanyLogo`, body, { 
         headers: { "Content-Type": "multipart/form-data" } 
     })
     .then((res) => {
-        // Althub Backend usually returns the path in res.data.data
-        const imagePath = res.data.data; 
+        // Backend returns: { success: true, data: { url: "/api/images/{fileId}" } }
+        const imagePath = res.data.data?.url; 
         if (imagePath) {
             setEx((prev) => ({ ...prev, companylogo: imagePath }));
-            toast.success("Logo uploaded!");
+            toast.success("Logo uploaded successfully!");
+        } else {
+            toast.error("No image path returned from server");
         }
     })
     .catch((err) => {
-        console.error(err);
-        toast.error("Upload failed");
-    });
+        console.error("Upload error:", err);
+        toast.error(err.response?.data?.msg || "Upload failed");
+        e.target.value = "";
+      })
+      .finally(() => setUploading(false));
   };
 
   const validate = () => {
@@ -85,23 +99,33 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
     if (!validate()) return;
     const userID = localStorage.getItem("Althub_Id");
     const payload = {
-        userid: userID,
-        id: ex._id, // Use 'id' to match standard controller params
-        companyname: ex.companyname,
-        position: ex.position,
-        joindate,
-        enddate,
-        companylogo: ex.companylogo,
-        description: ex.description,
+      userid: userID,
+      _id: ex._id || "",
+      companyname: ex.companyname,
+      position: ex.position,
+      joindate,
+      enddate,
+      companylogo: ex.companylogo,
+      description: ex.description,
     };
 
     const url = ex._id ? `${WEB_URL}/api/editExperience` : `${WEB_URL}/api/addExperience`;
-
-    axios.post(url, payload).then(() => {
-        toast.success(ex._id ? "Updated!" : "Added!");
-        getExperience();
-        ex._id ? setModalType("Edit") : closeModal();
-    }).catch(console.error);
+    console.log('Submitting experience payload:', payload, 'to', url);
+    axios.post(url, payload)
+      .then((res) => {
+        if (res.data && res.data.success) {
+          toast.success(ex._id ? "Updated!" : "Added!");
+          getExperience();
+          ex._id ? setModalType("Edit") : closeModal();
+        } else {
+          console.error('Save failed response:', res.data);
+          toast.error(res.data?.msg || 'Save failed');
+        }
+      })
+      .catch((err) => {
+        console.error('Save error:', err);
+        toast.error(err.response?.data?.msg || 'Save failed');
+      });
   };
 
   const handleDelete = () => {
@@ -150,7 +174,7 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
                             >
                                 <ListItemAvatar>
                                     <Avatar 
-                                        src={elem.companylogo ? `${WEB_URL}${elem.companylogo}` : ""} 
+                                        src={elem.companylogo ? (elem.companylogo.startsWith('http') ? elem.companylogo : `${WEB_URL}${elem.companylogo}`) : ""} 
                                         variant="rounded" 
                                     >
                                         <Business />
@@ -178,15 +202,15 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
             <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} display="flex" flexDirection="column" alignItems="center" gap={1}>
                     <Avatar 
-                        src={ex.companylogo ? `${WEB_URL}${ex.companylogo}` : ""} 
+                        src={ex.companylogo ? (ex.companylogo.startsWith('http') ? ex.companylogo : `${WEB_URL}${ex.companylogo}`) : ""} 
                         variant="rounded" 
                         sx={{ width: 80, height: 80, border: '1px solid #eee' }}
                     >
                         <Business sx={{ fontSize: 40 }} />
                     </Avatar>
-                    <Button component="label" startIcon={<CloudUpload />} size="small">
-                        Upload Logo 
-                        <input type="file" hidden accept="image/*" onChange={handleCompanyLogoChange} />
+                    <Button component="label" startIcon={<CloudUpload />} size="small" disabled={uploading}>
+                      {uploading ? "Uploading..." : "Upload Logo"}
+                      <input type="file" hidden accept="image/*" onChange={handleCompanyLogoChange} disabled={uploading} />
                     </Button>
                 </Grid>
 

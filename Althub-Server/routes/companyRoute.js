@@ -15,7 +15,8 @@ company_route.use(cookieParser());
 company_route.post('/addCompany', company_controller.addCompany);
 company_route.get('/getCompanies', company_controller.getCompanies);
 company_route.delete('/deleteCompany/:id', company_controller.deleteCompany);
-company_route.post('/uploadCompanyImage', uploadSingle('image'), (req, res) => {
+// Company images: 5MB max
+company_route.post('/uploadCompanyImage', uploadSingle('image', { maxFileSize: 5 * 1024 * 1024 }), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
         const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());

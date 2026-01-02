@@ -54,7 +54,7 @@ const ChangePasswordModal = ({ closeModal }) => {
             if (res.data.success) {
                 toast.success("Password Updated. Logging out...");
                 
-                localStorage.removeItem("Althub_Token");
+                // Clear only client-side user id; auth token is HttpOnly cookie and will be cleared by server.
                 localStorage.removeItem("Althub_Id");
                 closeModal();
                 

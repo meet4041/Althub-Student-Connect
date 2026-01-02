@@ -27,6 +27,7 @@
         "cors": "^2.8.5",
         "dotenv": "^16.6.1",
         "express": "^4.18.2",
+        "express-mongo-sanitize": "^2.2.0",
         "express-rate-limit": "^8.2.1",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.0",
@@ -36,7 +37,11 @@
         "nodemailer": "^7.0.10",
         "randomstring": "^1.2.3",
         "socket.io": "^4.6.1",
+<<<<<<< HEAD
         "xss": "^1.0.15"
+=======
+        "xss-clean": "^0.1.4"
+>>>>>>> a268263 (ok)
     },
     "devDependencies": {
         "cross-env": "^10.1.0",

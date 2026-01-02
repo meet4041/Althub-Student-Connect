@@ -8,17 +8,36 @@ const experience_route = express.Router();
 
 experience_route.use(bodyParser.json());
 experience_route.use(bodyParser.urlencoded({ extended: true }));
+<<<<<<< HEAD
+=======
+const { uploadSingle, uploadFromBuffer } = require('../db/storage');
+experience_route.use(express.static('public'));
+>>>>>>> a268263 (ok)
 experience_route.use(cookieParser());
 
+<<<<<<< HEAD
 // Experience routes
+=======
+//Experience routes
+>>>>>>> a268263 (ok)
 experience_route.post('/addExperience', experience_controller.addExperience);
 experience_route.post('/getExperience', experience_controller.getExperience);
 experience_route.delete('/deleteExperience/:id', experience_controller.deleteExperience);
 experience_route.post('/editExperience', experience_controller.editExperience);
-experience_route.post('/uploadCompanyLogo', uploadSingle('companylogo'), (req, res) => {
+
+// --- COMPANY LOGO UPLOAD (Fixed to use GridFS) ---
+// Company logos: 5MB max
+experience_route.post('/uploadCompanyLogo', uploadSingle('companylogo', { maxFileSize: 5 * 1024 * 1024 }), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
-        const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
+        
+        // Upload buffer to GridFS
+        const fileId = await uploadFromBuffer(
+            req.file.buffer, 
+            req.file.originalname, 
+            req.file.mimetype
+        );
+        
         return res.status(200).send({ success: true, data: { url: `/api/images/${fileId}` } });
     } catch (err) {
         console.error('Error uploading company logo', err.message);

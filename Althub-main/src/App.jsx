@@ -19,7 +19,7 @@ const ViewProfile = lazy(() => import("./components/ViewProfile"));
 const ViewSearchProfile = lazy(() => import("./components/ViewSearchProfile"));
 const SearchProfile = lazy(() => import("./components/SearchProfile"));
 const Message = lazy(() => import("./components/Message"));
-const Notidfication = lazy(() => import("./components/Notidfication"));
+const Notification = lazy(() => import("./components/Notification"));
 const ForgetPassword = lazy(() => import("./components/ForgetPassword"));
 const NewPassword = lazy(() => import("./components/NewPassword"));
 const Scholarship = lazy(() => import("./components/Scholarship"));
@@ -44,7 +44,19 @@ function App() {
 
     const resInterceptor = axios.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
+        const originalRequest = error.config;
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            try {
+                await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/refreshToken`, {}, { withCredentials: true });
+                return axios(originalRequest);
+            } catch (refreshErr) {
+                handleSecurityLogout();
+                return Promise.reject(refreshErr);
+            }
+        }
+
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             handleSecurityLogout();
         }
@@ -55,7 +67,7 @@ function App() {
     // --- CENTRALIZED LOGOUT LOGIC ---
     const handleSecurityLogout = () => {
       console.warn("Security Event: Logging out");
-      localStorage.removeItem("Althub_Token");
+      // Token is stored as HttpOnly cookie; do not keep a client-side copy
       localStorage.removeItem("Althub_Id");
       if (socket.connected) socket.disconnect();
       nav("/login");
@@ -110,7 +122,7 @@ function App() {
               <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket} />} />
               <Route path="/search-profile" element={<SearchProfile />} />
               <Route path="/message" element={<Message socket={socket} />} />
-              <Route path="/notification" element={<Notidfication />} />
+              <Route path="/notification" element={<Notification />} />
               <Route path="/scholarship" element={<Scholarship />} />
               <Route path="/my-posts" element={<MyPosts />} />
           </Route>

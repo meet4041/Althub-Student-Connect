@@ -8,6 +8,8 @@ const user_route = express.Router();
 // --- PUBLIC ROUTES ---
 user_route.post('/register', user_controller.registerUser);
 user_route.post('/userLogin', user_controller.userlogin);
+// Refresh access token using refresh token cookie
+user_route.post('/refreshToken', user_controller.refreshToken);
 user_route.post('/userForgetPassword', user_controller.forgetPassword);
 user_route.post('/userResetPassword', user_controller.resetpassword);
 user_route.get('/userLogout', user_controller.userLogout);

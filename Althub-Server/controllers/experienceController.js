@@ -2,6 +2,7 @@ import Experience from "../models/experienceModel.js";
 
 const addExperience = async (req, res) => {
     try {
+        console.log('addExperience payload:', req.body);
         const experience = new Experience({
             userid: req.body.userid,
             companyname: req.body.companyname,
@@ -12,6 +13,7 @@ const addExperience = async (req, res) => {
             description: req.body.description
         });
         const experience_data = await experience.save();
+        console.log('addExperience saved:', experience_data);
         res.status(200).send({ success: true, data: experience_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -39,7 +41,9 @@ const deleteExperience = async (req, res) => {
 
 const editExperience = async (req, res) => {
     try {
+        console.log('editExperience payload:', req.body);
         const experience_data = await Experience.findByIdAndUpdate({ _id: req.body._id }, { $set: req.body }, { new: true });
+        console.log('editExperience updated:', experience_data);
         res.status(200).send({ success: true, msg: 'experience Updated', data: experience_data });
 
     } catch (error) {

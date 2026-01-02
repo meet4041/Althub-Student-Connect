@@ -1,11 +1,21 @@
+<<<<<<< HEAD
 import Post from "../models/postModel.js";
 import User from "../models/userModel.js";
 import Institute from "../models/instituteModel.js";
 import Notification from "../models/notificationModel.js";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
+=======
+const Post = require("../models/postModel");
+const User = require("../models/userModel");
+const Institute = require("../models/instituteModel");
+const Notification = require("../models/notificationModel");
+const { uploadSingle, uploadFromBuffer, uploadArray } = require('../db/storage');
+const { connectToMongo } = require('../db/conn');
+>>>>>>> a268263 (ok)
 
 const addPost = async (req, res) => {
     try {
+<<<<<<< HEAD
         await connectToMongo();
 
         // Handle Images
@@ -26,11 +36,76 @@ const addPost = async (req, res) => {
             
             title: req.body.title || "Update",
             description: req.body.description,
+=======
+        console.log('addPost req.files length:', req.files ? req.files.length : 0);
+        let photos = [];
+        // 1. If middleware set a single image (legacy)
+        if (req.body.image) {
+            photos = [req.body.image];
+        }
+
+        // 2. If req.images already prepared by middleware
+        else if (req.images) {
+            photos = req.images;
+        }
+
+        // 3. If files were uploaded via uploadArray('photos'), process them
+        else if (req.files && req.files.length > 0) {
+            // Enforce maximum count and validate that uploader owns the userid
+            const MAX_FILES = 5;
+            if (req.files.length > MAX_FILES) return res.status(400).send({ success: false, msg: 'Too many files uploaded' });
+
+            // Security: Ensure the authenticated user matches the userid in the body
+            if (req.user && req.body.userid && req.user._id.toString() !== req.body.userid.toString()) {
+                return res.status(403).send({ success: false, msg: 'Unauthorized: userid mismatch' });
+            }
+
+            await connectToMongo();
+            for (const file of req.files) {
+                // Basic safety: ensure buffer exists
+                if (!file.buffer || !file.originalname) continue;
+                const filename = `post-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photos.push(`/api/images/${fileId}`);
+            }
+            console.log('addPost uploaded photos:', photos);
+        }
+
+        // Limit description length
+        const description = typeof req.body.description === 'string' ? req.body.description.slice(0, 5000) : '';
+
+        // Validate payload with Joi
+        const schema = Joi.object({
+            userid: Joi.string().required(),
+            fname: Joi.string().allow('', null),
+            lname: Joi.string().allow('', null),
+            companyname: Joi.string().allow('', null),
+            profilepic: Joi.string().allow('', null),
+            description: Joi.string().max(5000).allow('', null),
+            date: Joi.date().optional()
+        });
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).send({ success: false, msg: error.details[0].message });
+
+        const post = new Post({
+            userid: req.body.userid,
+            fname: req.body.fname,
+            lname: req.body.lname,
+            companyname: req.body.companyname,
+            profilepic: req.body.profilepic,
+            description: description,
+>>>>>>> a268263 (ok)
             date: req.body.date || new Date(),
             photos: photoIds
         });
 
+<<<<<<< HEAD
         const savedPost = await newPost.save();
+=======
+        // FIXED: Changed 'newPost.save()' to 'post.save()'
+        const savedPost = await post.save();
+        console.log('addPost saved:', savedPost);
+>>>>>>> a268263 (ok)
 
         res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 

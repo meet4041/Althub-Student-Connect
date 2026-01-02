@@ -24,7 +24,6 @@ export default function MyPosts() {
   const [user, setUser] = useState({});
   const [topUsers, setTopUsers] = useState([]);
   const userid = localStorage.getItem("Althub_Id");
-  const token = localStorage.getItem("Althub_Token");
 
   // Edit State
   const [open, setOpen] = useState(false);
@@ -61,7 +60,7 @@ export default function MyPosts() {
     if (!userid) return;
     
     // 1. User Profile
-    axios.get(`${WEB_URL}/api/searchUserById/${userid}`)
+    axios.get(`${WEB_URL}/api/searchUserById/${userid}`, { withCredentials: true })
       .then((res) => {
         if (res.data?.data) setUser(res.data.data[0]);
       })
@@ -171,9 +170,9 @@ export default function MyPosts() {
                         {elem.photos.map((el, idx) => (
                           <div key={idx} style={{ outline: 'none' }}>
                             {isVideo(el) ? (
-                                <video src={`${WEB_URL}${el}${el.includes('?') ? '&' : '?'}token=${token}`} className="mp-media-item" controls />
+                              <video src={`${WEB_URL}${el}`} className="mp-media-item" controls />
                             ) : (
-                                <ProtectedImage imgSrc={el} className="mp-media-item" defaultImage="images/cover-pattern.png" />
+                              <ProtectedImage imgSrc={el} className="mp-media-item" defaultImage="images/cover-pattern.png" />
                             )}
                           </div>
                         ))}

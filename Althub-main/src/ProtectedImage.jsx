@@ -23,37 +23,36 @@ const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profil
 
     // 3. The Secure Fetch
     const fetchSecureImage = async () => {
+      let objectUrl = null;
       try {
         setLoading(true);
         // Ensure strictly one slash between base and path
         const cleanPath = imgSrc.startsWith("/") ? imgSrc : `/${imgSrc}`;
-        const fullUrl = `${WEB_URL}${cleanPath}`; // <--- This fails if WEB_URL is empty!
+        const fullUrl = `${WEB_URL}${cleanPath}`;
 
-        // RETRIEVE TOKEN FROM STORAGE 
-        // CHECK: Is this key "Althub_Token" or just "token" in your Login.jsx?
-        const token = localStorage.getItem("Althub_Token"); 
-
+        // Prefer cookie-based auth (HttpOnly jwt_token). Use withCredentials.
         const response = await axios.get(fullUrl, {
-          responseType: "blob", 
-          withCredentials: false, // Set false to satisfy Chrome CORS
-          headers: {
-             // Sends Header (Primary Auth)
-             "Authorization": token ? `Bearer ${token}` : "" 
-          }
+          responseType: "blob",
+          withCredentials: true
         });
 
-        // Convert the raw data (blob) into a viewable URL
-        const objectUrl = URL.createObjectURL(response.data);
+        objectUrl = URL.createObjectURL(response.data);
         setCurrentSrc(objectUrl);
       } catch (error) {
         console.error("Image Load Failed:", error);
-        setCurrentSrc(defaultImage); 
+        setCurrentSrc(defaultImage);
       } finally {
         setLoading(false);
       }
+
+      // Cleanup: revoke object URL on unmount or when src changes
+      return () => {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      };
     };
 
-    fetchSecureImage();
+    const cleanup = fetchSecureImage();
+    return () => { if (cleanup && typeof cleanup === 'function') cleanup(); };
   }, [imgSrc, defaultImage]);
 
   if (loading) {

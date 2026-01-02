@@ -1,23 +1,35 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { WEB_URL } from '../baseURL';
 
 const AuthGuard = () => {
-    // 1. Retrieve both the token and the user ID
-    // Checking for both ensures the session is fully established and valid
-    const token = localStorage.getItem("Althub_Token");
-    const userId = localStorage.getItem("Althub_Id");
+    const [status, setStatus] = useState('loading'); // 'loading' | 'ok' | 'unauth'
+    const navigate = useNavigate();
 
-    // 2. If either the token OR the user ID is missing, redirect to Login
-    if (!token || !userId) {
-        // Safety Measure: Clear potential partial data to ensure a clean state for the next login
-        localStorage.removeItem("Althub_Token");
-        localStorage.removeItem("Althub_Id");
+    useEffect(() => {
+        const userId = localStorage.getItem('Althub_Id');
+        if (!userId) {
+            setStatus('unauth');
+            return;
+        }
 
-        // 'replace' ensures they can't click "Back" to return to the protected route
+        // Validate session with server using cookies (HttpOnly jwt_token)
+        axios.get(`${WEB_URL}/api/searchUserById/${userId}`, { withCredentials: true })
+            .then((res) => {
+                if (res.data && res.data.data && res.data.data.length) setStatus('ok');
+                else setStatus('unauth');
+            })
+            .catch(() => setStatus('unauth'));
+    }, [navigate]);
+
+    if (status === 'loading') return null; // or a spinner
+    if (status === 'unauth') {
+        // Remove client-side user id only; cookie is HttpOnly and handled by server
+        localStorage.removeItem('Althub_Id');
         return <Navigate to="/login" replace />;
     }
 
-    // 3. If both exist, render the child route (e.g., Home, Events)
     return <Outlet />;
 };
 

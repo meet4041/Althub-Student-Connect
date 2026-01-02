@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import User from "../models/userModel.js";
 import Education from "../models/educationModel.js";
 import bcryptjs from "bcryptjs";
@@ -8,6 +9,19 @@ import randomstring from "randomstring";
 import mongoose from "mongoose";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 import xss from 'xss';
+=======
+const User = require("../models/userModel");
+const Education = require("../models/educationModel");
+const bcryptjs = require("bcryptjs");
+const config = require("../config/config");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const randomstring = require("randomstring");
+const mongoose = require('mongoose');
+const RefreshToken = require('../models/refreshTokenModel');
+
+const { uploadFromBuffer, connectToMongo } = require("../db/conn");
+>>>>>>> a268263 (ok)
 
 // --- SECURITY UTILITIES ---
 // return xss(text);
@@ -18,16 +32,13 @@ const sanitizeInput = (text) => {
 
 // --- HELPER FUNCTIONS ---
 
-const createtoken = async (user) => {
-    try {
-        return jwt.sign({
-            _id: user._id,
-            version: user.tokenVersion || 0,
-            role: user.role || 'student'
-        }, config.secret_jwt, { expiresIn: '7d' });
-    } catch (error) {
-        throw new Error(error.message);
-    }
+// Access / Refresh token helpers
+const createAccessToken = (user) => {
+    return jwt.sign({ _id: user._id, version: user.tokenVersion || 0, role: user.role || 'student' }, config.secret_jwt, { expiresIn: '15m' });
+}
+
+const createRefreshToken = (user, jti) => {
+    return jwt.sign({ _id: user._id, version: user.tokenVersion || 0, role: user.role || 'student', jti }, config.secret_refresh, { expiresIn: '7d' });
 }
 
 const securePassword = async (password) => {
@@ -183,16 +194,35 @@ export const userlogin = async (req, res) => {
         if (userData) {
             const passwordMatch = await bcryptjs.compare(password, userData.password);
             if (passwordMatch) {
-                const token = await createtoken(userData); 
-                
+                // Issue access + refresh tokens (access short-lived, refresh long-lived)
+                const jti = crypto.randomUUID();
+                const accessToken = createAccessToken(userData);
+                const refreshToken = createRefreshToken(userData, jti);
+
+                // Persist refresh token record
+                try {
+                    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                    await RefreshToken.create({ userid: userData._id.toString(), jti, expiresAt });
+                } catch (err) {
+                    console.error('RefreshToken create failed', err.message);
+                }
+
                 const isProduction = process.env.NODE_ENV === 'production';
 
-                res.cookie("jwt_token", token, {
+                res.cookie("jwt_token", accessToken, {
                     httpOnly: true,
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    maxAge: 15 * 60 * 1000, // 15 minutes
                     secure: isProduction,
                     sameSite: isProduction ? 'None' : 'Lax',
                     path: '/'
+                });
+
+                res.cookie("refresh_token", refreshToken, {
+                    httpOnly: true,
+                    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                    secure: isProduction,
+                    sameSite: isProduction ? 'None' : 'Lax',
+                    path: '/api'
                 });
 
                 const userResult = {
@@ -207,8 +237,7 @@ export const userlogin = async (req, res) => {
                 res.status(200).send({
                     success: true,
                     msg: "Login Successful",
-                    data: userResult,
-                    token: token
+                    data: userResult
                 });
             } else {
                 res.status(400).send({ success: false, msg: "Invalid Credentials" });
@@ -288,10 +317,23 @@ export const resetpassword = async (req, res) => {
 export const userProfileEdit = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
+        // Only allow a specific whitelist of editable fields
+        const allowedFields = [
+            'fname','lname','gender','dob','city','state','nation','phone',
+            'email','github','portfolioweb','about','languages','skills'
+        ];
         const sanitizedBody = {};
-        for (let key in req.body) {
-            sanitizedBody[key] = sanitizeInput(req.body[key]);
+        for (let key of allowedFields) {
+            if (Object.prototype.hasOwnProperty.call(req.body, key) && req.body[key] !== undefined) {
+                let val = req.body[key];
+                // Limit lengths to reasonable bounds
+                if (typeof val === 'string' && val.length > 2000) {
+                    return res.status(400).send({ success: false, msg: 'Field too large' });
+                }
+                sanitizedBody[key] = sanitizeInput(val);
+            }
         }
+
         const new_data = await User.findByIdAndUpdate(
             { _id: loggedInUserId },
             { $set: sanitizedBody },
@@ -411,9 +453,62 @@ export const searchUserById = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
+<<<<<<< HEAD
 export const userLogout = async (req, res) => {
     try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); }
     catch (error) { res.status(400).send({ success: false }); }
+=======
+const userLogout = async (req, res) => {
+    try {
+        res.clearCookie("jwt_token");
+        res.clearCookie("refresh_token", { path: '/api' });
+        res.status(200).send({ success: true, msg: "Logged Out" });
+    } catch (error) { res.status(400).send({ success: false }); }
+}
+
+const refreshToken = async (req, res) => {
+    try {
+        const rToken = req.cookies.refresh_token;
+        if (!rToken) return res.status(401).send({ success: false, msg: 'No refresh token' });
+        let decoded;
+        try { decoded = jwt.verify(rToken, config.secret_refresh); } catch (err) { return res.status(401).send({ success: false, msg: 'Invalid refresh token' }); }
+
+        // Verify tokenVersion and jti in DB
+        const CurrentUserModel = User;
+        const userData = await CurrentUserModel.findById(decoded._id).select('+tokenVersion');
+        if (!userData) return res.status(401).send({ success: false, msg: 'User not found' });
+        if ((userData.tokenVersion || 0) !== (decoded.version || 0)) return res.status(401).send({ success: false, msg: 'Token revoked' });
+
+        const jti = decoded.jti;
+        if (!jti) return res.status(401).send({ success: false, msg: 'Invalid refresh token' });
+
+        const tokenRecord = await RefreshToken.findOne({ jti, userid: decoded._id.toString() });
+        if (!tokenRecord || tokenRecord.revoked) return res.status(401).send({ success: false, msg: 'Refresh token revoked' });
+
+        // Rotate: revoke old record and create new one
+        tokenRecord.revoked = true;
+        await tokenRecord.save();
+
+        const newJti = crypto.randomUUID();
+        const newAccess = createAccessToken(userData);
+        const newRefresh = createRefreshToken(userData, newJti);
+
+        try {
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            await RefreshToken.create({ userid: userData._id.toString(), jti: newJti, expiresAt });
+        } catch (err) {
+            console.error('RefreshToken rotate failed', err.message);
+        }
+
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('jwt_token', newAccess, { httpOnly: true, maxAge: 15 * 60 * 1000, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/' });
+        res.cookie('refresh_token', newRefresh, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/api' });
+
+        return res.status(200).send({ success: true, msg: 'Token refreshed' });
+    } catch (error) {
+        return res.status(500).send({ success: false, msg: error.message });
+    }
+>>>>>>> a268263 (ok)
 }
 
 export const getUsers = async (req, res) => {
@@ -568,4 +663,17 @@ export const getRandomUsers = async (req, res) => {
         const user_data = await User.aggregate(pipeline);
         res.status(200).send({ success: true, data: user_data });
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
+<<<<<<< HEAD
 }
+=======
+}
+
+module.exports = {
+    registerUser, userlogin, updatePassword, forgetPassword, resetpassword,
+    userProfileEdit, searchUser, userLogout, uploadUserImage, getUsers,
+    followUser, unfollowUser, searchUserById, deleteUser, getUsersOfInstitute,
+    getTopUsers, updateProfilePic, deleteProfilePic, getRandomUsers
+};
+// Export refreshToken separately to expose the endpoint
+module.exports.refreshToken = refreshToken;
+>>>>>>> a268263 (ok)

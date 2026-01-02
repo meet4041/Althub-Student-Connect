@@ -38,7 +38,6 @@ export default function Home({ socket }) {
   const [showEduModal, setShowEduModal] = useState(false);
   
   const userid = localStorage.getItem("Althub_Id");
-  const token = localStorage.getItem("Althub_Token");
   const emptyEducationList = useMemo(() => [], []);
 
   // Image Compression & Helpers
@@ -80,7 +79,7 @@ export default function Home({ socket }) {
 
   // Data Fetching
   const getUser = useCallback(() => {
-    if (userid) axios.get(`${WEB_URL}/api/searchUserById/${userid}`).then((res) => { if (res.data?.data) setUser(res.data.data[0]); });
+    if (userid) axios.get(`${WEB_URL}/api/searchUserById/${userid}`, { withCredentials: true }).then((res) => { if (res.data?.data) setUser(res.data.data[0]); });
   }, [userid]);
 
   const checkEducation = useCallback(() => {
@@ -90,7 +89,7 @@ export default function Home({ socket }) {
   useEffect(() => { 
     getUser(); 
     checkEducation();
-    axios.get(`${WEB_URL}/api/getPost`).then((res) => setPost(res.data.data));
+    axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
     axios.get(`${WEB_URL}/api/getEvents`).then((res) => setEvents(res.data.data));
     axios.get(`${WEB_URL}/api/getFinancialAid`).then((res) => setAids(res.data.data));
   }, [getUser, checkEducation]);
@@ -118,16 +117,16 @@ export default function Home({ socket }) {
       const compressedFiles = await Promise.all(Array.from(fileList).map(f => compressImage(f)));
       compressedFiles.forEach(f => body.append(`photos`, f, f.name));
     }
-    axios.post(`${WEB_URL}/api/addPost`, body, { headers: { "Content-type": "multipart/form-data" } }).then(() => {
+    axios.post(`${WEB_URL}/api/addPost`, body, { headers: { "Content-type": "multipart/form-data" }, withCredentials: true }).then(() => {
       toast.success("Posted!"); setFileList(null); setDescription(""); setUploading(false);
-      axios.get(`${WEB_URL}/api/getPost`).then((res) => setPost(res.data.data));
+      axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
     }).catch(() => { toast.error("Failed"); setUploading(false); });
   };
 
   const handleLike = (elem) => {
     axios.put(`${WEB_URL}/api/like/${elem._id}`, { userId: userid }).then((res) => {
       if (userid !== elem.userid && res.data.msg === "Like") socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` });
-      axios.get(`${WEB_URL}/api/getPost`).then((r) => setPost(r.data.data));
+      axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((r) => setPost(r.data.data));
     });
   };
 
@@ -247,7 +246,7 @@ export default function Home({ socket }) {
                       {elem.photos.map((photo, idx) => (
                         <div key={idx}>
                           {isVideo(photo) ? (
-                            <video src={`${WEB_URL}${photo}?token=${token}`} className="post-media-item" controls />
+                            <video src={`${WEB_URL}${photo}`} className="post-media-item" controls />
                           ) : (
                             <ProtectedImage imgSrc={photo} className="post-media-item" defaultImage="images/error-page-pattern.png" />
                           )}

@@ -16,7 +16,8 @@ education_route.post('/addEducation', education_controller.addEducation);
 education_route.post('/getEducation', education_controller.getEducation);
 education_route.delete('/deleteEducation/:id', education_controller.deleteEducation);
 education_route.post('/editEducation', education_controller.editEducation);
-education_route.post('/uploadCollageLogo', uploadSingle('collagelogo'), (req, res) => {
+// Collage logos: 5MB max
+education_route.post('/uploadCollageLogo', uploadSingle('collagelogo', { maxFileSize: 5 * 1024 * 1024 }), (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
         const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());

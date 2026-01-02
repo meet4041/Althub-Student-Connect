@@ -17,7 +17,7 @@ import {
   ArrowBack, AccessTime, DeleteOutline, NotificationsOff, NotificationsActive
 } from "@mui/icons-material";
 
-export default function Notidfication() {
+export default function Notification() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const nav = useNavigate();

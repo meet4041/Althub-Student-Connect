@@ -51,7 +51,7 @@ export default function ViewProfile() {
 
     // --- Data Fetching ---
     const getUser = useCallback(() => {
-        axios.get(`${WEB_URL}/api/searchUserById/${userID}`).then((res) => {
+        axios.get(`${WEB_URL}/api/searchUserById/${userID}`, { withCredentials: true }).then((res) => {
             if (res.data?.data) {
                 const u = res.data.data[0];
                 setUser(u);
@@ -62,15 +62,15 @@ export default function ViewProfile() {
     }, [userID]);
 
     const getEducation = useCallback(() => {
-        axios.post(`${WEB_URL}/api/getEducation`, { userid: userID }).then((res) => setEducation(res.data.data || []));
+        axios.post(`${WEB_URL}/api/getEducation`, { userid: userID }, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
     }, [userID]);
 
     const getExperience = useCallback(() => {
-        axios.post(`${WEB_URL}/api/getExperience`, { userid: userID }).then((res) => setExperience(res.data.data || []));
+        axios.post(`${WEB_URL}/api/getExperience`, { userid: userID }, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
     }, [userID]);
 
     const getNewUsers = useCallback(() => {
-        axios.post(`${WEB_URL}/api/getRandomUsers`, { userid: userID }).then((res) => setTopUsers(res.data.data));
+        axios.post(`${WEB_URL}/api/getRandomUsers`, { userid: userID }, { withCredentials: true }).then((res) => setTopUsers(res.data.data));
     }, [userID]);
 
     useEffect(() => {
@@ -80,7 +80,7 @@ export default function ViewProfile() {
     // --- Handlers ---
     const handleDeleteAccount = () => {
         if (window.confirm("Are you sure? This cannot be undone.")) {
-            axios.delete(`${WEB_URL}/api/deleteUser/${userID}`).then(() => {
+            axios.delete(`${WEB_URL}/api/deleteUser/${userID}`, { withCredentials: true }).then(() => {
                 toast.success("Account Deleted"); localStorage.clear(); nav("/");
             });
         }

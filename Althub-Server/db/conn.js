@@ -9,17 +9,32 @@ let gridFSBucket = null;
 const mongoURI = process.env.MONGO_URI;
 const storage = multer.memoryStorage();
 
-// --- FIX: Define GridFSBucket from mongoose.mongo ---
-const GridFSBucket = mongoose.mongo.GridFSBucket; 
+// Allowed MIME types (images + common videos)
+const ALLOWED_MIMES = [
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'
+];
 
-// --- Exported Functions (Directly) ---
+const DEFAULT_MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE_BYTES || `${20 * 1024 * 1024}`, 10); // 20MB
 
-export function uploadSingle(fieldName) {
-  return multer({ storage }).single(fieldName);
+function createMulter(fieldName, options = {}) {
+  const maxFileSize = options.maxFileSize || DEFAULT_MAX_FILE_SIZE;
+  const fileFilter = (req, file, cb) => {
+    if (!ALLOWED_MIMES.includes(file.mimetype)) {
+      return cb(new Error('Unsupported file type'), false);
+    }
+    cb(null, true);
+  };
+
+  return multer({ storage, limits: { fileSize: maxFileSize }, fileFilter });
 }
 
-export function uploadArray(fieldName, maxCount) {
-  return multer({ storage }).array(fieldName, maxCount);
+function uploadSingle(fieldName, options = {}) {
+  return createMulter(fieldName, options).single(fieldName);
+}
+
+function uploadArray(fieldName, maxCount = 5, options = {}) {
+  return createMulter(fieldName, options).array(fieldName, maxCount);
 }
 
 export const connectToMongo = async () => {

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -31,6 +32,19 @@ import company_route from "./routes/companyRoute.js";
 import notification_route from "./routes/notificationRoute.js";
 import financialaid_route from "./routes/financialaidRoute.js";
 import images_route from "./routes/imagesRoute.js";
+=======
+require("dotenv").config();
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const compression = require("compression");
+const http = require("http");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit"); 
+const { connectToMongo } = require("./db/conn");
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+>>>>>>> a268263 (ok)
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -40,14 +54,42 @@ const port = process.env.PORT || 5001;
 app.set("trust proxy", 1); 
 
 // 1. HELMET: Allow Cross-Origin Images
+<<<<<<< HEAD
+=======
+// This specific policy allows modern browsers (Chrome/Safari) to render 
+// images from this server even if the frontend is on a different port.
+// Helmet with stricter Content Security Policy
+const allowedImageHosts = [
+  'self',
+  'data:',
+  'blob:',
+];
+
+>>>>>>> a268263 (ok)
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", 'https:', 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  }
 }));
 
 app.use(compression()); 
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); 
 app.use(cookieParser());
+// 3. SANITIZERS: Protect against NoSQL injection and XSS
+app.use(mongoSanitize());
+app.use(xss());
 
 // --- BRUTE FORCE PROTECTION ---
 const loginLimiter = rateLimit({
@@ -61,7 +103,23 @@ const loginLimiter = rateLimit({
   legacyHeaders: false, 
 });
 
+<<<<<<< HEAD
 // --- CORS CONFIGURATION ---
+=======
+// --- GLOBAL API RATE LIMIT (defense in depth) ---
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  message: { success: false, msg: 'Too many requests from this IP, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply global limiter to all /api routes
+app.use('/api', apiLimiter);
+
+// --- SMART CORS CONFIGURATION ---
+>>>>>>> a268263 (ok)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -124,10 +182,19 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("Server Error Stack:", err.stack);
+  // Multer / Upload Errors
+  if (err && err.name === 'MulterError') {
+    console.warn('Multer error:', err.message);
+    // Map common Multer error codes to friendly messages
+    if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ success: false, msg: 'File too large' });
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') return res.status(400).json({ success: false, msg: 'Unexpected file field' });
+    return res.status(400).json({ success: false, msg: 'File upload error' });
+  }
+
+  console.error("Server Error Stack:", err && err.stack ? err.stack : err);
   res.status(err.status || 500).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' ? "Internal Server Error" : err.message
+    message: process.env.NODE_ENV === 'production' ? "Internal Server Error" : (err && err.message) || 'Unknown error'
   });
 });
 
