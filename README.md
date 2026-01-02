@@ -35,7 +35,6 @@
 
 ### **For Alumni**
 - **Student Mentoring**: Guide current students in their career paths
-- **Job Posting**: Share opportunities from your company
 - **Event Hosting**: Organize reunions and networking events
 - **Knowledge Sharing**: Contribute to the content library
 - **Networking**: Connect with fellow alumni and industry professionals

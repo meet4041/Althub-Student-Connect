@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
-import "../styles/EditExperienceModal.css"; // <--- Import CSS
+import "../styles/EditExperienceModal.css";
 
 // MUI Imports
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, IconButton, Typography, List, ListItem, ListItemAvatar, 
-  ListItemText, Avatar, TextField, Grid, Box
+  Dialog, DialogTitle, DialogContent, Button, IconButton, Typography, 
+  List, ListItem, ListItemAvatar, ListItemText, Avatar, TextField, Grid, Box
 } from "@mui/material";
 
 import {
@@ -40,21 +39,36 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
   };
 
   const handleCancel = () => {
-    setEx({});
+    setEx({ _id: "", companyname: "", position: "", companylogo: "", description: "" });
     setJoinDate("");
     setEndDate("");
     if (modalType === "AddEdit") setModalType("Edit");
     else closeModal();
   };
 
+  // --- UPDATED IMAGE UPLOAD LOGIC ---
   const handleCompanyLogoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const body = new FormData();
-    body.append("profilepic", file);
-    axios.post(`${WEB_URL}/api/uploadUserImage`, body, { headers: { "Content-Type": "multipart/form-data" } })
-      .then((res) => setEx({ ...ex, companylogo: res.data.data.url }))
-      .catch(() => toast.error("Upload failed"));
+    body.append("image", file); // Using "image" as key to match common backend storage logic
+
+    axios.post(`${WEB_URL}/api/uploadExperienceImage`, body, { 
+        headers: { "Content-Type": "multipart/form-data" } 
+    })
+    .then((res) => {
+        // Althub Backend usually returns the path in res.data.data
+        const imagePath = res.data.data; 
+        if (imagePath) {
+            setEx((prev) => ({ ...prev, companylogo: imagePath }));
+            toast.success("Logo uploaded!");
+        }
+    })
+    .catch((err) => {
+        console.error(err);
+        toast.error("Upload failed");
+    });
   };
 
   const validate = () => {
@@ -72,7 +86,7 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
     const userID = localStorage.getItem("Althub_Id");
     const payload = {
         userid: userID,
-        _id: ex._id, // Only for edit
+        id: ex._id, // Use 'id' to match standard controller params
         companyname: ex.companyname,
         position: ex.position,
         joindate,
@@ -86,7 +100,7 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
     axios.post(url, payload).then(() => {
         toast.success(ex._id ? "Updated!" : "Added!");
         getExperience();
-        ex._id ? handleCancel() : closeModal();
+        ex._id ? setModalType("Edit") : closeModal();
     }).catch(console.error);
   };
 
@@ -118,10 +132,10 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
         <Typography variant="h6" fontWeight={600}>
             {modalType === "Edit" ? "Experience" : (ex._id ? "Edit Experience" : "Add Experience")}
         </Typography>
-        <IconButton onClick={closeModal} size="small"><Close /></IconButton>
+        <IconButton onClick={closeModal} size="small" style={{position:'absolute', right:8, top:8}}><Close /></IconButton>
       </DialogTitle>
 
-      <DialogContent className="exp-modal-content">
+      <DialogContent dividers className="exp-modal-content">
         
         {modalType === "Edit" ? (
             /* --- LIST VIEW --- */
@@ -131,105 +145,77 @@ const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) =
                         {experiences.map((elem) => (
                             <ListItem key={elem._id} className="exp-list-item"
                                 secondaryAction={
-                                    <IconButton edge="end" className="exp-edit-btn" onClick={() => prepareEdit(elem)}>
-                                        <Edit />
-                                    </IconButton>
+                                    <IconButton edge="end" onClick={() => prepareEdit(elem)}><Edit /></IconButton>
                                 }
                             >
                                 <ListItemAvatar>
-                                    <Avatar src={elem.companylogo ? `${WEB_URL}${elem.companylogo}` : ""} variant="rounded" className="exp-logo-avatar">
+                                    <Avatar 
+                                        src={elem.companylogo ? `${WEB_URL}${elem.companylogo}` : ""} 
+                                        variant="rounded" 
+                                    >
                                         <Business />
                                     </Avatar>
                                 </ListItemAvatar>
                                 <ListItemText 
-                                    primary={<span className="exp-list-primary">{elem.position}</span>}
-                                    secondary={
-                                        <span className="exp-list-secondary">
-                                            {elem.companyname} <br/>
-                                            {formatDate(elem.joindate)} - {elem.enddate ? formatDate(elem.enddate) : "Present"}
-                                        </span>
-                                    }
+                                    primary={elem.position}
+                                    secondary={`${elem.companyname} | ${formatDate(elem.joindate)} - ${elem.enddate ? formatDate(elem.enddate) : "Present"}`}
                                 />
                             </ListItem>
                         ))}
                     </List>
                 ) : (
-                    <div className="exp-empty-state">
-                        <WorkOutline className="exp-empty-icon" />
+                    <Box textAlign="center" py={3}>
+                        <WorkOutline fontSize="large" color="disabled" />
                         <Typography color="textSecondary">No experience added yet.</Typography>
-                    </div>
+                    </Box>
                 )}
-                
-                <div className="exp-add-btn-wrapper">
-                    <Button 
-                        variant="contained" 
-                        startIcon={<Add />} 
-                        onClick={() => { setEx({}); setJoinDate(""); setEndDate(""); setModalType("AddEdit"); }}
-                        sx={{ bgcolor: '#66bd9e', '&:hover': { bgcolor: '#479378' } }}
-                    >
-                        Add New
-                    </Button>
-                </div>
+                <Button fullWidth variant="contained" startIcon={<Add />} onClick={() => { setEx({_id:"", companyname:"", position:"", companylogo:"", description:""}); setModalType("AddEdit"); }} sx={{ mt: 2, bgcolor: '#66bd9e' }}>
+                    Add New
+                </Button>
             </div>
         ) : (
             /* --- FORM VIEW --- */
-            <div className="exp-form-container">
-                <Box className="exp-upload-section">
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} display="flex" flexDirection="column" alignItems="center" gap={1}>
                     <Avatar 
                         src={ex.companylogo ? `${WEB_URL}${ex.companylogo}` : ""} 
                         variant="rounded" 
-                        className="exp-upload-preview" 
-                    />
-                    <Button component="label" startIcon={<CloudUpload />} sx={{ color: '#66bd9e' }}>
-                        Upload Logo <input type="file" hidden onChange={handleCompanyLogoChange} />
+                        sx={{ width: 80, height: 80, border: '1px solid #eee' }}
+                    >
+                        <Business sx={{ fontSize: 40 }} />
+                    </Avatar>
+                    <Button component="label" startIcon={<CloudUpload />} size="small">
+                        Upload Logo 
+                        <input type="file" hidden accept="image/*" onChange={handleCompanyLogoChange} />
                     </Button>
-                </Box>
-
-                <TextField
-                    label="Company Name" name="companyname" fullWidth variant="outlined"
-                    value={ex.companyname || ""} onChange={handleChange}
-                    error={!!errors.companyname_err} helperText={errors.companyname_err}
-                />
-
-                <TextField
-                    label="Position / Role" name="position" fullWidth variant="outlined"
-                    value={ex.position || ""} onChange={handleChange}
-                    error={!!errors.position_err} helperText={errors.position_err}
-                />
-
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Start Date" type="date" fullWidth InputLabelProps={{ shrink: true }}
-                            value={joindate} onChange={(e) => setJoinDate(e.target.value)}
-                            error={!!errors.joindate_err} helperText={errors.joindate_err}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="End Date" type="date" fullWidth InputLabelProps={{ shrink: true }}
-                            value={enddate} onChange={(e) => setEndDate(e.target.value)}
-                        />
-                    </Grid>
                 </Grid>
 
-                <TextField
-                    label="Description" name="description" multiline rows={4} fullWidth
-                    value={ex.description || ""} onChange={handleChange}
-                />
+                <Grid item xs={12}>
+                    <TextField label="Company Name" name="companyname" fullWidth value={ex.companyname} onChange={handleChange} error={!!errors.companyname_err} helperText={errors.companyname_err} />
+                </Grid>
 
-                <div className="exp-form-actions">
-                    {ex._id && (
-                        <Button startIcon={<Delete />} color="error" onClick={handleDelete} style={{ marginRight: 'auto' }}>Delete</Button>
-                    )}
-                    <Button onClick={handleCancel} color="inherit">Cancel</Button>
-                    <Button variant="contained" onClick={handleSubmit} sx={{ bgcolor: '#66bd9e', '&:hover': { bgcolor: '#479378' } }}>
-                        {ex._id ? "Update" : "Save"}
-                    </Button>
-                </div>
-            </div>
+                <Grid item xs={12}>
+                    <TextField label="Position / Role" name="position" fullWidth value={ex.position} onChange={handleChange} error={!!errors.position_err} helperText={errors.position_err} />
+                </Grid>
+
+                <Grid item xs={6}>
+                    <TextField label="Start Date" type="date" fullWidth InputLabelProps={{ shrink: true }} value={joindate} onChange={(e) => setJoinDate(e.target.value)} error={!!errors.joindate_err} />
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField label="End Date" type="date" fullWidth InputLabelProps={{ shrink: true }} value={enddate} onChange={(e) => setEndDate(e.target.value)} />
+                </Grid>
+
+                <Grid item xs={12}>
+                    <TextField label="Description" name="description" multiline rows={3} fullWidth value={ex.description} onChange={handleChange} />
+                </Grid>
+
+                <Grid item xs={12} display="flex" justifyContent="flex-end" gap={1} sx={{ mt: 2 }}>
+                    {ex._id && <Button color="error" onClick={handleDelete} sx={{ mr: 'auto' }}>Delete</Button>}
+                    <Button onClick={handleCancel}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSubmit} sx={{ bgcolor: '#66bd9e' }}>Save</Button>
+                </Grid>
+            </Grid>
         )}
-
       </DialogContent>
     </Dialog>
   );

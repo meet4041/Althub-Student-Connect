@@ -223,15 +223,16 @@ export default function ViewProfile() {
                         {/* Education Section */}
                         <Card className="vp-section-card">
                             <CardContent>
-                                <Box className="vp-section-header">
-                                    <Typography variant="h6" fontWeight={700}>Education</Typography>
-                                    <IconButton className="vp-add-btn" onClick={() => { setModalType("Add"); setShowEditEdu(true); }}>
-                                        <Add />
-                                    </IconButton>
-                                </Box>
+                                {/* ... existing header code ... */}
                                 {education.length > 0 ? education.map(edu => (
                                     <Box key={edu._id} className="vp-list-item" display="flex">
-                                        <img src={`${WEB_URL}${edu.collagelogo}`} alt="" className="vp-list-logo" />
+                                        {/* Updated Image logic */}
+                                        <img
+                                            src={edu.collagelogo ? `${WEB_URL}${edu.collagelogo}` : "/default-institute.png"}
+                                            alt={edu.institutename}
+                                            className="vp-list-logo"
+                                            onError={(e) => { e.target.src = "/default-institute.png"; }} // Fallback if image fails to load
+                                        />
                                         <Box flex={1}>
                                             <Box display="flex" justifyContent="space-between">
                                                 <Typography variant="subtitle1" fontWeight={600}>{edu.institutename}</Typography>
