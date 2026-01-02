@@ -34,18 +34,21 @@ const Login = () => {
                     if (response.data.success === true) {
                         toast.success('Authentication Successful');
                         
-                        // SECURITY FIX: The token is nested inside response.data.data
                         const adminData = response.data.data;
                         
+                        // 1. Save User Details
                         localStorage.setItem('AlmaPlus_admin_Id', adminData._id);
                         localStorage.setItem('AlmaPlus_admin_Name', adminData.name || 'Admin');
                         
-                        // CORRECTED: Use adminData.token instead of response.data.token
-                        // This prevents "undefined" from being saved to LocalStorage
-                        if (adminData.token) {
-                            localStorage.setItem('AlmaPlus_admin_Token', adminData.token);
+                        // 2. FIX: Get token from root (response.data.token), NOT adminData.token
+                        const serverToken = response.data.token; 
+
+                        if (serverToken) {
+                            localStorage.setItem('AlmaPlus_admin_Token', serverToken);
                         } else {
-                            console.error("Security Warning: Token missing in response");
+                            // Fallback: Check if it was accidentally inside data
+                            console.warn("Token not found at root, checking inside data...");
+                            if(adminData.token) localStorage.setItem('AlmaPlus_admin_Token', adminData.token);
                         }
 
                         if (check) {
@@ -76,7 +79,13 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (localStorage.getItem("AlmaPlus_admin_Id")) navigate('/dashboard');
+        const hasId = localStorage.getItem("AlmaPlus_admin_Id");
+        const hasToken = localStorage.getItem("AlmaPlus_admin_Token");
+
+        if (hasId && hasToken) {
+            navigate('/dashboard');
+        }
+
         const savedEmail = localStorage.getItem('AlmaPlus_Admin_Email');
         if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled' && savedEmail) {
             setCheck(true);

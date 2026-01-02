@@ -2,31 +2,35 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const Institute = require("../models/instituteModel");
 const Notification = require("../models/notificationModel");
-const { uploadSingle, uploadFromBuffer, uploadArray } = require('../db/storage');
+const { uploadFromBuffer, connectToMongo } = require("../db/conn");
 
-// --- 1. ADD POST ---
 const addPost = async (req, res) => {
     try {
-        let photos = [];
-        if (req.body.image) {
-            photos = [req.body.image];
-        } else if (req.images) {
-            photos = req.images; // Fallback for backward compatibility
+        await connectToMongo();
+
+        // Handle Images
+        let photoIds = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `post-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photoIds.push(`/api/images/${fileId}`);
+            }
         }
 
-        const post = new Post({
-            userid: req.body.userid,
-            fname: req.body.fname,
-            lname: req.body.lname,
-            companyname: req.body.companyname,
-            profilepic: req.body.profilepic,
+        const newPost = new Post({
+            // FIX: Save 'senderid' from frontend into 'userid' field in DB
+            // This ensures getPostById finds it later.
+            userid: req.body.senderid, 
+            senderid: req.body.senderid, // Optional: Keep both if needed for notifications
+            
+            title: req.body.title || "Update",
             description: req.body.description,
             date: req.body.date || new Date(),
-            photos: photos, 
+            photos: photoIds
         });
 
-        // FIXED: Changed 'newPost.save()' to 'post.save()'
-        const savedPost = await post.save();
+        const savedPost = await newPost.save();
 
         res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 
@@ -36,9 +40,11 @@ const addPost = async (req, res) => {
     }
 };
 
-// --- 2. GET POST BY ID ---
+// --- 2. GET POST BY ID (MATCHING FIX) ---
 const getPostById = async (req, res) => {
     try {
+        // We search by 'userid' because that is what we are now saving in addPost
+        // We also use $or to find old posts that might only have 'senderid'
         const id = req.params.userid;
         
         const post_data = await Post.find({ 
@@ -54,7 +60,51 @@ const getPostById = async (req, res) => {
     }
 }
 
-// --- 3. GET ALL POSTS ---
+// --- 3. EDIT POST ---
+const editPost = async (req, res) => {
+    try {
+        await connectToMongo();
+        
+        const { id, title, description } = req.body;
+        
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).send({ success: false, msg: "Post not found" });
+        }
+
+        let newPhotoUrls = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `post-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                newPhotoUrls.push(`/api/images/${fileId}`);
+            }
+        }
+
+        const updatedPhotos = [...(post.photos || []), ...newPhotoUrls];
+
+        const updateData = {
+            title,
+            description,
+            photos: updatedPhotos
+        };
+
+        const updatedPost = await Post.findByIdAndUpdate(
+            id, 
+            { $set: updateData }, 
+            { new: true }
+        );
+
+        res.status(200).send({ success: true, msg: "Post Updated", data: updatedPost });
+
+    } catch (error) {
+        console.error("Edit Post Error:", error);
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
+
+// --- OTHER FUNCTIONS (Keep as they are) ---
+
 const getPosts = async (req, res) => {
     try {
         const post_data = await Post.find({}).sort({ date: -1 }).limit(20).lean();
@@ -64,7 +114,6 @@ const getPosts = async (req, res) => {
     }
 }
 
-// --- 4. DELETE POST ---
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
@@ -75,63 +124,6 @@ const deletePost = async (req, res) => {
     }
 }
 
-// --- 5. EDIT POST (The Correct Version) ---
-const editPost = async (req, res) => {
-    try {
-        const id = req.body.id;
-        const updateData = {};
-
-        if (req.body.description !== undefined) {
-            updateData.description = req.body.description;
-        }
-
-        // Logic to handle new single image + existing images
-        let photos = [];
-
-        // 1. Add existing photos (that the user didn't delete)
-        if (req.body.existingPhotos) {
-            let existing = req.body.existingPhotos;
-            // Ensure it is an array (if only 1 photo exists, it might come as a string)
-            if (!Array.isArray(existing)) {
-                existing = [existing];
-            }
-            photos = [...existing];
-        }
-
-        // 2. Add NEW uploaded image (from req.body.image set by uploadSingle middleware)
-        if (req.body.image) {
-            photos.push(req.body.image);
-        }
-        // 3. Fallback for multiple images (if logic changes back to uploadArray)
-        else if (req.images && req.images.length > 0) {
-            photos = [...photos, ...req.images];
-        }
-
-        // Only update photos if we have a valid array or if user explicitly cleared them
-        if (photos.length > 0) {
-             updateData.photos = photos;
-        } else if (req.body.photos === '[]' || (Array.isArray(req.body.photos) && req.body.photos.length === 0)) {
-             updateData.photos = [];
-        }
-
-        if (req.body.likes) updateData.likes = req.body.likes;
-        if (req.body.comments) updateData.comments = req.body.comments;
-
-        const post_data = await Post.findByIdAndUpdate(
-            { _id: id },
-            { $set: updateData },
-            { new: true }
-        );
-
-        res.status(200).send({ success: true, msg: 'Post Updated Successfully', data: post_data });
-
-    } catch (error) {
-        console.error("Edit Post Error:", error);
-        res.status(400).send({ success: false, msg: error.message });
-    }
-}
-
-// --- 6. LIKE / UNLIKE POST ---
 const likeUnlikePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -166,7 +158,6 @@ const likeUnlikePost = async (req, res) => {
     }
 };
 
-// --- 7. GET FRIENDS POSTS ---
 const getFriendsPost = async (req, res) => {
     try {
         const currentUser = await User.findById(req.body.userId).lean();

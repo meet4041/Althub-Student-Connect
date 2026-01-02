@@ -1,11 +1,11 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify';
-import { ALTHUB_API_URL } from '../../baseURL';
+import { ALTHUB_API_URL } from '../baseURL.jsx';
 import axios from 'axios';
-import Loader from '../layout/Loader'
-import Menu from '../layout/Menu';
-import Footer from '../layout/Footer';
+import Loader from '../layout/Loader.jsx';
+import Menu from '../layout/Menu.jsx';
+import Footer from '../layout/Footer.jsx';
 
 const AddUser = () => {
     const navigate = useNavigate();

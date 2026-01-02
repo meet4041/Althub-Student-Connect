@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../../services/axios';
-import Loader from '../layout/Loader';
-import Menu from '../layout/Menu';
-import Footer from '../layout/Footer';
+import Loader from '../layout/Loader.jsx';
+import Menu from '../layout/Menu.jsx';
+import Footer from '../layout/Footer.jsx';
 
 const Profile = () => {
     const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
