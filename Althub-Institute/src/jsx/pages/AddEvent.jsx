@@ -1,12 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, Fragment } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
-import Loader from '../layout/Loader'
-import Menu from '../layout/Menu';
-import Footer from '../layout/Footer';
+import Loader from '../layout/Loader.jsx'
+import Menu from '../layout/Menu.jsx';
+import Footer from '../layout/Footer.jsx';
 
 const AddEvent = () => {
     const [institute_Id, setInstitute_Id] = useState(null);

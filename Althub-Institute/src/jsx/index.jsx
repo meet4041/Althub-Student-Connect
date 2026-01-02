@@ -1,23 +1,25 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import ForgotPassword from './pages/ForgotPassword';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import Users from './pages/Users';
-import AddUser from './pages/AddUser';
-import Events from './pages/Events';
-import AddEvent from './pages/AddEvent';
-import Posts from './pages/Posts';
-import AddPost from './pages/AddPost';
-import EditEvent from './pages/EditEvent';
-import Register from './pages/Register';
-import EditPost from './pages/EditPost';
-import NewPassword from './pages/NewPassword';
-import FinancialPole from './pages/FinancialPole';
-import AddFinancialHelp from './pages/AddFinancialHelp';
-import EditFinancialAid from './pages/EditFinancialAid';
-import Feedback from './pages/Feedback';
+
+
+import Dashboard from './pages/Dashboard.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
+import Login from './pages/Login.jsx';
+import Profile from './pages/Profile.jsx';
+import Users from './pages/Users.jsx';
+import AddUser from './pages/AddUser.jsx';
+import Events from './pages/Events.jsx';
+import AddEvent from './pages/AddEvent.jsx';
+import Posts from './pages/Posts.jsx';
+import AddPost from './pages/AddPost.jsx';
+import EditEvent from './pages/EditEvent.jsx';
+import Register from './pages/Register.jsx';
+import EditPost from './pages/EditPost.jsx';
+import NewPassword from './pages/NewPassword.jsx';
+import FinancialPole from './pages/FinancialPole.jsx';
+import AddFinancialHelp from './pages/AddFinancialHelp.jsx';
+import EditFinancialAid from './pages/EditFinancialAid.jsx';
+import Feedback from './pages/Feedback.jsx';
 
 const Markup = () => {
     return (
@@ -45,4 +47,4 @@ const Markup = () => {
     )
 }
 
-export default Markup
+export default Markup;

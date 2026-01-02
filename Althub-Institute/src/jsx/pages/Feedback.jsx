@@ -1,11 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { ALTHUB_API_URL } from './baseURL';
-import Loader from '../layout/Loader';
-import Menu from '../layout/Menu';
-import Footer from '../layout/Footer';
+import Loader from '../layout/Loader.jsx';
+import Menu from '../layout/Menu.jsx';
+import Footer from '../layout/Footer.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 const Feedback = () => {

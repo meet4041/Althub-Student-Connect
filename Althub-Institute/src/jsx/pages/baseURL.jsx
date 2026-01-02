@@ -2,6 +2,6 @@
 const RENDER_URL = "https://althub-server.onrender.com"; 
 
 export const ALTHUB_API_URL = 
-  process.env.NODE_ENV === "production" 
+  import.meta.env.MODE === "production" 
     ? RENDER_URL 
     : "http://localhost:5001";

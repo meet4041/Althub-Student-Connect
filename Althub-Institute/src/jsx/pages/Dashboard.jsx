@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Loader from '../layout/Loader'
-import Menu from '../layout/Menu';
-import Footer from '../layout/Footer';
+import Loader from '../layout/Loader.jsx'
+import Menu from '../layout/Menu.jsx';
+import Footer from '../layout/Footer.jsx';
 import axiosInstance from '../../service/axios'; 
 
 function Dashboard() {
