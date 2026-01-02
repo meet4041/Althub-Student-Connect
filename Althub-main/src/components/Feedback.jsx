@@ -3,6 +3,8 @@ import axios from 'axios';
 import { WEB_URL } from '../baseURL';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
+import "../styles/Feedback.css"; // <--- New CSS Import
+
 import { 
   Box, Card, Typography, Button, TextField, Rating, Autocomplete, CircularProgress 
 } from '@mui/material';
@@ -18,7 +20,6 @@ export default function Feedback() {
     const location = useLocation();
 
     useEffect(() => {
-        // Updated to use withCredentials for secure cookie access
         axios.get(`${WEB_URL}/api/getUsers`, {
             withCredentials: true 
         }).then((res) => {
@@ -50,7 +51,6 @@ export default function Feedback() {
             return;
         }
 
-        // --- SECURITY: PREVENT XSS INJECTION ---
         const htmlPattern = /<(.|\n)*?>/g;
         if (htmlPattern.test(feedback)) {
             toast.error("HTML tags/scripts are not allowed in feedback!");
@@ -62,7 +62,7 @@ export default function Feedback() {
         axios({
             url: `${WEB_URL}/api/addFeedback`,
             method: 'post',
-            withCredentials: true, // Ensures the secure cookie is sent
+            withCredentials: true,
             data: {
                 userid: userID,
                 selected_user_id: selectedUser.id,
@@ -72,12 +72,9 @@ export default function Feedback() {
         }).then((Response) => {
             setIsSubmitting(false);
             toast.success("Feedback submitted successfully!");
-            
-            // SECURITY: Wipe local component state after success
             setFeedback("");
             setSelectedUser(null);
             setRate(0);
-
             setTimeout(() => nav("/home"), 1000); 
         }).catch((error) => {
             setIsSubmitting(false);
@@ -86,19 +83,11 @@ export default function Feedback() {
     }
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            p: 2,
-            background: 'radial-gradient(#e0e7ff 1px, transparent 1px)',
-            backgroundSize: '24px 24px'
-        }}>
-            <Card sx={{ maxWidth: 500, width: '100%', p: 4, textAlign: 'center', mt: -4 }}>
+        <Box className="feedback-page-wrapper">
+            <Card className="feedback-card">
                 <Box sx={{ mb: 3 }}>
-                    <img src="/images/Logo1.jpeg" alt="Logo" style={{ width: '120px', marginBottom: '15px' }} />
-                    <Typography variant="h4" fontWeight="bold" color="secondary">
+                    <img src="/images/Logo1.jpeg" alt="Logo" className="feedback-logo" />
+                    <Typography variant="h4" color="secondary" className="feedback-title">
                         Your opinion matters
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -117,13 +106,13 @@ export default function Feedback() {
                     sx={{ mb: 3 }}
                 />
 
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 50 }}>
+                <Box className="rating-container">
                     <Rating 
                         name="simple-controlled"
                         value={rate}
                         onChange={(event, newValue) => setRate(newValue)}
                         size="large"
-                        sx={{ fontSize: '3rem' }}
+                        className="large-rating"
                     />
                 </Box>
 
@@ -139,7 +128,7 @@ export default function Feedback() {
                     sx={{ mb: 4 }}
                 />
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box className="feedback-action-group">
                     <Button variant="outlined" color="inherit" fullWidth onClick={() => nav("/home")}>
                         Cancel
                     </Button>

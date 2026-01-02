@@ -4,22 +4,17 @@ import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
 import { toast } from "react-toastify";
-import FilterModal from "./FilterModal"; // We will refactor this next or keep as is, wrapper handles styling
+import FilterModal from "./FilterModal";
+import "../styles/SearchProfile.css"; // <--- New CSS Import
 
-// MUI Imports
 import { 
   Box, Container, Grid, Card, CardContent, Typography, Button, TextField, 
   IconButton, Avatar, Chip, Dialog, DialogTitle, DialogContent, DialogActions, 
   InputAdornment, useTheme
 } from '@mui/material';
 import { 
-  Search as SearchIcon, 
-  Tune as TuneIcon, 
-  ArrowBack, 
-  School, 
-  GitHub, 
-  Language, 
-  CheckCircle 
+  Search as SearchIcon, Tune as TuneIcon, ArrowBack, 
+  School, GitHub, Language, CheckCircle 
 } from '@mui/icons-material';
 
 export default function SearchProfile({ socket }) {
@@ -29,13 +24,9 @@ export default function SearchProfile({ socket }) {
   const nav = useNavigate();
   const theme = useTheme();
   
-  // Filter Modal
   const [showFilterModal, setShowFilterModal] = useState(false);
-  
-  // Unfollow Confirmation
   const [unfollowId, setUnfollowId] = useState(null); 
 
-  // Filter States
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
   const [degree, setDegree] = useState("");
@@ -90,7 +81,6 @@ export default function SearchProfile({ socket }) {
         .then(() => {
             toast.success("Following!");
             performSearch(); 
-            // Check/Create Conversation
             axios.post(`${WEB_URL}/api/searchConversations`, { person1: targetId, person2: userID })
             .then((res) => {
                 if (res.data.data.length <= 0) {
@@ -120,9 +110,9 @@ export default function SearchProfile({ socket }) {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" className="search-container">
       {/* Header */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 4, alignItems: 'center' }}>
+      <Box className="search-header" sx={{ flexDirection: { xs: 'column', md: 'row' } }}>
         <Button startIcon={<ArrowBack />} onClick={() => nav("/home")} sx={{ color: 'text.secondary' }}>
             Back
         </Button>
@@ -135,17 +125,13 @@ export default function SearchProfile({ socket }) {
             InputProps={{
                 startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
             }}
-            sx={{ flex: 1, bgcolor: 'background.paper', borderRadius: 1 }}
+            className="search-textfield"
         />
         
         <IconButton 
             onClick={() => setShowFilterModal(true)} 
-            sx={{ 
-                bgcolor: 'background.paper', 
-                boxShadow: 2, 
-                width: 50, height: 50,
-                color: (add || skill || degree || year) ? 'primary.main' : 'text.secondary'
-            }}
+            className="filter-button"
+            sx={{ color: (add || skill || degree || year) ? 'primary.main' : 'text.secondary' }}
         >
             <TuneIcon />
         </IconButton>
@@ -156,24 +142,22 @@ export default function SearchProfile({ socket }) {
         <Grid container spacing={3}>
             {showUsers.length > 0 ? showUsers.map((elem) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={elem._id}>
-                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    <Card className="user-card">
                         {/* Banner */}
-                        <Box sx={{ height: 80, background: `linear-gradient(135deg, ${theme.palette.primary.main}, #479378)` }} />
+                        <Box className="card-banner" sx={{ background: `linear-gradient(135deg, ${theme.palette.primary.main}, #479378)` }} />
                         
                         {/* Avatar */}
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: -6 }}>
-                            <Avatar 
-                                sx={{ width: 90, height: 90, border: '4px solid #fff', boxShadow: 3 }}
-                            >
-                                <ProtectedImage imgSrc={elem.profilepic} defaultImage="/images/profile1.png" style={{ width: '100%', height: '100%' }} />
+                        <Box className="card-avatar-wrapper">
+                            <Avatar className="card-avatar-circle">
+                                <ProtectedImage imgSrc={elem.profilepic} defaultImage="/images/profile1.png" />
                             </Avatar>
                         </Box>
 
                         <CardContent sx={{ textAlign: 'center', flexGrow: 1, pt: 1 }}>
                             <Typography 
                                 variant="h6" 
+                                className="user-name"
                                 onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
-                                sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
                             >
                                 {elem.fname} {elem.lname}
                             </Typography>
@@ -192,13 +176,13 @@ export default function SearchProfile({ socket }) {
                                 </Typography>
                             )}
 
-                            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                            <Box className="social-box">
                                 {elem.github && <IconButton size="small" href={getSocialLink(elem.github, 'github')} target="_blank"><GitHub fontSize="small" /></IconButton>}
                                 {elem.portfolioweb && <IconButton size="small" href={getSocialLink(elem.portfolioweb, 'website')} target="_blank"><Language fontSize="small" /></IconButton>}
                             </Box>
                         </CardContent>
 
-                        <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
+                        <Box className="card-action-box">
                             <Button 
                                 fullWidth 
                                 variant="outlined" 
@@ -240,23 +224,18 @@ export default function SearchProfile({ socket }) {
       {/* Unfollow Confirmation Dialog */}
       <Dialog open={!!unfollowId} onClose={() => setUnfollowId(null)}>
         <DialogTitle>Unfollow User?</DialogTitle>
-        <DialogContent>
-            <Typography>Are you sure you want to stop following this user?</Typography>
-        </DialogContent>
+        <DialogContent><Typography>Are you sure you want to stop following this user?</Typography></DialogContent>
         <DialogActions sx={{ p: 2 }}>
             <Button onClick={() => setUnfollowId(null)} color="inherit">Cancel</Button>
             <Button onClick={confirmUnfollow} color="error" variant="contained">Yes, Unfollow</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Render Filter Modal (passing props as before, assuming it wraps a Dialog or is a Dialog itself) */}
       {showFilterModal && (
         <FilterModal 
             closeModal={() => setShowFilterModal(false)}
-            add={add} setAdd={setAdd}
-            skill={skill} setSkill={setSkill}
-            degree={degree} setDegree={setDegree}
-            year={year} setYear={setYear}
+            add={add} setAdd={setAdd} skill={skill} setSkill={setSkill}
+            degree={degree} setDegree={setDegree} year={year} setYear={setYear}
             handleFilter={() => { setShowFilterModal(false); performSearch(); }}
         />
       )}

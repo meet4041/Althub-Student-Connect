@@ -5,13 +5,14 @@ import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import FollowerModal from "./FollowerModal";
 import ProtectedImage from "../ProtectedImage";
+import "../styles/ViewSearchProfile.css"; // <--- New CSS Import
 
 import { 
   Box, Container, Grid, Paper, Avatar, Typography, Button, Chip, 
   Dialog, DialogTitle, DialogContent, DialogActions, Stack 
 } from '@mui/material';
 import { 
-  Add, Check, Message, Star,Place, 
+  Add, Check, Message, Star, Place 
 } from '@mui/icons-material';
 
 export default function ViewSearchProfile({ socket }) {
@@ -94,18 +95,18 @@ export default function ViewSearchProfile({ socket }) {
   }, [userID, getSelf, getUser, getEducation, getExperience]);
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 4 }}>
+    <Box className="profile-view-container">
       <Container maxWidth="lg" sx={{ pt: 3 }}>
         <Grid container spacing={3}>
           {/* Main Profile Card */}
           <Grid item xs={12} md={8}>
-            <Paper sx={{ borderRadius: 2, overflow: 'hidden', mb: 3 }}>
-              <Box sx={{ height: 200, background: 'linear-gradient(135deg, #66bd9e 0%, #26a69a 100%)' }} />
-              <Box sx={{ px: 4, pb: 4, position: 'relative' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                  <Box sx={{ mt: -8 }}>
-                    <Avatar sx={{ width: 150, height: 150, border: '5px solid #fff', boxShadow: 3 }}>
-                        <ProtectedImage imgSrc={user.profilepic} defaultImage="/images/profile1.png" style={{ width: '100%', height: '100%' }} />
+            <Paper className="profile-header-paper">
+              <Box className="profile-banner" />
+              <Box className="profile-header-content">
+                <Box className="profile-top-row">
+                  <Box className="profile-avatar-wrapper">
+                    <Avatar className="profile-avatar-circle">
+                        <ProtectedImage imgSrc={user.profilepic} defaultImage="/images/profile1.png" />
                     </Avatar>
                   </Box>
                   <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
@@ -128,26 +129,27 @@ export default function ViewSearchProfile({ socket }) {
                         <Place fontSize="small" /> {user.city || "Location not set"}
                     </Typography>
                     
-                    <Stack direction="row" spacing={3} sx={{ mt: 2, cursor: 'pointer', color: 'primary.main', fontWeight: 600 }}>
-                        <span onClick={() => { setFollowerTab("Follower"); setShowFollowerModal(true); }}>{user.followers?.length || 0} Followers</span>
-                        <span onClick={() => { setFollowerTab("Following"); setShowFollowerModal(true); }}>{user.followings?.length || 0} Connections</span>
+                    <Stack direction="row" spacing={3} className="profile-stats-stack">
+                        <span className="profile-stat-link" onClick={() => { setFollowerTab("Follower"); setShowFollowerModal(true); }}>{user.followers?.length || 0} Followers</span>
+                        <span className="profile-stat-link" onClick={() => { setFollowerTab("Following"); setShowFollowerModal(true); }}>{user.followings?.length || 0} Connections</span>
                     </Stack>
                 </Box>
               </Box>
             </Paper>
 
-            {/* About & Details */}
+            {/* About Section */}
             {user.about && (
-                <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                    <Typography variant="h6" sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>About</Typography>
+                <Paper className="profile-section-paper">
+                    <Typography variant="h6" className="section-title">About</Typography>
                     <Typography variant="body1">{user.about}</Typography>
                 </Paper>
             )}
 
-            <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                <Typography variant="h6" sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>Experience</Typography>
+            {/* Experience Section */}
+            <Paper className="profile-section-paper">
+                <Typography variant="h6" className="section-title">Experience</Typography>
                 {experience.length > 0 ? experience.map(exp => (
-                    <Box key={exp._id} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Box key={exp._id} className="experience-item">
                         <Avatar variant="rounded" src={`${WEB_URL}${exp.companylogo}`} sx={{ width: 56, height: 56 }} />
                         <Box>
                             <Typography variant="subtitle1" fontWeight="bold">{exp.position}</Typography>
@@ -158,10 +160,11 @@ export default function ViewSearchProfile({ socket }) {
                 )) : <Typography color="text.secondary">No experience listed.</Typography>}
             </Paper>
 
-            <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                <Typography variant="h6" sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>Education</Typography>
+            {/* Education Section */}
+            <Paper className="profile-section-paper">
+                <Typography variant="h6" className="section-title">Education</Typography>
                 {education.length > 0 ? education.map(edu => (
-                    <Box key={edu._id} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Box key={edu._id} className="education-item">
                         <Avatar variant="rounded" src={`${WEB_URL}${edu.collagelogo}`} sx={{ width: 56, height: 56 }} />
                         <Box>
                             <Typography variant="subtitle1" fontWeight="bold">{edu.institutename}</Typography>
@@ -172,15 +175,15 @@ export default function ViewSearchProfile({ socket }) {
             </Paper>
           </Grid>
 
-          {/* Right Sidebar */}
+          {/* Sidebar */}
           <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+            <Paper className="profile-section-paper">
                 <Typography variant="h6" gutterBottom>Skills</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {skills.length > 0 ? skills.map((s, i) => <Chip key={i} label={s} />) : "No skills"}
                 </Box>
             </Paper>
-            <Paper sx={{ p: 3, borderRadius: 2 }}>
+            <Paper className="profile-section-paper">
                 <Typography variant="h6" gutterBottom>Languages</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {language.length > 0 ? language.map((l, i) => <Chip key={i} label={l} variant="outlined" />) : "No languages"}

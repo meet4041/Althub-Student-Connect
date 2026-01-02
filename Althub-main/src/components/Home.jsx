@@ -275,7 +275,7 @@ export default function Home({ socket }) {
                 <div key={evt._id} className="event-item">
                   <ProtectedImage imgSrc={evt.photos?.[0]} defaultImage="images/event1.png" className="event-thumb" />
                   <div className="event-info">
-                    <Typography variant="subtitle2" noWrap>{evt.title}</Typography>
+                    <Typography variant="subtitle2" noWrap><h3>{evt.title}</h3></Typography>
                     <Typography variant="caption" color="text.secondary" display="block">{new Date(evt.date).toLocaleDateString()}</Typography>
                   </div>
                 </div>
@@ -292,8 +292,8 @@ export default function Home({ socket }) {
                       <Box flex={1}>
                         <Typography variant="subtitle2">{aid.name}</Typography>
                         <Box display="flex" justifyContent="space-between">
-                          <Typography variant="caption">₹{aid.claimed}</Typography>
-                          <Typography variant="caption">Target: ₹{aid.aid}</Typography>
+                          <Typography variant="caption">Claimed: ₹{aid.claimed}</Typography>
+                          <Typography variant="caption">Total: ₹{aid.aid}</Typography>
                         </Box>
                       </Box>
                     </Box>

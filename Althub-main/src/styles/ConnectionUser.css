@@ -1,0 +1,56 @@
+.connection-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.connection-item:hover {
+    background-color: #f8f9fa;
+}
+
+.connection-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* FIXED Avatar Styling */
+.connection-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #eee;
+    background-color: #f5f5f5;
+    /* FIX: This ensures the full image shows and isn't zoomed in */
+    object-fit: contain !important;
+    object-position: center !important;
+}
+
+.connection-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.remove-btn {
+    padding: 5px 12px;
+    border: 1px solid #ff4757;
+    color: #ff4757;
+    background: transparent;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.remove-btn:hover {
+    background: #ff4757;
+    color: #fff;
+}

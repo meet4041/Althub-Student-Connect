@@ -1,0 +1,84 @@
+/* Container and Layout */
+.profile-view-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding-bottom: 32px;
+}
+
+/* Main Profile Header Card */
+.profile-header-paper {
+    border-radius: 16px !important;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.profile-banner {
+    height: 200px;
+    background: linear-gradient(135deg, #66bd9e 0%, #26a69a 100%);
+}
+
+.profile-header-content {
+    padding: 0 32px 32px 32px;
+    position: relative;
+}
+
+.profile-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Fixed Avatar Styles */
+.profile-avatar-wrapper {
+    margin-top: -64px; /* Pulls avatar up into banner */
+}
+
+.profile-avatar-circle {
+    width: 150px !important;
+    height: 150px !important;
+    border: 5px solid #fff !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    background-color: #f5f5f5 !important;
+    overflow: hidden !important;
+}
+
+/* FIX: Ensure image is not zoomed and fits circle */
+.profile-avatar-circle img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; 
+    object-position: center !important;
+}
+
+/* Stats (Followers/Connections) */
+.profile-stats-stack {
+    margin-top: 16px;
+    cursor: pointer;
+    color: #66bd9e;
+    font-weight: 600;
+}
+
+.profile-stat-link:hover {
+    text-decoration: underline;
+}
+
+/* Section Papers (Experience, Education, etc) */
+.profile-section-paper {
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 12px !important;
+}
+
+.section-title {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 16px !important;
+    font-weight: 700 !important;
+}
+
+.experience-item, .education-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
