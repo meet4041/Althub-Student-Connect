@@ -8,8 +8,8 @@ import "../styles/Navbar.css"; // <--- Import CSS
 
 // MUI Components
 import {
-  AppBar, Toolbar, IconButton, Button, Badge, Avatar, Drawer, 
-  List, ListItem, ListItemButton, ListItemIcon, ListItemText, 
+  AppBar, Toolbar, IconButton, Button, Badge, Avatar, Drawer,
+  List, ListItem, ListItemButton, ListItemIcon, ListItemText,
   Box, Container, Typography, Divider
 } from "@mui/material";
 
@@ -23,7 +23,7 @@ export default function Navbar({ socket }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState({});
   const [showNavbar, setShowNavbar] = useState(true);
-  
+
   // Notification State
   const [hasMsg, setHasMsg] = useState(false);
   const [hasNotif, setHasNotif] = useState(false);
@@ -55,7 +55,7 @@ export default function Navbar({ socket }) {
   // --- Effects ---
   useEffect(() => {
     getUser();
-    
+
     // Hide Navbar on auth pages
     const hiddenRoutes = ["/register", "/login", "/", "/forget-password", "/new-password"];
     setShowNavbar(!hiddenRoutes.includes(pathname));
@@ -70,10 +70,10 @@ export default function Navbar({ socket }) {
       socket.emit("addUser", localStorage.getItem("Althub_Id"));
 
       const handleMessage = () => { if (pathname !== "/message") setHasMsg(true); };
-      
+
       const handleNotification = (data) => {
         if (pathname !== "/notification") setHasNotif(true);
-        if(data?.msg) {
+        if (data?.msg) {
           toast.info(data.msg);
           if ("Notification" in window && Notification.permission === "granted") {
             const sysNotif = new Notification(data.title || "New Notification", {
@@ -150,7 +150,7 @@ export default function Navbar({ socket }) {
     <AppBar position="sticky" className="navbar-appbar" elevation={0}>
       <Container maxWidth="xl" className="navbar-container">
         <Toolbar className="navbar-toolbar">
-          
+
           {/* Logo */}
           <Link to="/home" className="navbar-logo">
             <img src="/images/Logo1.jpeg" alt="AltHub" />
@@ -164,8 +164,8 @@ export default function Navbar({ socket }) {
                 className={`nav-item ${pathname === item.path ? 'active' : ''}`}
                 onClick={() => nav(item.path)}
                 startIcon={
-                    item.badge ? 
-                    <Badge variant="dot" className="nav-badge">{item.icon}</Badge> : 
+                  item.badge ?
+                    <Badge variant="dot" className="nav-badge">{item.icon}</Badge> :
                     item.icon
                 }
               >
@@ -176,21 +176,20 @@ export default function Navbar({ socket }) {
 
           {/* Right Side: Profile & Mobile Toggle */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            
+
             {/* Desktop Profile Button */}
             <Box className="nav-profile-box">
-                <Button className="nav-profile-btn" onClick={() => nav("/view-profile")}>
+              <Button className="nav-profile-btn" onClick={() => nav("/view-profile")}>
                 <Avatar className="nav-avatar">
-                    <ProtectedImage 
-                        imgSrc={user?.profilepic} 
-                        defaultImage="images/profile1.png" 
-                        style={{width:'100%', height:'100%'}} 
-                    />
+                  <ProtectedImage
+                    imgSrc={user?.profilepic}
+                    defaultImage="images/profile1.png"
+                  />
                 </Avatar>
                 <Typography className="nav-user-name">
-                    {user.fname || "User"}
+                  {user.fname || "User"}
                 </Typography>
-                </Button>
+              </Button>
             </Box>
 
             {/* Mobile Menu Icon */}
