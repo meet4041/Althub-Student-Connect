@@ -5,12 +5,12 @@ import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
-import "../styles/MyPosts.css"; // <--- Import CSS
+import "../styles/MyPosts.css"; 
 
 // MUI Imports
 import {
   Container, Grid, Card, CardHeader, CardContent, Typography, 
-  Avatar, IconButton, Box, Button, Modal, TextField, Chip, Divider
+  Avatar, IconButton, Box, Button, Modal, TextField, Chip
 } from "@mui/material";
 
 // Icons
@@ -60,20 +60,36 @@ export default function MyPosts() {
   const fetchData = useCallback(() => {
     if (!userid) return;
     
-    // User Profile
-    axios.get(`${WEB_URL}/api/searchUserById/${userid}`).then((res) => {
-      if (res.data?.data) setUser(res.data.data[0]);
+    // 1. User Profile
+    axios.get(`${WEB_URL}/api/searchUserById/${userid}`)
+      .then((res) => {
+        if (res.data?.data) setUser(res.data.data[0]);
+      })
+      .catch(err => console.error("User fetch error:", err));
+
+    // 2. My Posts (FIXED: Route name changed from getPostById to getPostByUser)
+    axios.get(`${WEB_URL}/api/getPostByUser/${userid}`, {
+      withCredentials: true // MANDATORY for secure cookie access
+    })
+    .then((res) => {
+      // res.data.data contains the array of posts from postController.js
+      if (res.data && res.data.data) {
+        setPosts(res.data.data);
+      } else {
+        setPosts([]);
+      }
+    })
+    .catch((err) => {
+      console.error("Post fetch error:", err);
+      setPosts([]);
     });
 
-    // My Posts
-    axios.get(`${WEB_URL}/api/getPostById/${userid}`).then((res) => {
-      setPosts(res.data.data);
-    }).catch(console.error);
-
-    // Suggestions
-    axios.post(`${WEB_URL}/api/getRandomUsers`, { userid }).then((res) => {
-      setTopUsers(res.data.data);
-    }).catch(console.error);
+    // 3. Suggestions
+    axios.post(`${WEB_URL}/api/getRandomUsers`, { userid })
+      .then((res) => {
+        setTopUsers(res.data.data || []);
+      })
+      .catch(console.error);
 
   }, [userid]);
 
@@ -82,7 +98,7 @@ export default function MyPosts() {
   // --- Handlers ---
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
-      axios.delete(`${WEB_URL}/api/deletePost/${id}`)
+      axios.delete(`${WEB_URL}/api/deletePost/${id}`, { withCredentials: true })
         .then(() => { toast.success("Post deleted"); fetchData(); })
         .catch(() => toast.error("Failed to delete"));
     }
@@ -101,9 +117,12 @@ export default function MyPosts() {
     formData.append("description", editDesc);
     editImages.forEach(img => formData.append("existingPhotos", img));
 
-    axios.post(`${WEB_URL}/api/editPost`, formData, { headers: { "Content-Type": "multipart/form-data" } })
-      .then(() => { toast.success("Updated!"); setOpen(false); fetchData(); })
-      .catch(() => toast.error("Update failed"));
+    axios.post(`${WEB_URL}/api/editPost`, formData, { 
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true 
+    })
+    .then(() => { toast.success("Updated!"); setOpen(false); fetchData(); })
+    .catch(() => toast.error("Update failed"));
   };
 
   return (
@@ -111,7 +130,6 @@ export default function MyPosts() {
       <Container maxWidth="xl" className="mp-container">
         <Grid container spacing={3} justifyContent="center">
           
-          {/* --- LEFT: POST FEED --- */}
           <Grid item xs={12} lg={7}>
             <Box className="mp-header-card">
                 <div>
@@ -126,7 +144,9 @@ export default function MyPosts() {
                 <Card key={elem._id} className="mp-post-card">
                   <CardHeader
                     avatar={
-                        <Avatar src={user.profilepic ? `${WEB_URL}${user.profilepic}` : ""} className="mp-post-avatar" />
+                        <Avatar className="mp-post-avatar">
+                            <ProtectedImage imgSrc={user.profilepic} defaultImage="/images/profile1.png" />
+                        </Avatar>
                     }
                     action={
                         <div className="mp-post-actions">
@@ -145,7 +165,7 @@ export default function MyPosts() {
                   
                   <div className="mp-post-content">{elem.description}</div>
 
-                  {elem.photos.length > 0 && (
+                  {elem.photos && elem.photos.length > 0 && (
                     <div className="mp-media-container">
                       <Slider {...settings}>
                         {elem.photos.map((el, idx) => (
@@ -163,7 +183,7 @@ export default function MyPosts() {
 
                   <div className="mp-post-footer">
                     <Favorite sx={{ color: "#ef4444" }} fontSize="small" />
-                    <span>{elem.likes.length} Likes</span>
+                    <span>{elem.likes ? elem.likes.length : 0} Likes</span>
                   </div>
                 </Card>
               ))
@@ -175,13 +195,14 @@ export default function MyPosts() {
             )}
           </Grid>
 
-          {/* --- RIGHT: SIDEBAR --- */}
           <Grid item lg={3.5} className="mp-sidebar">
             <Card className="mp-widget-card">
                 <Typography variant="h6" className="mp-widget-title">People you may know</Typography>
                 {topUsers.length > 0 ? topUsers.map((u) => (
                     <div key={u._id} className="mp-suggestion-item">
-                        <Avatar src={u.profilepic ? `${WEB_URL}${u.profilepic}` : ""} sx={{ width: 45, height: 45, mr: 2 }} />
+                        <Avatar className="mp-suggestion-avatar">
+                            <ProtectedImage imgSrc={u.profilepic} defaultImage="/images/profile1.png" />
+                        </Avatar>
                         <Box>
                             <Typography variant="subtitle2" fontWeight={600}>{u.fname} {u.lname}</Typography>
                             <Typography variant="caption" color="textSecondary">{u.city || "Student"}</Typography>
@@ -197,7 +218,6 @@ export default function MyPosts() {
         </Grid>
       </Container>
 
-      {/* --- EDIT MODAL --- */}
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box className="mp-modal-box">
             <div className="mp-modal-header">
@@ -224,7 +244,6 @@ export default function MyPosts() {
                         </IconButton>
                     </div>
                 ))}
-                {editImages.length === 0 && <Typography variant="caption" color="textSecondary">No images attached.</Typography>}
             </div>
 
             <div className="mp-modal-actions">

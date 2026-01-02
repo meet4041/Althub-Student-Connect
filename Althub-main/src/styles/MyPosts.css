@@ -1,249 +1,270 @@
-/* ==========================================================================
-   MY POSTS PAGE STYLES (.mp-)
-   ========================================================================== */
-
 /* --- Wrapper & Layout --- */
 .mp-wrapper {
-    background-color: #f3f2ef;
-    min-height: 100vh;
-    padding: 20px 0;
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  .mp-container {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-  }
-  
-  /* --- Left Feed Section --- */
-  .mp-header-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px 30px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 5px solid #66bd9e;
-    margin-bottom: 25px;
-  }
-  
-  .mp-title {
-    font-weight: 700 !important;
-    color: #2d3436;
-  }
-  
-  .mp-subtitle {
-    color: #636e72;
-    font-size: 0.95rem;
-  }
-  
-  .mp-badge {
-    background-color: #e3fdf5 !important;
-    color: #66bd9e !important;
-    font-weight: 600 !important;
-    border: 1px solid #cbf7e8;
-  }
-  
-  /* Post Card Styling */
-  .mp-post-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-  
-  .mp-post-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #f9f9f9;
-  }
-  
-  .mp-post-avatar {
-    border: 1px solid #eee;
-  }
-  
-  .mp-post-name {
-    font-weight: 700 !important;
-    color: #333;
-  }
-  
-  .mp-post-date {
-    font-size: 0.8rem;
-    color: #999;
-  }
-  
-  .mp-post-actions {
-    display: flex;
-    gap: 5px;
-  }
-  
-  .mp-action-btn {
-    background-color: #f8f9fa !important;
-    transition: all 0.2s !important;
-  }
-  
-  .mp-action-btn:hover {
-    background-color: #e9ecef !important;
-  }
-  
-  .mp-delete-btn:hover {
-    color: #ff4757 !important;
-    background-color: #fff0f1 !important;
-  }
-  
-  .mp-post-content {
-    padding: 20px;
-    white-space: pre-wrap;
-    color: #444;
-    font-size: 0.95rem;
-  }
-  
-  /* Media Carousel */
-  .mp-media-container {
-    background-color: #fff; /* Changed from black */
-    margin-bottom: 15px;
-  }
-  
-  .mp-media-item {
-    width: 100%;
-    max-height: 500px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto;
-  }
-  
-  .mp-post-footer {
-    padding: 10px 20px;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #666;
-    font-weight: 500;
-  }
-  
-  /* Empty State */
-  .mp-no-posts {
-    text-align: center;
-    padding: 80px;
-    background: #fff;
-    border-radius: 12px;
-    color: #999;
-    border: 2px dashed #eee;
-  }
-  
-  .mp-empty-icon {
-    font-size: 4rem !important;
-    margin-bottom: 15px;
-    opacity: 0.3;
-  }
-  
-  /* --- Right Sidebar --- */
-  .mp-sidebar {
-    position: sticky;
-    top: 90px;
-  }
-  
-  .mp-widget-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    padding: 20px;
-  }
-  
-  .mp-widget-title {
-    font-weight: 700 !important;
-    color: #333;
-    margin-bottom: 15px !important;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .mp-suggestion-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  
-  .mp-view-btn {
-    margin-left: auto;
-    text-transform: none !important;
-    background-color: #f0f9f6 !important;
-    color: #66bd9e !important;
-    border-radius: 20px !important;
-    font-weight: 600 !important;
-    font-size: 0.85rem !important;
-  }
-  
-  .mp-view-btn:hover {
-    background-color: #66bd9e !important;
-    color: #fff !important;
-  }
-  
-  /* --- Modal Styles --- */
-  .mp-modal-box {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    background-color: #fff;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    padding: 30px;
-    border-radius: 16px;
-    outline: none;
-  }
-  
-  .mp-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .mp-img-preview-container {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-  
-  .mp-img-preview-wrapper {
-    position: relative;
-    width: 80px;
-    height: 80px;
-  }
-  
-  .mp-img-preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #eee;
-  }
-  
-  .mp-remove-btn {
-    position: absolute !important;
-    top: -8px;
-    right: -8px;
-    background-color: #ff4757 !important;
-    color: #fff !important;
-    width: 22px !important;
-    height: 22px !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-  }
-  
-  .mp-modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 25px;
-  }
-  
-  /* Responsive */
-  @media (max-width: 900px) {
-    .mp-sidebar { display: none; }
-    .mp-modal-box { width: 95%; padding: 20px; }
-  }
+  background-color: #f3f2ef;
+  min-height: 100vh;
+  padding: 20px 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mp-container {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* --- Left Feed Section --- */
+.mp-header-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 5px solid #66bd9e;
+  margin-bottom: 25px;
+}
+
+.mp-title {
+  font-weight: 700 !important;
+  color: #2d3436;
+}
+
+.mp-subtitle {
+  color: #636e72;
+  font-size: 0.95rem;
+}
+
+.mp-badge {
+  background-color: #e3fdf5 !important;
+  color: #66bd9e !important;
+  font-weight: 600 !important;
+  border: 1px solid #cbf7e8;
+}
+
+/* Post Card Styling */
+.mp-post-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.mp-post-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+/* FIXED Avatar Styling for Posts */
+.mp-post-avatar {
+  border: 1px solid #eee;
+  background-color: #f5f5f5 !important;
+  overflow: hidden !important;
+}
+
+.mp-post-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+.mp-post-name {
+  font-weight: 700 !important;
+  color: #333;
+}
+
+.mp-post-date {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.mp-post-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.mp-action-btn {
+  background-color: #f8f9fa !important;
+  transition: all 0.2s !important;
+}
+
+.mp-action-btn:hover {
+  background-color: #e9ecef !important;
+}
+
+.mp-delete-btn:hover {
+  color: #ff4757 !important;
+  background-color: #fff0f1 !important;
+}
+
+.mp-post-content {
+  padding: 20px;
+  white-space: pre-wrap;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+/* Media Carousel */
+.mp-media-container {
+  background-color: #fff; 
+  margin-bottom: 15px;
+}
+
+.mp-media-item {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.mp-post-footer {
+  padding: 10px 20px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Empty State */
+.mp-no-posts {
+  text-align: center;
+  padding: 80px;
+  background: #fff;
+  border-radius: 12px;
+  color: #999;
+  border: 2px dashed #eee;
+}
+
+.mp-empty-icon {
+  font-size: 4rem !important;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}
+
+/* --- Right Sidebar --- */
+.mp-sidebar {
+  position: sticky;
+  top: 90px;
+}
+
+.mp-widget-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 20px;
+}
+
+.mp-widget-title {
+  font-weight: 700 !important;
+  color: #333;
+  margin-bottom: 15px !important;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* FIXED Avatar for Suggestions Sidebar */
+.mp-suggestion-avatar {
+  width: 45px !important;
+  height: 45px !important;
+  margin-right: 15px;
+  background-color: #f5f5f5 !important;
+  border: 1px solid #eee;
+}
+
+.mp-suggestion-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.mp-suggestion-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.mp-view-btn {
+  margin-left: auto;
+  text-transform: none !important;
+  background-color: #f0f9f6 !important;
+  color: #66bd9e !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+
+.mp-view-btn:hover {
+  background-color: #66bd9e !important;
+  color: #fff !important;
+}
+
+/* --- Modal Styles --- */
+.mp-modal-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  background-color: #fff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  padding: 30px;
+  border-radius: 16px;
+  outline: none;
+}
+
+.mp-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mp-img-preview-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.mp-img-preview-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.mp-img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.mp-remove-btn {
+  position: absolute !important;
+  top: -8px;
+  right: -8px;
+  background-color: #ff4757 !important;
+  color: #fff !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+.mp-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .mp-sidebar { display: none; }
+  .mp-modal-box { width: 95%; padding: 20px; }
+}
