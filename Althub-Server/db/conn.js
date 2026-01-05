@@ -9,6 +9,9 @@ let gridFSBucket = null;
 const mongoURI = process.env.MONGO_URI;
 const storage = multer.memoryStorage();
 
+// --- FIX: Define GridFSBucket from mongoose.mongo ---
+const GridFSBucket = mongoose.mongo.GridFSBucket; 
+
 // --- Exported Functions (Directly) ---
 
 export function uploadSingle(fieldName) {
@@ -24,7 +27,10 @@ export const connectToMongo = async () => {
     if (mongoose.connection.readyState === 1) {
       if (!gridFSBucket) {
          const db = mongoose.connection.db;
-         gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
+         // Ensure db is available before creating bucket
+         if (db) {
+            gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
+         }
       }
       console.log("Using existing MongoDB connection");
       return mongoose.connection;
@@ -83,14 +89,12 @@ export async function getFileInfo(id) {
   return files && files.length > 0 ? files[0] : null;
 }
 
-// --- Support Range Options (start/end) for Video Streaming ---
 export function streamToResponse(id, res, options = {}) {
   const bucket = getGridFSBucket();
   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send('Invalid ID');
 
   const _id = typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id;
   
-  // Pass the range options (start, end) to the download stream
   const downloadStream = bucket.openDownloadStream(_id, options);
   
   downloadStream.on('error', (err) => {
