@@ -1,4 +1,4 @@
-const Notification = require("../models/notificationModel");
+import Notification from "../models/notificationModel.js";
 
 // 1. Upload Image
 const uploadNotificationSenderImage = async (req, res) => {
@@ -73,9 +73,9 @@ const deleteNotification = async (req, res) => {
 }
 
 // EXPORTS
-module.exports = {
+export default {
     uploadNotificationSenderImage,
     addNotification,
     getnotifications, // This must match the variable name defined above
     deleteNotification
-}
+};

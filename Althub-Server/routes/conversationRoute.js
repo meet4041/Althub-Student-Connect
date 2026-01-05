@@ -1,16 +1,14 @@
-const express = require("express");
-const conversation_route = express();
-const bodyParser = require("body-parser");
+import express from "express";
+import bodyParser from "body-parser";
+import conversation_controller from "../controllers/conversationController.js";
+
+const conversation_route = express.Router();
 
 conversation_route.use(bodyParser.json());
 conversation_route.use(bodyParser.urlencoded({ extended: true }));
-conversation_route.use(express.static('public'));
 
-const conversation_controller = require("../controllers/conversationController");
-
-//conversation routes
 conversation_route.post('/newConversation', conversation_controller.newConversation);
 conversation_route.get('/getConversations/:userId', conversation_controller.getConversation);
 conversation_route.post('/searchConversations', conversation_controller.searchConversation);
 
-module.exports = conversation_route;
+export default conversation_route;

@@ -1,17 +1,26 @@
-const express = require("express");
-const admin_route = express();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const rateLimit = require("express-rate-limit");
+import express from "express";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+import multer from "multer";
 
-const { requireAuth } = require("../middleware/authMiddleware");
+// Import Middleware
+import { requireAuth } from "../middleware/authMiddleware.js";
+
+// Import DB Connection directly (Storage file was deleted)
+import { uploadFromBuffer } from '../db/conn.js';
+
+// Import Controller (using namespace import to keep existing syntax working)
+import * as admin_controller from "../controllers/adminController.js";
+
+// Initialize Router
+const admin_route = express.Router();
 
 admin_route.use(cookieParser());
-admin_route.use(bodyParser.json());
-admin_route.use(bodyParser.urlencoded({ extended: true }));
-const multer = require("multer");
-const gridfs = require('../db/storage');
-admin_route.use(express.static('public'));
+admin_route.use(express.json());
+admin_route.use(express.urlencoded({ extended: true }));
+// Static files shouldn't usually be served from a route file, but keeping your logic:
+// (It's better to move this to index.js if possible)
+// admin_route.use(express.static('public'));
 
 // Define the rate limit rule: 5 requests per 1 minute
 const resetPasswordLimiter = rateLimit({
@@ -27,12 +36,11 @@ const resetPasswordLimiter = rateLimit({
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-const admin_controller = require("../controllers/adminController");
 
-// admin routes
+// --- ROUTES ---
+
 admin_route.post('/adminLogin', admin_controller.adminLogin); 
 
-// 2. FIXED: Changed 'auth' to 'requireAuth'
 admin_route.post('/updatepassword', requireAuth, admin_controller.updatePassword);
 
 // Apply the limiter specifically to the forget password route
@@ -40,16 +48,17 @@ admin_route.post('/forgetpassword', resetPasswordLimiter, admin_controller.forge
 
 admin_route.get('/resetpassword', admin_controller.resetpassword);
 
-// 3. FIXED: Changed 'auth' to 'requireAuth'
 admin_route.post('/adminUpdate', requireAuth, admin_controller.updateAdmin);
 
 admin_route.get('/adminLogout', admin_controller.adminLogout);
 
-// 4. FIXED: Changed 'auth' to 'requireAuth'
 admin_route.post('/uploadAdminImage', requireAuth, upload.single('profilepic'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
-        const id = await gridfs.uploadFromBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
+        
+        // Use the function imported from conn.js
+        const id = await uploadFromBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
+        
         return res.status(200).send({ success: true, data: { url: `/api/images/${id}` } });
     } catch (err) {
         console.error('GridFS upload error', err.message);
@@ -59,4 +68,4 @@ admin_route.post('/uploadAdminImage', requireAuth, upload.single('profilepic'), 
 
 admin_route.get('/getAdminById/:_id', requireAuth, admin_controller.getAdminById);
 
-module.exports = admin_route;
+export default admin_route;

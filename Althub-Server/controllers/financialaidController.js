@@ -1,4 +1,4 @@
-const FinancialAid = require("../models/financialaidModel");
+import FinancialAid from "../models/financialaidModel.js";
 
 const AddFinancialAid = async (req, res) => {
   try {
@@ -57,7 +57,7 @@ const editFinancialAid = async (req, res) => {
   }
 }
 
-module.exports = {
+export default {
   AddFinancialAid,
   getFinancialAid,
   deleteFinancialAid,

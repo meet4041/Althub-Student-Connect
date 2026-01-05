@@ -1,12 +1,36 @@
-require("dotenv").config();
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-const compression = require("compression");
-const http = require("http");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit"); 
-const { connectToMongo } = require("./db/conn");
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import compression from "compression";
+import http from "http";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { Server } from "socket.io";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import { connectToMongo } from "./db/conn.js";
+import user_route from "./routes/userRoute.js";
+import event_route from "./routes/eventRoute.js";
+import institute_route from "./routes/instituteRoute.js";
+import course_route from "./routes/courseRoute.js";
+import feedback_route from "./routes/feedbackRoute.js";
+import post_route from "./routes/postRoute.js";
+import admin_route from "./routes/adminRoute.js";
+import conversation_route from "./routes/conversationRoute.js";
+import message_route from "./routes/messageRoute.js";
+import education_route from "./routes/educationRoute.js";
+import experience_route from "./routes/experienceRoute.js";
+import company_route from "./routes/companyRoute.js";
+import notification_route from "./routes/notificationRoute.js";
+import financialaid_route from "./routes/financialaidRoute.js";
+import images_route from "./routes/imagesRoute.js";
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -16,21 +40,19 @@ const port = process.env.PORT || 5001;
 app.set("trust proxy", 1); 
 
 // 1. HELMET: Allow Cross-Origin Images
-// This specific policy allows modern browsers (Chrome/Safari) to render 
-// images from this server even if the frontend is on a different port.
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 app.use(compression()); 
-app.use(express.json({ limit: '10mb' })); // Increased limit for larger uploads
+app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); 
 app.use(cookieParser());
 
 // --- BRUTE FORCE PROTECTION ---
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100, 
   message: {
     success: false,
     msg: "Too many login attempts. Please try again in 15 minutes."
@@ -39,25 +61,22 @@ const loginLimiter = rateLimit({
   legacyHeaders: false, 
 });
 
-// --- SMART CORS CONFIGURATION ---
+// --- CORS CONFIGURATION ---
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173',
-  'https://althub-student-connect.vercel.app' // Add your deployed frontend URL here
+  'https://althub-student-connect.vercel.app' 
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) return callback(null, true);
     
-    // Check if the origin is in our allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     } 
 
-    // Dynamic check for Vercel Preview Deployments
     if (origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
@@ -65,33 +84,13 @@ const corsOptions = {
     console.log("BLOCKED BY CORS -> Origin tried:", origin);
     callback(new Error('Not allowed by CORS'));
   },
-  credentials: true, // Allows cookies if needed
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  // 2. HEADERS: Explicitly allow 'Authorization' so ProtectedImage.js works
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 };
 
-// Apply CORS globally
 app.use(cors(corsOptions));
-// Handle preflight requests for complex operations (like sending custom headers)
 app.options('*', cors(corsOptions));
-
-// --- ROUTE IMPORTS ---
-const user_route = require("./routes/userRoute");
-const event_route = require("./routes/eventRoute");
-const institute_route = require("./routes/instituteRoute");
-const course_route = require("./routes/courseRoute");
-const feedback_route = require("./routes/feedbackRoute");
-const post_route = require("./routes/postRoute");
-const admin_route = require("./routes/adminRoute");
-const conversation_route = require("./routes/conversationRoute");
-const message_route = require("./routes/messageRoute");
-const education_route = require("./routes/educationRoute");
-const experience_route = require("./routes/experienceRoute");
-const company_route = require("./routes/companyRoute");
-const notification_route = require("./routes/notificationRoute");
-const financialaid_route = require("./routes/financialaidRoute");
-const images_route = require("./routes/imagesRoute");
 
 // --- PROTECTING LOGIN ROUTES ---
 app.use("/api/adminLogin", loginLimiter);
@@ -115,12 +114,13 @@ app.use("/api", notification_route);
 app.use("/api", financialaid_route);
 
 // 3. IMAGE ROUTE MOUNTING
-// This handles requests to /api/images/12345...
 app.use("/api/images", images_route); 
 
 // Health Check & Static Files
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
-app.use(express.static("public"));
+
+// Fixed static path using ESM compatible __dirname
+app.use(express.static(path.join(__dirname, "public")));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -133,8 +133,8 @@ app.use((err, req, res, next) => {
 
 // --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
-const io = require("socket.io")(server, {
-  cors: corsOptions, // Recycle the same robust CORS options
+const io = new Server(server, { // Updated Syntax for ESM
+  cors: corsOptions, 
   transports: ["websocket", "polling"]
 });
 
@@ -198,4 +198,4 @@ process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err.message);
 });
 
-module.exports = app;
+export default app;

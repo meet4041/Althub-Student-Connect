@@ -1,6 +1,6 @@
-const Feedback = require("../models/feedbackModel");
-const User = require("../models/userModel"); 
-const Education = require("../models/educationModel"); // <--- 1. Import Education Model
+import Feedback from "../models/feedbackModel.js";
+import User from "../models/userModel.js";
+import Education from "../models/educationModel.js";
 
 const addFeedback = async (req, res) => {
     try {
@@ -72,8 +72,8 @@ const deleteFeedback = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     addFeedback,
     getFeedback,
     deleteFeedback
-}
+};

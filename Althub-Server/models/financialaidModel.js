@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const financialaid = new mongoose.Schema({
     institutename: {
@@ -24,4 +24,4 @@ const financialaid = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("FinancialAidTB", financialaid);
+export default mongoose.model("FinancialAidTB", financialaid);

@@ -1,5 +1,5 @@
-const Conversation = require("../models/conversationModel");
-const Message = require("../models/messageModel");
+import Conversation from "../models/conversationModel.js";
+import Message from "../models/messageModel.js";
 
 const newConversation = async (req, res) => {
     const newconversation = new Conversation({
@@ -50,8 +50,8 @@ const searchConversation = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     newConversation,
     getConversation,
     searchConversation
-}
+};

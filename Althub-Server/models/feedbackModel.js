@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const feedback = new mongoose.Schema({
     userid: {
@@ -19,4 +19,4 @@ const feedback = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("FeedbackTB", feedback);
+export default mongoose.model("FeedbackTB", feedback);

@@ -1,8 +1,8 @@
-const express = require('express');
-const router = express.Router(); 
+import express from 'express';
+const router = express.Router();
 
-const gridfs = require('../db/storage'); 
-const { requireImageAuth } = require('../middleware/authMiddleware');
+import * as gridfs from '../db/conn.js';
+import { requireImageAuth } from '../middleware/authMiddleware.js';
 
 const getMimeType = (filename) => {
   if (!filename) return 'application/octet-stream';
@@ -62,4 +62,4 @@ router.get('/:id', requireImageAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

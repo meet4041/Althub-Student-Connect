@@ -1,9 +1,9 @@
-const express = require("express");
+import express from "express";
 const event_route = express.Router();
 // Import the upload middleware
-const { uploadArray } = require('../db/storage'); 
-const event_controller = require("../controllers/eventController");
-const { requireAuth } = require("../middleware/authMiddleware");
+import { uploadArray } from '../db/conn.js';
+import event_controller from "../controllers/eventController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 // --- PROTECTED ROUTES ---
 
@@ -25,4 +25,4 @@ event_route.get('/getEvents', event_controller.getEvents);
 event_route.get('/searchEvent', event_controller.searchEvent);
 event_route.get('/getUpcommingEvents', event_controller.getUpcommingEvents);
 
-module.exports = event_route;
+export default event_route;

@@ -1,16 +1,17 @@
-const express = require("express");
-const education_route = express();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const { requireAuth } = require("../middleware/authMiddleware");
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import { requireAuth } from "../middleware/authMiddleware.js";
+import { uploadSingle } from '../db/conn.js';
+import education_controller from "../controllers/educationController.js";
+
+const education_route = express.Router();
+
 education_route.use(bodyParser.json());
 education_route.use(bodyParser.urlencoded({ extended: true }));
 education_route.use(cookieParser());
-education_route.use(express.static('public'));
-const { uploadSingle } = require('../db/storage');
-const education_controller = require("../controllers/educationController");
 
-//Education routes
+// Education routes
 education_route.post('/addEducation', education_controller.addEducation);
 education_route.post('/getEducation', education_controller.getEducation);
 education_route.delete('/deleteEducation/:id', education_controller.deleteEducation);
@@ -26,4 +27,4 @@ education_route.post('/uploadCollageLogo', uploadSingle('collagelogo'), (req, re
     }
 });
 
-module.exports = education_route;
+export default education_route;

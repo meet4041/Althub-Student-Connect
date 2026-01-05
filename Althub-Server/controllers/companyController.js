@@ -1,4 +1,4 @@
-const Company = require("../models/companyModel");
+import Company from "../models/companyModel.js";
 
 const uploadCompanyImage = async (req, res) => {
     try {
@@ -71,10 +71,10 @@ const searchCompanyById = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     addCompany,
     deleteCompany,
     getCompanies,
     searchCompanyById,
     uploadCompanyImage
-}
+};

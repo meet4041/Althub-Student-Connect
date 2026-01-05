@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const institute = new mongoose.Schema({
     name: { type: String },
@@ -23,4 +23,4 @@ const institute = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model("InstituteTB1", institute);
+export default mongoose.model("InstituteTB1", institute);

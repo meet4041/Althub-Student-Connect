@@ -1,14 +1,16 @@
-const User = require("../models/userModel");
-const Education = require("../models/educationModel");
-const bcryptjs = require("bcryptjs");
-const config = require("../config/config");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const randomstring = require("randomstring");
-const mongoose = require('mongoose');
-const { uploadFromBuffer, connectToMongo } = require("../db/conn");
+import User from "../models/userModel.js";
+import Education from "../models/educationModel.js";
+import bcryptjs from "bcryptjs";
+import config from "../config/config.js";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import randomstring from "randomstring";
+import mongoose from "mongoose";
+import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
+import xss from 'xss';
 
 // --- SECURITY UTILITIES ---
+// return xss(text);
 const sanitizeInput = (text) => {
     if (typeof text !== 'string') return text;
     return text.replace(/<[^>]*>?/gm, '');
@@ -43,11 +45,15 @@ const sendresetpasswordMail = async (name, email, token) => {
                 pass: config.emailPassword
             },
         });
+        
+        // Use environment variable for URL in production instead of hardcoded localhost
+        const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
+        
         const mailoptions = {
             from: `"Althub Support" <${config.emailUser}>`,
             to: email,
             subject: 'For Reset Password',
-            html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
+            html: `<p>Hello ${name}, Please copy the link to <a href="${clientURL}/new-password?token=${token}">reset your password</a></p>`
         };
         const info = await transporter.sendMail(mailoptions);
         return info;
@@ -73,12 +79,11 @@ const determineUserStatus = (educations) => {
             if (!isNaN(d.getTime())) gradYear = d.getFullYear();
         } 
         // 2. Try to use Join Date + Duration
-        // [FIX] Changed 'startdate' to 'joindate' to match your Schema
         else if (edu.joindate && edu.course) {
             const s = new Date(edu.joindate);
             if (!isNaN(s.getTime())) {
                 const startYear = s.getFullYear();
-                const courseName = edu.course.toLowerCase();
+                const courseName = (edu.course || "").toLowerCase();
                 let duration = 0;
                 
                 if (courseName.includes('b.tech') || courseName.includes('btech') || courseName.includes('bachelor')) {
@@ -128,9 +133,9 @@ const createFlexibleRegex = (text) => {
 };
 
 
-// --- CONTROLLERS ---
+// --- CONTROLLERS (Exported Directly) ---
 
-const registerUser = async (req, res) => {
+export const registerUser = async (req, res) => {
     try {
         const fname = sanitizeInput(req.body.fname);
         const lname = sanitizeInput(req.body.lname);
@@ -168,7 +173,7 @@ const registerUser = async (req, res) => {
     }
 }
 
-const userlogin = async (req, res) => {
+export const userlogin = async (req, res) => {
     try {
         const email = sanitizeInput(req.body.email);
         const password = req.body.password;
@@ -216,7 +221,7 @@ const userlogin = async (req, res) => {
     }
 }
 
-const updatePassword = async (req, res) => {
+export const updatePassword = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
         const { oldpassword, newpassword } = req.body;
@@ -255,7 +260,7 @@ const updatePassword = async (req, res) => {
     }
 }
 
-const forgetPassword = async (req, res) => {
+export const forgetPassword = async (req, res) => {
     try {
         const email = sanitizeInput(req.body.email);
         const userData = await User.findOne({ email: email });
@@ -268,7 +273,7 @@ const forgetPassword = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: "Failed to send email." }); }
 }
 
-const resetpassword = async (req, res) => {
+export const resetpassword = async (req, res) => {
     try {
         const token = req.query.token;
         const tokenData = await User.findOne({ token: token });
@@ -280,7 +285,7 @@ const resetpassword = async (req, res) => {
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
 
-const userProfileEdit = async (req, res) => {
+export const userProfileEdit = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
         const sanitizedBody = {};
@@ -298,7 +303,7 @@ const userProfileEdit = async (req, res) => {
     }
 }
 
-const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
     try {
         const userIdToDelete = req.params.id;
         const loggedInUser = req.user;
@@ -323,7 +328,7 @@ const deleteUser = async (req, res) => {
     }
 }
 
-const uploadUserImage = async (req, res) => {
+export const uploadUserImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
             await connectToMongo();
@@ -335,7 +340,7 @@ const uploadUserImage = async (req, res) => {
     } catch (error) { res.status(400).send(error.message); }
 }
 
-const searchUser = async (req, res) => {
+export const searchUser = async (req, res) => {
     try {
         const { search, location, skill, degree, year } = req.body;
         let educationUserIds = null;
@@ -353,14 +358,16 @@ const searchUser = async (req, res) => {
             matchStage._id = { $in: objectIds };
         }
         if (search) {
-            const nameRegex = new RegExp(search, "i");
-            matchStage.$or = [{ fname: { $regex: nameRegex } }, { lname: { $regex: nameRegex } }];
+            matchStage.$text = { $search: search };
         }
         if (location) {
             const locRegex = new RegExp(location, "i");
             const locQuery = { $or: [{ city: { $regex: locRegex } }, { state: { $regex: locRegex } }] };
-            if (matchStage.$or) { matchStage.$and = [{ $or: matchStage.$or }, locQuery]; delete matchStage.$or; }
-            else { Object.assign(matchStage, locQuery); }
+            if (matchStage.$text) { 
+                matchStage.$and = [ locQuery ]; 
+            } else {
+                Object.assign(matchStage, locQuery);
+            }
         }
         if (skill) matchStage.skills = { $regex: new RegExp(skill, "i") };
         if (Object.keys(matchStage).length > 0) pipeline.push({ $match: matchStage });
@@ -395,7 +402,7 @@ const searchUser = async (req, res) => {
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
 
-const searchUserById = async (req, res) => {
+export const searchUserById = async (req, res) => {
     try {
         const id = req.params._id;
         if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send({ success: false });
@@ -404,12 +411,12 @@ const searchUserById = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
-const userLogout = async (req, res) => {
+export const userLogout = async (req, res) => {
     try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); }
     catch (error) { res.status(400).send({ success: false }); }
 }
 
-const getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
     try {
         const user_data = await User.aggregate([
             {
@@ -434,13 +441,12 @@ const getUsers = async (req, res) => {
     catch (error) { res.status(400).send({ success: false }); }
 }
 
-const getTopUsers = async (req, res) => {
+export const getTopUsers = async (req, res) => {
     try { const data = await User.find({ institute: req.body.institute }).limit(5); res.status(200).send({ success: true, data: data }); }
     catch (error) { res.status(400).send({ success: false }); }
 }
 
-// [UPDATED] - Fetches Users & Calculates Status + Dates (using 'joindate')
-const getUsersOfInstitute = async (req, res) => {
+export const getUsersOfInstitute = async (req, res) => {
     try {
         const data = await User.aggregate([
             {
@@ -449,7 +455,6 @@ const getUsersOfInstitute = async (req, res) => {
                     let: { userId: "$_id" },
                     pipeline: [
                         { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
-                        // [FIX] Changed 'startdate' to 'joindate'
                         { $project: { course: 1, joindate: 1, enddate: 1 } } 
                     ],
                     as: "educationList"
@@ -474,7 +479,6 @@ const getUsersOfInstitute = async (req, res) => {
                 });
                 
                 const latest = sortedEdu[0];
-                // [FIX] Use 'joindate' to populate eduStart
                 if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
                 if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
             }
@@ -492,7 +496,7 @@ const getUsersOfInstitute = async (req, res) => {
     }
 }
 
-const followUser = async (req, res) => {
+export const followUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
@@ -506,7 +510,7 @@ const followUser = async (req, res) => {
     } else { res.status(403).json("cant follow self"); }
 };
 
-const unfollowUser = async (req, res) => {
+export const unfollowUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
@@ -520,7 +524,7 @@ const unfollowUser = async (req, res) => {
     } else { res.status(403).json("cant unfollow self"); }
 };
 
-const updateProfilePic = async (req, res) => {
+export const updateProfilePic = async (req, res) => {
     try {
         let fileId;
         if (req.file) {
@@ -538,14 +542,14 @@ const updateProfilePic = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };
 
-const deleteProfilePic = async (req, res) => {
+export const deleteProfilePic = async (req, res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(req.params.id, { $set: { profilepic: "" } }, { new: true });
         res.status(200).send({ success: true, msg: "Profile removed", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };
 
-const getRandomUsers = async (req, res) => {
+export const getRandomUsers = async (req, res) => {
     try {
         const currentUserId = req.body.userid;
         let excludedIds = [];
@@ -565,10 +569,3 @@ const getRandomUsers = async (req, res) => {
         res.status(200).send({ success: true, data: user_data });
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
-
-module.exports = {
-    registerUser, userlogin, updatePassword, forgetPassword, resetpassword,
-    userProfileEdit, searchUser, userLogout, uploadUserImage, getUsers,
-    followUser, unfollowUser, searchUserById, deleteUser, getUsersOfInstitute,
-    getTopUsers, updateProfilePic, deleteProfilePic, getRandomUsers
-};

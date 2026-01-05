@@ -1,23 +1,22 @@
-const express = require("express");
-const notification_route = express();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const { requireAuth } = require("../middleware/authMiddleware");
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import multer from "multer";
+import { requireAuth } from "../middleware/authMiddleware.js";
+import notification_controller from "../controllers/notificationController.js";
+import * as gridfs from '../db/conn.js';
+
+const notification_route = express.Router();
+
 notification_route.use(bodyParser.json());
 notification_route.use(bodyParser.urlencoded({ extended: true }));
 notification_route.use(cookieParser());
-notification_route.use(express.static('public'));
-const multer = require("multer");
-const gridfs = require('../db/storage');
-
-notification_route.use(express.static('public'));
 
 // memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-const notification_controller = require("../controllers/notificationController");
 
-//Company routes
+// Company routes
 notification_route.post('/deleteNotification', notification_controller.deleteNotification);
 notification_route.post('/addNotification', notification_controller.addNotification);
 notification_route.post('/getnotifications', notification_controller.getnotifications);
@@ -32,4 +31,4 @@ notification_route.post('/uploadNotificationSenderImage', upload.single('senderi
     }
 });
 
-module.exports = notification_route;
+export default notification_route;

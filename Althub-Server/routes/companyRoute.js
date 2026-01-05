@@ -1,18 +1,17 @@
-const express = require("express");
-const company_route = express();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const { requireAuth } = require("../middleware/authMiddleware");
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import { requireAuth } from "../middleware/authMiddleware.js";
+import { uploadSingle } from '../db/conn.js';
+import company_controller from "../controllers/companyController.js";
+
+const company_route = express.Router();
 
 company_route.use(bodyParser.json());
 company_route.use(bodyParser.urlencoded({ extended: true }));
 company_route.use(cookieParser());
-company_route.use(express.static('public'));
 
-const { uploadSingle } = require('../db/storage');
-const company_controller = require("../controllers/companyController");
-
-//Company routes
+// Company routes
 company_route.post('/addCompany', company_controller.addCompany);
 company_route.get('/getCompanies', company_controller.getCompanies);
 company_route.delete('/deleteCompany/:id', company_controller.deleteCompany);
@@ -27,4 +26,4 @@ company_route.post('/uploadCompanyImage', uploadSingle('image'), (req, res) => {
     }
 });
 
-module.exports = company_route;
+export default company_route;

@@ -1,8 +1,8 @@
-const jwt = require("jsonwebtoken");
-const config = require("../config/config");
-const Institute = require("../models/instituteModel"); 
-const Admin = require("../models/adminModel");         
-const User = require("../models/userModel");           
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
+import Institute from "../models/instituteModel.js"; 
+import Admin from "../models/adminModel.js";         
+import User from "../models/userModel.js";           
 
 // Helper to reuse verification logic
 const verifyUser = async (token) => {
@@ -27,7 +27,7 @@ const verifyUser = async (token) => {
 };
 
 // 1. Strict Auth (For API Routes - No Query Params Allowed)
-const requireAuth = async (req, res, next) => {
+export const requireAuth = async (req, res, next) => {
     const token = 
         (req.headers["authorization"] && req.headers["authorization"].split(" ")[1]) || 
         req.cookies.institute_token || 
@@ -44,7 +44,7 @@ const requireAuth = async (req, res, next) => {
 };
 
 // 2. Image Auth (Allows Query Param ?token=...)
-const requireImageAuth = async (req, res, next) => {
+export const requireImageAuth = async (req, res, next) => {
     const token = 
         req.query.token || // <--- ALLOWED HERE ONLY
         req.cookies.institute_token || 
@@ -61,5 +61,3 @@ const requireImageAuth = async (req, res, next) => {
         return res.status(401).send({ success: false, msg: "Image Access Denied" });
     }
 };
-
-module.exports = { requireAuth, requireImageAuth };

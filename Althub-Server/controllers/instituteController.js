@@ -1,12 +1,11 @@
-const Institute = require("../models/instituteModel");
-const User = require("../models/userModel");
-const bcryptjs = require("bcryptjs");
-const config = require("../config/config");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const randomstring = require("randomstring");
-// [FIX 1] Import upload utilities
-const { uploadFromBuffer, connectToMongo } = require("../db/conn"); 
+import Institute from "../models/instituteModel.js";
+import User from "../models/userModel.js";
+import bcryptjs from "bcryptjs";
+import config from "../config/config.js";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import randomstring from "randomstring";
+import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
 // --- UTILITIES ---
 const validatePassword = (password) => {
@@ -205,7 +204,7 @@ const uploadInstituteImage = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     registerInstitute,
     instituteLogin,
     updateInstitute,

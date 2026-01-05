@@ -1,7 +1,7 @@
-const Message = require("../models/messageModel");
-const Notification = require("../models/notificationModel");
-const Conversation = require("../models/conversationModel");
-const User = require("../models/userModel");
+import Message from "../models/messageModel.js";
+import Notification from "../models/notificationModel.js";
+import Conversation from "../models/conversationModel.js";
+import User from "../models/userModel.js";
 
 const newMessage = async (req, res) => {
     const newMessage = new Message(req.body);
@@ -74,9 +74,9 @@ const markMessagesRead = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     newMessage,
     getMessages,
     countMessages,
     markMessagesRead
-}
+};

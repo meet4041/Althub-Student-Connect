@@ -1,11 +1,11 @@
-const Admin = require("../models/adminModel");
-const User = require("../models/userModel");
-const Education = require("../models/educationModel"); // Ensure Education model is imported
-const config = require("../config/config");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const randomstring = require("randomstring");
-const bcryptjs = require("bcryptjs");
+import Admin from "../models/adminModel.js";
+import User from "../models/userModel.js";
+import Education from "../models/educationModel.js"; 
+import config from "../config/config.js";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import randomstring from "randomstring";
+import bcryptjs from "bcryptjs";
 
 // --- UTILITIES ---
 
@@ -26,11 +26,14 @@ const sendresetpasswordMail = async (name, email, token) => {
             }
         });
 
+        // Use process.env.CLIENT_URL or fallback to localhost
+        const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
+
         const mailoptions = {
             from: config.emailUser,
             to: email,
             subject: 'For Reset Password',
-            html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
+            html: `<p>Hello ${name}, Please copy the link to <a href="${clientURL}/new-password?token=${token}">reset your password</a></p>`
         }
         await transporter.sendMail(mailoptions);
     } catch (error) {
@@ -54,12 +57,11 @@ const determineUserStatus = (educations) => {
             if (!isNaN(d.getTime())) gradYear = d.getFullYear();
         } 
         // 2. Try to use Join Date + Duration
-        // [FIXED] Using 'joindate' as seen in your DB screenshot
         else if (edu.joindate && edu.course) {
             const s = new Date(edu.joindate);
             if (!isNaN(s.getTime())) {
                 const startYear = s.getFullYear();
-                const courseName = edu.course.toLowerCase();
+                const courseName = (edu.course || "").toLowerCase();
                 let duration = 0;
                 
                 if (courseName.includes('b.tech') || courseName.includes('btech') || courseName.includes('bachelor')) {
@@ -76,7 +78,6 @@ const determineUserStatus = (educations) => {
         // If we found a valid graduation year
         if (gradYear > 0) {
             const cutoffDate = new Date(gradYear, 4, 15); // May 15th
-            // If today is BEFORE the cutoff date, they are still a student
             if (now <= cutoffDate) {
                 isStudent = true;
                 break; 
@@ -89,7 +90,7 @@ const determineUserStatus = (educations) => {
 
 // --- CONTROLLERS ---
 
-const registerAdmin = async (req, res) => {
+export const registerAdmin = async (req, res) => {
     try {
         const { lname, email, phone, password, admin_secret_key } = req.body;
         const MASTER_KEY = process.env.ADMIN_REGISTRATION_SECRET || "Althub_Default_Secret_2024";
@@ -127,7 +128,7 @@ const registerAdmin = async (req, res) => {
     }
 }
 
-const adminLogin = async (req, res) => {
+export const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
         const adminData = await Admin.findOne({ email }).select("+password +tokenVersion");
@@ -147,10 +148,12 @@ const adminLogin = async (req, res) => {
             { expiresIn: '24h' }
         );
 
+        const isProduction = process.env.NODE_ENV === 'production';
+
         res.cookie('jwt_token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
             maxAge: 24 * 60 * 60 * 1000
         });
 
@@ -168,8 +171,7 @@ const adminLogin = async (req, res) => {
     }
 }
 
-// [UPDATED] Get Users with Education Aggregation & Status Calculation
-const getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
     try {
         const data = await User.aggregate([
             {
@@ -178,7 +180,6 @@ const getUsers = async (req, res) => {
                     let: { userId: "$_id" },
                     pipeline: [
                         { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
-                        // [FIXED] Fetch 'joindate' (as per your DB screenshot) and 'enddate'
                         { $project: { course: 1, joindate: 1, enddate: 1 } }
                     ],
                     as: "educationList"
@@ -187,15 +188,11 @@ const getUsers = async (req, res) => {
         ]);
 
         const finalData = data.map(user => {
-            // 1. Calculate Status
             const type = determineUserStatus(user.educationList);
-            
-            // 2. Get Dates
             let eduStart = "-";
             let eduEnd = "-";
             
             if (user.educationList && user.educationList.length > 0) {
-                // Sort by end date descending to find the latest education
                 const sortedEdu = user.educationList.sort((a, b) => {
                     const dateA = new Date(a.enddate || "1900-01-01");
                     const dateB = new Date(b.enddate || "1900-01-01");
@@ -203,10 +200,7 @@ const getUsers = async (req, res) => {
                 });
                 
                 const latest = sortedEdu[0];
-                
-                // [FIXED] Use 'joindate' for the start date
                 if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
-                // Use 'enddate' for the end date
                 if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
             }
             
@@ -221,7 +215,7 @@ const getUsers = async (req, res) => {
     }
 }
 
-const updatePassword = async (req, res) => {
+export const updatePassword = async (req, res) => {
     try {
         const { admin_id, oldpassword, newpassword } = req.body;
         const data = await Admin.findById(admin_id).select("+password");
@@ -240,7 +234,7 @@ const updatePassword = async (req, res) => {
                     $inc: { tokenVersion: 1 } 
                 });
                 
-                res.clearCookie("jwt_token", { httpOnly: true, secure: true, sameSite: "none" });
+                res.clearCookie("jwt_token");
                 return res.status(200).send({ success: true, msg: "Password updated successfully." });
             } else {
                 return res.status(400).send({ success: false, msg: "Old password incorrect" });
@@ -253,7 +247,7 @@ const updatePassword = async (req, res) => {
     }
 }
 
-const forgetPassword = async (req, res) => {
+export const forgetPassword = async (req, res) => {
     try {
         const { email } = req.body;
         const adminData = await Admin.findOne({ email });
@@ -270,7 +264,7 @@ const forgetPassword = async (req, res) => {
     }
 }
 
-const resetpassword = async (req, res) => {
+export const resetpassword = async (req, res) => {
     try {
         const token = req.query.token;
         const tokenData = await Admin.findOne({ token: token });
@@ -292,7 +286,7 @@ const resetpassword = async (req, res) => {
     }
 }
 
-const updateAdmin = async (req, res) => {
+export const updateAdmin = async (req, res) => {
     try {
         const { id } = req.body;
         if (!req.body || Object.keys(req.body).length === 0) {
@@ -314,16 +308,16 @@ const updateAdmin = async (req, res) => {
     }
 }
 
-const adminLogout = async (req, res) => {
+export const adminLogout = async (req, res) => {
     try {
-        res.clearCookie("jwt_token", { httpOnly: true, secure: true, sameSite: "none" });
+        res.clearCookie("jwt_token");
         res.status(200).send({ success: true, msg: "Logged Out" });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
 
-const getAdminById = async (req, res) => {
+export const getAdminById = async (req, res) => {
     try {
         const admin = await Admin.findById(req.params._id).select("-password");
         res.status(200).send({ success: true, data: admin });
@@ -332,7 +326,7 @@ const getAdminById = async (req, res) => {
     }
 }
 
-const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
     try {
         const id = req.params.id;
         await User.deleteOne({ _id: id });
@@ -341,16 +335,3 @@ const deleteUser = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
-
-module.exports = {
-    registerAdmin,
-    adminLogin,
-    forgetPassword,
-    resetpassword,
-    updatePassword,
-    adminLogout,
-    updateAdmin,
-    getAdminById,
-    getUsers,
-    deleteUser
-};

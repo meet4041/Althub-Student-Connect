@@ -1,15 +1,16 @@
-const express = require("express");
-const experience_route = express();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+import express from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import { uploadSingle } from '../db/conn.js';
+import experience_controller from "../controllers/experienceController.js";
+
+const experience_route = express.Router();
+
 experience_route.use(bodyParser.json());
 experience_route.use(bodyParser.urlencoded({ extended: true }));
-const { uploadSingle } = require('../db/storage');
-experience_route.use(express.static('public'));
 experience_route.use(cookieParser());
-const experience_controller = require("../controllers/experienceController");
 
-//Education routes
+// Experience routes
 experience_route.post('/addExperience', experience_controller.addExperience);
 experience_route.post('/getExperience', experience_controller.getExperience);
 experience_route.delete('/deleteExperience/:id', experience_controller.deleteExperience);
@@ -25,4 +26,4 @@ experience_route.post('/uploadCompanyLogo', uploadSingle('companylogo'), (req, r
     }
 });
 
-module.exports = experience_route;
+export default experience_route;

@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import { uploadSingle } from '../db/conn.js';
+import * as user_controller from "../controllers/userController.js"; 
+import { requireAuth } from "../middleware/authMiddleware.js";
+
 const user_route = express.Router();
-const { uploadSingle } = require('../db/storage');
-const user_controller = require("../controllers/userController");
-const { requireAuth } = require("../middleware/authMiddleware");
 
 // --- PUBLIC ROUTES ---
 user_route.post('/register', user_controller.registerUser);
@@ -42,4 +43,4 @@ user_route.get('/getUsersOfInstitute/:institute', requireAuth, user_controller.g
 user_route.put("/follow/:id", requireAuth, user_controller.followUser);
 user_route.put("/unfollow/:id", requireAuth, user_controller.unfollowUser);
 
-module.exports = user_route;
+export default user_route;

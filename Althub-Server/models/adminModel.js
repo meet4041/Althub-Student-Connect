@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const admin = new mongoose.Schema({
     name: {
@@ -28,12 +28,12 @@ const admin = new mongoose.Schema({
         default: ''
     },
     // --- SECURITY ADDITION: REPLAY PROTECTION ---
-    // This tracks the current "version" of the user's session.
-    // When the password is changed, we increment this to logout all attackers.
+    // tracking the current "version" of the user's session.
+    // When the password is changed, increment to logout all attackers.
     tokenVersion: {
         type: Number,
         default: 0
     }
 }, { timestamps: true }); // Tracks when the account was created/updated
 
-module.exports = mongoose.model("adminTB", admin);
+export default mongoose.model("adminTB", admin);

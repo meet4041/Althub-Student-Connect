@@ -1,8 +1,8 @@
-const Event = require("../models/EventModel");
-const Notification = require("../models/notificationModel");
-const User = require("../models/userModel");
-const Institute = require("../models/instituteModel");
-const { uploadFromBuffer, connectToMongo } = require("../db/conn");
+import Event from "../models/EventModel.js";
+import Notification from "../models/notificationModel.js";
+import User from "../models/userModel.js";
+import Institute from "../models/instituteModel.js";
+import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
 // ... [Keep your other functions like addEvents, getEvents, deleteEvent exactly as they were] ...
 
@@ -167,7 +167,7 @@ const participateInEvent = async (req, res) => {
     }
 };
 
-module.exports = {
+export default {
     addEvents,
     getEvents,
     getEventsByInstitute,
@@ -176,4 +176,4 @@ module.exports = {
     searchEvent,
     getUpcommingEvents,
     participateInEvent
-}
+};

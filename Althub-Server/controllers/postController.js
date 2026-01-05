@@ -1,8 +1,8 @@
-const Post = require("../models/postModel");
-const User = require("../models/userModel");
-const Institute = require("../models/instituteModel");
-const Notification = require("../models/notificationModel");
-const { uploadFromBuffer, connectToMongo } = require("../db/conn");
+import Post from "../models/postModel.js";
+import User from "../models/userModel.js";
+import Institute from "../models/instituteModel.js";
+import Notification from "../models/notificationModel.js";
+import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
 const addPost = async (req, res) => {
     try {
@@ -181,7 +181,7 @@ const instituteAddPost = async (req, res) => {
     return addPost(req, res);
 }
 
-module.exports = {
+export default {
     addPost,
     getPosts,
     deletePost,
@@ -190,4 +190,4 @@ module.exports = {
     getFriendsPost,
     getPostById,
     instituteAddPost
-}
+};

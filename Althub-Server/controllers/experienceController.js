@@ -1,4 +1,4 @@
-const Experience = require("../models/experienceModel");
+import Experience from "../models/experienceModel.js";
 
 const addExperience = async (req, res) => {
     try {
@@ -63,10 +63,10 @@ const uploadExperienceImage = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     addExperience,
     getExperience,
     deleteExperience,
     editExperience,
     uploadExperienceImage
-}
+};

@@ -1,11 +1,12 @@
 {
-    "name": "althub_registerapi",
+    "name": "althub_backendapi",
     "version": "1.0.0",
-    "description": "",
+    "type": "module",
     "main": "index.js",
     "scripts": {
         "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --detectOpenHandles",
-        "start": "node index.js"
+        "start": "node index.js",
+        "dev": "nodemon index.js"
     },
     "jest": {
         "testEnvironment": "node",
@@ -13,12 +14,14 @@
             "/node_modules/"
         ]
     },
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "keywords": [],
     "author": "Meet",
     "license": "ISC",
     "dependencies": {
         "bcryptjs": "^2.4.3",
-        "body-parser": "^1.20.2",
         "compression": "^1.8.1",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
@@ -27,19 +30,19 @@
         "express-rate-limit": "^8.2.1",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.0",
-        "md5": "^2.3.0",
-        "mongoose": "^7.0.3",
+        "mongoose": "^8.21.0",
         "multer": "^2.0.2",
         "multer-gridfs-storage": "^5.0.2",
         "nodemailer": "^7.0.10",
-        "nodemon": "^3.0.1",
         "randomstring": "^1.2.3",
-        "socket.io": "^4.6.1"
+        "socket.io": "^4.6.1",
+        "xss": "^1.0.15"
     },
     "devDependencies": {
         "cross-env": "^10.1.0",
         "jest": "^30.2.0",
         "mongodb-memory-server": "^10.3.0",
+        "nodemon": "^3.0.1",
         "supertest": "^7.1.4"
     }
 }

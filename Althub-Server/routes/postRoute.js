@@ -1,13 +1,9 @@
-const express = require("express");
+import express from "express";
 const post_route = express.Router();
 
-// --- FIX: Import 'uploadArray' from storage ---
-const { uploadArray } = require('../db/storage'); 
-
-const post_controller = require("../controllers/postController");
-const { requireAuth } = require("../middleware/authMiddleware");
-
-// --- ROUTES ---
+import { uploadArray } from '../db/conn.js';
+import post_controller from "../controllers/postController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 // Add Post: Handles up to 5 photos with key 'photos'
 post_route.post('/addPost', requireAuth, uploadArray('photos', 5), post_controller.addPost);
@@ -29,4 +25,4 @@ post_route.get('/getPostById/:userid', requireAuth, post_controller.getPostById)
 // Institute Specific Add Post (Using same upload middleware)
 post_route.post('/instituteAddPost', requireAuth, uploadArray('photos', 5), post_controller.instituteAddPost);
 
-module.exports = post_route;
+export default post_route;

@@ -1,4 +1,4 @@
-const Course = require("../models/courseModel");
+import Course from "../models/courseModel.js";
 
 const addCourse = async (req, res) => {
     try {
@@ -61,10 +61,10 @@ const editCourse = async (req, res) => {
     }
 }
 
-module.exports = {
+export default {
     addCourse,
     getCourse,
     deleteCourse,
     editCourse,
     getCourseByInstitute
-}
+};

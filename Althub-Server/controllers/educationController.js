@@ -1,4 +1,4 @@
-const Education = require("../models/educationModel");
+import Education from "../models/educationModel.js";
 
 const addEducation = async (req, res) => {
     try {
@@ -66,10 +66,10 @@ const uploadEducationImage = async (req, res) => {
         res.status(400).send(error.message);
     }
 }
-module.exports = {
+export default {
     addEducation,
     getEducation,
     deleteEducation,
     editEducation,
     uploadEducationImage
-}
+};

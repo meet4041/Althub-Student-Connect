@@ -1,12 +1,11 @@
-const express = require("express");
-const message_route = express();
-const bodyParser = require("body-parser");
+import express from "express";
+import bodyParser from "body-parser";
+import message_controller from "../controllers/messageController.js";
+
+const message_route = express.Router();
 
 message_route.use(bodyParser.json());
 message_route.use(bodyParser.urlencoded({ extended: true }));
-message_route.use(express.static('public'));
-
-const message_controller = require("../controllers/messageController");
 
 message_route.post('/newMessage', message_controller.newMessage);
 message_route.get('/getMessages/:conversationId', message_controller.getMessages);
@@ -15,4 +14,4 @@ message_route.get('/getMessages/:conversationId', message_controller.getMessages
 message_route.get('/countMessages/:conversationId/:senderId', message_controller.countMessages);
 message_route.put('/markMessagesRead/:conversationId/:senderId', message_controller.markMessagesRead);
 
-module.exports = message_route;
+export default message_route;

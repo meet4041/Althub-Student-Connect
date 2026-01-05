@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const education = new mongoose.Schema({
     userid: {
@@ -21,4 +21,4 @@ const education = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("educationTB", education);
+export default mongoose.model("educationTB", education);

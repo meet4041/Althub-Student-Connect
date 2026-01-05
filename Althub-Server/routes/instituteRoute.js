@@ -1,12 +1,12 @@
-const express = require("express");
-const institute_route = express.Router();
-const path = require('path');
-const multer = require('multer'); // [ADDED] Import Multer
-const { requireAuth } = require("../middleware/authMiddleware"); 
-const institute_controller = require("../controllers/instituteController");
+import express from "express";
+import path from 'path';
+import multer from 'multer';
+import { requireAuth } from "../middleware/authMiddleware.js";
+import institute_controller from "../controllers/instituteController.js";
 
-// [ADDED] Multer Memory Storage Configuration
-// This allows us to access req.file.buffer in the controller
+const institute_route = express.Router();
+
+// Multer Memory Storage Configuration - allows req.file.buffer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -27,7 +27,6 @@ institute_route.post('/instituteForgetPassword', institute_controller.instituteF
 institute_route.post('/instituteResetPassword', institute_controller.instituteResetPassword);
 
 // --- IMAGE UPLOAD (Updated) ---
-// Now uses 'upload.single' to handle the file and calls the controller function
 institute_route.post('/uploadInstituteImage', requireAuth, upload.single('image'), institute_controller.uploadInstituteImage);
 
-module.exports = institute_route;
+export default institute_route;
