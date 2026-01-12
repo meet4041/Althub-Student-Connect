@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { GridFSBucket } from "mongodb";
 import multer from 'multer';
 import dotenv from 'dotenv';
 
@@ -29,11 +30,11 @@ function createMulter(fieldName, options = {}) {
   return multer({ storage, limits: { fileSize: maxFileSize }, fileFilter });
 }
 
-function uploadSingle(fieldName, options = {}) {
+export function uploadSingle(fieldName, options = {}) {
   return createMulter(fieldName, options).single(fieldName);
 }
 
-function uploadArray(fieldName, maxCount = 5, options = {}) {
+export function uploadArray(fieldName, maxCount = 5, options = {}) {
   return createMulter(fieldName, options).array(fieldName, maxCount);
 }
 

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import User from "../models/userModel.js";
 import Education from "../models/educationModel.js";
 import bcryptjs from "bcryptjs";
@@ -7,21 +6,8 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import randomstring from "randomstring";
 import mongoose from "mongoose";
+import RefreshToken from "../models/refreshTokenModel.js";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
-import xss from 'xss';
-=======
-const User = require("../models/userModel");
-const Education = require("../models/educationModel");
-const bcryptjs = require("bcryptjs");
-const config = require("../config/config");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const randomstring = require("randomstring");
-const mongoose = require('mongoose');
-const RefreshToken = require('../models/refreshTokenModel');
-
-const { uploadFromBuffer, connectToMongo } = require("../db/conn");
->>>>>>> a268263 (ok)
 
 // --- SECURITY UTILITIES ---
 // return xss(text);
@@ -453,11 +439,6 @@ export const searchUserById = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
-<<<<<<< HEAD
-export const userLogout = async (req, res) => {
-    try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); }
-    catch (error) { res.status(400).send({ success: false }); }
-=======
 const userLogout = async (req, res) => {
     try {
         res.clearCookie("jwt_token");
@@ -508,7 +489,6 @@ const refreshToken = async (req, res) => {
     } catch (error) {
         return res.status(500).send({ success: false, msg: error.message });
     }
->>>>>>> a268263 (ok)
 }
 
 export const getUsers = async (req, res) => {
@@ -663,17 +643,12 @@ export const getRandomUsers = async (req, res) => {
         const user_data = await User.aggregate(pipeline);
         res.status(200).send({ success: true, data: user_data });
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
-<<<<<<< HEAD
-}
-=======
 }
 
-module.exports = {
+// Check what functions are exported and ensure all are included
+export default {
     registerUser, userlogin, updatePassword, forgetPassword, resetpassword,
     userProfileEdit, searchUser, userLogout, uploadUserImage, getUsers,
     followUser, unfollowUser, searchUserById, deleteUser, getUsersOfInstitute,
-    getTopUsers, updateProfilePic, deleteProfilePic, getRandomUsers
+    getTopUsers, updateProfilePic, deleteProfilePic, getRandomUsers, refreshToken
 };
-// Export refreshToken separately to expose the endpoint
-module.exports.refreshToken = refreshToken;
->>>>>>> a268263 (ok)

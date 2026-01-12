@@ -1,6 +1,6 @@
 import express from "express";
 import { uploadSingle } from '../db/conn.js';
-import * as user_controller from "../controllers/userController.js"; 
+import user_controller from "../controllers/userController.js"; 
 import { requireAuth } from "../middleware/authMiddleware.js";
 
 const user_route = express.Router();

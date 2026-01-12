@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const RefreshTokenSchema = new mongoose.Schema({
   userid: { type: String, required: true },
@@ -8,4 +8,4 @@ const RefreshTokenSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);
+export default mongoose.model('RefreshToken', RefreshTokenSchema);

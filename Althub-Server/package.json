@@ -37,11 +37,7 @@
         "nodemailer": "^7.0.10",
         "randomstring": "^1.2.3",
         "socket.io": "^4.6.1",
-<<<<<<< HEAD
-        "xss": "^1.0.15"
-=======
         "xss-clean": "^0.1.4"
->>>>>>> a268263 (ok)
     },
     "devDependencies": {
         "cross-env": "^10.1.0",

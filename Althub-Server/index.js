@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -12,6 +11,8 @@ import rateLimit from "express-rate-limit";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,19 +33,6 @@ import company_route from "./routes/companyRoute.js";
 import notification_route from "./routes/notificationRoute.js";
 import financialaid_route from "./routes/financialaidRoute.js";
 import images_route from "./routes/imagesRoute.js";
-=======
-require("dotenv").config();
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-const compression = require("compression");
-const http = require("http");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit"); 
-const { connectToMongo } = require("./db/conn");
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
->>>>>>> a268263 (ok)
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -54,18 +42,8 @@ const port = process.env.PORT || 5001;
 app.set("trust proxy", 1); 
 
 // 1. HELMET: Allow Cross-Origin Images
-<<<<<<< HEAD
-=======
 // This specific policy allows modern browsers (Chrome/Safari) to render 
 // images from this server even if the frontend is on a different port.
-// Helmet with stricter Content Security Policy
-const allowedImageHosts = [
-  'self',
-  'data:',
-  'blob:',
-];
-
->>>>>>> a268263 (ok)
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
@@ -103,9 +81,6 @@ const loginLimiter = rateLimit({
   legacyHeaders: false, 
 });
 
-<<<<<<< HEAD
-// --- CORS CONFIGURATION ---
-=======
 // --- GLOBAL API RATE LIMIT (defense in depth) ---
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -119,7 +94,6 @@ const apiLimiter = rateLimit({
 app.use('/api', apiLimiter);
 
 // --- SMART CORS CONFIGURATION ---
->>>>>>> a268263 (ok)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
