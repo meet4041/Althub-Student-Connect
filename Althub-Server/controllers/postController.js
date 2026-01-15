@@ -4,18 +4,15 @@ import Institute from "../models/instituteModel.js";
 import Notification from "../models/notificationModel.js";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
+// --- 1. ADD POST (FIXED) ---
 const addPost = async (req, res) => {
     try {
-        await connectToMongo();
-
-        // Handle Images
-        let photoIds = [];
-        if (req.files && req.files.length > 0) {
-            for (const file of req.files) {
-                const filename = `post-${Date.now()}-${file.originalname}`;
-                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
-                photoIds.push(`/api/images/${fileId}`);
-            }
+        // FIX: Handle the single image string from middleware and wrap it in an array
+        let photos = [];
+        if (req.body.image) {
+            photos = [req.body.image];
+        } else if (req.images) {
+            photos = req.images; // Fallback for backward compatibility
         }
 
         const newPost = new Post({
