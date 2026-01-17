@@ -6,53 +6,46 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-// Ensure cookies are sent with requests
 axios.defaults.withCredentials = true;
 
 const Login = () => {
     const navigate = useNavigate();
-    const [loginInfo, setLoginInfo] = useState({
-        email: '',
-        password: ''
-    });
-    const [check, setCheck] = useState(false);
+    const [loginInfo, setLoginInfo] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     const InputEvent = (e) => {
         const { name, value } = e.target;
         setLoginInfo((prev) => ({ ...prev, [name]: value }));
     }
 
-    const handleRememberMe = (e) => {
-        setCheck(e.target.checked);
-    }
+    const togglePasswordVisibility = () => setShowPassword(!showPassword);
+    const handleRememberMeChange = (e) => setRememberMe(e.target.checked);
 
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
             const myurl = `${ALTHUB_API_URL}/api/instituteLogin`;
-
-            axios.post(myurl, {
-                email: loginInfo.email,
-                password: loginInfo.password
-            })
+            axios.post(myurl, { email: loginInfo.email, password: loginInfo.password })
                 .then((response) => {
                     if (response.data.success === true) {
-                        toast.success('Login Successful! Redirecting...');
+                        toast.success('Login Successful!');
                         localStorage.setItem('token', response.data.token);
                         localStorage.setItem('userDetails', JSON.stringify(response.data.data));
                         localStorage.setItem('AlmaPlus_institute_Id', response.data.data._id);
                         localStorage.setItem('AlmaPlus_institute_Name', response.data.data.name);
-                        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
-                        if (check) {
-                            localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Enabled');
-                            localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email);
-                            localStorage.setItem('AlmaPlus_Admin_Password', loginInfo.password);
+                        if (rememberMe) {
+                            localStorage.setItem('althub_remembered_email', loginInfo.email);
+                            localStorage.setItem('althub_remembered_password', loginInfo.password);
+                            localStorage.setItem('althub_remember_me_status', 'true');
                         } else {
-                            localStorage.setItem('AlmaPlus_admin_Remember_Me', 'Disabled');
+                            localStorage.removeItem('althub_remembered_email');
+                            localStorage.removeItem('althub_remembered_password');
+                            localStorage.setItem('althub_remember_me_status', 'false');
                         }
 
                         setTimeout(() => {
@@ -65,7 +58,7 @@ const Login = () => {
                     }
                 }).catch((error) => {
                     setDisable(false);
-                    toast.error(error.response?.data?.msg || "Login Failed. Check connection.");
+                    toast.error(error.response?.data?.msg || "Login Failed.");
                 })
         }
     }
@@ -73,53 +66,49 @@ const Login = () => {
     const validate = () => {
         let errors = {};
         let isValid = true;
-        if (!loginInfo.email) {
-            isValid = false;
-            errors["email_err"] = "Email Address is required";
-        }
-        if (!loginInfo.password) {
-            isValid = false;
-            errors["password_err"] = "Password is required";
-        }
+        if (!loginInfo.email) { isValid = false; errors["email_err"] = "Email Address is required"; }
+        if (!loginInfo.password) { isValid = false; errors["password_err"] = "Password is required"; }
         setErrors(errors);
         return isValid;
     }
 
     useEffect(() => {
-        if (localStorage.getItem("AlmaPlus_institute_Id") || localStorage.getItem("token")) {
-            navigate('/dashboard');
-        }
-
-        const loader = document.getElementById('page-loader');
-        if (loader) loader.style.display = 'none';
-
-        const container = document.getElementById("page-container");
-        if (container) container.classList.add("show");
-
-        if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled') {
-            setCheck(true);
+        if (localStorage.getItem("token")) navigate('/dashboard');
+        const savedStatus = localStorage.getItem('althub_remember_me_status');
+        if (savedStatus === 'true') {
+            setRememberMe(true);
             setLoginInfo({
-                email: localStorage.getItem('AlmaPlus_Admin_Email') || '',
-                password: localStorage.getItem('AlmaPlus_Admin_Password') || ''
+                email: localStorage.getItem('althub_remembered_email') || '',
+                password: localStorage.getItem('althub_remembered_password') || ''
             });
         }
     }, [navigate]);
 
     return (
         <Fragment>
-            <ToastContainer theme="colored" position="top-center" />
+            <ToastContainer theme="colored" position="top-right" />
+            <style>
+                {`
+                    .custom-checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #555; }
+                    .custom-checkbox-container input { display: none; }
+                    .checkmark-box { height: 18px; width: 18px; background-color: #eee; border-radius: 4px; margin-right: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; border: 1px solid #ddd; }
+                    .custom-checkbox-container input:checked + .checkmark-box { background-color: #002b5b; border-color: #002b5b; }
+                    .checkmark-box:after { content: ""; display: none; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
+                    .custom-checkbox-container input:checked + .checkmark-box:after { display: block; }
+                `}
+            </style>
 
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
-
                     {/* LEFT SIDE: BRAND VISUALS */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
-                            <img src='Logo1.jpeg' className="main-logo-glow" alt="logo" />
+                            <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '14px', display: 'inline-block', marginBottom: '25px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
+                            </div>
                             <h1 className="title-text">Althub <span className="text-highlight">Institute</span></h1>
                             <p className="subtitle-text">Empowering the next generation of educators with advanced analytics and seamless management.</p>
-
                             <div className="feature-badges mt-5">
                                 <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure SSL</span>
                                 <span className="badge-pill-custom"><i className="fa fa-check-circle mr-2"></i> Admin Verified</span>
@@ -127,80 +116,48 @@ const Login = () => {
                         </div>
                     </div>
 
-                    {/* RIGHT SIDE: LOGIN FORM */}
+                    {/* RIGHT SIDE: FORM */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="mobile-header d-lg-none text-center mb-4">
-                                <img src='Logo1.jpeg' className="mobile-logo" alt="logo" />
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
                                 <h3 className="font-weight-bold text-navy">Althub Institute</h3>
                             </div>
-
                             <div className="form-heading mb-5">
                                 <h2 className="font-weight-bold text-navy">Institute Sign In</h2>
                                 <p className="text-muted">Enter your registered institutional credentials</p>
                             </div>
-
                             <form onSubmit={submitHandler}>
-                                {/* Email Field */}
                                 <div className="modern-form-group">
                                     <label className="label-modern">Email Address</label>
                                     <div className={`input-wrapper-modern ${errors.email_err ? 'error-border' : ''}`}>
                                         <i className="fa fa-envelope-open icon-left"></i>
-                                        <input
-                                            type="email"
-                                            placeholder="test@institute.com"
-                                            name="email"
-                                            onChange={InputEvent}
-                                            value={loginInfo.email}
-                                        />
+                                        <input type="email" placeholder="your@institute.com" name="email" onChange={InputEvent} value={loginInfo.email} />
                                     </div>
                                     {errors.email_err && <div className="error-msg-modern">{errors.email_err}</div>}
                                 </div>
-
-                                {/* Password Field */}
                                 <div className="modern-form-group">
-                                    <label className="label-modern">Secure Password</label>
-                                    <div className={`input-wrapper-modern ${errors.password_err ? 'error-border' : ''}`}>
+                                    <label className="label-modern">Password</label>
+                                    <div className={`input-wrapper-modern ${errors.password_err ? 'error-border' : ''}`} style={{ position: 'relative' }}>
                                         <i className="fa fa-shield-alt icon-left"></i>
-                                        <input
-                                            type="password"
-                                            placeholder="••••••••"
-                                            name="password"
-                                            onChange={InputEvent}
-                                            value={loginInfo.password}
-                                        />
+                                        <input type={showPassword ? "text" : "password"} placeholder="••••••••" name="password" onChange={InputEvent} value={loginInfo.password} style={{ paddingRight: '45px' }} />
+                                        <span onClick={togglePasswordVisibility} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
+                                            <i className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                        </span>
                                     </div>
                                     {errors.password_err && <div className="error-msg-modern">{errors.password_err}</div>}
                                 </div>
-
-                                {/* Remember & Forgot Password */}
                                 <div className="d-flex justify-content-between align-items-center mb-4 mt-2">
-                                    <label className="checkbox-container-modern">
-                                        <input type="checkbox" checked={check} onChange={handleRememberMe} />
-                                        <span className="checkmark"></span>
-                                        Remember Me
+                                    <label className="custom-checkbox-container">
+                                        <input type="checkbox" checked={rememberMe} onChange={handleRememberMeChange} />
+                                        <div className="checkmark-box"></div> Remember Me
                                     </label>
-                                    <a onClick={() => navigate('/forgot-password')} className="forgot-pass-link">
-                                        Forgot Password?
-                                    </a>
+                                    <a onClick={() => navigate('/forgot-password')} className="forgot-pass-link" style={{ cursor: 'pointer', color: '#002b5b' }}>Forgot Password?</a>
                                 </div>
-
-                                {/* Submit Button */}
                                 <button type="submit" className="btn-modern-submit" disabled={disable}>
-                                    {disable ? (
-                                        <><i className="fa fa-circle-notch fa-spin mr-2"></i> AUTHENTICATING...</>
-                                    ) : (
-                                        'SIGN IN TO DASHBOARD'
-                                    )}
+                                    {disable ? 'AUTHENTICATING...' : 'SIGN IN TO ALTHUB INSTITUTE'}
                                 </button>
                             </form>
-
-                            <div className="footer-notice text-center mt-5">
-                                <p className="text-muted small">
-                                    <i className="fa fa-lock mr-2"></i>
-                                    Althub Protocol v2.0 Secured Endpoint
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -208,5 +165,4 @@ const Login = () => {
         </Fragment>
     )
 }
-
 export default Login;

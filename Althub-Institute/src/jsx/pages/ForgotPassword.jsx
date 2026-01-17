@@ -12,71 +12,48 @@ function ForgotPassword() {
     const [err, setErr] = useState('');
     const [disable, setDisable] = useState(false);
 
-    const InputEvent = (e) => {
-        setEmail(e.target.value);
-    }
+    const InputEvent = (e) => setEmail(e.target.value);
 
     const validate = () => {
-        let isValid = true;
-        if (!email) {
-            isValid = false;
-            setErr("Please Enter Email Address");
-        } else {
-            setErr("");
-        }
-        return isValid;
+        if (!email) { setErr("Please Enter Email Address"); return false; }
+        setErr(""); return true;
     }
 
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            const myurl = `${ALTHUB_API_URL}/api/instituteForgetPassword`;
-            axios({
-                method: "post",
-                url: myurl,
-                data: { email: email },
-            }).then((response) => {
-                if (response.data.success === true) {
+            axios.post(`${ALTHUB_API_URL}/api/instituteForgetPassword`, { email })
+                .then((response) => {
+                    if (response.data.success) {
+                        toast.success(response.data.msg || "Reset link sent!");
+                        setTimeout(() => navigate('/'), 2000);
+                    }
+                }).catch((error) => {
                     setDisable(false);
-                    toast.success(response.data.msg || "Reset link sent successfully!");
-                    setTimeout(() => {
-                        navigate('/');
-                    }, 2000);
-                }
-            }).catch((error) => {
-                setDisable(false);
-                toast.error(error.response?.data?.message || "Something went wrong");
-            })
+                    toast.error(error.response?.data?.message || "Something went wrong");
+                })
         }
     }
 
-    useEffect(() => {
-        const loader = document.getElementById('page-loader');
-        if (loader) loader.style.display = 'none';
-
-        const container = document.getElementById("page-container");
-        if (container) container.classList.add("show");
-    }, []);
-
     return (
         <Fragment>
-            <ToastContainer theme="colored" position="top-center" />
-
+            <ToastContainer theme="colored" position="top-right" />
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
 
-                    {/* LEFT SIDE: BRAND VISUALS (Consistent with Login) */}
+                    {/* LEFT SIDE: BRAND VISUALS (Identical to Login) */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
-                            <img src='Logo1.jpeg' className="main-logo-glow" alt="logo" />
-                            <h1 className="title-text">Account <span className="text-highlight">Recovery</span></h1>
-                            <p className="subtitle-text">Don't worry, it happens. Enter your registered email and we'll send you instructions to reset your password.</p>
-
+                            <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '14px', display: 'inline-block', marginBottom: '25px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
+                            </div>
+                            <h1 className="title-text">Althub <span className="text-highlight">Institute</span></h1>
+                            <p className="subtitle-text">Empowering the next generation of educators with advanced analytics and seamless management.</p>
                             <div className="feature-badges mt-5">
-                                <span className="badge-pill-custom"><i className="fa fa-envelope-open mr-2"></i> Recovery Email</span>
-                                <span className="badge-pill-custom"><i className="fa fa-user-shield mr-2"></i> Verified Admin</span>
+                                <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure SSL</span>
+                                <span className="badge-pill-custom"><i className="fa fa-check-circle mr-2"></i> Admin Verified</span>
                             </div>
                         </div>
                     </div>
@@ -85,57 +62,29 @@ function ForgotPassword() {
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="mobile-header d-lg-none text-center mb-4">
-                                <img src='Logo1.jpeg' className="mobile-logo" alt="logo" />
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
                                 <h3 className="font-weight-bold text-navy">Althub Institute</h3>
                             </div>
-
                             <div className="form-heading mb-5">
                                 <h2 className="font-weight-bold text-navy">Forgot Password?</h2>
                                 <p className="text-muted">Enter the email associated with your account</p>
                             </div>
-
                             <form onSubmit={submitHandler}>
-                                {/* Email Field */}
                                 <div className="modern-form-group">
                                     <label className="label-modern">Registered Email</label>
                                     <div className={`input-wrapper-modern ${err ? 'error-border' : ''}`}>
-                                        <i className="fa fa-shield-alt icon-left"></i> {/* Using your requested security icon */}
-                                        <input
-                                            type="email"
-                                            placeholder="your@institute.com"
-                                            name="email"
-                                            onChange={InputEvent}
-                                            value={email}
-                                        />
+                                        <i className="fa fa-envelope-open icon-left"></i>
+                                        <input type="email" placeholder="your@institute.com" value={email} onChange={InputEvent} />
                                     </div>
                                     {err && <div className="error-msg-modern">{err}</div>}
                                 </div>
-
-                                {/* Submit Button */}
                                 <button type="submit" className="btn-modern-submit" disabled={disable}>
-                                    {disable ? (
-                                        <><i className="fa fa-spinner fa-spin mr-2"></i> PROCESSING...</>
-                                    ) : (
-                                        'SEND RESET LINK'
-                                    )}
+                                    {disable ? 'PROCESSING...' : 'SEND RESET LINK'}
                                 </button>
-
                                 <div className="text-center mt-4">
-                                    <p className="text-muted">
-                                        Remember your credentials?{" "}
-                                        <Link to="/" className="back-to-login">
-                                            Back to Login
-                                        </Link>
-                                    </p>
+                                    <p className="text-muted">Remember credentials? <Link to="/" style={{ fontWeight: '600', color: '#004e92', textDecoration: 'none' }}>Back to Login</Link></p>
                                 </div>
                             </form>
-
-                            <div className="footer-notice text-center mt-5">
-                                <p className="text-muted small">
-                                    <i className="fa fa-info-circle mr-2"></i>
-                                    Security Check: Protocol v2.0 Active
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -143,5 +92,4 @@ function ForgotPassword() {
         </Fragment>
     )
 }
-
 export default ForgotPassword;
