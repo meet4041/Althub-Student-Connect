@@ -1,0 +1,126 @@
+/* --- Header Styles --- */
+#header {
+    background: #ffffff !important;
+    height: 65px !important;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9 !important;
+    position: fixed !important;
+    top: 0; left: 0; right: 0;
+    z-index: 1020 !important;
+    padding: 0 30px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+.navbar-brand b {
+    color: #002b5b;
+    font-size: 22px;
+    letter-spacing: -0.8px;
+    font-weight: 800;
+}
+
+/* --- Brand Badge --- */
+.brand-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-left: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #e0e7ff;
+}
+
+/* --- User Section --- */
+.navbar-user {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-user img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #e2e8f0;
+    object-fit: cover;
+}
+
+.navbar-user span {
+    color: #1e293b;
+    font-weight: 600;
+    margin-left: 12px;
+    font-size: 14px;
+}
+
+.dropdown-menu-modern {
+    border-radius: 12px !important;
+    border: 1px solid #f1f5f9 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    padding: 8px !important;
+    margin-top: 10px !important;
+}
+
+/* --- Sidebar Styles --- */
+#sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid #f1f5f9 !important;
+    width: 260px !important;
+    position: fixed !important;
+    top: 65px !important;
+    height: calc(100vh - 65px) !important;
+    padding-top: 15px !important;
+    z-index: 1010 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar .nav li a {
+    color: #64748b !important;
+    font-weight: 500 !important;
+    padding: 12px 24px !important;
+    margin: 4px 12px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    text-decoration: none !important;
+    border-radius: 8px;
+}
+
+.sidebar .nav li a i {
+    margin-right: 14px !important;
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+    color: #94a3b8 !important;
+    transition: all 0.2s ease;
+}
+
+/* --- Active & Hover States --- */
+.sidebar .nav li.active > a {
+    background: #f8fafc !important;
+    color: #2563eb !important;
+    font-weight: 700 !important;
+    box-shadow: inset -4px 0 0 #2563eb; /* SaaS style indicator */
+}
+
+.sidebar .nav li.active > a i {
+    color: #2563eb !important;
+    transform: scale(1.1);
+}
+
+.sidebar .nav li a:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+.sidebar .nav li a:hover i {
+    color: #2563eb !important;
+}
+
+/* --- Sidebar Background --- */
+.sidebar-bg {
+    background: #ffffff;
+    border-right: 1px solid #f1f5f9;
+}

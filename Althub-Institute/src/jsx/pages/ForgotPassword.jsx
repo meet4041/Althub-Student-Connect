@@ -6,6 +6,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
 
+// COMPANY STANDARD: Import external CSS files
+import '../../styles/login.css';    // Reusing the shared split-screen layout
+import '../../styles/password.css'; // Importing page-specific styles
+
 function ForgotPassword() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
@@ -15,8 +19,12 @@ function ForgotPassword() {
     const InputEvent = (e) => setEmail(e.target.value);
 
     const validate = () => {
-        if (!email) { setErr("Please Enter Email Address"); return false; }
-        setErr(""); return true;
+        if (!email) { 
+            setErr("Please Enter Email Address"); 
+            return false; 
+        }
+        setErr(""); 
+        return true;
     }
 
     const submitHandler = (e) => {
@@ -42,7 +50,7 @@ function ForgotPassword() {
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
 
-                    {/* LEFT SIDE: BRAND VISUALS (Identical to Login) */}
+                    {/* LEFT SIDE: BRAND VISUALS */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
@@ -61,28 +69,43 @@ function ForgotPassword() {
                     {/* RIGHT SIDE: FORGOT PASSWORD FORM */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
+                            {/* Mobile Logo View */}
                             <div className="mobile-header d-lg-none text-center mb-4">
                                 <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
                                 <h3 className="font-weight-bold text-navy">Althub Institute</h3>
                             </div>
+
                             <div className="form-heading mb-5">
                                 <h2 className="font-weight-bold text-navy">Forgot Password?</h2>
                                 <p className="text-muted">Enter the email associated with your account</p>
                             </div>
+
                             <form onSubmit={submitHandler}>
                                 <div className="modern-form-group">
                                     <label className="label-modern">Registered Email</label>
                                     <div className={`input-wrapper-modern ${err ? 'error-border' : ''}`}>
                                         <i className="fa fa-envelope-open icon-left"></i>
-                                        <input type="email" placeholder="your@institute.com" value={email} onChange={InputEvent} />
+                                        <input 
+                                            type="email" 
+                                            placeholder="your@institute.com" 
+                                            value={email} 
+                                            onChange={InputEvent} 
+                                        />
                                     </div>
                                     {err && <div className="error-msg-modern">{err}</div>}
                                 </div>
+
                                 <button type="submit" className="btn-modern-submit" disabled={disable}>
                                     {disable ? 'PROCESSING...' : 'SEND RESET LINK'}
                                 </button>
+
                                 <div className="text-center mt-4">
-                                    <p className="text-muted">Remember credentials? <Link to="/" style={{ fontWeight: '600', color: '#004e92', textDecoration: 'none' }}>Back to Login</Link></p>
+                                    <p className="text-muted">
+                                        Remember credentials? 
+                                        <Link to="/" className="back-to-login-link ml-1">
+                                            Back to Login
+                                        </Link>
+                                    </p>
                                 </div>
                             </form>
                         </div>
@@ -92,4 +115,5 @@ function ForgotPassword() {
         </Fragment>
     )
 }
+
 export default ForgotPassword;

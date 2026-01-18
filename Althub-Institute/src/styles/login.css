@@ -1,0 +1,219 @@
+/* src/styles/login.css */
+
+.auth-main-wrapper {
+    min-height: 100vh;
+    display: flex;
+    background-color: #f8fafc;
+}
+
+.auth-split-container {
+    display: flex;
+    width: 100%;
+}
+
+/* LEFT SIDE: BRAND VISUALS */
+.auth-visual-side {
+    width: 50%;
+    background: linear-gradient(135deg, #002b5b 0%, #004e92 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: white;
+    overflow: hidden;
+}
+
+.mesh-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.1;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+.visual-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 500px;
+}
+
+.title-text {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    line-height: 1.1;
+}
+
+.text-highlight {
+    color: #60a5fa;
+}
+
+.subtitle-text {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.badge-pill-custom {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    margin-right: 10px;
+    backdrop-filter: blur(4px);
+    display: inline-flex;
+    align-items: center;
+}
+
+/* RIGHT SIDE: FORM */
+.auth-form-side {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 40px;
+}
+
+.form-card-inner {
+    width: 100%;
+    max-width: 420px;
+}
+
+.text-navy {
+    color: #002b5b;
+}
+
+/* FORM FIELDS */
+.modern-form-group {
+    margin-bottom: 25px;
+}
+
+.label-modern {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.input-wrapper-modern {
+    display: flex;
+    align-items: center;
+    background: #f1f5f9;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 2px 16px;
+    transition: 0.3s;
+}
+
+.input-wrapper-modern:focus-within {
+    border-color: #002b5b;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 43, 91, 0.08);
+}
+
+.input-wrapper-modern input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+    font-size: 1rem;
+    padding: 12px 0 12px 12px;
+}
+
+.icon-left {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.error-border {
+    border-color: #ef4444 !important;
+}
+
+.error-msg-modern {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* CUSTOM CHECKBOX */
+.custom-checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    color: #555;
+}
+
+.custom-checkbox-container input {
+    display: none;
+}
+
+.checkmark-box {
+    height: 18px;
+    width: 18px;
+    background-color: #eee;
+    border-radius: 4px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid #ddd;
+}
+
+.custom-checkbox-container input:checked + .checkmark-box {
+    background-color: #002b5b;
+    border-color: #002b5b;
+}
+
+.checkmark-box:after {
+    content: "";
+    display: none;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.custom-checkbox-container input:checked + .checkmark-box:after {
+    display: block;
+}
+
+/* BUTTON */
+.btn-modern-submit {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #002b5b;
+    color: white;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: 0.3s;
+    box-shadow: 0 10px 15px -3px rgba(0, 43, 91, 0.3);
+    margin-top: 10px;
+}
+
+.btn-modern-submit:hover {
+    background: #004e92;
+    transform: translateY(-2px);
+}
+
+.btn-modern-submit:disabled {
+    background: #94a3b8;
+    transform: none;
+    box-shadow: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 991px) {
+    .auth-visual-side { display: none !important; }
+    .auth-form-side { width: 100%; padding: 20px; }
+}

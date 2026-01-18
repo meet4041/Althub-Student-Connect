@@ -6,6 +6,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
+// COMPANY STANDARD: Import external CSS
+import '../../styles/login.css'; 
+
 axios.defaults.withCredentials = true;
 
 const Login = () => {
@@ -87,16 +90,6 @@ const Login = () => {
     return (
         <Fragment>
             <ToastContainer theme="colored" position="top-right" />
-            <style>
-                {`
-                    .custom-checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #555; }
-                    .custom-checkbox-container input { display: none; }
-                    .checkmark-box { height: 18px; width: 18px; background-color: #eee; border-radius: 4px; margin-right: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; border: 1px solid #ddd; }
-                    .custom-checkbox-container input:checked + .checkmark-box { background-color: #002b5b; border-color: #002b5b; }
-                    .checkmark-box:after { content: ""; display: none; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
-                    .custom-checkbox-container input:checked + .checkmark-box:after { display: block; }
-                `}
-            </style>
 
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
@@ -152,7 +145,7 @@ const Login = () => {
                                         <input type="checkbox" checked={rememberMe} onChange={handleRememberMeChange} />
                                         <div className="checkmark-box"></div> Remember Me
                                     </label>
-                                    <a onClick={() => navigate('/forgot-password')} className="forgot-pass-link" style={{ cursor: 'pointer', color: '#002b5b' }}>Forgot Password?</a>
+                                    <a onClick={() => navigate('/forgot-password')} className="forgot-pass-link" style={{ cursor: 'pointer', color: '#002b5b', textDecoration: 'none', fontWeight: '600' }}>Forgot Password?</a>
                                 </div>
                                 <button type="submit" className="btn-modern-submit" disabled={disable}>
                                     {disable ? 'AUTHENTICATING...' : 'SIGN IN TO ALTHUB INSTITUTE'}

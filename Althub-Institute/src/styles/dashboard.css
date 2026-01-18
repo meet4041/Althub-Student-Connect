@@ -1,0 +1,80 @@
+/* src/styles/home.css */
+
+.dashboard-content {
+    background-color: #F1F5F9 !important;
+    min-height: 100vh;
+    /* FIX: Add margin-left to push content away from the fixed sidebar */
+    margin-left: 260px !important; 
+    /* FIX: Padding-top to clear the 65px fixed header */
+    padding-top: 65px !important; 
+    padding-left: 30px;
+    padding-right: 30px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Responsive fix: On smaller screens where the sidebar might hide, reset the margin */
+@media (max-width: 767px) {
+    .dashboard-content {
+        margin-left: 0 !important;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+.dashboard-header-h1 {
+    color: #1e293b;
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: -0.5px;
+}
+
+.institute-badge {
+    background-color: #2563eb;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+/* --- Stat Cards --- */
+.stat-card-modern {
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    border: none !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.stat-card-modern:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.3) !important;
+}
+
+.stat-card-modern .stats-link {
+    background: rgba(0, 0, 0, 0.15) !important;
+    text-decoration: none !important;
+    transition: background 0.2s;
+}
+
+.stat-card-modern .stats-link:hover {
+    background: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* --- Security Alert --- */
+.security-alert-modern {
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    border-left: 5px solid #2563eb !important;
+}
+
+.security-icon-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #2563eb;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
