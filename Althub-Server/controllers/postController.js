@@ -8,30 +8,22 @@ const addPost = async (req, res) => {
     try {
         await connectToMongo();
 
-        // Handle Images
         let photoIds = [];
         if (req.files && req.files.length > 0) {
-            const MAX_FILES = 5;
-            if (req.files.length > MAX_FILES) {
-                return res.status(400).send({ success: false, msg: 'Too many files uploaded' });
-            }
-            
             for (const file of req.files) {
-                if (!file.buffer || !file.originalname) continue;
                 const filename = `post-${Date.now()}-${file.originalname}`;
                 const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
                 photoIds.push(`/api/images/${fileId}`);
             }
         }
 
-        // Limit description length
         const description = typeof req.body.description === 'string' ? req.body.description.slice(0, 5000) : '';
 
         const newPost = new Post({
-            // FIX: Save 'senderid' from frontend into 'userid' field in DB
-            // This ensures getPostById finds it later.
-            userid: req.body.senderid || req.body.userid, 
-            senderid: req.body.senderid || req.body.userid, // Optional: Keep both if needed for notifications
+            // MANDATORY FIX: Ensure the ID from localstorage (senderid) 
+            // is saved into 'userid' so the feed can query it correctly.
+            userid: req.body.senderid || req.body.userid,
+            senderid: req.body.senderid || req.body.userid,
             fname: req.body.fname,
             lname: req.body.lname,
             companyname: req.body.companyname,
@@ -43,11 +35,9 @@ const addPost = async (req, res) => {
         });
 
         const savedPost = await newPost.save();
-
         res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 
     } catch (error) {
-        console.error("Add Post Error:", error);
         res.status(400).send({ success: false, msg: error.message });
     }
 };
@@ -55,17 +45,15 @@ const addPost = async (req, res) => {
 // --- 2. GET POST BY ID (MATCHING FIX) ---
 const getPostById = async (req, res) => {
     try {
-        // We search by 'userid' because that is what we are now saving in addPost
-        // We also use $or to find old posts that might only have 'senderid'
-        const id = req.params.userid;
-        
-        const post_data = await Post.find({ 
+        const id = req.params.userid; // This matches the frontend call parameter
+
+        const post_data = await Post.find({
             $or: [
-                { userid: id }, 
+                { userid: id },
                 { senderid: id }
-            ] 
+            ]
         }).sort({ date: -1 }).lean();
-        
+
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -76,9 +64,9 @@ const getPostById = async (req, res) => {
 const editPost = async (req, res) => {
     try {
         await connectToMongo();
-        
+
         const { id, title, description } = req.body;
-        
+
         const post = await Post.findById(id);
         if (!post) {
             return res.status(404).send({ success: false, msg: "Post not found" });
@@ -102,8 +90,8 @@ const editPost = async (req, res) => {
         };
 
         const updatedPost = await Post.findByIdAndUpdate(
-            id, 
-            { $set: updateData }, 
+            id,
+            { $set: updateData },
             { new: true }
         );
 
@@ -141,11 +129,11 @@ const likeUnlikePost = async (req, res) => {
         const post = await Post.findById(req.params.id);
         if (!post.likes.includes(req.body.userId)) {
             await post.updateOne({ $push: { likes: req.body.userId } });
-            
+
             // Notification logic
             try {
                 const liker = await User.findById(req.body.userId);
-                if (liker && post.userid !== req.body.userId) { 
+                if (liker && post.userid !== req.body.userId) {
                     const notification = new Notification({
                         userid: post.userid || post.senderid, // Handle both
                         senderid: req.body.userId,

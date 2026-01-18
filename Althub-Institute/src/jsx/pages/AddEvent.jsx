@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify';
@@ -7,13 +8,13 @@ import Loader from '../layout/Loader.jsx'
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 
-// Import the modern shared CSS
 import '../../styles/edit-event.css';
 
 const AddEvent = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
     const themeColor = '#2563EB';
+    const token = localStorage.getItem('token'); // Retrieve auth token
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -32,8 +33,7 @@ const AddEvent = () => {
         venue: "",
     });
 
-    const [fileList, setFileList] = useState(null);
-    const files = fileList ? [...fileList] : [];
+    const [fileList, setFileList] = useState([]);
 
     const imgChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
@@ -47,21 +47,32 @@ const AddEvent = () => {
         if (validate() && institute_Id) {
             setDisable(true);
             const body = new FormData();
+            
+            // Backend expects 'organizerid'
             body.append("organizerid", institute_Id);
             body.append("title", data.title);
             body.append("description", data.description);
             body.append("date", data.date);
             body.append("venue", data.venue);
-            files.forEach(file => body.append(`photos`, file, file.name));
+            
+            // Critical Fix: Use 'photos' key to match your uploadArray middleware
+            fileList.forEach(file => body.append(`photos`, file));
 
-            axios.post(`${ALTHUB_API_URL}/api/addEvent`, body)
-                .then(() => {
+            axios.post(`${ALTHUB_API_URL}/api/addEvent`, body, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`, // Include token for requireAuth
+                    'Content-Type': 'multipart/form-data' 
+                }
+            })
+            .then((res) => {
+                if(res.data.success) {
                     toast.success("Event Published Successfully");
                     setTimeout(() => navigate('/events'), 1500);
-                }).catch(() => {
-                    setDisable(false);
-                    toast.error("Submission failed");
-                });
+                }
+            }).catch((err) => {
+                setDisable(false);
+                toast.error("Submission failed. Check if you are logged in.");
+            });
         }
     };
 
@@ -83,15 +94,13 @@ const AddEvent = () => {
                 <Menu />
                 <div id="content" className="content edit-event-wrapper">
                     <div className="edit-event-container">
-                        
-                        {/* Header Section */}
                         <div className="d-flex align-items-center justify-content-between mb-3">
                             <div>
                                 <h1 className="page-header mb-0" style={{ fontSize: '22px', fontWeight: '800', color: '#1E293B' }}>Create New Event</h1>
                                 <p className="text-muted small mb-0">Fill in the details to publish a new institutional event</p>
                             </div>
                             <Link to="/events" className="btn btn-light btn-sm font-weight-bold shadow-sm" style={{ borderRadius: '8px' }}>
-                                <i className="fa fa-arrow-left mr-1"></i> Back to Events
+                                <i className="fa fa-arrow-left mr-1"></i> Back
                             </Link>
                         </div>
 
@@ -99,66 +108,49 @@ const AddEvent = () => {
                             <form onSubmit={submitHandler} className="d-flex flex-column h-100">
                                 <div className="form-body-scroll">
                                     <div className="row">
-                                        {/* LEFT COLUMN: PRIMARY INFO */}
                                         <div className="col-md-5 border-right pr-md-4">
                                             <div className="form-group mb-4">
                                                 <label className="form-label-modern">Event Title</label>
-                                                <input type="text" className="form-control form-control-modern" placeholder="e.g. Alumni Networking Gala" name="title" value={data.title} onChange={handleChange} />
-                                                {errors.name_err && <small className="text-danger font-weight-bold">{errors.name_err}</small>}
+                                                <input type="text" className="form-control form-control-modern" name="title" value={data.title} onChange={handleChange} />
+                                                {errors.name_err && <small className="text-danger">{errors.name_err}</small>}
                                             </div>
 
                                             <div className="row">
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Date & Time</label>
                                                     <input type='datetime-local' className="form-control form-control-modern" name="date" value={data.date} onChange={handleChange} />
-                                                    {errors.date_err && <small className="text-danger font-weight-bold">{errors.date_err}</small>}
                                                 </div>
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Venue</label>
-                                                    <input type="text" className="form-control form-control-modern" placeholder="Conference Hall A" name="venue" value={data.venue} onChange={handleChange} />
-                                                    {errors.venue_err && <small className="text-danger font-weight-bold">{errors.venue_err}</small>}
+                                                    <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} />
                                                 </div>
                                             </div>
 
                                             <div className="form-group mb-0">
                                                 <label className="form-label-modern">Full Description</label>
-                                                <textarea className="form-control form-control-modern" rows="7" placeholder="Provide event schedule, goals, and details..." name="description" value={data.description} onChange={handleChange} style={{ resize: 'none' }} />
-                                                {errors.description_err && <small className="text-danger font-weight-bold">{errors.description_err}</small>}
+                                                <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} />
                                             </div>
                                         </div>
 
-                                        {/* RIGHT COLUMN: MEDIA UPLOAD */}
                                         <div className="col-md-7 pl-md-4 mt-4 mt-md-0">
-                                            <label className="form-label-modern">Event Media & Attachments</label>
+                                            <label className="form-label-modern">Event Media</label>
                                             <div className="upload-drop-zone">
                                                 <input type='file' multiple className="d-none" id="addImgUpload" onChange={imgChange} />
                                                 <label htmlFor="addImgUpload" className="text-center cursor-pointer mb-0">
                                                     <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
-                                                    <h6 className="font-weight-bold text-dark">Click to upload event photos</h6>
-                                                    <p className="text-muted small">You can select multiple images (JPG, PNG)</p>
+                                                    <h6 className="font-weight-bold">Click to upload photos</h6>
                                                 </label>
-
-                                                {files.length > 0 && (
-                                                    <div className="preview-grid">
-                                                        {files.map((elem, index) => (
-                                                            <div key={index} className="position-relative">
-                                                                <img src={window.URL.createObjectURL(elem)} className="preview-thumbnail" alt="preview" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="mt-3 p-3 bg-light rounded" style={{ borderLeft: '4px solid #2563EB' }}>
-                                                <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Images will be displayed in the event gallery. Use high-resolution landscape photos for best results.</small>
+                                                <div className="preview-grid">
+                                                    {fileList.map((elem, index) => (
+                                                        <img key={index} src={window.URL.createObjectURL(elem)} className="preview-thumbnail" />
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* STICKY FOOTER ACTIONS */}
                                 <div className="form-footer-sticky">
-                                    <button type="button" className="btn btn-link text-muted mr-3 font-weight-bold" onClick={() => setData({title:"", description:"", date:"", venue:""})}>Clear All</button>
-                                    <button type="submit" className="btn btn-primary px-5 shadow-sm" disabled={disable} style={{ borderRadius: '10px', backgroundColor: themeColor, border: 'none', fontWeight: '700' }}>
+                                    <button type="submit" className="btn btn-primary px-5" disabled={disable} style={{ borderRadius: '10px' }}>
                                         {disable ? 'Publishing...' : 'Publish Event Now'}
                                     </button>
                                 </div>

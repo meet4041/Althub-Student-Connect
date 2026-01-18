@@ -13,6 +13,7 @@ import '../../styles/events.css';
 
 const Events = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
+    const token = localStorage.getItem('token'); // Get token from local storage
     let navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [displayEvents, setDisplayEvents] = useState([]);
@@ -38,13 +39,17 @@ const Events = () => {
             axios({
                 method: "get",
                 url: `${ALTHUB_API_URL}/api/getEventsByInstitute/${institute_Id}`,
+                headers: { 'Authorization': `Bearer ${token}` } // Added Authorization Header
             }).then((response) => {
                 if(response.data.success) {
                     setEvents(response.data.data || []);
                 }
-            }).catch(() => setEvents([]));
+            }).catch((err) => {
+                console.error("Fetch Error:", err);
+                setEvents([]);
+            });
         }
-    }, [institute_Id]);
+    }, [institute_Id, token]);
 
     useEffect(() => {
         if (institute_Id) getEventsData();
@@ -77,15 +82,17 @@ const Events = () => {
     }
 
     const DeleteEvent = () => {
-        axios.delete(`${ALTHUB_API_URL}/api/deleteEvent/${deleteId}`)
-            .then((res) => {
-                if (res.data.success) {
-                    getEventsData();
-                    setAlert(false);
-                    setAlert2(true);
-                    setSelectedEvent(null);
-                }
-            });
+        axios.delete(`${ALTHUB_API_URL}/api/deleteEvent/${deleteId}`, {
+            headers: { 'Authorization': `Bearer ${token}` } // Added Authorization Header
+        })
+        .then((res) => {
+            if (res.data.success) {
+                setAlert(false);
+                setAlert2(true);
+                setSelectedEvent(null);
+                // The refresh happens in the success alert onConfirm
+            }
+        }).catch(err => console.error("Delete Error:", err));
     };
 
     const isUpcoming = (dateString) => {
@@ -100,8 +107,6 @@ const Events = () => {
                 <Menu />
                 <div id="content" className="content events-content-wrapper">
                     <div className="events-container">
-                        
-                        {/* Header Section with Add Button */}
                         <div className="d-sm-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <nav aria-label="breadcrumb">
@@ -113,7 +118,6 @@ const Events = () => {
                                 <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px', letterSpacing: '-0.5px' }}>Events Management</h1>
                             </div>
                             
-                            {/* [ADD EVENT BUTTON] */}
                             <Link to="/add-event" className="btn btn-primary shadow-sm mt-3 mt-sm-0" 
                                   style={{ borderRadius: '10px', backgroundColor: themeColor, border: 'none', padding: '10px 22px', fontWeight: '700' }}>
                                 <i className="fa fa-plus-circle mr-2"></i> Create Event
@@ -198,7 +202,7 @@ const Events = () => {
 
                 {/* Detail Modal */}
                 {selectedEvent && (
-                    <div className="modal fade show modal-backdrop-custom">
+                    <div className="modal fade show modal-backdrop-custom" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <div className="modal-dialog modal-dialog-centered modal-lg">
                             <div className="modal-content event-modal-content shadow-lg">
                                 <div className="modal-body p-0">

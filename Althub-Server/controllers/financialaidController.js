@@ -3,6 +3,8 @@ import FinancialAid from "../models/financialaidModel.js";
 const AddFinancialAid = async (req, res) => {
   try {
     const financialaid = new FinancialAid({
+      // Ensure instituteid is captured from the frontend payload
+      instituteid: req.body.instituteid,
       institutename: req.body.institutename,
       name: req.body.name,
       image: req.body.image,
@@ -27,9 +29,18 @@ const getFinancialAid = async (req, res) => {
   }
 };
 
+// FIX: Updated to handle ID-based searching with Name fallback
 const getFinancialAidByInstitute = async (req, res) => {
   try {
-    const financialaid_data = await FinancialAid.find({ institutename: req.params.institutename });
+    const { institutename } = req.params; // This parameter now holds the ID from frontend
+
+    const financialaid_data = await FinancialAid.find({
+        $or: [
+            { instituteid: institutename },   // Primary search by ID
+            { institutename: institutename } // Fallback for legacy records
+        ]
+    });
+    
     res.status(200).send({ success: true, data: financialaid_data });
   } catch (error) {
     res.status(400).send({ success: false, msg: error.message });
@@ -39,10 +50,8 @@ const getFinancialAidByInstitute = async (req, res) => {
 const deleteFinancialAid = async (req, res) => {
   try {
     const id = req.params.id;
-    const financialaid_data = await FinancialAid.deleteOne({ _id: id });
-    res
-      .status(200)
-      .send({ success: true, data: "FinancialAid Deleted Successfully" });
+    await FinancialAid.deleteOne({ _id: id });
+    res.status(200).send({ success: true, data: "FinancialAid Deleted Successfully" });
   } catch (error) {
     res.status(400).send({ success: false, msg: error.message });
   }
@@ -50,7 +59,11 @@ const deleteFinancialAid = async (req, res) => {
 
 const editFinancialAid = async (req, res) => {
   try {
-    const financialaid_data = await FinancialAid.findByIdAndUpdate({ _id: req.body._id }, { $set: req.body }, { new: true });
+    const financialaid_data = await FinancialAid.findByIdAndUpdate(
+        { _id: req.body._id }, 
+        { $set: req.body }, 
+        { new: true }
+    );
     res.status(200).send({ success: true, msg: 'FinancialAid Updated', data: financialaid_data });
   } catch (error) {
     res.status(400).send({ success: false, msg: error.message });

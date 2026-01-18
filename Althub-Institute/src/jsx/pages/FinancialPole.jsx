@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars, jsx-a11y/alt-text */
-import React, { useState, useEffect, Fragment } from 'react';
-import { Link, useNavigate } from 'react-router-dom'
-import Loader from '../layout/Loader.jsx'
+import React, { useState, useEffect, Fragment, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
@@ -14,16 +14,16 @@ import '../../styles/financial.css';
 const FinancialPole = () => {
     const [institute_Name, setInstitute_Name] = useState(null);
     let navigate = useNavigate();
-    const [data, setData] = useState([]); 
-    const [users, setUsers] = useState([]); 
-    const [displayCourses, setDisplayCourses] = useState([]); 
+    const [data, setData] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [displayCourses, setDisplayCourses] = useState([]);
     const rows = [10, 20, 30];
     const [coursesPerPage, setCoursesPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [associatedUser, setAssociatedUser] = useState(null);
-    const themeColor = '#2563EB'; 
+    const themeColor = '#2563EB';
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -33,23 +33,45 @@ const FinancialPole = () => {
         setInstitute_Name(localStorage.getItem("AlmaPlus_institute_Name"));
     }, []);
 
-    const getAidData = () => {
+    // FETCH LOGIC (Added and improved)
+    const getAidData = useCallback(() => {
+        // Make sure we are grabbing the ID key
+        const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
         const token = localStorage.getItem('token');
-        axios.get(`${ALTHUB_API_URL}/api/getFinancialAidByInstitute/${institute_Name}`, {
+
+        if (!institute_Id) {
+            console.error("No Institute ID found in localStorage");
+            return;
+        }
+
+        axios.get(`${ALTHUB_API_URL}/api/getFinancialAidByInstitute/${institute_Id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
-        }).then((res) => setData(res.data.data || []));
-    };
+        })
+            .then((res) => {
+                if (res.data.success) {
+                    // Check if res.data.data actually contains an array
+                    setData(res.data.data || []);
+                    setDisplayCourses(res.data.data || []);
+                }
+            })
+            .catch(err => console.error("API Fetch failed:", err));
+    }, []);
 
     const getUsersData = () => {
         const token = localStorage.getItem('token');
-        axios.get(`${ALTHUB_API_URL}/api/getUsersOfInstitute/${institute_Name}`, {
+        const institute_Id = localStorage.getItem("AlmaPlus_institute_Id");
+        if (!institute_Id) return;
+
+        axios.get(`${ALTHUB_API_URL}/api/getUsersOfInstitute/${institute_Id}`, {
             headers: { 'Authorization': `Bearer ${token}` },
         }).then((res) => setUsers(res.data.data || []));
     };
 
+    // 4. Trigger fetch on component mount
     useEffect(() => {
-        if (institute_Name) { getAidData(); getUsersData(); }
-    }, [institute_Name]);
+        getAidData();
+        getUsersData();
+    }, [getAidData]);
 
     useEffect(() => { setDisplayCourses(data); }, [data]);
 
@@ -60,8 +82,9 @@ const FinancialPole = () => {
 
     const handleSearch = (e) => {
         let search = e.target.value.toLowerCase();
-        setDisplayCourses(data.filter(el => 
-            el.name.toLowerCase().includes(search) || el.aid.toString().includes(search)
+        setDisplayCourses(data.filter(el =>
+            (el.name && el.name.toLowerCase().includes(search)) ||
+            (el.aid && el.aid.toString().includes(search))
         ));
         setCurrentPage(1);
     }
@@ -97,8 +120,7 @@ const FinancialPole = () => {
                 <Menu />
                 <div id="content" className="content financial-content-wrapper">
                     <div className="financial-container">
-                        
-                        {/* Header */}
+
                         <div className="d-sm-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <nav aria-label="breadcrumb">
@@ -143,14 +165,14 @@ const FinancialPole = () => {
                                             </thead>
                                             <tbody>
                                                 {currentCourses.length > 0 ? currentCourses.map((elem, index) => (
-                                                    <tr key={index} className="aid-row" onClick={() => openDetails(elem)}>
+                                                    <tr key={elem._id || index} className="aid-row" onClick={() => openDetails(elem)}>
                                                         <td className="pl-4 align-middle"><span className="aid-badge-id">{(indexOfFirstCourse + index + 1).toString().padStart(2, '0')}</span></td>
                                                         <td className="align-middle">
                                                             <div className="d-flex align-items-center">
-                                                                <img src={elem.image ? `${ALTHUB_API_URL}${elem.image}` : 'assets/img/profile1.png'} className="student-avatar-img mr-3" />
+                                                                <img src={elem.image ? `${ALTHUB_API_URL}${elem.image}` : 'assets/img/profile1.png'} className="student-avatar-img mr-3" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                                                                 <div>
                                                                     <div className="font-weight-bold text-dark mb-0" style={{ fontSize: '15px' }}>{elem.name}</div>
-                                                                    <small className="text-muted">Click for financial details</small>
+                                                                    <small className="text-muted">{elem.aid} Scholarship</small>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -164,7 +186,7 @@ const FinancialPole = () => {
                                     </div>
 
                                     <div className="p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
-                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstCourse + 1} - {Math.min(indexOfLastCourse, displayCourses.length)}</p>
+                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstCourse + 1} - {Math.min(indexOfLastCourse, displayCourses.length)} of {displayCourses.length}</p>
                                         <nav>
                                             <ul className="pagination mb-0">
                                                 {pageNumbers.map(num => (
@@ -183,7 +205,7 @@ const FinancialPole = () => {
 
                 {/* Details Modal */}
                 {selectedRecord && (
-                    <div className="modal fade show modal-glass-backdrop">
+                    <div className="modal fade show modal-glass-backdrop" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <div className="modal-dialog modal-dialog-centered modal-lg">
                             <div className="modal-content aid-modal-content shadow-lg">
                                 <div className="modal-body p-0">
@@ -204,11 +226,11 @@ const FinancialPole = () => {
                                             <h6 className="text-uppercase text-muted small font-weight-bold mb-4" style={{ letterSpacing: '1px' }}>Financial Aid Overview</h6>
                                             <div className="row mb-4">
                                                 <div className="col-6">
-                                                    <small className="text-muted d-block mb-1">Total Aid</small>
+                                                    <small className="text-muted d-block mb-1">Scholarship Type</small>
                                                     <h3 className="font-weight-bold text-primary mb-0">₹{selectedRecord.aid}</h3>
                                                 </div>
                                                 <div className="col-6">
-                                                    <small className="text-muted d-block mb-1">Claimed</small>
+                                                    <small className="text-muted d-block mb-1">Total Amount</small>
                                                     <h3 className="font-weight-bold text-success mb-0">₹{selectedRecord.claimed}</h3>
                                                 </div>
                                             </div>

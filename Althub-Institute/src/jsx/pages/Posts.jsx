@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/alt-text, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useCallback } from 'react';
 import { Link } from 'react-router-dom'
 import Loader from '../layout/Loader.jsx'
 import Menu from '../layout/Menu.jsx';
@@ -19,6 +19,8 @@ const Posts = () => {
     const [postsPerPage, setPostsPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
     
+    // Retrieve token for authorized requests
+    const token = localStorage.getItem('token');
     const themeColor = '#2563EB';
 
     useEffect(() => {
@@ -31,15 +33,23 @@ const Posts = () => {
         setInstitute_Id(id);
     }, []);
 
-    const getPostsData = () => {
+    // Wrapped in useCallback to prevent re-renders and added Authorization header
+    const getPostsData = useCallback(() => {
         if (!institute_Id) return;
-        axios.get(`${ALTHUB_API_URL}/api/getPostById/${institute_Id}`)
-            .then((response) => {
+        axios.get(`${ALTHUB_API_URL}/api/getPostById/${institute_Id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then((response) => {
+            if(response.data.success) {
                 setPosts(response.data.data || []);
-            }).catch(() => setPosts([]));
-    };
+            }
+        }).catch((err) => {
+            console.error("Fetch Posts Error:", err);
+            setPosts([]);
+        });
+    }, [institute_Id, token]);
 
-    useEffect(() => { if (institute_Id) getPostsData(); }, [institute_Id]);
+    useEffect(() => { if (institute_Id) getPostsData(); }, [institute_Id, getPostsData]);
     useEffect(() => { setDisplayPosts(posts); }, [posts]);
 
     const indexOfLastPost = currentPage * postsPerPage;
@@ -58,15 +68,17 @@ const Posts = () => {
     const [alert2, setAlert2] = useState(false);
 
     const DeletePost = () => {
-        axios.delete(`${ALTHUB_API_URL}/api/deletePost/${deleteId}`)
-            .then((res) => {
-                if (res.data.success) {
-                    getPostsData();
-                    setAlert(false);
-                    setAlert2(true);
-                }
-            });
-    }
+        // Added Authorization header to delete request
+        axios.delete(`${ALTHUB_API_URL}/api/deletePost/${deleteId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then((res) => {
+            if (res.data.success) {
+                setAlert(false);
+                setAlert2(true);
+            }
+        }).catch(err => console.error("Delete Error:", err));
+    };
 
     const formatDate = (timestamp) => {
         const messageTime = new Date(timestamp);
@@ -85,8 +97,6 @@ const Posts = () => {
                 <Menu />
                 <div id="content" className="content posts-content-wrapper">
                     <div className="posts-container">
-                        
-                        {/* Header Section */}
                         <div className="d-sm-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <nav aria-label="breadcrumb">
@@ -105,8 +115,6 @@ const Posts = () => {
                         <div className="posts-scroll-area">
                             <div className="card post-main-card">
                                 <div className="card-body p-0 bg-white">
-                                    
-                                    {/* Search Bar */}
                                     <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
                                         <div className="input-group" style={{ maxWidth: '400px' }}>
                                             <div className="input-group-prepend">
@@ -135,7 +143,7 @@ const Posts = () => {
                                             </thead>
                                             <tbody>
                                                 {currentPost.length > 0 ? currentPost.map((elem, index) => (
-                                                    <tr key={index} className="post-row">
+                                                    <tr key={elem._id || index} className="post-row">
                                                         <td className="pl-4 align-middle"><span className="post-id-badge">{(indexOfFirstPost + index + 1).toString().padStart(2, '0')}</span></td>
                                                         <td className="align-middle">
                                                             <img src={elem.photos?.[0] ? `${ALTHUB_API_URL}${elem.photos[0]}` : 'assets/img/Events-amico.png'} className="post-media-preview" alt="post" />
@@ -170,7 +178,7 @@ const Posts = () => {
                                             <ul className="pagination mb-0">
                                                 {pageNumbers.map(num => (
                                                     <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                                        <button className="page-link border-0 mx-1" onClick={() => paginate(num)} style={currentPage === num ? { backgroundColor: themeColor, color: '#fff', borderRadius: '6px' } : { backgroundColor: '#F8FAFC', color: themeColor, borderRadius: '6px' }}>{num}</button>
+                                                        <button className="page-link border-0 mx-1" onClick={() => setCurrentPage(num)} style={currentPage === num ? { backgroundColor: themeColor, color: '#fff', borderRadius: '6px' } : { backgroundColor: '#F8FAFC', color: themeColor, borderRadius: '6px' }}>{num}</button>
                                                     </li>
                                                 ))}
                                             </ul>

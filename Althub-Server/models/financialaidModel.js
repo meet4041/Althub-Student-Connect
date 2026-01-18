@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const financialaid = new mongoose.Schema({
+    // NEW FIELD: Crucial for linking records by ID
+    instituteid: {
+        type: String,
+        required: true
+    },
     institutename: {
         type: String,
     },
