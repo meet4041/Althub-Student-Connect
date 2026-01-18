@@ -1,0 +1,75 @@
+/* src/styles/posts.css */
+
+.posts-content-wrapper {
+    background-color: #F1F5F9 !important;
+    height: 100vh;
+    /* FIX: Lock to Sidebar and Header */
+    margin-left: 215px !important; 
+    padding-top: 20px !important; 
+    margin-top: 0 !important;
+    overflow: hidden; /* Disable page-level scroll */
+    transition: margin-left 0.3s ease;
+}
+
+.posts-container {
+    height: calc(100vh - 65px);
+    padding: 25px 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.posts-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    padding-bottom: 30px;
+}
+
+.post-main-card {
+    border-radius: 16px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.post-row {
+    transition: background-color 0.2s;
+}
+
+.post-row:hover {
+    background-color: #F8FAFC !important;
+}
+
+.post-media-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.post-id-badge {
+    background-color: #F1F5F9;
+    color: #64748B;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 5px;
+}
+
+.post-date-badge {
+    background-color: #EBF2FF;
+    color: #2563EB;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    .posts-content-wrapper { margin-left: 0 !important; overflow-y: auto; }
+    .posts-container { height: auto; }
+}

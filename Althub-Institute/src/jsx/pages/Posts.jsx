@@ -8,6 +8,9 @@ import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
+// Import CSS
+import '../../styles/posts.css';
+
 const Posts = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const [posts, setPosts] = useState([]);
@@ -16,111 +19,63 @@ const Posts = () => {
     const [postsPerPage, setPostsPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
     
-    // Theme Constant
-    const themeColor = '#2563EB'; // Royal Blue
+    const themeColor = '#2563EB';
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
+        const loader = document.getElementById('page-loader');
+        const element = document.getElementById("page-container");
+        if (loader) loader.style.display = 'none';
+        if (element) element.classList.add("show");
+        
+        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        setInstitute_Id(id);
     }, []);
-
-    useEffect(() => {
-        if (institute_Id) {
-            getPostsData();
-        }
-    }, [institute_Id]);
 
     const getPostsData = () => {
         if (!institute_Id) return;
-        axios({
-            method: "get",
-            url: `${ALTHUB_API_URL}/api/getPostById/${institute_Id}`,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        }).then((response) => {
-            setPosts(response.data.data || []);
-        }).catch(err => setPosts([]));
+        axios.get(`${ALTHUB_API_URL}/api/getPostById/${institute_Id}`)
+            .then((response) => {
+                setPosts(response.data.data || []);
+            }).catch(() => setPosts([]));
     };
 
-    useEffect(() => {
-        setDisplayPosts(posts);
-    }, [posts]);
+    useEffect(() => { if (institute_Id) getPostsData(); }, [institute_Id]);
+    useEffect(() => { setDisplayPosts(posts); }, [posts]);
 
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPost = displayPosts.slice(indexOfFirstPost, indexOfLastPost);
-    const pageNumbers = [];
-
-    for (let i = 1; i <= Math.ceil(displayPosts.length / postsPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
-    const paginate = (num) => {
-        setCurrentPage(num);
-    }
+    const pageNumbers = Array.from({ length: Math.ceil(displayPosts.length / postsPerPage) }, (_, i) => i + 1);
 
     const handleSearch = (e) => {
-        if (e.target.value) {
-            let search = e.target.value;
-            setDisplayPosts(posts.filter(
-                (elem) =>
-                    elem.description.toLowerCase().includes(search.toLowerCase())
-            ));
-        } else {
-            setDisplayPosts(posts)
-        }
-    }
+        let search = e.target.value.toLowerCase();
+        setDisplayPosts(posts.filter(el => el.description.toLowerCase().includes(search)));
+        setCurrentPage(1);
+    };
 
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
 
-    const handleDeletePost = (id) => {
-        setDeleteId(id);
-        setAlert(true);
-    }
-
     const DeletePost = () => {
-        axios({
-            method: "delete",
-            url: `${ALTHUB_API_URL}/api/deletePost/${deleteId}`,
-        }).then((response) => {
-            if (response.data.success === true) {
-                getPostsData();
-                setDeleteId('');
-                setAlert(false);
-                setAlert2(true);
-            }
-        })
+        axios.delete(`${ALTHUB_API_URL}/api/deletePost/${deleteId}`)
+            .then((res) => {
+                if (res.data.success) {
+                    getPostsData();
+                    setAlert(false);
+                    setAlert2(true);
+                }
+            });
     }
 
     const formatDate = (timestamp) => {
         const messageTime = new Date(timestamp);
         const now = new Date();
-        const timeDiff = Math.abs(now - messageTime);
-        const minutesDiff = Math.floor(timeDiff / 60000);
-        if (minutesDiff < 1) {
-            return "Just now";
-        } else if (minutesDiff < 60) {
-            return `${minutesDiff} minute${minutesDiff === 1 ? "" : "s"} ago`;
-        } else if (messageTime.toDateString() === now.toDateString()) {
-            const options = { hour: "numeric", minute: "numeric" };
-            return `Today at ${messageTime.toLocaleTimeString("en-US", options)}`;
-        } else {
-            const options = {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-            };
-            return messageTime.toLocaleString("en-US", options);
-        }
+        const minutesDiff = Math.floor(Math.abs(now - messageTime) / 60000);
+        if (minutesDiff < 1) return "Just now";
+        if (minutesDiff < 60) return `${minutesDiff}m ago`;
+        if (messageTime.toDateString() === now.toDateString()) return `Today ${messageTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        return messageTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
     };
 
     return (
@@ -128,160 +83,107 @@ const Posts = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
-                    
-                    {/* Header Section */}
-                    <div className="d-flex align-items-center justify-content-between mb-3">
-                        <div>
-                            <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
-                                <li className="breadcrumb-item active">Posts</li>
-                            </ol>
-                            <h1 className="page-header mb-0">Post Management</h1>
+                <div id="content" className="content posts-content-wrapper">
+                    <div className="posts-container">
+                        
+                        {/* Header Section */}
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
+                                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
+                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Posts Feed</li>
+                                    </ol>
+                                </nav>
+                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>Feed Management</h1>
+                            </div>
+                            <Link to="/add-post" className="btn btn-primary shadow-sm" style={{ borderRadius: '10px', backgroundColor: themeColor, border: 'none', padding: '10px 22px', fontWeight: '700' }}>
+                                <i className="fa fa-plus-circle mr-2"></i> Create New Post
+                            </Link>
                         </div>
-                        {/* Primary Blue Button */}
-                        <Link to="/add-post" className="btn btn-primary btn-lg shadow-sm" 
-                              style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
-                            <i className="fa fa-plus mr-2"></i> Create New Post
-                        </Link>
-                    </div>
 
-                    <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
-                        <div className="card-body p-0">
-                            
-                            {/* Search & Filter Bar */}
-                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
-                                <div className="row align-items-center">
-                                    <div className="col-md-6">
-                                        <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
+                        <div className="posts-scroll-area">
+                            <div className="card post-main-card">
+                                <div className="card-body p-0 bg-white">
+                                    
+                                    {/* Search Bar */}
+                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                        <div className="input-group" style={{ maxWidth: '400px' }}>
                                             <div className="input-group-prepend">
-                                                <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
+                                                <span className="input-group-text bg-light border-0" style={{ borderRadius: '8px 0 0 8px' }}><i className="fa fa-search text-muted"></i></span>
                                             </div>
-                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search posts by description..." onChange={handleSearch} />
+                                            <input type="text" className="form-control border-0 bg-light" style={{ borderRadius: '0 8px 8px 0', fontSize: '14px', height: '42px' }} placeholder="Search posts..." onChange={handleSearch} />
+                                        </div>
+                                        <div className="d-flex align-items-center mt-2 mt-md-0">
+                                            <span className="text-muted small mr-3 font-weight-bold">SHOWING</span>
+                                            <select className="custom-select custom-select-sm border-0 bg-light font-weight-bold" style={{ borderRadius: '6px', width: '110px', height: '38px' }} value={postsPerPage} onChange={(e) => setPostsPerPage(Number(e.target.value))}>
+                                                {rows.map(v => <option key={v} value={v}>{v} Rows</option>)}
+                                            </select>
                                         </div>
                                     </div>
-                                    <div className="col-md-6 text-md-right mt-3 mt-md-0">
-                                        <span className="text-muted mr-2">Show</span>
-                                        <select className="custom-select custom-select-sm w-auto border-0 shadow-sm" style={{borderRadius: '5px'}} onChange={(e) => setPostsPerPage(Number(e.target.value))}>
-                                            {rows.map(value =>
-                                                <option key={value} value={value}>{value} Posts</option>
-                                            )}
-                                        </select>
+
+                                    <div className="table-responsive">
+                                        <table className="table table-hover mb-0">
+                                            <thead>
+                                                <tr style={{ backgroundColor: '#F8FAFC' }}>
+                                                    <th className="border-0 pl-4 py-3" style={{ width: '80px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>ID</th>
+                                                    <th className="border-0 py-3" style={{ width: '100px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Media</th>
+                                                    <th className="border-0 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Content Description</th>
+                                                    <th className="border-0 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Posted Time</th>
+                                                    <th className="border-0 text-right pr-5 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {currentPost.length > 0 ? currentPost.map((elem, index) => (
+                                                    <tr key={index} className="post-row">
+                                                        <td className="pl-4 align-middle"><span className="post-id-badge">{(indexOfFirstPost + index + 1).toString().padStart(2, '0')}</span></td>
+                                                        <td className="align-middle">
+                                                            <img src={elem.photos?.[0] ? `${ALTHUB_API_URL}${elem.photos[0]}` : 'assets/img/Events-amico.png'} className="post-media-preview" alt="post" />
+                                                        </td>
+                                                        <td className="align-middle">
+                                                            <div className="text-dark" style={{ fontSize: '14px', fontWeight: '500', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                                {elem.description}
+                                                            </div>
+                                                        </td>
+                                                        <td className="align-middle">
+                                                            <span className="post-date-badge"><i className="far fa-clock mr-1"></i> {formatDate(elem.date)}</span>
+                                                        </td>
+                                                        <td className="align-middle text-right pr-5">
+                                                            <div className="d-flex justify-content-end">
+                                                                <Link to="/edit-post" state={{ post: elem }} className="btn btn-light btn-sm mr-2 shadow-none border" style={{ borderRadius: '6px' }}>
+                                                                    <i className="fa fa-edit text-primary"></i>
+                                                                </Link>
+                                                                <button className="btn btn-light btn-sm border" style={{ borderRadius: '6px' }} onClick={() => { setDeleteId(elem._id); setAlert(true); }}>
+                                                                    <i className="fa fa-trash-alt text-danger"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )) : <tr><td colSpan="5" className="text-center p-5 text-muted">No posts available.</td></tr>}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
+                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstPost + 1} - {Math.min(indexOfLastPost, displayPosts.length)} of {displayPosts.length}</p>
+                                        <nav>
+                                            <ul className="pagination mb-0">
+                                                {pageNumbers.map(num => (
+                                                    <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
+                                                        <button className="page-link border-0 mx-1" onClick={() => paginate(num)} style={currentPage === num ? { backgroundColor: themeColor, color: '#fff', borderRadius: '6px' } : { backgroundColor: '#F8FAFC', color: themeColor, borderRadius: '6px' }}>{num}</button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </nav>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="table-responsive">
-                                <table className="table table-hover mb-0">
-                                    <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
-                                        <tr>
-                                            <th className="border-0 pl-4">Sr. No.</th>
-                                            <th className="border-0">Media</th>
-                                            <th className="border-0" style={{width: '50%'}}>Description</th>
-                                            <th className="border-0">Posted Date</th>
-                                            <th className="border-0 text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {currentPost.length > 0 ? currentPost.map((elem, index) =>
-                                            <tr key={index}>
-                                                <td className="pl-4 align-middle text-muted">{indexOfFirstPost + index + 1}</td>
-                                                <td className="align-middle">
-                                                    {elem.photos === '' || elem.photos === undefined || elem.photos.length <= 0 ? 
-                                                        <img src='assets/img/Events-amico.png' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} alt="default" /> 
-                                                        : 
-                                                        <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='post-img' style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0' }} />
-                                                    }
-                                                </td>
-                                                <td className="align-middle">
-                                                    <span className="text-dark" style={{display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>
-                                                        {elem.description}
-                                                    </span>
-                                                </td>
-                                                <td className="align-middle">
-                                                    <span className="badge p-2 font-weight-normal" style={{backgroundColor: '#EFF6FF', color: themeColor}}>
-                                                        <i className="far fa-clock mr-1"></i> {formatDate(elem.date)}
-                                                    </span>
-                                                </td>
-                                                {/* --- MODIFIED ACTION COLUMN --- */}
-                                                <td className="align-middle text-center">
-                                                    <div className="d-flex justify-content-center">
-                                                        <Link 
-                                                            to="/edit-post" 
-                                                            state={{ post: elem }}
-                                                            className="btn btn-primary btn-sm shadow-sm mr-2"
-                                                            title="Edit Post"
-                                                        >
-                                                            <i className="fa fa-edit"></i>
-                                                        </Link>
-                                                        <button className="btn btn-white btn-icon btn-circle btn-sm shadow-sm" 
-                                                                onClick={() => { handleDeletePost(elem._id) }} 
-                                                                title="Delete Post">
-                                                            <i className="fa fa-trash-alt text-danger"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                {/* ----------------------------- */}
-                                            </tr>
-                                        ) : <tr><td colSpan="5" className="text-center p-5 text-muted">No posts found.</td></tr>}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Pagination Footer */}
-                            <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
-                                <div className="text-muted small">
-                                    Showing {indexOfFirstPost + 1} to {Math.min(indexOfLastPost, displayPosts.length)} of {displayPosts.length} posts
-                                </div>
-                                <nav>
-                                    <ul className="pagination pagination-sm mb-0">
-                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => paginate(currentPage - 1)} style={{color: themeColor}}>Previous</button>
-                                        </li>
-                                        {pageNumbers.map((number) => (
-                                            <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-                                                <button 
-                                                    className="page-link" 
-                                                    onClick={() => paginate(number)}
-                                                    style={currentPage === number ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
-                                                >
-                                                    {number}
-                                                </button>
-                                            </li>
-                                        ))}
-                                        <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => paginate(currentPage + 1)} style={{color: themeColor}}>Next</button>
-                                        </li>
-                                    </ul>
-                                </nav>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {alert === true && (
-                    <SweetAlert
-                        warning
-                        showCancel
-                        confirmBtnText="Yes, delete it!"
-                        confirmBtnBsStyle="danger"
-                        title="Delete Post?"
-                        onConfirm={DeletePost}
-                        onCancel={() => { setAlert(false); setDeleteId(''); }}
-                    >
-                        This will permanently remove this post from the feed.
-                    </SweetAlert>
-                )}
-                
-                {alert2 === true && (
-                    <SweetAlert
-                        success
-                        title="Post Deleted"
-                        onConfirm={() => { setAlert2(false); getPostsData(); }}
-                    >
-                        The post has been successfully removed.
-                    </SweetAlert>
-                )}
+                <SweetAlert warning show={alert} showCancel confirmBtnText="Delete" confirmBtnBsStyle="danger" title="Confirm Delete?" onConfirm={DeletePost} onCancel={() => setAlert(false)} style={{ borderRadius: '16px' }} />
+                <SweetAlert success show={alert2} title="Post Removed" onConfirm={() => { setAlert2(false); getPostsData(); }} style={{ borderRadius: '16px' }} />
                 <Footer />
             </div>
         </Fragment>

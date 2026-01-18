@@ -1,0 +1,111 @@
+/* src/styles/edit-event.css */
+
+.edit-event-wrapper {
+    background-color: #F8FAFC !important; /* Slightly lighter for premium feel */
+    height: 100vh; /* Lock height to viewport */
+    margin-left: 240px !important;
+    padding-top: 65px !important;
+    margin-top: 0 !important;
+    overflow: hidden; /* Prevent page scroll */
+    transition: margin-left 0.3s ease;
+}
+
+.edit-event-container {
+    margin-top: -25px;
+    padding: 5px;
+    height: calc(100vh - 90px); 
+    display: flex;
+    flex-direction: column;
+}
+
+.event-form-card {
+    flex: 1; /* Card grows to fill container */
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.form-body-scroll {
+    flex: 1;
+    overflow-y: auto; 
+    padding: 25px 35px;
+}
+
+.form-label-modern {
+    color: #475569;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-control-modern {
+    background-color: #F1F5F9 !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease;
+}
+
+.form-control-modern:focus {
+    border-color: #2563EB !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08) !important;
+}
+
+/* Right Side - Media/Upload Section */
+.upload-drop-zone {
+    border: 2px dashed #CBD5E1;
+    border-radius: 14px;
+    background: #F8FAFC;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-drop-zone:hover {
+    border-color: #2563EB;
+    background: #EFF6FF;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 10px;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.preview-thumbnail {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.form-footer-sticky {
+    padding: 15px 35px;
+    background: #fff;
+    border-top: 1px solid #F1F5F9;
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+    .edit-event-wrapper { margin-left: 0 !important; overflow-y: auto; }
+    .edit-event-container { height: auto; }
+}

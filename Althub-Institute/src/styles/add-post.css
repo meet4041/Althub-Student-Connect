@@ -1,0 +1,108 @@
+/* src/styles/add-post.css */
+
+.add-post-wrapper {
+    background-color: #F8FAFC !important;
+    height: 100vh;
+    margin-left: 215px !important; /* Locks to your Sidebar width */
+    padding-top: 30px !important;  /* Locks to your Header height */
+    margin-top: 0 !important;
+    overflow: hidden; /* Disables page-level scroll */
+    transition: margin-left 0.3s ease;
+}
+
+.add-post-container {
+    height: calc(100vh - 65px);
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-form-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.post-body-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px 35px;
+}
+
+.form-label-saas {
+    color: #475569;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control-saas {
+    background-color: #F1F5F9 !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease;
+}
+
+.form-control-saas:focus {
+    border-color: #2563EB !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08) !important;
+}
+
+/* Media Upload Styling */
+.post-upload-zone {
+    border: 2px dashed #CBD5E1;
+    border-radius: 14px;
+    background: #F8FAFC;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.post-upload-zone:hover {
+    border-color: #2563EB;
+    background: #EFF6FF;
+}
+
+.post-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.post-preview-img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.post-footer-actions {
+    padding: 15px 35px;
+    background: #fff;
+    border-top: 1px solid #F1F5F9;
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+    .add-post-wrapper { margin-left: 0 !important; overflow-y: auto; }
+    .add-post-container { height: auto; }
+}

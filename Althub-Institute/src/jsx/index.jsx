@@ -1,13 +1,11 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import Login from './pages/Login.jsx';
 import Profile from './pages/Profile.jsx';
 import Users from './pages/Users.jsx';
-import AddUser from './pages/AddUser.jsx';
 import Events from './pages/Events.jsx';
 import AddEvent from './pages/AddEvent.jsx';
 import Posts from './pages/Posts.jsx';
@@ -33,7 +31,6 @@ const Markup = () => {
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/users' element={<Users />} />
-            <Route path='/add-user' element={<AddUser />} />
             <Route path='/events' element={<Events />} />
             <Route path='/add-event' element={<AddEvent />} />
             <Route path='/edit-event' element={<EditEvent />} />

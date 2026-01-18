@@ -1,12 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom'
-import Loader from '../layout/Loader.jsx'
+import { Link, useNavigate } from 'react-router-dom';
+import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
+
+// Import external CSS
+import '../../styles/events.css';
 
 const Events = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
@@ -16,23 +19,18 @@ const Events = () => {
     const rows = [10, 20, 50, 100]; 
     const [eventsPerPage, setEventsPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Modal State
     const [selectedEvent, setSelectedEvent] = useState(null);
 
-    // Theme constant
     const themeColor = '#2563EB';
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loader = document.getElementById('page-loader');
-            const element = document.getElementById("page-container");
-            if (loader) loader.style.display = 'none';
-            if (element) element.classList.add("show");
-            
-            const id = localStorage.getItem("AlmaPlus_institute_Id");
-            setInstitute_Id(id);
-        }
+        const loader = document.getElementById('page-loader');
+        const element = document.getElementById("page-container");
+        if (loader) loader.style.display = 'none';
+        if (element) element.classList.add("show");
+        
+        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        setInstitute_Id(id);
     }, []);
 
     const getEventsData = useCallback(() => {
@@ -40,55 +38,34 @@ const Events = () => {
             axios({
                 method: "get",
                 url: `${ALTHUB_API_URL}/api/getEventsByInstitute/${institute_Id}`,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             }).then((response) => {
                 if(response.data.success) {
                     setEvents(response.data.data || []);
                 }
-            }).catch((err) => {
-                console.error("Error fetching events:", err);
-                setEvents([]);
-            });
+            }).catch(() => setEvents([]));
         }
     }, [institute_Id]);
 
     useEffect(() => {
-        if (institute_Id) {
-            getEventsData();
-        }
+        if (institute_Id) getEventsData();
     }, [institute_Id, getEventsData]);
 
-    useEffect(() => {
-        setDisplayEvents(events);
-    }, [events]);
+    useEffect(() => { setDisplayEvents(events); }, [events]);
 
-    // Pagination Logic
     const indexOfLastEvent = currentPage * eventsPerPage;
     const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
     const currentEvents = displayEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-    const pageNumbers = [];
+    const pageNumbers = Array.from({ length: Math.ceil(displayEvents.length / eventsPerPage) }, (_, i) => i + 1);
 
-    for (let i = 1; i <= Math.ceil(displayEvents.length / eventsPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
-    const paginate = (num) => {
-        setCurrentPage(num);
-    }
+    const paginate = (num) => setCurrentPage(num);
 
     const handleSearch = (e) => {
-        if (e.target.value) {
-            let search = e.target.value.toLowerCase();
-            setDisplayEvents(events.filter(
-                (elem) =>
-                    elem.title.toLowerCase().includes(search) ||
-                    elem.venue.toLowerCase().includes(search)
-            ));
-            setCurrentPage(1); 
-        } else {
-            setDisplayEvents(events)
-        }
-    }
+        let search = e.target.value.toLowerCase();
+        setDisplayEvents(events.filter(elem => 
+            elem.title.toLowerCase().includes(search) || elem.venue.toLowerCase().includes(search)
+        ));
+        setCurrentPage(1); 
+    };
 
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
@@ -100,37 +77,20 @@ const Events = () => {
     }
 
     const DeleteEvent = () => {
-        axios({
-            method: "delete",
-            url: `${ALTHUB_API_URL}/api/deleteEvent/${deleteId}`,
-        }).then((response) => {
-            if (response.data.success === true) {
-                getEventsData();
-                setDeleteId('');
-                setAlert(false);
-                setAlert2(true);
-                setSelectedEvent(null);
-            }
-        }).catch(err => {
-             console.error(err);
-             setAlert(false);
-        });
-    }
+        axios.delete(`${ALTHUB_API_URL}/api/deleteEvent/${deleteId}`)
+            .then((res) => {
+                if (res.data.success) {
+                    getEventsData();
+                    setAlert(false);
+                    setAlert2(true);
+                    setSelectedEvent(null);
+                }
+            });
+    };
 
-    const openEventDetails = (event) => {
-        setSelectedEvent(event);
-    }
-
-    const closeEventDetails = () => {
-        setSelectedEvent(null);
-    }
-
-    // [NEW] Helper to check if event is in the future
     const isUpcoming = (dateString) => {
         if (!dateString) return false;
-        const eventDate = new Date(dateString);
-        const now = new Date();
-        return eventDate > now;
+        return new Date(dateString) > new Date();
     };
 
     return (
@@ -138,252 +98,142 @@ const Events = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
-                    <div className="d-flex align-items-center justify-content-between mb-3">
-                        <div>
-                            <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
-                                <li className="breadcrumb-item active">Events</li>
-                            </ol>
-                            <h1 className="page-header mb-0">Events Management</h1>
-                        </div>
-                        <Link to="/add-event" className="btn btn-primary btn-lg shadow-sm" 
-                              style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
-                            <i className="fa fa-plus mr-2"></i> Create Event
-                        </Link>
-                    </div>
-
-                    <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
-                        <div className="card-body p-0">
+                <div id="content" className="content events-content-wrapper">
+                    <div className="events-container">
+                        
+                        {/* Header Section with Add Button */}
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
+                                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
+                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Events</li>
+                                    </ol>
+                                </nav>
+                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px', letterSpacing: '-0.5px' }}>Events Management</h1>
+                            </div>
                             
-                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
-                                <div className="row align-items-center">
-                                    <div className="col-md-6">
-                                        <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
-                                            <div className="input-group-prepend">
-                                                <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
-                                            </div>
-                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search events..." onChange={handleSearch} />
+                            {/* [ADD EVENT BUTTON] */}
+                            <Link to="/add-event" className="btn btn-primary shadow-sm mt-3 mt-sm-0" 
+                                  style={{ borderRadius: '10px', backgroundColor: themeColor, border: 'none', padding: '10px 22px', fontWeight: '700' }}>
+                                <i className="fa fa-plus-circle mr-2"></i> Create Event
+                            </Link>
+                        </div>
+
+                        <div className="card border-0 shadow-sm event-card">
+                            <div className="card-body p-0 bg-white">
+                                
+                                <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                    <div className="input-group" style={{ maxWidth: '400px' }}>
+                                        <div className="input-group-prepend">
+                                            <span className="input-group-text bg-light border-0" style={{ borderRadius: '8px 0 0 8px' }}><i className="fa fa-search text-muted"></i></span>
                                         </div>
+                                        <input type="text" className="form-control border-0 bg-light" style={{ borderRadius: '0 8px 8px 0', fontSize: '14px', height: '42px' }} placeholder="Search events or venues..." onChange={handleSearch} />
                                     </div>
-                                    <div className="col-md-6 text-md-right mt-3 mt-md-0">
-                                        <span className="text-muted mr-2">Show</span>
-                                        <select 
-                                            className="custom-select custom-select-sm w-auto border-0 shadow-sm" 
-                                            style={{borderRadius: '5px', cursor:'pointer'}} 
-                                            onChange={(e) => {
-                                                setEventsPerPage(Number(e.target.value));
-                                                setCurrentPage(1);
-                                            }}
-                                            value={eventsPerPage}
-                                        >
-                                            {rows.map(value =>
-                                                <option key={value} value={value}>{value} Events</option>
-                                            )}
+                                    <div className="d-flex align-items-center mt-2 mt-md-0">
+                                        <span className="text-muted small mr-3 font-weight-bold">SHOWING</span>
+                                        <select className="custom-select custom-select-sm border-0 bg-light font-weight-bold" style={{ borderRadius: '6px', width: '110px', height: '38px' }} value={eventsPerPage} onChange={(e) => { setEventsPerPage(Number(e.target.value)); setCurrentPage(1); }}>
+                                            {rows.map(v => <option key={v} value={v}>{v} Rows</option>)}
                                         </select>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="table-responsive">
-                                <table className="table table-hover mb-0">
-                                    <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
-                                        <tr>
-                                            <th className="border-0 pl-4" style={{width: '120px'}}>Image</th>
-                                            <th className="border-0">Event Name</th>
-                                            <th className="border-0 text-center">Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {currentEvents.length > 0 ? currentEvents.map((elem, index) =>
-                                            <tr key={elem._id || index}>
-                                                <td className="pl-4 align-middle">
-                                                    {elem.photos && elem.photos.length > 0 ? 
-                                                        <img src={`${ALTHUB_API_URL}${elem.photos[0]}`} alt='event-img' className="shadow-sm" style={{ width: '70px', height: '50px', borderRadius: '6px', objectFit: 'cover' }} />
-                                                        : 
-                                                        <img src='assets/img/Events-amico.png' alt='default event' className="shadow-sm" style={{ width: '70px', height: '50px', borderRadius: '6px', objectFit: 'cover' }} /> 
-                                                    }
-                                                </td>
-                                                
-                                                <td className="align-middle">
-                                                    <div 
-                                                        onClick={() => openEventDetails(elem)}
-                                                        className="font-weight-bold text-dark"
-                                                        style={{ cursor: 'pointer', fontSize: '15px' }}
-                                                        onMouseOver={(e) => e.currentTarget.style.color = themeColor}
-                                                        onMouseOut={(e) => e.currentTarget.style.color = '#2d353c'}
-                                                    >
-                                                        {elem.title}
-                                                    </div>
-                                                    <small className="text-muted">Click to view details</small>
-                                                </td>
-
-                                                {/* [UPDATED] Date Column with Upcoming Badge */}
-                                                <td className="align-middle text-center">
-                                                    <span className="badge p-2 font-weight-normal" style={{backgroundColor: '#EFF6FF', color: themeColor}}>
-                                                        {elem.date ? new Date(elem.date).toLocaleDateString() : 'N/A'}
-                                                    </span>
-                                                    {isUpcoming(elem.date) && (
-                                                        <div className="mt-1">
-                                                            <span className="badge badge-pill badge-success shadow-sm" style={{fontSize: '10px', padding: '4px 8px'}}>
-                                                                Upcoming
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </td>
+                                <div className="table-responsive">
+                                    <table className="table table-hover mb-0">
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#F8FAFC' }}>
+                                                <th className="border-0 pl-4 py-3" style={{ width: '80px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>#</th>
+                                                <th className="border-0 py-3" style={{ width: '100px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Preview</th>
+                                                <th className="border-0 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Event Details</th>
+                                                <th className="border-0 text-center py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Date & Status</th>
                                             </tr>
-                                        ) : <tr><td colSpan="3" className="text-center p-5 text-muted">No events found.</td></tr>}
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            {/* Pagination */}
-                            <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
-                                <div className="text-muted small">
-                                    Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length} events
+                                        </thead>
+                                        <tbody>
+                                            {currentEvents.length > 0 ? currentEvents.map((elem, index) => (
+                                                <tr key={elem._id || index} className="event-row" style={{ cursor: 'pointer' }} onClick={() => setSelectedEvent(elem)}>
+                                                    <td className="pl-4 align-middle">
+                                                        <span style={{ backgroundColor: '#F1F5F9', color: '#64748B', fontWeight: '700', fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}>
+                                                            {(indexOfFirstEvent + index + 1).toString().padStart(2, '0')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="align-middle">
+                                                        <img src={elem.photos && elem.photos.length > 0 ? `${ALTHUB_API_URL}${elem.photos[0]}` : 'assets/img/Events-amico.png'} className="event-thumbnail" alt="event" />
+                                                    </td>
+                                                    <td className="align-middle">
+                                                        <div className="font-weight-bold text-dark mb-0" style={{ fontSize: '15px' }}>{elem.title}</div>
+                                                        <div className="text-muted small"><i className="fa fa-map-marker-alt mr-1"></i> {elem.venue}</div>
+                                                    </td>
+                                                    <td className="align-middle text-center">
+                                                        <div className="date-box mb-1">{elem.date ? new Date(elem.date).toLocaleDateString() : 'N/A'}</div>
+                                                        {isUpcoming(elem.date) && <div><span className="badge-upcoming">UPCOMING</span></div>}
+                                                    </td>
+                                                </tr>
+                                            )) : <tr><td colSpan="4" className="text-center p-5 text-muted">No events found.</td></tr>}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <nav>
-                                    <ul className="pagination pagination-sm mb-0">
-                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => paginate(currentPage - 1)} style={{color: themeColor}}>Previous</button>
-                                        </li>
-                                        {pageNumbers.map((number) => (
-                                            <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-                                                <button 
-                                                    className="page-link" 
-                                                    onClick={() => paginate(number)}
-                                                    style={currentPage === number ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
-                                                >
-                                                    {number}
-                                                </button>
+                                
+                                <div className="p-4 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
+                                    <p className="text-muted small mb-3 mb-md-0 font-weight-bold">Showing {indexOfFirstEvent + 1} - {Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length} events</p>
+                                    <nav>
+                                        <ul className="pagination mb-0">
+                                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light mr-2" onClick={(e) => { e.stopPropagation(); paginate(currentPage - 1); }} style={{ borderRadius: '6px', color: themeColor, width: '36px', textAlign: 'center' }}><i className="fa fa-chevron-left"></i></button>
                                             </li>
-                                        ))}
-                                        <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => paginate(currentPage + 1)} style={{color: themeColor}}>Next</button>
-                                        </li>
-                                    </ul>
-                                </nav>
+                                            {pageNumbers.map(num => (
+                                                <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
+                                                    <button className="page-link border-0 mx-1" onClick={(e) => { e.stopPropagation(); paginate(num); }} style={currentPage === num ? { backgroundColor: themeColor, color: '#fff', borderRadius: '6px', width: '36px' } : { backgroundColor: '#F8FAFC', color: themeColor, borderRadius: '6px', width: '36px' }}>{num}</button>
+                                                </li>
+                                            ))}
+                                            <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light ml-2" onClick={(e) => { e.stopPropagation(); paginate(currentPage + 1); }} style={{ borderRadius: '6px', color: themeColor, width: '36px', textAlign: 'center' }}><i className="fa fa-chevron-right"></i></button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
 
-                {/* Event Details Modal */}
+                {/* Detail Modal */}
                 {selectedEvent && (
-                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+                    <div className="modal fade show modal-backdrop-custom">
                         <div className="modal-dialog modal-dialog-centered modal-lg">
-                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '15px'}}>
-                                <div className="modal-header border-0 pb-0">
-                                    <h5 className="modal-title font-weight-bold ml-2 mt-2">Event Details</h5>
-                                    <button type="button" className="close" onClick={closeEventDetails} style={{outline: 'none'}}>
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div className="modal-body p-4">
-                                    <div className="row">
-                                        <div className="col-md-5 mb-3 mb-md-0">
-                                            {selectedEvent.photos && selectedEvent.photos.length > 0 ? (
-                                                <img 
-                                                    src={`${ALTHUB_API_URL}${selectedEvent.photos[0]}`} 
-                                                    alt="Event Banner" 
-                                                    className="img-fluid shadow-sm w-100" 
-                                                    style={{borderRadius: '10px', objectFit: 'cover', height: '250px'}}
-                                                />
-                                            ) : (
-                                                <div className="d-flex align-items-center justify-content-center bg-light text-muted" style={{height: '250px', borderRadius: '10px'}}>
-                                                    No Image Available
-                                                </div>
-                                            )}
+                            <div className="modal-content event-modal-content shadow-lg">
+                                <div className="modal-body p-0">
+                                    <div className="text-right p-3 position-absolute" style={{ right: 0, zIndex: 10 }}>
+                                        <button type="button" className="close text-dark opacity-50" onClick={() => setSelectedEvent(null)}>&times;</button>
+                                    </div>
+                                    <div className="row no-gutters">
+                                        <div className="col-md-5">
+                                            <img src={selectedEvent.photos && selectedEvent.photos.length > 0 ? `${ALTHUB_API_URL}${selectedEvent.photos[0]}` : 'assets/img/Events-amico.png'} className="w-100 h-100" style={{ objectFit: 'cover', minHeight: '300px' }} alt="Banner" />
                                         </div>
-
-                                        <div className="col-md-7">
-                                            <h3 className="font-weight-bold text-dark mb-3">
-                                                {selectedEvent.title}
-                                                {isUpcoming(selectedEvent.date) && (
-                                                    <span className="badge badge-success ml-2" style={{fontSize: '12px', verticalAlign: 'middle'}}>Upcoming</span>
-                                                )}
-                                            </h3>
-                                            
-                                            <div className="mb-3">
-                                                <label className="text-muted small font-weight-bold mb-0">DATE & TIME</label>
-                                                <div className="d-flex align-items-center">
-                                                    <i className="far fa-calendar-alt mr-2" style={{color: themeColor}}></i>
-                                                    <span className="text-dark font-weight-bold mr-3">
-                                                        {selectedEvent.date ? new Date(selectedEvent.date).toLocaleDateString() : 'N/A'}
-                                                    </span>
-                                                    <i className="far fa-clock mr-2" style={{color: themeColor}}></i>
-                                                    <span className="text-dark font-weight-bold">
-                                                        {selectedEvent.date ? new Date(selectedEvent.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
-                                                    </span>
-                                                </div>
+                                        <div className="col-md-7 p-5 bg-white">
+                                            <h3 className="font-weight-bold mb-3" style={{ color: '#1E293B' }}>{selectedEvent.title}</h3>
+                                            <div className="bg-light p-3 rounded mb-4">
+                                                <div className="mb-2 small"><i className="fa fa-calendar-alt event-detail-icon"></i> <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString()}</div>
+                                                <div className="small"><i className="fa fa-map-marker-alt event-detail-icon"></i> <strong>Venue:</strong> {selectedEvent.venue}</div>
                                             </div>
-
-                                            <div className="mb-3">
-                                                <label className="text-muted small font-weight-bold mb-0">VENUE</label>
-                                                <div className="text-dark">
-                                                    <i className="fa fa-map-marker-alt mr-2" style={{color: themeColor}}></i>
-                                                    {selectedEvent.venue || 'No venue provided'}
-                                                </div>
-                                            </div>
-
-                                            <div className="mb-3">
-                                                <label className="text-muted small font-weight-bold mb-0">DESCRIPTION</label>
-                                                <p className="text-dark" style={{whiteSpace: 'pre-wrap'}}>
-                                                    {selectedEvent.description || 'No description provided.'}
-                                                </p>
+                                            <p className="small text-muted mb-4" style={{ lineHeight: '1.6' }}>{selectedEvent.description || 'No description provided.'}</p>
+                                            <div className="d-flex">
+                                                <button className="btn btn-primary flex-grow-1 mr-2" onClick={() => navigate('/edit-event', { state: { data: selectedEvent } })} style={{ borderRadius: '8px', fontWeight: '600' }}><i className="fa fa-edit mr-2"></i> Edit</button>
+                                                <button className="btn btn-outline-danger" onClick={() => handleDeleteEvent(selectedEvent._id)} style={{ borderRadius: '8px' }}><i className="fa fa-trash-alt"></i></button>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="modal-footer bg-light border-0" style={{borderRadius: '0 0 15px 15px'}}>
-                                    <button type="button" className="btn btn-white shadow-sm font-weight-bold" onClick={closeEventDetails}>Close</button>
-                                    
-                                    <button className="btn btn-primary shadow-sm font-weight-bold ml-2" 
-                                            onClick={() => { navigate('/edit-event', { state: { data: selectedEvent } }) }} 
-                                            style={{backgroundColor: themeColor, borderColor: themeColor}}>
-                                        <i className="fa fa-pencil-alt mr-2"></i> Edit
-                                    </button>
-                                    
-                                    <button className="btn btn-danger shadow-sm font-weight-bold ml-2" 
-                                            onClick={() => handleDeleteEvent(selectedEvent._id)}>
-                                        <i className="fa fa-trash-alt mr-2"></i> Delete
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {alert === true && (
-                    <SweetAlert
-                        warning
-                        showCancel
-                        confirmBtnText="Yes, delete it!"
-                        confirmBtnBsStyle="danger"
-                        title="Delete Event?"
-                        onConfirm={DeleteEvent}
-                        onCancel={() => { setAlert(false); setDeleteId(''); }}
-                        style={{zIndex: 2000}} 
-                    >
-                        You will not be able to recover this event data.
-                    </SweetAlert>
-                )}
-                
-                {alert2 === true && (
-                    <SweetAlert
-                        success
-                        title="Deleted Successfully!"
-                        onConfirm={() => { setAlert2(false); getEventsData(); }}
-                        style={{zIndex: 2000}}
-                    >
-                        The event has been removed from the listing.
-                    </SweetAlert>
-                )}
+                <SweetAlert warning show={alert} showCancel confirmBtnText="Delete" confirmBtnBsStyle="danger" title="Confirm" onConfirm={DeleteEvent} onCancel={() => setAlert(false)} style={{ borderRadius: '16px' }} />
+                <SweetAlert success show={alert2} title="Deleted" onConfirm={() => { setAlert2(false); getEventsData(); }} style={{ borderRadius: '16px' }} />
                 <Footer />
             </div>
         </Fragment>
-    )
-}
+    );
+};
 
 export default Events;

@@ -1,0 +1,86 @@
+/* src/styles/events.css */
+
+.events-content-wrapper {
+    background-color: #F1F5F9 !important;
+    min-height: 100vh;
+    /* FIX: Match sidebar width and clear fixed header */
+    margin-left: 240px !important; 
+    padding-top: 65px !important; 
+    margin-top: 0 !important;
+    transition: margin-left 0.3s ease;
+}
+
+.events-container {
+    margin-top: -25px;
+    padding: 5px;
+}
+
+.event-card {
+    border-radius: 12px !important;
+    overflow: hidden;
+    border: 1px solid #E2E8F0 !important;
+}
+
+/* Row Styling */
+.event-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.event-row:hover {
+    background-color: #F8FAFC !important;
+}
+
+.event-thumbnail {
+    width: 70px;
+    height: 45px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Badge Styling */
+.badge-upcoming {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 8px;
+    background-color: #DCFCE7;
+    color: #166534;
+    border-radius: 4px;
+}
+
+.date-box {
+    background-color: #EBF2FF;
+    color: #2563EB;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* Modal Enhancements */
+.modal-backdrop-custom {
+    display: block;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 1050;
+}
+
+.event-modal-content {
+    border-radius: 20px !important;
+    overflow: hidden;
+    border: none !important;
+}
+
+.event-detail-icon {
+    color: #2563EB;
+    width: 20px;
+}
+
+@media (max-width: 767px) {
+    .events-content-wrapper {
+        margin-left: 0 !important;
+        padding-top: 65px !important;
+    }
+}

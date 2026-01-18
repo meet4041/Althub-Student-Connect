@@ -102,7 +102,7 @@ function Menu() {
                   <li className={isActive("/posts")}>
                      <Link to="/posts">
                         <i className="fa fa-bullhorn"></i>
-                        <span>Announcements</span>
+                        <span>Post</span>
                      </Link>
                   </li>
                   

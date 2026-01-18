@@ -4,10 +4,10 @@
     background-color: #F1F5F9 !important;
     min-height: 100vh;
     /* FIX: Add margin-left to push content away from the fixed sidebar */
-    margin-left: 260px !important; 
+    margin-left: 250px !important; 
     /* FIX: Padding-top to clear the 65px fixed header */
-    padding-top: 65px !important; 
-    padding-left: 30px;
+    padding-top: 35px !important; 
+    padding-left: 25px;
     padding-right: 30px;
     transition: margin-left 0.3s ease;
 }
@@ -29,10 +29,12 @@
 }
 
 .institute-badge {
+    margin-top: -20px;
+    margin-right: 5px;
     background-color: #2563eb;
     font-size: 13px;
     font-weight: 600;
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }

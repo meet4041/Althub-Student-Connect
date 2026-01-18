@@ -1,165 +1,146 @@
+/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
-
-import Loader from '../layout/Loader.jsx'
+import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 
-const AddPost = () => {
-    const navigate = useNavigate();
-    
-    // Theme Constant
-    const themeColor = '#2563EB'; // Royal Blue
+// Import the specific Posts CSS
+import '../../styles/add-post.css';
 
-    const [description, setDescription] = useState("");
-    const [fileList, setFileList] = useState([]);
+const AddPost = () => {
+    const [institute_Id, setInstitute_Id] = useState(null);
+    const navigate = useNavigate();
+    const themeColor = '#2563EB';
+
+    const [data, setData] = useState({ description: "" });
+    const [fileList, setFileList] = useState(null);
     const [disable, setDisable] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
-        if (loader) loader.style.display = 'none';
         const element = document.getElementById("page-container");
+        if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
+        setInstitute_Id(localStorage.getItem("AlmaPlus_institute_Id"));
     }, []);
 
+    const handleChange = (e) => setData({ ...data, [e.target.name]: e.target.value });
+    
     const imgChange = (e) => {
-        setFileList([...e.target.files]);
+        const selected = Array.from(e.target.files);
+        setFileList(selected.filter(f => f.name.match(/\.(jpg|jpeg|png|gif)$/i)));
     };
 
-    const submitHandler = async (e) => {
+    const submitHandler = (e) => {
         e.preventDefault();
-
-        if (!description) {
-            toast.error("Please enter a description");
+        if (!data.description) {
+            setErrors({ desc: "Content description is required" });
             return;
         }
 
         setDisable(true);
-        const formData = new FormData();
-        
-        // 1. Get Institute ID (Sender)
-        const organizerId = localStorage.getItem("AlmaPlus_institute_Id");
-        if (organizerId) {
-            formData.append("senderid", organizerId);
+        const body = new FormData();
+        body.append("organizerid", institute_Id);
+        body.append("description", data.description);
+        if (fileList) {
+            Array.from(fileList).forEach(file => body.append('photos', file));
         }
 
-        // 2. Append Text Data
-        formData.append("title", "Institute Update"); // Optional default title
-        formData.append("description", description);
-        formData.append("date", new Date().toISOString());
-
-        // 3. Append Files
-        if (fileList.length > 0) {
-            fileList.forEach((file) => {
-                formData.append('photos', file);
+        axios.post(`${ALTHUB_API_URL}/api/addPost`, body)
+            .then(() => {
+                toast.success("Post published to community feed");
+                setTimeout(() => navigate('/posts'), 1500);
+            }).catch(() => {
+                setDisable(false);
+                toast.error("Failed to sync post");
             });
-        }
-
-        // 4. Get Auth Token
-        const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('user')) && JSON.parse(localStorage.getItem('user')).token);
-
-        try {
-            await axios.post(`${ALTHUB_API_URL}/api/addPost`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "Authorization": `Bearer ${token}` // Critical for requireAuth
-                },
-            });
-
-            toast.success("Post Created Successfully!");
-            setTimeout(() => {
-                navigate('/posts');
-            }, 1500);
-
-        } catch (error) {
-            console.error("Add Post Error:", error);
-            const errorMsg = error.response?.data?.msg || error.response?.data?.message || "Failed to create post";
-            toast.error(errorMsg);
-            setDisable(false);
-        }
     };
+
+    const files = fileList ? [...fileList] : [];
 
     return (
         <Fragment>
-            <ToastContainer />
+            <ToastContainer theme="colored" />
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
-                    <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
-                        <li className="breadcrumb-item"><Link to="/posts" style={{color: themeColor}}>Posts</Link></li>
-                        <li className="breadcrumb-item active">Add Post</li>
-                    </ol>
-                    <h1 className="page-header">Create New Post</h1>
+                <div id="content" className="content add-post-wrapper">
+                    <div className="add-post-container">
+                        
+                        {/* Split Header */}
+                        <div className="d-flex align-items-center justify-content-between mb-3">
+                            <div>
+                                <h1 className="page-header mb-0" style={{ fontSize: '22px', fontWeight: '800', color: '#1E293B' }}>Create Community Post</h1>
+                                <p className="text-muted small mb-0">Share updates, news, or media with your institute members</p>
+                            </div>
+                            <Link to="/posts" className="btn btn-light btn-sm font-weight-bold shadow-sm" style={{ borderRadius: '8px' }}>
+                                <i className="fa fa-arrow-left mr-1"></i> Back to Feed
+                            </Link>
+                        </div>
 
-                    <div className="row justify-content-center">
-                        <div className="col-xl-8">
-                            <div className="card border-0 shadow-sm" style={{borderRadius: '15px'}}>
-                                <div className="card-header bg-white border-bottom p-3">
-                                    <h4 className="card-title mb-0">Post Details</h4>
-                                </div>
-                                <div className="card-body p-4">
-                                    <form onSubmit={submitHandler}>
-                                        <div className="form-group mb-3">
-                                            <label className="font-weight-bold">Description</label>
-                                            <textarea 
-                                                className="form-control" 
-                                                rows="5" 
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                                placeholder="Share an update with your students..."
-                                                required
-                                            />
+                        <div className="post-form-card">
+                            <form onSubmit={submitHandler} className="d-flex flex-column h-100">
+                                <div className="post-body-scroll">
+                                    <div className="row h-100">
+                                        
+                                        {/* LEFT: Content Editor */}
+                                        <div className="col-md-5 border-right pr-md-4">
+                                            <div className="form-group h-100 d-flex flex-column">
+                                                <label className="form-label-saas">Post Content & Description</label>
+                                                <textarea 
+                                                    className="form-control form-control-saas flex-grow-1" 
+                                                    placeholder="What's on your mind? Write a detailed update for your students and alumni..." 
+                                                    name="description" 
+                                                    value={data.description} 
+                                                    onChange={handleChange}
+                                                    style={{ resize: 'none', minHeight: '300px' }}
+                                                />
+                                                {errors.desc && <small className="text-danger font-weight-bold mt-2">{errors.desc}</small>}
+                                                <div className="mt-3 p-3 bg-light rounded">
+                                                    <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Be professional. Your posts are visible to the entire institutional network.</small>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div className="form-group mb-4">
-                                            <label className="font-weight-bold">Upload Photos (Optional)</label>
-                                            <div className="custom-file-container p-3 border rounded bg-light">
-                                                <input 
-                                                    type="file" 
-                                                    className="form-control-file" 
-                                                    onChange={imgChange} 
-                                                    multiple 
-                                                    accept="image/*"
-                                                />
-                                                <small className="text-muted d-block mt-2">You can select multiple images.</small>
-                                                
-                                                {/* Preview */}
-                                                {fileList.length > 0 && (
-                                                    <div className="row mt-3 px-2">
-                                                        {fileList.map((file, index) => (
-                                                            <div className="col-auto mb-2" key={index}>
-                                                                <img 
-                                                                    src={URL.createObjectURL(file)} 
-                                                                    alt="preview" 
-                                                                    style={{width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'}} 
-                                                                />
-                                                            </div>
+                                        {/* RIGHT: Media Attachment */}
+                                        <div className="col-md-7 pl-md-4">
+                                            <label className="form-label-saas">Media Attachments</label>
+                                            <div className="post-upload-zone">
+                                                <input type='file' multiple className="d-none" id="postImgUp" onChange={imgChange} />
+                                                <label htmlFor="postImgUp" className="cursor-pointer">
+                                                    <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
+                                                    <h6 className="font-weight-bold text-dark">Add photos to your post</h6>
+                                                    <p className="text-muted small">Select multiple JPG or PNG files</p>
+                                                </label>
+
+                                                {files.length > 0 && (
+                                                    <div className="post-preview-grid">
+                                                        {files.map((file, idx) => (
+                                                            <img key={idx} src={window.URL.createObjectURL(file)} className="post-preview-img" alt="p" />
                                                         ))}
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
 
-                                        <div className="d-flex justify-content-end">
-                                            <Link to="/posts" className="btn btn-light mr-2">Cancel</Link>
-                                            <button 
-                                                type="submit" 
-                                                className="btn btn-primary px-4" 
-                                                disabled={disable}
-                                                style={{backgroundColor: themeColor, borderColor: themeColor}}
-                                            >
-                                                {disable ? 'Posting...' : 'Create Post'}
-                                            </button>
-                                        </div>
-                                    </form>
+                                    </div>
                                 </div>
-                            </div>
+
+                                {/* Persistent Footer */}
+                                <div className="post-footer-actions">
+                                    <button type="button" className="btn btn-link text-muted mr-3 font-weight-bold" onClick={() => setData({description:""})}>Clear Draft</button>
+                                    <button type="submit" className="btn btn-primary px-5 shadow-sm" disabled={disable} style={{ borderRadius: '10px', backgroundColor: themeColor, border: 'none', fontWeight: '700' }}>
+                                        {disable ? 'Uploading...' : 'Publish Post Now'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
+
                     </div>
                 </div>
                 <Footer />
