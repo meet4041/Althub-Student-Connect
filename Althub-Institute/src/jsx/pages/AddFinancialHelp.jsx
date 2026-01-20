@@ -152,12 +152,12 @@ const AddFinancialHelp = () => {
 
                                             <div className="row">
                                                 <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Aid Type</label>
+                                                    <label className="form-label-modern">Total (₹)</label>
                                                     <input type='text' className="form-control form-control-modern" placeholder="e.g. Merit" name="aid" value={data.aid} onChange={handleChange} />
                                                     {errors.aid_err && <small className="text-danger">{errors.aid_err}</small>}
                                                 </div>
                                                 <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Amount (₹)</label>
+                                                    <label className="form-label-modern">Claimed (₹)</label>
                                                     <input type='number' className="form-control form-control-modern" placeholder="Amount" name="claimed" value={data.claimed} onChange={handleChange} />
                                                 </div>
                                             </div>

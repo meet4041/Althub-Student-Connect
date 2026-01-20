@@ -118,7 +118,7 @@ const EditFinancialAid = () => {
                                         <div className="col-md-5 border-right pr-md-4">
                                             <div className="row">
                                                 <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Total Aid (₹)</label>
+                                                    <label className="form-label-modern">Total (₹)</label>
                                                     <input 
                                                         type="number" 
                                                         className="form-control form-control-modern" 

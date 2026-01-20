@@ -10,7 +10,7 @@ function Menu() {
    const navigate = useNavigate();
    const location = useLocation(); 
    const [profileInfo, setProfileInfo] = useState({
-      name: 'Institute',
+      name: 'DAU',
       image: ''
    });
 
