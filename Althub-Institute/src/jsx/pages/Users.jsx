@@ -23,6 +23,9 @@ const Users = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    
+    // NEW: Filter State
+    const [filterType, setFilterType] = useState('all'); // 'all' or 'Alumni'
 
     const themeColor = '#2563EB';
 
@@ -53,14 +56,24 @@ const Users = () => {
         }).catch(() => setIsTableLoading(false));
     };
 
+    // Updated Filtering Logic to handle Alumni Toggle
     useEffect(() => {
         let processedUsers = [...users];
+        
+        // 1. Filter by Search Term
         if (searchTerm) {
             processedUsers = processedUsers.filter(user =>
                 user.fname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 user.email?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
+
+        // 2. NEW: Filter by Alumni Type
+        if (filterType === 'Alumni') {
+            processedUsers = processedUsers.filter(user => user.type === 'Alumni');
+        }
+
+        // 3. Handle Sorting
         if (sortConfig.key === 'fname') {
             processedUsers.sort((a, b) => {
                 let aValue = a.fname ? a.fname.toLowerCase() : '';
@@ -70,9 +83,10 @@ const Users = () => {
                 return 0;
             });
         }
+        
         setDisplayUsers(processedUsers);
         setCurrentPage(1);
-    }, [searchTerm, users, sortConfig]);
+    }, [searchTerm, users, sortConfig, filterType]);
 
     const requestSort = (key) => {
         let direction = 'asc';
@@ -122,6 +136,9 @@ const Users = () => {
         return <span className="text-muted small">-</span>;
     };
 
+    // Calculate count for Alumni
+    const alumniCount = users.filter(u => u.type === 'Alumni').length;
+
     return (
         <Fragment>
             <Loader />
@@ -142,7 +159,29 @@ const Users = () => {
                                 </nav>
                                 <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>Member Directory</h1>
                             </div>
-                            {/* Deleted the Add New Member Button as requested */}
+                            
+                            {/* ALUMNI FILTER BUTTON */}
+                            <div className="d-flex align-items-center">
+                                <button 
+                                    className={`btn shadow-sm d-flex align-items-center ${filterType === 'Alumni' ? 'btn-primary' : 'btn-white'}`}
+                                    onClick={() => setFilterType(filterType === 'Alumni' ? 'all' : 'Alumni')}
+                                    style={{ 
+                                        borderRadius: '10px', 
+                                        fontWeight: '700', 
+                                        padding: '10px 20px',
+                                        transition: 'all 0.3s'
+                                    }}
+                                >
+                                    <i className={`fa fa-graduation-cap mr-2 ${filterType === 'Alumni' ? 'text-white' : 'text-primary'}`}></i>
+                                    {filterType === 'Alumni' ? 'Showing Alumni' : 'Show Alumni Only'}
+                                    <span className="badge ml-2" style={{ 
+                                        backgroundColor: filterType === 'Alumni' ? 'rgba(255,255,255,0.2)' : '#F1F5F9', 
+                                        color: filterType === 'Alumni' ? '#fff' : '#64748B' 
+                                    }}>
+                                        {alumniCount}
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="card border-0 shadow-sm directory-card">
