@@ -14,33 +14,30 @@ const addFeedback = async (req, res) => {
         if (req.body.selected_user_id) {
             const target = await User.findById(req.body.selected_user_id);
             if (target) {
-                // <--- 3. Logic to fetch degree --->
-                // Fetch all education records for this user
+                // 3. Logic to fetch degree (latest education)
                 const educations = await Education.find({ userid: req.body.selected_user_id });
                 
                 let degree = "";
                 if (educations.length > 0) {
-                    // Sort to find the latest education (similar to userController logic)
                     educations.sort((a, b) => {
                         const dateA = new Date(a.enddate || "1900-01-01");
                         const dateB = new Date(b.enddate || "1900-01-01");
-                        return dateB - dateA; // Descending order
+                        return dateB - dateA; 
                     });
                     
                     if (educations[0].course) {
-                        degree = ` (${educations[0].course})`; // Create string like " (MSCIT)"
+                        degree = ` (${educations[0].course})`; 
                     }
                 }
 
-                // Combine Name + Degree
                 targetName = `${target.fname} ${target.lname}${degree}`;
             }
         }
 
         const feedback = new Feedback({
             userid: req.body.userid,
-            name: senderName,           // Saved: Sender's Name
-            selected_user: targetName,  // Saved: "Target Name (Degree)"
+            name: senderName,           
+            selected_user: targetName,  
             message: req.body.message,
             rate: req.body.rate
         });
@@ -72,8 +69,42 @@ const deleteFeedback = async (req, res) => {
     }
 }
 
+// NEW: Leaderboard Logic
+const getLeaderboard = async (req, res) => {
+    try {
+        const leaderboard = await Feedback.aggregate([
+            {
+                // Group by the user who received the feedback (selected_user)
+                $group: {
+                    _id: "$selected_user",
+                    totalFeedback: { $sum: 1 },
+                    averageRating: { $avg: "$rate" }
+                }
+            },
+            {
+                // Sort by highest total feedback first, then by highest rating
+                $sort: { totalFeedback: -1, averageRating: -1 }
+            },
+            {
+                // Format the output
+                $project: {
+                    name: "$_id",
+                    totalFeedback: 1,
+                    averageRating: { $round: ["$averageRating", 1] },
+                    _id: 0
+                }
+            }
+        ]);
+
+        res.status(200).json({ success: true, data: leaderboard });
+    } catch (error) {
+        res.status(500).json({ success: false, msg: error.message });
+    }
+};
+
 export default {
     addFeedback,
     getFeedback,
-    deleteFeedback
+    deleteFeedback,
+    getLeaderboard // Added to export
 };

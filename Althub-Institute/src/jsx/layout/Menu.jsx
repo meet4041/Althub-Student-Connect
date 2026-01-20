@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
 import axios from '../../service/axios'; 
 import { ALTHUB_API_URL } from '../pages/baseURL';
 import React, { useEffect, useState } from 'react'
@@ -110,6 +111,14 @@ function Menu() {
                      <Link to="/financial-aid">
                         <i className="fa fa-graduation-cap"></i>
                         <span>Scholarships</span>
+                     </Link>
+                  </li>
+
+                  {/* --- NEW LEADERBOARD LINK --- */}
+                  <li className={isActive("/leaderboard")}>
+                     <Link to="/leaderboard">
+                        <i className="fa fa-trophy text-warning"></i>
+                        <span>Leaderboard</span>
                      </Link>
                   </li>
 
