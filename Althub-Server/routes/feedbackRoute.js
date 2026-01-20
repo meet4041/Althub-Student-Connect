@@ -15,18 +15,20 @@ feedback_route.use(cookieParser());
  * FEEDBACK ROUTES
  */
 
-// PUBLIC: Allows any user/student to submit feedback
+// --- PUBLIC ROUTES ---
+// Allows any registered user/student to submit feedback to a member or the institute
 feedback_route.post('/addFeedback', feedback_controller.addFeedback);
 
-// SECURE: Only authenticated Admins/Institutes can fetch the list of feedback
+
+// --- SECURE ROUTES (Require Institute/Admin Authentication) ---
+
+// Fetches the full raw list of all feedback entries
 feedback_route.get('/getFeedback', requireAuth, feedback_controller.getFeedback);
 
-// SECURE: Fetches the aggregated leaderboard data
+// Fetches aggregated leaderboard data (Total Reviews and Average Ratings per member)
 feedback_route.get('/getLeaderboard', requireAuth, feedback_controller.getLeaderboard);
 
-feedback_route.get('/getFeedbackByMember/:name', requireAuth, feedback_controller.getFeedbackByMember);
-
-// SECURE: Only authenticated Admins/Institutes can delete feedback entries
+// Allows authorized users to remove a feedback entry
 feedback_route.delete('/deleteFeedback/:id', requireAuth, feedback_controller.deleteFeedback);
 
 export default feedback_route;

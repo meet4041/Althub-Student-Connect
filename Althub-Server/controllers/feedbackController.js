@@ -2,6 +2,10 @@ import Feedback from "../models/feedbackModel.js";
 import User from "../models/userModel.js";
 import Education from "../models/educationModel.js";
 
+/**
+ * Adds a new feedback record.
+ * Logic: Fetches the sender's name and the target user's name (including their latest degree).
+ */
 const addFeedback = async (req, res) => {
     try {
         // 1. Fetch the SENDER (Who is giving the feedback)
@@ -19,6 +23,7 @@ const addFeedback = async (req, res) => {
                 
                 let degree = "";
                 if (educations.length > 0) {
+                    // Sort to find the latest education
                     educations.sort((a, b) => {
                         const dateA = new Date(a.enddate || "1900-01-01");
                         const dateB = new Date(b.enddate || "1900-01-01");
@@ -30,14 +35,15 @@ const addFeedback = async (req, res) => {
                     }
                 }
 
+                // Combine Name + Degree for stored identification
                 targetName = `${target.fname} ${target.lname}${degree}`;
             }
         }
 
         const feedback = new Feedback({
             userid: req.body.userid,
-            name: senderName,           
-            selected_user: targetName,  
+            name: senderName,           // Saved: Sender's Full Name
+            selected_user: targetName,  // Saved: "Target Name (Degree)"
             message: req.body.message,
             rate: req.body.rate
         });
@@ -48,8 +54,11 @@ const addFeedback = async (req, res) => {
         console.error("Feedback Error:", error);
         res.status(400).send({ success: false, msg: "Error in add feedback" });
     }
-}
+};
 
+/**
+ * Gets all feedback records for the general listing page.
+ */
 const getFeedback = async (req, res) => {
     try {
         const feedback_data = await Feedback.find({});
@@ -57,8 +66,11 @@ const getFeedback = async (req, res) => {
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
-}
+};
 
+/**
+ * Deletes a feedback record by ID.
+ */
 const deleteFeedback = async (req, res) => {
     try {
         const id = req.params.id;
@@ -67,14 +79,17 @@ const deleteFeedback = async (req, res) => {
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
-}
+};
 
-// NEW: Leaderboard Logic
+/**
+ * Generates data for the Leaderboard.
+ * Rank members by the count of feedback received and average rating.
+ */
 const getLeaderboard = async (req, res) => {
     try {
         const leaderboard = await Feedback.aggregate([
             {
-                // Group by the user who received the feedback (selected_user)
+                // Group by the user who received the feedback
                 $group: {
                     _id: "$selected_user",
                     totalFeedback: { $sum: 1 },
@@ -82,11 +97,11 @@ const getLeaderboard = async (req, res) => {
                 }
             },
             {
-                // Sort by highest total feedback first, then by highest rating
+                // Sort by highest volume first, then by quality score
                 $sort: { totalFeedback: -1, averageRating: -1 }
             },
             {
-                // Format the output
+                // Project clean labels and round the average
                 $project: {
                     name: "$_id",
                     totalFeedback: 1,
@@ -102,9 +117,10 @@ const getLeaderboard = async (req, res) => {
     }
 };
 
+// CRITICAL: Exporting all functions so feedbackRoute.js can access them
 export default {
     addFeedback,
     getFeedback,
     deleteFeedback,
-    getLeaderboard // Added to export
+    getLeaderboard
 };
