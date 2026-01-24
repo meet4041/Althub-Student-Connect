@@ -4,29 +4,23 @@ import { WEB_URL } from "../baseURL";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
 import { toast } from "react-toastify";
-import FilterModal from "./FilterModal";
-import "../styles/SearchProfile.css"; // <--- New CSS Import
-
 import { 
-  Box, Container, Grid, Card, CardContent, Typography, Button, TextField, 
-  IconButton, Avatar, Chip, Dialog, DialogTitle, DialogContent, DialogActions, 
-  InputAdornment, useTheme
-} from '@mui/material';
-import { 
-  Search as SearchIcon, Tune as TuneIcon, ArrowBack, 
-  School, GitHub, Language, CheckCircle 
-} from '@mui/icons-material';
+  Search, SlidersHorizontal, ArrowLeft, GraduationCap, 
+  Github, Globe, Check, X, Loader2 
+} from 'lucide-react';
+import "../styles/SearchProfile.css"; // Ensure path matches your file
 
 export default function SearchProfile({ socket }) {
   const [name, setName] = useState("");
   const [showUsers, setShowUsers] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const nav = useNavigate();
-  const theme = useTheme();
   
+  // Modals State
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [unfollowId, setUnfollowId] = useState(null); 
 
+  // Filter State
   const [add, setAdd] = useState("");
   const [skill, setSkill] = useState("");
   const [degree, setDegree] = useState("");
@@ -105,140 +99,215 @@ export default function SearchProfile({ socket }) {
   const getSocialLink = (input, platform) => {
     if (!input) return "#";
     let clean = input.trim();
-    if (clean.startsWith("http")) return clean;
-    return platform === 'github' ? `https://github.com/${clean}` : `https://${clean}`;
+    if (!clean.startsWith("http")) clean = `https://${clean}`;
+    if (platform === 'github' && !clean.includes('github.com')) clean = `https://github.com/${input.trim()}`;
+    return clean;
   };
 
+  const isFilterActive = add || skill || degree || year;
+
   return (
-    <Container maxWidth="xl" className="search-container">
-      {/* Header */}
-      <Box className="search-header" sx={{ flexDirection: { xs: 'column', md: 'row' } }}>
-        <Button startIcon={<ArrowBack />} onClick={() => nav("/home")} sx={{ color: 'text.secondary' }}>
-            Back
-        </Button>
+    <div className="search-wrapper">
+      <div className="search-container">
         
-        <TextField
-            fullWidth
-            placeholder="Search people by name..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            InputProps={{
-                startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
-            }}
-            className="search-textfield"
-        />
-        
-        <IconButton 
+        {/* Header */}
+        <div className="search-header">
+          <button onClick={() => nav("/home")} className="back-btn">
+            <ArrowLeft className="w-5 h-5" /> Back
+          </button>
+          
+          <div className="search-bar-wrapper">
+            <Search className="search-icon" />
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder="Search by name..." 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          
+          <button 
             onClick={() => setShowFilterModal(true)} 
-            className="filter-button"
-            sx={{ color: (add || skill || degree || year) ? 'primary.main' : 'text.secondary' }}
-        >
-            <TuneIcon />
-        </IconButton>
-      </Box>
+            className={`filter-btn ${isFilterActive ? 'filter-active' : ''}`}
+            title="Filters"
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+          </button>
+        </div>
 
-      {/* Grid */}
-      {isSearching ? <Typography textAlign="center">Searching...</Typography> : (
-        <Grid container spacing={3}>
+        {/* User Grid */}
+        {isSearching ? (
+          <div className="empty-state">
+            <Loader2 className="w-10 h-10 animate-spin text-brand-500 mb-3" />
+            <p className="text-slate-500">Searching profiles...</p>
+          </div>
+        ) : (
+          <div className="user-grid">
             {showUsers.length > 0 ? showUsers.map((elem) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={elem._id}>
-                    <Card className="user-card">
-                        {/* Banner */}
-                        <Box className="card-banner" sx={{ background: `linear-gradient(135deg, ${theme.palette.primary.main}, #479378)` }} />
-                        
-                        {/* Avatar */}
-                        <Box className="card-avatar-wrapper">
-                            <Avatar className="card-avatar-circle">
-                                <ProtectedImage imgSrc={elem.profilepic} defaultImage="/images/profile1.png" />
-                            </Avatar>
-                        </Box>
+              // ADDED 'group' here manually to enable hover effects on children
+              <div key={elem._id} className="user-card group">
+                
+                {/* Banner */}
+                <div className="card-banner"></div>
+                
+                {/* Avatar */}
+                <div className="card-avatar-wrapper">
+                  <div className="card-avatar overflow-hidden">
+                    <ProtectedImage 
+                      imgSrc={elem.profilepic} 
+                      defaultImage="images/profile1.png" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
+                </div>
 
-                        <CardContent sx={{ textAlign: 'center', flexGrow: 1, pt: 1 }}>
-                            <Typography 
-                                variant="h6" 
-                                className="user-name"
-                                onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
-                            >
-                                {elem.fname} {elem.lname}
-                            </Typography>
-                            
-                            {elem.isAlumni && (
-                                <Chip label="Alumni" size="small" icon={<School fontSize="small" />} color="primary" variant="outlined" sx={{ mt: 0.5, height: 24 }} />
-                            )}
+                {/* Content */}
+                <div className="card-content">
+                  <h3 
+                    className="user-name" 
+                    onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
+                  >
+                    {elem.fname} {elem.lname}
+                  </h3>
+                  
+                  {elem.isAlumni && (
+                    <span className="alumni-badge">
+                      <GraduationCap size={12} /> Alumni
+                    </span>
+                  )}
 
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                {elem.city || "Student"}
-                            </Typography>
+                  <p className="user-role">{elem.city || "Student"}</p>
+                  
+                  {elem.latestCourse && (
+                    <p className="user-course">{elem.latestCourse}</p>
+                  )}
 
-                            {elem.latestCourse && (
-                                <Typography variant="caption" color="primary" display="block" sx={{ mt: 1, fontWeight: 600 }}>
-                                    {elem.latestCourse}
-                                </Typography>
-                            )}
+                  <div className="social-links">
+                    {elem.github && (
+                      <a href={getSocialLink(elem.github, 'github')} target="_blank" rel="noreferrer" className="social-icon">
+                        <Github size={16} />
+                      </a>
+                    )}
+                    {elem.portfolioweb && (
+                      <a href={getSocialLink(elem.portfolioweb, 'web')} target="_blank" rel="noreferrer" className="social-icon">
+                        <Globe size={16} />
+                      </a>
+                    )}
+                  </div>
+                </div>
 
-                            <Box className="social-box">
-                                {elem.github && <IconButton size="small" href={getSocialLink(elem.github, 'github')} target="_blank"><GitHub fontSize="small" /></IconButton>}
-                                {elem.portfolioweb && <IconButton size="small" href={getSocialLink(elem.portfolioweb, 'website')} target="_blank"><Language fontSize="small" /></IconButton>}
-                            </Box>
-                        </CardContent>
+                {/* Actions */}
+                <div className="card-actions">
+                  <button 
+                    className="btn-view"
+                    onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
+                  >
+                    View
+                  </button>
+                  
+                  {elem._id !== userID && (
+                    elem.followers && elem.followers.includes(userID) ? (
+                      <button 
+                        className="btn-following"
+                        onClick={() => setUnfollowId(elem._id)}
+                      >
+                        <Check size={16} /> Following
+                      </button>
+                    ) : (
+                      <button 
+                        className="btn-follow"
+                        onClick={() => handleFollow(elem._id)}
+                      >
+                        Follow
+                      </button>
+                    )
+                  )}
+                </div>
 
-                        <Box className="card-action-box">
-                            <Button 
-                                fullWidth 
-                                variant="outlined" 
-                                color="inherit"
-                                onClick={() => nav(elem._id === userID ? "/view-profile" : "/view-search-profile", { state: { id: elem._id } })}
-                            >
-                                View
-                            </Button>
-                            
-                            {elem._id !== userID && (
-                                elem.followers && elem.followers.includes(userID) ? (
-                                    <Button 
-                                        fullWidth 
-                                        variant="contained" 
-                                        sx={{ bgcolor: 'action.disabledBackground', color: 'text.secondary', '&:hover': { bgcolor: 'action.disabledBackground' } }}
-                                        onClick={() => setUnfollowId(elem._id)}
-                                        endIcon={<CheckCircle fontSize="small" />}
-                                    >
-                                        Following
-                                    </Button>
-                                ) : (
-                                    <Button fullWidth variant="contained" onClick={() => handleFollow(elem._id)}>
-                                        Follow
-                                    </Button>
-                                )
-                            )}
-                        </Box>
-                    </Card>
-                </Grid>
+              </div>
             )) : (
-                <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
-                    <img src="images/search-bro.png" alt="No results" style={{ maxWidth: 250, opacity: 0.7 }} />
-                    <Typography variant="h6" color="text.secondary">No users found</Typography>
-                </Box>
+              <div className="col-span-full empty-state">
+                <img src="images/search-bro.png" alt="No results" className="w-48 h-48 opacity-60 mb-4" />
+                <h3 className="text-lg font-bold text-slate-600">No users found</h3>
+                <p className="text-slate-400">Try adjusting your filters or search criteria.</p>
+              </div>
             )}
-        </Grid>
-      )}
+          </div>
+        )}
 
-      {/* Unfollow Confirmation Dialog */}
-      <Dialog open={!!unfollowId} onClose={() => setUnfollowId(null)}>
-        <DialogTitle>Unfollow User?</DialogTitle>
-        <DialogContent><Typography>Are you sure you want to stop following this user?</Typography></DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setUnfollowId(null)} color="inherit">Cancel</Button>
-            <Button onClick={confirmUnfollow} color="error" variant="contained">Yes, Unfollow</Button>
-        </DialogActions>
-      </Dialog>
+      </div>
 
+      {/* --- FILTER MODAL --- */}
       {showFilterModal && (
-        <FilterModal 
-            closeModal={() => setShowFilterModal(false)}
-            add={add} setAdd={setAdd} skill={skill} setSkill={setSkill}
-            degree={degree} setDegree={setDegree} year={year} setYear={setYear}
-            handleFilter={() => { setShowFilterModal(false); performSearch(); }}
-        />
+        <div className="modal-overlay">
+          <div className="modal-box animate-fade-in">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="modal-title mb-0">Filter Profiles</h3>
+              <button onClick={() => setShowFilterModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div>
+                <label className="filter-label">Location (City/State)</label>
+                <input value={add} onChange={e => setAdd(e.target.value)} className="filter-input" placeholder="e.g. Ahmedabad" />
+              </div>
+              <div>
+                <label className="filter-label">Skill</label>
+                <input value={skill} onChange={e => setSkill(e.target.value)} className="filter-input" placeholder="e.g. React" />
+              </div>
+              <div>
+                <label className="filter-label">Degree/Course</label>
+                <input value={degree} onChange={e => setDegree(e.target.value)} className="filter-input" placeholder="e.g. B.Tech" />
+              </div>
+              <div>
+                <label className="filter-label">Year</label>
+                <input value={year} onChange={e => setYear(e.target.value)} className="filter-input" placeholder="e.g. 2024" type="number" />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                onClick={() => {
+                  setAdd(""); setSkill(""); setDegree(""); setYear("");
+                  performSearch({ add:"", skill:"", degree:"", year:"" });
+                  setShowFilterModal(false);
+                }} 
+                className="btn-modal-cancel"
+              >
+                Clear
+              </button>
+              <button 
+                onClick={() => { setShowFilterModal(false); performSearch(); }} 
+                className="btn-modal-confirm"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </Container>
+
+      {/* --- UNFOLLOW CONFIRMATION MODAL --- */}
+      {unfollowId && (
+        <div className="modal-overlay">
+          <div className="modal-box animate-fade-in">
+            <h3 className="modal-title">Unfollow User?</h3>
+            <p className="text-slate-500 mb-6">Are you sure you want to stop following this user? You won't see their updates anymore.</p>
+            <div className="modal-actions">
+              <button onClick={() => setUnfollowId(null)} className="btn-modal-cancel">
+                Cancel
+              </button>
+              <button onClick={confirmUnfollow} className="btn-modal-danger">
+                Unfollow
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
   );
 }

@@ -2,23 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  CircularProgress,
-  Container,
-  Link,
-  Grid
-} from "@mui/material";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Mail, Lock, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react"; // Added Eye icons
 import { WEB_URL } from "../baseURL";
-import "../styles/Login.css"; // <--- Import the CSS file here
+import "../styles/Login.css"; // Ensure this points to your correct CSS file
 
 export default function Login() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
   const [user, setUser] = useState({ email: "", password: "" });
 
   useEffect(() => {
@@ -43,7 +37,8 @@ export default function Login() {
     return true;
   };
 
-  const handleLogin = () => {
+  const handleLogin = (e) => {
+    e.preventDefault();
     if (validate()) {
       setLoading(true);
       axios({
@@ -53,19 +48,11 @@ export default function Login() {
           password: user.password,
         },
         url: `${WEB_URL}/api/userLogin`,
-        withCredentials: true // MANDATORY: Allows the browser to receive/send cookies
+        withCredentials: true
       }).then((response) => {
-        toast.success("Login Successful");
-
-        // 1. Store the ID (less sensitive) in localStorage for the AuthGuard
+        toast.success("Welcome back!");
         localStorage.setItem("Althub_Id", response.data.data._id);
-
-        // 2. The Token is handled by the browser cookie (HttpOnly).
-        // Do NOT persist the raw token in localStorage for security.
-
-        // SECURITY: Wipe the sensitive user state (email/password) from memory immediately
         setUser({ email: "", password: "" });
-
         setTimeout(() => nav("/home"), 1000);
       }).catch((err) => {
         setLoading(false);
@@ -76,98 +63,114 @@ export default function Login() {
   };
 
   return (
-    <Grid container sx={{ minHeight: '100vh', bgcolor: '#fff' }}>
+    <div className="login-wrapper">
 
       {/* --- LEFT SIDE (Visual) --- */}
-      <Grid item xs={12} md={7} sx={{ position: 'relative' }}>
-        <Box className="login-visual-side">
-          <Box
-            component="img"
-            src="images/register-animate.svg"
-            alt="Welcome"
-            sx={{ width: '80%', maxWidth: '600px', position: 'relative', zIndex: 1 }}
-          />
-        </Box>
+      <div className="login-visual-side">
+        {/* Blobs */}
+        <div className="visual-blob bg-brand-300 top-0 left-0 w-96 h-96"></div>
+        <div className="visual-blob bg-secondary-300 bottom-0 right-0 w-96 h-96 animation-delay-2000"></div>
 
-        <Button
-          className="login-back-btn"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => nav("/")}
-        >
-          Back to Main
-        </Button>
-      </Grid>
+        <div className="visual-content">
+          <img
+            src="images/register-animate.svg"
+            alt="Welcome Illustration"
+            className="w-full max-w-md mx-auto drop-shadow-2xl mb-8"
+          />
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">Welcome to Althub</h2>
+          <p className="text-slate-600 text-lg">Your gateway to the alumni network.</p>
+        </div>
+      </div>
 
       {/* --- RIGHT SIDE (Form) --- */}
-      <Grid item xs={12} md={5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Container maxWidth="xs">
+      <div className="login-form-side">
 
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Box component="img" src="images/Logo1.jpeg" alt="Logo" sx={{ width: '180px', borderRadius: '12px', mb: 3 }} />
-            <Typography variant="h4" fontWeight="700" sx={{ color: '#2d3436', mb: 1 }}>
-              Welcome Back
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#b2bec3' }}>
-              Please enter your details to sign in
-            </Typography>
-          </Box>
+        <button onClick={() => nav("/")} className="back-home-btn">
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back to Home</span>
+        </button>
 
-          <Box component="form" noValidate>
-            <TextField
-              fullWidth
-              className="login-textfield"
-              placeholder="Email Address"
-              name="email"
-              value={user.email}
-              onChange={handleChange}
-              variant="outlined"
-            />
+        <div className="form-container">
 
-            <TextField
-              fullWidth
-              className="login-textfield"
-              placeholder="Password"
-              type="password"
-              name="password"
-              value={user.password}
-              onChange={handleChange}
-              variant="outlined"
-            />
+          <div className="form-header">
+            <div className="inline-flex justify-center mb-6">
+              <img src="images/Logo1.jpeg" alt="Logo" className="h-16 rounded-2xl shadow-sm" />
+            </div>
+            <h1 className="form-title">Sign in to your account</h1>
+            <p className="form-subtitle">Enter your details below to continue</p>
+          </div>
 
-            <Button
-              fullWidth
-              className="login-submit-btn"
-              onClick={handleLogin}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
-            </Button>
+          <form className="input-group" onSubmit={handleLogin}>
 
-            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-              <Link
-                component="button"
-                className="login-link"
-                onClick={() => nav("/forget-password")}
-                sx={{ fontWeight: 500 }}
-              >
-                Forgot Password?
-              </Link>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700 ml-1">Email Address</label>
+              <div className="input-wrapper">
+                <Mail className="input-icon" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="name@example.com"
+                  className="custom-input"
+                  value={user.email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
 
-              <Typography variant="body2" sx={{ color: '#636e72' }}>
-                Don't have an account?{' '}
-                <Link
-                  component="button"
-                  className="login-link"
-                  onClick={() => nav("/register")}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-sm font-medium text-slate-700">Password</label>
+                <button
+                  type="button"
+                  onClick={() => nav("/forget-password")}
+                  className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors"
                 >
-                  Sign Up
-                </Link>
-              </Typography>
-            </Box>
-          </Box>
+                  Forgot password?
+                </button>
+              </div>
+              <div className="input-wrapper">
+                <Lock className="input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"} // Dynamic Type
+                  name="password"
+                  placeholder="••••••••"
+                  className="custom-input pr-12" // Added extra right padding for the eye icon
+                  value={user.password}
+                  onChange={handleChange}
+                />
+                {/* Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors cursor-pointer outline-none"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
 
-        </Container>
-      </Grid>
-    </Grid>
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </button>
+
+          </form>
+
+          <div className="text-center text-sm text-slate-500">
+            Don't have an account?{' '}
+            <button onClick={() => nav("/register")} className="auth-link">
+              Sign up
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }

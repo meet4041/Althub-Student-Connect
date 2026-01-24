@@ -3,29 +3,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
-import { 
-  Box, 
-  Button,  
-  Typography, 
-  TextField, 
-  Stepper, 
-  Step, 
-  StepLabel, 
-  Grid, 
-  Avatar, 
-  CircularProgress,
-  Autocomplete,
-  Radio, 
-  RadioGroup, 
-  FormControlLabel, 
-  FormControl, 
-  FormLabel,
-  Link
-} from "@mui/material";
-import { ArrowBack, CloudUpload, ArrowForward } from '@mui/icons-material';
-import "../styles/Register.css"; // <--- Import the CSS file here
+import {
+  ArrowLeft, ArrowRight, User, Calendar, MapPin,
+  Mail, Phone, Github, Globe, Upload, Lock, Check, School, X, Eye, EyeOff
+} from 'lucide-react'; // Added Eye and EyeOff icons
+import "../styles/Register.css";
 
-// --- OPTIMIZATION: Client-Side Image Compression ---
+// --- Client-Side Image Compression ---
 const compressImage = async (file) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -37,24 +21,12 @@ const compressImage = async (file) => {
         const canvas = document.createElement('canvas');
         const MAX_WIDTH = 800;
         const scaleSize = MAX_WIDTH / img.width;
-        
-        if (scaleSize < 1) {
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
-        } else {
-            canvas.width = img.width;
-            canvas.height = img.height;
-        }
-
+        canvas.width = (scaleSize < 1) ? MAX_WIDTH : img.width;
+        canvas.height = (scaleSize < 1) ? img.height * scaleSize : img.height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
         ctx.canvas.toBlob((blob) => {
-          const newFile = new File([blob], file.name, {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          });
-          resolve(newFile);
+          resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
         }, 'image/jpeg', 0.7);
       };
     };
@@ -62,14 +34,20 @@ const compressImage = async (file) => {
 };
 
 export default function Register() {
+  const nav = useNavigate();
   const [university, setUniversity] = useState([]);
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
-  const nav = useNavigate();
-  
-  // State for Multiselects
+
+  // Password Visibility States
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Tag Inputs
+  const [langInput, setLangInput] = useState("");
   const [languages, setLanguages] = useState([]);
+  const [skillInput, setSkillInput] = useState("");
   const [skills, setSkills] = useState([]);
 
   const [user, setUser] = useState({
@@ -79,305 +57,308 @@ export default function Register() {
 
   const steps = ['Personal', 'Social', 'Details', 'Photo', 'Account'];
 
-  // Static options
-  const languageOptions = [
-    { label: "English" }, { label: "Hindi" }, { label: "Gujarati" },
-    { label: "Bahana Indonesia" }, { label: "Bengali" }, { label: "Dansk" },
-    { label: "Deutsch" }, { label: "Spanish" }, { label: "French" }, { label: "Italian" }
-  ];
-
-  const skillOptions = [
-    { label: "Machine Learning" }, { label: "Python" }, { label: "Java" },
-    { label: "SQL" }, { label: "React.js" }, { label: "Node" },
-    { label: "Git" }, { label: "Tailwind CSS" }, { label: "JavaScript" },
-    { label: "C++" }, { label: "Management" }, { label: "Communication" },
-    { label: "Analytical Skills" }, { label: "Marketing" },
-    { label: "Finance" }, { label: "Cloud Computing" },
-  ];
-
   useEffect(() => {
-    axios.get(`${WEB_URL}/api/getInstitutes`).then((response) => {
-      setUniversity(response.data.data);
-    });
-  }, []);
+    if (localStorage.getItem("Althub_Id")) nav('/home');
+    axios.get(`${WEB_URL}/api/getInstitutes`).then((res) => setUniversity(res.data.data));
+  }, [nav]);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
     setErrors((prev) => ({ ...prev, [`${e.target.name}_err`]: "" }));
   };
 
-  const handleImgChange = async (e) => {
-    if (!e.target.files[0]) return;
-    const originalFile = e.target.files[0];
+  // --- Tag Logic ---
+  const handleTagKeyDown = (e, type) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = type === 'lang' ? langInput.trim() : skillInput.trim();
+      if (!val) return;
 
-    if (originalFile.size > 3 * 1024 * 1024) { 
-        toast.error("Image size cannot be more than 3MB");
-        return;
-    }
-    
-    setUploading(true);
-    const compressedFile = await compressImage(originalFile);
-    var body = new FormData();
-    body.append("profilepic", compressedFile);
-    
-    axios({
-      method: "post",
-      headers: { "Content-Type": "multipart/form-data" },
-      url: `${WEB_URL}/api/uploadUserImage`,
-      data: body,
-    }).then((response) => {
-        setUser({ ...user, profilepic: response.data.data.url });
-        setUploading(false);
-        toast.success("Image Uploaded");
-    }).catch(() => { 
-        toast.error("Image upload failed");
-        setUploading(false);
-    });
-  };
-
-  const validateStep = (step) => {
-    let isValid = true;
-    let stepErrors = {};
-
-    if (step === 0) { // Personal
-      if (!user.fname) { isValid = false; stepErrors.fname_err = "First Name is required"; }
-      if (!user.lname) { isValid = false; stepErrors.lname_err = "Last Name is required"; }
-      if (!user.dob) { isValid = false; stepErrors.dob_err = "Date of Birth is required"; }
-      if (!user.gender) { isValid = false; stepErrors.gender_err = "Please select gender"; }
-      if (!user.phone || user.phone.length !== 10) { isValid = false; stepErrors.phone_err = "Enter valid 10 digit number"; }
-      if (!user.email || !/\S+@\S+\.\S+/.test(user.email)) { isValid = false; stepErrors.email_err = "Valid email is required"; }
-    }
-    if (step === 2) { // Details
-      if (!user.institute) { isValid = false; stepErrors.institute_err = "Institute is required"; }
-      if (languages.length === 0) { isValid = false; stepErrors.languages_err = "Select at least one language"; }
-      if (skills.length === 0) { isValid = false; stepErrors.skills_err = "Select at least one skill"; }
-      if (!user.city) { isValid = false; stepErrors.city_err = "City is required"; }
-      if (!user.state) { isValid = false; stepErrors.state_err = "State is required"; }
-      if (!user.country) { isValid = false; stepErrors.country_err = "Country is required"; }
-    }
-    if (step === 4) { // Account
-      if (!user.password) { isValid = false; stepErrors.password_err = "Password is required"; }
-      else if (user.password.length < 8) { isValid = false; stepErrors.password_err = "Min 8 characters"; }
-      if (user.cpassword !== user.password) { isValid = false; stepErrors.cpassword_err = "Passwords do not match"; }
-    }
-    setErrors(stepErrors);
-    return isValid;
-  };
-
-  const handleNext = () => {
-    if (validateStep(activeStep)) {
-      setActiveStep((prev) => prev + 1);
-    } else {
-      toast.error("Please fill required fields correctly");
-    }
-  };
-
-  const handleBack = () => setActiveStep((prev) => prev - 1);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (validateStep(4)) {
-      const langValues = languages.map(l => l.label);
-      const skillValues = skills.map(s => s.label);
-      
-      const body = { 
-        ...user, 
-        languages: JSON.stringify(langValues), 
-        skills: JSON.stringify(skillValues) 
-      };
-
-      try {
-        await axios.post(`${WEB_URL}/api/register`, body, { withCredentials: true });
-        toast.success("Registration Successful!");
-        nav("/login");
-      } catch (err) {
-        toast.error(err.response?.data?.msg || "Registration failed");
+      if (type === 'lang') {
+        if (!languages.includes(val)) setLanguages([...languages, val]);
+        setLangInput("");
+      } else {
+        if (!skills.includes(val)) setSkills([...skills, val]);
+        setSkillInput("");
       }
     }
   };
 
-  // --- Step Content Renderer ---
-  const getStepContent = (stepIndex) => {
-    switch (stepIndex) {
-      case 0:
-        return (
-          <>
-            <Typography variant="h5" className="reg-form-title">Personal Details</Typography>
-            <Typography variant="body2" className="reg-form-subtitle">Let's get to know you better</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField fullWidth label="First Name" name="fname" value={user.fname} onChange={handleChange} error={!!errors.fname_err} helperText={errors.fname_err} className="reg-textfield" />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth label="Last Name" name="lname" value={user.lname} onChange={handleChange} error={!!errors.lname_err} helperText={errors.lname_err} className="reg-textfield" />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth type="date" label="Date of Birth" name="dob" value={user.dob} onChange={handleChange} InputLabelProps={{ shrink: true }} error={!!errors.dob_err} helperText={errors.dob_err} className="reg-textfield" />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl component="fieldset" error={!!errors.gender_err}>
-                  <FormLabel component="legend">Gender</FormLabel>
-                  <RadioGroup row name="gender" value={user.gender} onChange={handleChange}>
-                    <FormControlLabel value="Male" control={<Radio />} label="Male" />
-                    <FormControlLabel value="Female" control={<Radio />} label="Female" />
-                  </RadioGroup>
-                  {errors.gender_err && <Typography variant="caption" color="error">{errors.gender_err}</Typography>}
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth label="Phone" name="phone" value={user.phone} onChange={handleChange} error={!!errors.phone_err} helperText={errors.phone_err} className="reg-textfield" />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth label="Email" name="email" value={user.email} onChange={handleChange} error={!!errors.email_err} helperText={errors.email_err} className="reg-textfield" />
-              </Grid>
-            </Grid>
-          </>
-        );
-      case 1:
-        return (
-          <>
-            <Typography variant="h5" className="reg-form-title">Social Presence</Typography>
-            <Typography variant="body2" className="reg-form-subtitle">Where can people find you online?</Typography>
-            <TextField fullWidth label="GitHub Profile URL" name="github" value={user.github} onChange={handleChange} className="reg-textfield" />
-            <TextField fullWidth label="Portfolio Website URL" name="portfolioweb" value={user.portfolioweb} onChange={handleChange} className="reg-textfield" />
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <Typography variant="h5" className="reg-form-title">Academic & Skills</Typography>
-            <Typography variant="body2" className="reg-form-subtitle">Tell us about your background</Typography>
-            
-            <Autocomplete
-                options={university.map((u) => u.name)}
-                value={user.institute}
-                onChange={(event, newValue) => { setUser({ ...user, institute: newValue }); setErrors(prev => ({...prev, institute_err: ""})) }}
-                renderInput={(params) => <TextField {...params} label="Select Institute" error={!!errors.institute_err} helperText={errors.institute_err} className="reg-textfield" />}
-                className="reg-textfield"
-            />
+  const removeTag = (tag, type) => {
+    if (type === 'lang') setLanguages(languages.filter(t => t !== tag));
+    else setSkills(skills.filter(t => t !== tag));
+  };
 
-            <Autocomplete
-                multiple
-                options={languageOptions}
-                getOptionLabel={(option) => option.label}
-                value={languages}
-                onChange={(event, newValue) => { setLanguages(newValue); setErrors(prev => ({...prev, languages_err: ""})) }}
-                renderInput={(params) => <TextField {...params} label="Languages Known" error={!!errors.languages_err} helperText={errors.languages_err} className="reg-textfield" />}
-                className="reg-textfield"
-            />
+  const handleImgChange = async (e) => {
+    if (!e.target.files[0]) return;
+    const file = e.target.files[0];
+    if (file.size > 3 * 1024 * 1024) return toast.error("Max size 3MB");
 
-            <Autocomplete
-                multiple
-                options={skillOptions}
-                getOptionLabel={(option) => option.label}
-                value={skills}
-                onChange={(event, newValue) => { setSkills(newValue); setErrors(prev => ({...prev, skills_err: ""})) }}
-                renderInput={(params) => <TextField {...params} label="Skills" error={!!errors.skills_err} helperText={errors.skills_err} className="reg-textfield" />}
-                className="reg-textfield"
-            />
+    setUploading(true);
+    const compressed = await compressImage(file);
+    const formData = new FormData();
+    formData.append("profilepic", compressed);
 
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
-                    <TextField fullWidth label="City" name="city" value={user.city} onChange={handleChange} error={!!errors.city_err} helperText={errors.city_err} className="reg-textfield" />
-                </Grid>
-                <Grid item xs={6}>
-                    <TextField fullWidth label="State" name="state" value={user.state} onChange={handleChange} error={!!errors.state_err} helperText={errors.state_err} className="reg-textfield" />
-                </Grid>
-                <Grid item xs={12}>
-                    <TextField fullWidth label="Country" name="country" value={user.country} onChange={handleChange} error={!!errors.country_err} helperText={errors.country_err} className="reg-textfield" />
-                </Grid>
-            </Grid>
-          </>
-        );
-      case 3:
-        return (
-          <div className="reg-upload-box">
-            <Typography variant="h5" className="reg-form-title">Profile Picture</Typography>
-            <Typography variant="body2" className="reg-form-subtitle">Make sure it's a clear photo</Typography>
-            
-            {user.profilepic ? ( 
-                <img src={`${WEB_URL}${user.profilepic}`} alt="Preview" className="reg-profile-preview" /> 
-            ) : ( 
-                <Avatar sx={{ width: 150, height: 150, mb: 2 }} /> 
-            )}
+    axios.post(`${WEB_URL}/api/uploadUserImage`, formData, { headers: { "Content-Type": "multipart/form-data" } })
+      .then((res) => {
+        setUser({ ...user, profilepic: res.data.data.url });
+        setUploading(false);
+        toast.success("Uploaded!");
+      })
+      .catch(() => {
+        setUploading(false);
+        toast.error("Upload failed");
+      });
+  };
 
-            {uploading ? (
-                <Box display="flex" alignItems="center" gap={1} color="#66bd9e">
-                    <CircularProgress size={20} color="inherit" />
-                    <Typography variant="body2" fontWeight="600">Compressing & Uploading...</Typography>
-                </Box>
-            ) : (
-                <label className="reg-upload-label">
-                    <CloudUpload fontSize="small" /> Upload Photo
-                    <input type="file" hidden onChange={handleImgChange} accept="image/*" />
-                </label>
-            )}
+  const validateStep = (step) => {
+    let errs = {};
+    let isValid = true;
+
+    if (step === 0) {
+      if (!user.fname) errs.fname_err = "Required";
+      if (!user.lname) errs.lname_err = "Required";
+      if (!user.dob) errs.dob_err = "Required";
+      if (!user.gender) errs.gender_err = "Required";
+      if (!user.phone || user.phone.length !== 10) errs.phone_err = "Invalid phone";
+      if (!user.email || !/\S+@\S+\.\S+/.test(user.email)) errs.email_err = "Invalid email";
+    }
+    if (step === 2) {
+      if (!user.institute) errs.institute_err = "Required";
+      if (!languages.length) errs.languages_err = "Add 1 language";
+      if (!skills.length) errs.skills_err = "Add 1 skill";
+      if (!user.city) errs.city_err = "Required";
+      if (!user.country) errs.country_err = "Required";
+    }
+    if (step === 4) {
+      if (!user.password || user.password.length < 8) errs.password_err = "Min 8 chars";
+      if (user.password !== user.cpassword) errs.cpassword_err = "Mismatch";
+    }
+
+    if (Object.keys(errs).length > 0) isValid = false;
+    setErrors(errs);
+    return isValid;
+  };
+
+  const handleNext = () => { if (validateStep(activeStep)) setActiveStep(p => p + 1); };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (validateStep(4)) {
+      const body = { ...user, languages: JSON.stringify(languages), skills: JSON.stringify(skills) };
+      try {
+        await axios.post(`${WEB_URL}/api/register`, body, { withCredentials: true });
+        toast.success("Welcome aboard!");
+        nav("/login");
+      } catch (err) { toast.error(err.response?.data?.msg || "Error"); }
+    }
+  };
+
+  const renderStep = () => {
+    switch (activeStep) {
+      case 0: return (
+        <div className="input-group animate-fade-in-up">
+          <div><label className="input-label">First Name</label><div className="input-wrapper"><User className="input-icon" /><input name="fname" value={user.fname} onChange={handleChange} className="custom-input" placeholder="John" /></div><span className="text-red-500 text-xs">{errors.fname_err}</span></div>
+          <div><label className="input-label">Last Name</label><div className="input-wrapper"><User className="input-icon" /><input name="lname" value={user.lname} onChange={handleChange} className="custom-input" placeholder="Doe" /></div><span className="text-red-500 text-xs">{errors.lname_err}</span></div>
+          <div><label className="input-label">Date of Birth</label><div className="input-wrapper"><Calendar className="input-icon" /><input type="date" name="dob" value={user.dob} onChange={handleChange} className="custom-input" /></div><span className="text-red-500 text-xs">{errors.dob_err}</span></div>
+          <div><label className="input-label">Phone</label><div className="input-wrapper"><Phone className="input-icon" /><input type="number" name="phone" value={user.phone} onChange={handleChange} className="custom-input" placeholder="9876543210" /></div><span className="text-red-500 text-xs">{errors.phone_err}</span></div>
+          <div className="full-width"><label className="input-label">Email</label><div className="input-wrapper"><Mail className="input-icon" /><input type="email" name="email" value={user.email} onChange={handleChange} className="custom-input" placeholder="john@example.com" /></div><span className="text-red-500 text-xs">{errors.email_err}</span></div>
+          <div className="full-width">
+            <label className="input-label">Gender</label>
+            <div className="radio-group">
+              {['Male', 'Female'].map(g => (
+                <div key={g} onClick={() => setUser({ ...user, gender: g })} className={`radio-label ${user.gender === g ? 'selected' : ''}`}>
+                  <div className={`radio-circle ${user.gender === g ? 'border-brand-500' : 'border-slate-300'}`}><div className="radio-dot"></div></div>
+                  <span className="font-medium text-sm">{g}</span>
+                </div>
+              ))}
+            </div>
+            <span className="text-red-500 text-xs">{errors.gender_err}</span>
           </div>
-        );
-      case 4:
-        return (
-          <>
-            <Typography variant="h5" className="reg-form-title">Secure Account</Typography>
-            <Typography variant="body2" className="reg-form-subtitle">Set a strong password</Typography>
-            <TextField fullWidth type="password" label="Create Password" name="password" value={user.password} onChange={handleChange} error={!!errors.password_err} helperText={errors.password_err} className="reg-textfield" />
-            <TextField fullWidth type="password" label="Confirm Password" name="cpassword" value={user.cpassword} onChange={handleChange} error={!!errors.cpassword_err} helperText={errors.cpassword_err} className="reg-textfield" />
-          </>
-        );
-      default:
-        return 'Unknown step';
+        </div>
+      );
+      case 1: return (
+        <div className="space-y-6 animate-fade-in-up">
+          <div><label className="input-label">GitHub URL</label><div className="input-wrapper"><Github className="input-icon" /><input name="github" value={user.github} onChange={handleChange} className="custom-input" placeholder="https://github.com/..." /></div></div>
+          <div><label className="input-label">Portfolio URL</label><div className="input-wrapper"><Globe className="input-icon" /><input name="portfolioweb" value={user.portfolioweb} onChange={handleChange} className="custom-input" placeholder="https://myportfolio.com" /></div></div>
+        </div>
+      );
+      case 2: return (
+        <div className="space-y-5 animate-fade-in-up">
+          <div>
+            <label className="input-label">Institute</label>
+            <div className="input-wrapper">
+              <School className="input-icon" />
+              <select name="institute" value={user.institute} onChange={handleChange} className="custom-input appearance-none bg-white">
+                <option value="">Select Institute</option>
+                {university.map(u => <option key={u._id} value={u.name}>{u.name}</option>)}
+              </select>
+            </div>
+            <span className="text-red-500 text-xs">{errors.institute_err}</span>
+          </div>
+
+          <div>
+            <label className="input-label">Languages (Type & Enter)</label>
+            <div className="tag-container">
+              {languages.map(l => <span key={l} className="tag-pill">{l} <X size={14} className="cursor-pointer hover:text-red-600" onClick={() => removeTag(l, 'lang')} /></span>)}
+              <input value={langInput} onChange={e => setLangInput(e.target.value)} onKeyDown={e => handleTagKeyDown(e, 'lang')} className="tag-input" placeholder="Add..." />
+            </div>
+            <span className="text-red-500 text-xs">{errors.languages_err}</span>
+          </div>
+
+          <div>
+            <label className="input-label">Skills (Type & Enter)</label>
+            <div className="tag-container">
+              {skills.map(s => <span key={s} className="tag-pill">{s} <X size={14} className="cursor-pointer hover:text-red-600" onClick={() => removeTag(s, 'skill')} /></span>)}
+              <input value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={e => handleTagKeyDown(e, 'skill')} className="tag-input" placeholder="Add Skill..." />
+            </div>
+            <span className="text-red-500 text-xs">{errors.skills_err}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="input-label">City</label><div className="input-wrapper"><MapPin className="input-icon" /><input name="city" value={user.city} onChange={handleChange} className="custom-input" /></div><span className="text-red-500 text-xs">{errors.city_err}</span></div>
+            <div><label className="input-label">State</label><div className="input-wrapper"><MapPin className="input-icon" /><input name="state" value={user.state} onChange={handleChange} className="custom-input" /></div></div>
+          </div>
+          <div><label className="input-label">Country</label><div className="input-wrapper"><Globe className="input-icon" /><input name="country" value={user.country} onChange={handleChange} className="custom-input" /></div><span className="text-red-500 text-xs">{errors.country_err}</span></div>
+        </div>
+      );
+      case 3: return (
+        <div className="flex flex-col items-center justify-center py-10 animate-fade-in-up">
+          <div className="relative">
+            {user.profilepic ? (
+              <img src={`${WEB_URL}${user.profilepic}`} alt="Preview" className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-xl" />
+            ) : (
+              <div className="w-40 h-40 rounded-full bg-slate-100 flex items-center justify-center border-4 border-dashed border-slate-300">
+                <User className="w-16 h-16 text-slate-300" />
+              </div>
+            )}
+            <label className="absolute bottom-0 right-0 bg-brand-600 p-3 rounded-full text-white cursor-pointer shadow-lg hover:bg-brand-700 transition-transform hover:scale-110">
+              <Upload className="w-5 h-5" />
+              <input type="file" hidden onChange={handleImgChange} accept="image/*" />
+            </label>
+          </div>
+          <p className="mt-4 text-slate-500 text-sm">Supported: JPG, PNG (Max 3MB)</p>
+          {uploading && <span className="text-brand-600 text-sm font-semibold mt-2 animate-pulse">Compressing & Uploading...</span>}
+        </div>
+      );
+      case 4: return (
+        <div className="space-y-6 animate-fade-in-up">
+          <div>
+            <label className="input-label">Password</label>
+            <div className="input-wrapper">
+              <Lock className="input-icon" />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={user.password}
+                onChange={handleChange}
+                className="custom-input pr-12" // Added extra padding right
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            <span className="text-red-500 text-xs">{errors.password_err}</span>
+          </div>
+
+          <div>
+            <label className="input-label">Confirm Password</label>
+            <div className="input-wrapper">
+              <Lock className="input-icon" />
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="cpassword"
+                value={user.cpassword}
+                onChange={handleChange}
+                className="custom-input pr-12" // Added extra padding right
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors cursor-pointer"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            <span className="text-red-500 text-xs">{errors.cpassword_err}</span>
+          </div>
+        </div>
+      );
+      default: return null;
     }
   };
 
   return (
-    <Grid container className="register-wrapper">
-      
-      {/* --- Visual Side --- */}
-      <Grid item xs={12} md={5} className="reg-visual-side">
-        <button className="reg-back-btn" onClick={() => nav("/")}>
-            <ArrowBack fontSize="small" /> Back to Home
+    <div className="register-wrapper">
+      {/* Visual Side */}
+      <div className="register-visual-side">
+        <div className="visual-blob bg-brand-300 top-0 left-0 w-96 h-96"></div>
+        <div className="visual-blob bg-secondary-300 bottom-0 right-0 w-96 h-96 animation-delay-2000"></div>
+        <div className="visual-content">
+          <img src="images/search-bro.png" alt="Join" className="w-full max-w-sm mx-auto drop-shadow-2xl mb-8" />
+          <h2 className="text-3xl font-bold text-slate-800">Join the Community</h2>
+          <p className="text-slate-600 text-lg">Connect, mentor, and grow with your alumni network.</p>
+        </div>
+      </div>
+
+      {/* Form Side */}
+      <div className="register-form-side">
+        <button onClick={() => nav("/")} className="back-home-btn">
+          <ArrowLeft className="w-5 h-5" /> Back to Home
         </button>
-        
-        <div className="reg-visual-content">
-            <h1>Join Our Community</h1>
-            <p>Connect with alumni, find mentors, and explore career opportunities. Start your journey with us today.</p>
-            <div className="reg-login-redirect">
-                Already a member? 
-                <Link component="button" className="reg-login-link" onClick={() => nav("/login")}>Log In</Link>
-            </div>
+
+        <div className="form-container">
+          <div className="text-center mb-8">
+            <h1 className="form-title">Create Account</h1>
+            <p className="text-slate-500">Step {activeStep + 1} of {steps.length}: {steps[activeStep]}</p>
+          </div>
+
+          {/* Custom Stepper */}
+          <div className="stepper-container">
+            <div className="stepper-line-bg"></div>
+            <div className="stepper-line-fill" style={{ width: `${(activeStep / (steps.length - 1)) * 100}%` }}></div>
+            {steps.map((label, idx) => (
+              <div key={label} className="step-item">
+                <div className={`step-circle ${idx <= activeStep ? (idx === activeStep ? 'step-active' : 'step-completed') : 'step-inactive'}`}>
+                  {idx < activeStep ? <Check className="w-5 h-5" /> : idx + 1}
+                </div>
+                <span className={`step-label ${idx <= activeStep ? 'text-brand-600' : 'text-slate-400'}`}>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Form Content */}
+          <form className="min-h-[300px]">
+            {renderStep()}
+          </form>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-10 pt-6 border-t border-slate-100">
+            <button onClick={() => setActiveStep(p => p - 1)} disabled={activeStep === 0} className="btn-nav btn-prev">
+              Back
+            </button>
+
+            {activeStep === steps.length - 1 ? (
+              <button onClick={handleSubmit} className="btn-nav btn-next">
+                Create Account
+              </button>
+            ) : (
+              <button onClick={handleNext} disabled={uploading} className="btn-nav btn-next">
+                Next <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            )}
+          </div>
+
+          <div className="text-center mt-8 text-sm text-slate-500">
+            Already have an account? <span onClick={() => nav("/login")} className="text-brand-600 font-bold cursor-pointer hover:underline">Log in</span>
+          </div>
         </div>
-        <img src="/images/Usability testing-bro.png" alt="Register Visual" className="reg-img" loading="lazy" />
-      </Grid>
-
-      {/* --- Form Side --- */}
-      <Grid item xs={12} md={7} className="reg-form-side">
-        <div className="reg-form-container">
-            <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-                {steps.map((label) => (
-                    <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
-                    </Step>
-                ))}
-            </Stepper>
-
-            {getStepContent(activeStep)}
-
-            <div className="reg-btn-group">
-                <Button disabled={activeStep === 0} onClick={handleBack} className="reg-btn-prev">
-                    Back
-                </Button>
-                
-                {activeStep === steps.length - 1 ? (
-                    <Button onClick={handleSubmit} className="reg-btn-submit">
-                        Create Account
-                    </Button>
-                ) : (
-                    <Button onClick={handleNext} className="reg-btn-next" disabled={uploading}>
-                        Next Step <ArrowForward fontSize="small" sx={{ ml: 1 }} />
-                    </Button>
-                )}
-            </div>
-        </div>
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 }

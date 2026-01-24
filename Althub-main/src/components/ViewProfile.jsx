@@ -1,24 +1,16 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
-import "../styles/ViewProfile.css"; // <--- Import CSS
+import { 
+  MapPin, Globe, Edit3, MoreHorizontal, Plus, Lock, Trash2, 
+  Briefcase, GraduationCap, Award, ChevronRight, UserCheck 
+} from "lucide-react"; 
+import "../styles/ViewProfile.css"; 
 
-// MUI Components
-import {
-    Container, Grid, Card, CardContent, Typography, Avatar, Box, IconButton,
-    Button, Menu, MenuItem, Chip, Divider, ListItemIcon
-} from "@mui/material";
-
-// Icons
-import {
-    Edit, Add, MoreVert, Delete, Lock, GitHub, Language,
-    Place, School, Work
-} from "@mui/icons-material";
-
-// Modals (Assume these are refactored or adapt to props)
+// Modals
 import EditProfileModal from "./EditProfileModal";
 import EditExperienceModal from "./EditExperienceModal";
 import EditEducationModal from "./EditEducationModal";
@@ -34,20 +26,33 @@ export default function ViewProfile() {
     const [experience, setExperience] = useState([]);
     const [topUsers, setTopUsers] = useState([]);
 
-    // Modals
+    // Modals & Menu State
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showEditExp, setShowEditExp] = useState(false);
     const [showEditEdu, setShowEditEdu] = useState(false);
     const [showChangePass, setShowChangePass] = useState(false);
     const [showFollowers, setShowFollowers] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
-    const [modalType, setModalType] = useState(""); // "Add" or "Edit"
-    const [anchorEl, setAnchorEl] = useState(null); // Menu anchor
+    // --- Ref for Dropdown Menu ---
+    const menuRef = useRef(null);
+
+    const [modalType, setModalType] = useState(""); 
     const [followerTab, setFollowerTab] = useState("Follower");
     const userID = localStorage.getItem("Althub_Id");
 
-    const openMenu = (event) => setAnchorEl(event.currentTarget);
-    const closeMenu = () => setAnchorEl(null);
+    // --- Click Outside Listener ---
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuOpen]);
 
     // --- Data Fetching ---
     const getUser = useCallback(() => {
@@ -108,188 +113,192 @@ export default function ViewProfile() {
 
     return (
         <div className="vp-wrapper">
-            <Container maxWidth="xl">
-                <Grid container spacing={3}>
+            <div className="vp-container">
 
-                    {/* LEFT COLUMN: MAIN PROFILE */}
-                    <Grid item xs={12} lg={8.5}>
+                {/* LEFT COLUMN: MAIN PROFILE */}
+                <div className="vp-main-col">
 
-                        {/* Header Card */}
-                        <Card className="vp-header-card">
-                            <div className="vp-cover"></div>
+                    {/* Header Card */}
+                    <div className="vp-header-card">
+                        <div className="vp-banner"></div>
 
-                            <div className="vp-header-body">
-                                <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap">
-                                    <div className="vp-avatar-container">
-                                        <Avatar
-                                            src={user.profilepic ? `${WEB_URL}${user.profilepic}` : ""}
-                                            className="vp-avatar"
-                                        />
+                        <div className="vp-content-wrapper">
+                            {/* Avatar */}
+                            <div className="vp-avatar-container">
+                                <img 
+                                    src={user.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} 
+                                    alt="Profile" 
+                                    className="vp-avatar" 
+                                />
+                            </div>
+
+                            {/* Info */}
+                            <div className="vp-info">
+                                <div className="vp-name-row">
+                                    <div className="flex items-center">
+                                        <h1 className="vp-name">{user.fname} {user.lname}</h1>
+                                        {isAlumni && <span className="vp-badge"><GraduationCap size={12} /> Alumni</span>}
                                     </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="vp-header-actions">
-                                        <IconButton onClick={() => setShowEditProfile(true)} sx={{ border: '1px solid #ddd' }}>
-                                            <Edit fontSize="small" />
-                                        </IconButton>
-                                        <IconButton onClick={openMenu} sx={{ border: '1px solid #ddd' }}>
-                                            <MoreVert fontSize="small" />
-                                        </IconButton>
-                                        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-                                            <MenuItem onClick={() => { setModalType("Add"); setShowEditExp(true); closeMenu(); }}>
-                                                <ListItemIcon><Work fontSize="small" /></ListItemIcon> Add Experience
-                                            </MenuItem>
-                                            <MenuItem onClick={() => { setModalType("Add"); setShowEditEdu(true); closeMenu(); }}>
-                                                <ListItemIcon><School fontSize="small" /></ListItemIcon> Add Education
-                                            </MenuItem>
-                                            <Divider />
-                                            <MenuItem onClick={() => { setShowChangePass(true); closeMenu(); }}>
-                                                <ListItemIcon><Lock fontSize="small" /></ListItemIcon> Change Password
-                                            </MenuItem>
-                                            <MenuItem onClick={handleDeleteAccount} sx={{ color: 'error.main' }}>
-                                                <ListItemIcon><Delete fontSize="small" color="error" /></ListItemIcon> Delete Account
-                                            </MenuItem>
-                                        </Menu>
+                                    
+                                    {/* Desktop Actions */}
+                                    <div className="vp-actions">
+                                        <button onClick={() => setShowEditProfile(true)} className="btn-secondary">
+                                            <Edit3 size={16} /> Edit Profile
+                                        </button>
+                                        
+                                        {/* Dropdown with Ref */}
+                                        <div className="relative" ref={menuRef}>
+                                            <button onClick={() => setMenuOpen(!menuOpen)} className="btn-icon">
+                                                <MoreHorizontal size={20} />
+                                            </button>
+                                            {menuOpen && (
+                                                <div className="menu-dropdown">
+                                                    <button onClick={() => { setModalType("Add"); setShowEditExp(true); setMenuOpen(false); }} className="menu-item">
+                                                        <Briefcase size={16} /> Add Experience
+                                                    </button>
+                                                    <button onClick={() => { setModalType("Add"); setShowEditEdu(true); setMenuOpen(false); }} className="menu-item">
+                                                        <GraduationCap size={16} /> Add Education
+                                                    </button>
+                                                    <div className="h-px bg-slate-100 my-1"></div>
+                                                    <button onClick={() => { setShowChangePass(true); setMenuOpen(false); }} className="menu-item">
+                                                        <Lock size={16} /> Change Password
+                                                    </button>
+                                                    <button onClick={handleDeleteAccount} className="menu-item text-red-500 hover:text-red-600 hover:bg-red-50">
+                                                        <Trash2 size={16} /> Delete Account
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </Box>
+                                </div>
 
-                                <div className="vp-details">
-                                    <Typography variant="h4" className="vp-name">
-                                        {user.fname} {user.lname}
-                                        {isAlumni && <Chip label="Alumni" color="primary" size="small" sx={{ ml: 1, verticalAlign: 'middle' }} />}
-                                    </Typography>
-                                    <Typography className="vp-role">{user.institute || "Student"}</Typography>
-
-                                    <Typography className="vp-location">
-                                        <Place fontSize="small" /> {user.city ? `${user.city}, ${user.state}` : "Location not set"}
-                                    </Typography>
-
-                                    <div className="vp-stats">
-                                        <span className="vp-stat-item" onClick={() => { setFollowerTab("Follower"); setShowFollowers(true); }}>
-                                            {user.followers?.length || 0} Followers
+                                <p className="vp-headline">{user.institute || "Student at AltHub University"}</p>
+                                
+                                <div className="vp-meta-row">
+                                    <span className="vp-meta-item">
+                                        <MapPin size={16} className="text-slate-400" /> 
+                                        {user.city ? `${user.city}, ${user.state}` : "Location not set"}
+                                    </span>
+                                    {user.github && (
+                                        <span onClick={() => handleSocialClick(user.github)} className="vp-meta-item cursor-pointer hover:text-teal-600">
+                                            <Github size={16} /> GitHub
                                         </span>
-                                        <span className="vp-stat-item" onClick={() => { setFollowerTab("Following"); setShowFollowers(true); }}>
-                                            {user.followings?.length || 0} Connections
+                                    )}
+                                    {user.portfolioweb && (
+                                        <span onClick={() => handleSocialClick(user.portfolioweb)} className="vp-meta-item cursor-pointer hover:text-teal-600">
+                                            <Globe size={16} /> Website
                                         </span>
-                                    </div>
+                                    )}
+                                </div>
 
-                                    <div className="vp-social-links">
-                                        <IconButton size="small" onClick={() => handleSocialClick(user.github)}><GitHub /></IconButton>
-                                        <IconButton size="small" onClick={() => handleSocialClick(user.portfolioweb)}><Language /></IconButton>
+                                <div className="vp-stats">
+                                    {/* Added 'group' manually for CSS hover effects */}
+                                    <div className="stat-box group" onClick={() => { setFollowerTab("Follower"); setShowFollowers(true); }}>
+                                        <span className="stat-val">{user.followers?.length || 0}</span>
+                                        <span className="stat-label">Followers</span>
+                                    </div>
+                                    <div className="stat-box group" onClick={() => { setFollowerTab("Following"); setShowFollowers(true); }}>
+                                        <span className="stat-val">{user.followings?.length || 0}</span>
+                                        <span className="stat-label">Followings</span>
                                     </div>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
+                    </div>
 
-                        {/* About Section */}
-                        {user.about && (
-                            <Card className="vp-section-card">
-                                <CardContent>
-                                    <Box className="vp-section-header">
-                                        <Typography variant="h6" fontWeight={700}>About</Typography>
-                                        <IconButton size="small" onClick={() => setShowEditProfile(true)}><Edit fontSize="small" /></IconButton>
-                                    </Box>
-                                    <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>{user.about}</Typography>
-                                </CardContent>
-                            </Card>
-                        )}
+                    {/* About Section */}
+                    {user.about && (
+                        <div className="vp-section">
+                            <div className="section-header">
+                                <h3 className="section-title">About</h3>
+                                <button onClick={() => setShowEditProfile(true)} className="section-add-btn"><Edit3 size={18} /></button>
+                            </div>
+                            <p className="vp-about-text">{user.about}</p>
+                        </div>
+                    )}
 
-                        {/* Experience Section */}
-                        <Card className="vp-section-card">
-                            <CardContent>
-                                <Box className="vp-section-header">
-                                    <Typography variant="h6" fontWeight={700}>Experience</Typography>
-                                    <IconButton className="vp-add-btn" onClick={() => { setModalType("Add"); setShowEditExp(true); }}>
-                                        <Add />
-                                    </IconButton>
-                                </Box>
-                                {experience.length > 0 ? experience.map(exp => (
-                                    <Box key={exp._id} className="vp-list-item" display="flex">
-                                        <img src={`${WEB_URL}${exp.companylogo}`} alt="" className="vp-list-logo" />
-                                        <Box flex={1}>
-                                            <Box display="flex" justifyContent="space-between">
-                                                <Typography variant="subtitle1" fontWeight={600}>{exp.position}</Typography>
-                                                <Edit fontSize="small" className="vp-edit-icon" onClick={() => { setModalType("Edit"); setShowEditExp(true); }} />
-                                            </Box>
-                                            <Typography variant="body2" color="text.secondary">{exp.companyname}</Typography>
-                                            <Typography variant="caption" color="text.disabled">{formatDate(exp.joindate)} - {formatDate(exp.enddate)}</Typography>
-                                            <Typography variant="body2" mt={1}>{exp.description}</Typography>
-                                        </Box>
-                                    </Box>
-                                )) : <Typography variant="body2" color="text.disabled">No experience added.</Typography>}
-                            </CardContent>
-                        </Card>
+                    {/* Experience Section */}
+                    <div className="vp-section">
+                        <div className="section-header">
+                            <h3 className="section-title"><Briefcase size={20} className="text-teal-600" /> Experience</h3>
+                            <button onClick={() => { setModalType("Add"); setShowEditExp(true); }} className="section-add-btn"><Plus size={20} /></button>
+                        </div>
+                        {experience.length > 0 ? experience.map(exp => (
+                            <div key={exp._id} className="timeline-item">
+                                <img src={exp.companylogo ? `${WEB_URL}${exp.companylogo}` : "images/Institute-Test.png"} alt="" className="timeline-logo" />
+                                <div className="timeline-content">
+                                    <button className="item-edit-btn" onClick={() => { setModalType("Edit"); setShowEditExp(true); }}><Edit3 size={14} /></button>
+                                    <h4 className="timeline-role">{exp.position}</h4>
+                                    <p className="timeline-company">{exp.companyname}</p>
+                                    <span className="timeline-date">{formatDate(exp.joindate)} - {formatDate(exp.enddate)}</span>
+                                    {exp.description && <p className="timeline-desc">{exp.description}</p>}
+                                </div>
+                            </div>
+                        )) : <p className="text-sm text-slate-400 italic py-4">No experience added yet. Click + to add.</p>}
+                    </div>
 
-                        {/* Education Section */}
-                        <Card className="vp-section-card">
-                            <CardContent>
-                                {/* ... existing header code ... */}
-                                {education.length > 0 ? education.map(edu => (
-                                    <Box key={edu._id} className="vp-list-item" display="flex">
-                                        {/* Updated Image logic */}
-                                        <img
-                                            src={edu.collagelogo ? `${WEB_URL}${edu.collagelogo}` : "/default-institute.png"}
-                                            alt={edu.institutename}
-                                            className="vp-list-logo"
-                                            onError={(e) => { e.target.src = "/default-institute.png"; }} // Fallback if image fails to load
-                                        />
-                                        <Box flex={1}>
-                                            <Box display="flex" justifyContent="space-between">
-                                                <Typography variant="subtitle1" fontWeight={600}>{edu.institutename}</Typography>
-                                                <Edit fontSize="small" className="vp-edit-icon" onClick={() => { setModalType("Edit"); setShowEditEdu(true); }} />
-                                            </Box>
-                                            <Typography variant="body2" color="text.secondary">{edu.course}</Typography>
-                                            <Typography variant="caption" color="text.disabled">{formatDate(edu.joindate)} - {formatDate(edu.enddate)}</Typography>
-                                        </Box>
-                                    </Box>
-                                )) : <Typography variant="body2" color="text.disabled">No education added.</Typography>}
-                            </CardContent>
-                        </Card>
+                    {/* Education Section */}
+                    <div className="vp-section">
+                        <div className="section-header">
+                            <h3 className="section-title"><GraduationCap size={22} className="text-teal-600" /> Education</h3>
+                            <button onClick={() => { setModalType("Add"); setShowEditEdu(true); }} className="section-add-btn"><Plus size={20} /></button>
+                        </div>
+                        {education.length > 0 ? education.map(edu => (
+                            <div key={edu._id} className="timeline-item">
+                                <img src={edu.collagelogo ? `${WEB_URL}${edu.collagelogo}` : "images/Institute-Test.png"} alt="" className="timeline-logo" />
+                                <div className="timeline-content">
+                                    <button className="item-edit-btn" onClick={() => { setModalType("Edit"); setShowEditEdu(true); }}><Edit3 size={14} /></button>
+                                    <h4 className="timeline-role">{edu.institutename}</h4>
+                                    <p className="timeline-company">{edu.course}</p>
+                                    <span className="timeline-date">{formatDate(edu.joindate)} - {formatDate(edu.enddate)}</span>
+                                </div>
+                            </div>
+                        )) : <p className="text-sm text-slate-400 italic py-4">No education added yet. Click + to add.</p>}
+                    </div>
 
-                    </Grid>
+                </div>
 
-                    {/* RIGHT COLUMN: SIDEBAR */}
-                    <Grid item xs={12} lg={3.5}>
-                        {/* Skills */}
-                        <Card className="vp-sidebar-card">
-                            <CardContent>
-                                <Typography variant="h6" fontWeight={700} gutterBottom>Skills</Typography>
-                                <Box display="flex" flexWrap="wrap">
-                                    {skills.length > 0 ? skills.map((s, i) => <Chip key={i} label={s} className="vp-chip" />) : "No skills added"}
-                                </Box>
-                            </CardContent>
-                        </Card>
+                {/* RIGHT COLUMN: SIDEBAR */}
+                <div className="vp-sidebar-col">
+                    
+                    {/* Skills */}
+                    <div className="sidebar-card">
+                        <h4 className="sidebar-title"><Award size={18} className="text-teal-500" /> Skills</h4>
+                        <div className="chip-wrapper">
+                            {skills.length > 0 ? skills.map((s, i) => <span key={i} className="skill-chip">{s}</span>) : <span className="text-xs text-slate-400">No skills added</span>}
+                        </div>
+                    </div>
 
-                        {/* Languages */}
-                        <Card className="vp-sidebar-card">
-                            <CardContent>
-                                <Typography variant="h6" fontWeight={700} gutterBottom>Languages</Typography>
-                                <Box display="flex" flexWrap="wrap">
-                                    {language.length > 0 ? language.map((l, i) => <Chip key={i} label={l} variant="outlined" className="vp-chip" />) : "No languages added"}
-                                </Box>
-                            </CardContent>
-                        </Card>
+                    {/* Languages */}
+                    <div className="sidebar-card">
+                        <h4 className="sidebar-title"><Globe size={18} className="text-slate-400" /> Languages</h4>
+                        <div className="chip-wrapper">
+                            {language.length > 0 ? language.map((l, i) => <span key={i} className="lang-chip">{l}</span>) : <span className="text-xs text-slate-400">No languages added</span>}
+                        </div>
+                    </div>
 
-                        {/* Suggestions */}
-                        <Card className="vp-sidebar-card">
-                            <CardContent>
-                                <Typography variant="h6" fontWeight={700} gutterBottom>People you may know</Typography>
-                                {topUsers.map(u => (
-                                    <Box key={u._id} className="vp-suggestion-item">
-                                        <Avatar src={u.profilepic ? `${WEB_URL}${u.profilepic}` : ""} sx={{ width: 40, height: 40, mr: 2 }} />
-                                        <Box>
-                                            <Typography variant="subtitle2">{u.fname} {u.lname}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{u.city || "Student"}</Typography>
-                                        </Box>
-                                        <Button size="small" className="vp-view-btn" onClick={() => nav("/view-search-profile", { state: { id: u._id } })}>View</Button>
-                                    </Box>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </Grid>
+                    {/* Suggestions */}
+                    <div className="sidebar-card">
+                        <h4 className="sidebar-title"><UserCheck size={18} className="text-teal-500" /> People you may know</h4>
+                        <div className="space-y-1">
+                            {topUsers.map(u => (
+                                <div key={u._id} className="suggest-item" onClick={() => nav("/view-search-profile", { state: { id: u._id } })}>
+                                    <div className="flex items-center gap-3">
+                                        <img src={u.profilepic ? `${WEB_URL}${u.profilepic}` : "images/profile1.png"} className="suggest-avatar" alt="" />
+                                        <div className="suggest-info">
+                                            <h4>{u.fname} {u.lname}</h4>
+                                            <p>{u.city || "Student"}</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight size={16} className="suggest-arrow" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                </Grid>
-            </Container>
+                </div>
+
+            </div>
 
             {/* Modals */}
             {showEditProfile && <EditProfileModal closeModal={() => setShowEditProfile(false)} user={user} getUser={getUser} />}

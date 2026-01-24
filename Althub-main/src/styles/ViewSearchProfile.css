@@ -1,84 +1,202 @@
-/* Container and Layout */
-.profile-view-container {
-    background-color: #f8f9fa;
-    min-height: 100vh;
-    padding-bottom: 32px;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* --- Page Layout --- */
+  .vsp-wrapper {
+    @apply min-h-screen bg-[#f8f9fa] font-sans text-slate-900 py-8 px-4 sm:px-6 lg:px-8;
+  }
+
+  .vsp-container {
+    @apply max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start;
+  }
+
+  /* --- Left Column --- */
+  .vsp-main-col {
+    @apply lg:col-span-8 xl:col-span-9 space-y-6;
+  }
+
+  /* --- Header Card --- */
+  .vsp-header-card {
+    @apply bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative mb-6;
+  }
+
+  .vsp-banner {
+    @apply h-52 w-full bg-gradient-to-r from-teal-600 to-emerald-500 relative;
+  }
+
+  .vsp-content-wrapper {
+    @apply px-8 pb-8 flex flex-col md:flex-row gap-6 relative;
+  }
+
+  .vsp-avatar-container {
+    @apply -mt-16 flex-shrink-0 relative z-10;
+  }
+
+  .vsp-avatar {
+    @apply w-36 h-36 rounded-full border-[5px] border-white bg-white shadow-md object-cover;
+  }
+
+  .vsp-info {
+    @apply pt-4 flex-1;
+  }
+
+  .vsp-name-row {
+    @apply flex items-center justify-between flex-wrap gap-2 mb-1;
+  }
+
+  .vsp-name {
+    @apply text-3xl font-extrabold text-slate-900 tracking-tight;
+  }
+
+  .vsp-badge {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-bold border border-teal-100 uppercase tracking-wide ml-3 align-middle;
+  }
+
+  .vsp-headline {
+    @apply text-lg text-slate-600 font-medium mb-3;
+  }
+
+  .vsp-meta-row {
+    @apply flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-5;
+  }
+
+  .vsp-meta-item {
+    @apply flex items-center gap-1.5;
+  }
+
+  /* Stats */
+  .vsp-stats {
+    @apply flex gap-6 text-sm py-4 border-t border-slate-50 mt-2;
+  }
+
+  .stat-box {
+    @apply flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors;
+  }
+
+  .stat-val {
+    @apply font-bold text-slate-900 group-hover:text-teal-600;
+  }
+
+  .stat-label {
+    @apply text-slate-500 font-medium;
+  }
+
+  /* Action Buttons */
+  .vsp-actions {
+    @apply flex gap-3 mt-4 md:mt-0 md:absolute md:top-4 md:right-8;
+  }
+
+  .btn-follow {
+    @apply flex items-center gap-2 px-6 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold shadow-md shadow-teal-500/20 hover:bg-teal-700 hover:-translate-y-0.5 transition-all;
+  }
+
+  .btn-following {
+    @apply flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-teal-600 rounded-xl text-sm font-bold hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all;
+  }
+
+  .btn-secondary {
+    @apply flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all;
+  }
+
+  /* --- Section Cards (About, Exp, Edu) --- */
+  .vsp-section {
+    @apply bg-white rounded-3xl shadow-sm border border-slate-200 p-8 mb-6 relative overflow-hidden;
+  }
+
+  .section-header {
+    @apply flex justify-between items-center mb-6;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-slate-900 flex items-center gap-2;
+  }
+
+  .vsp-about-text {
+    @apply text-slate-600 leading-loose whitespace-pre-line;
+  }
+
+  /* List Items */
+  .timeline-item {
+    @apply flex gap-5 mb-8 last:mb-0 relative;
+  }
+
+  .timeline-item::before {
+    @apply content-[''] absolute left-[26px] top-14 bottom-[-32px] w-[2px] bg-slate-100 last:hidden;
+  }
+
+  .timeline-logo {
+    @apply w-14 h-14 rounded-xl object-contain bg-white border border-slate-100 p-1 shadow-sm z-10 relative;
+  }
+
+  .timeline-content {
+    @apply flex-1 pt-1;
+  }
+
+  .timeline-role {
+    @apply text-lg font-bold text-slate-900 leading-tight;
+  }
+
+  .timeline-company {
+    @apply text-sm font-medium text-slate-700 mb-1;
+  }
+
+  .timeline-date {
+    @apply text-xs text-slate-400 font-semibold uppercase tracking-wide mb-3 block;
+  }
+
+  /* --- Right Sidebar --- */
+  .vsp-sidebar-col {
+    @apply lg:col-span-4 xl:col-span-3 space-y-6 sticky top-24;
+  }
+
+  .sidebar-card {
+    @apply bg-white rounded-3xl shadow-sm border border-slate-200 p-6;
+  }
+
+  .sidebar-title {
+    @apply text-sm font-bold text-slate-900 uppercase tracking-wide mb-4 flex items-center gap-2;
+  }
+
+  .chip-wrapper {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .skill-chip {
+    @apply px-3 py-1.5 bg-teal-50 text-teal-700 text-xs font-bold rounded-lg border border-teal-100 hover:bg-teal-100 transition-colors cursor-default;
+  }
+
+  .lang-chip {
+    @apply px-3 py-1.5 bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg border border-slate-200;
+  }
+
+  /* --- Modal Styles --- */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fade-in;
+  }
+
+  .modal-box {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all scale-100 border border-slate-100 text-center;
+  }
+
+  .modal-actions {
+    @apply flex gap-3 mt-6;
+  }
+
+  .btn-modal-cancel {
+    @apply flex-1 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition-colors;
+  }
+  
+  .btn-modal-danger {
+    @apply flex-1 py-2.5 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20;
+  }
 }
 
-/* Main Profile Header Card */
-.profile-header-paper {
-    border-radius: 16px !important;
-    overflow: hidden;
-    margin-bottom: 24px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
-
-.profile-banner {
-    height: 200px;
-    background: linear-gradient(135deg, #66bd9e 0%, #26a69a 100%);
-}
-
-.profile-header-content {
-    padding: 0 32px 32px 32px;
-    position: relative;
-}
-
-.profile-top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-}
-
-/* Fixed Avatar Styles */
-.profile-avatar-wrapper {
-    margin-top: -64px; /* Pulls avatar up into banner */
-}
-
-.profile-avatar-circle {
-    width: 150px !important;
-    height: 150px !important;
-    border: 5px solid #fff !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    background-color: #f5f5f5 !important;
-    overflow: hidden !important;
-}
-
-/* FIX: Ensure image is not zoomed and fits circle */
-.profile-avatar-circle img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important; 
-    object-position: center !important;
-}
-
-/* Stats (Followers/Connections) */
-.profile-stats-stack {
-    margin-top: 16px;
-    cursor: pointer;
-    color: #66bd9e;
-    font-weight: 600;
-}
-
-.profile-stat-link:hover {
-    text-decoration: underline;
-}
-
-/* Section Papers (Experience, Education, etc) */
-.profile-section-paper {
-    padding: 24px;
-    margin-bottom: 24px;
-    border-radius: 12px !important;
-}
-
-.section-title {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 8px;
-    margin-bottom: 16px !important;
-    font-weight: 700 !important;
-}
-
-.experience-item, .education-item {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
+.animate-fade-in {
+  animation: fadeIn 0.1s ease-out forwards;
 }

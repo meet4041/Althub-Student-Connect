@@ -4,20 +4,10 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import ProtectedImage from "../ProtectedImage";
-import "../styles/Navbar.css"; // <--- Import CSS
-
-// MUI Components
 import {
-  AppBar, Toolbar, IconButton, Button, Badge, Avatar, Drawer,
-  List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Box, Container, Typography, Divider
-} from "@mui/material";
-
-// Icons
-import {
-  Home, AccountBox, Search, Message, Notifications, Feedback,
-  VolunteerActivism, Menu as MenuIcon, Close, Logout as LogoutIcon
-} from "@mui/icons-material";
+  Home, FileText, Search, MessageSquare, Bell, Gift, MessageCircle, Menu, X, LogOut, User
+} from "lucide-react";
+import "../styles/Navbar.css";
 
 export default function Navbar({ socket }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,12 +21,6 @@ export default function Navbar({ socket }) {
   const nav = useNavigate();
   const { pathname } = useLocation();
 
-  // --- Handlers ---
-  const toggleDrawer = (open) => (event) => {
-    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) return;
-    setMobileOpen(open);
-  };
-
   const getUser = useCallback(() => {
     const id = localStorage.getItem("Althub_Id");
     if (!id) { setUser({}); return; }
@@ -49,22 +33,19 @@ export default function Navbar({ socket }) {
     localStorage.clear();
     setUser({});
     nav("/");
+    setMobileOpen(false);
   };
 
-  // --- Effects ---
   useEffect(() => {
     getUser();
 
-    // Hide Navbar on auth pages
     const hiddenRoutes = ["/register", "/login", "/", "/forget-password", "/new-password"];
     setShowNavbar(!hiddenRoutes.includes(pathname));
 
-    // Request Notification Permission
     if ("Notification" in window && Notification.permission !== "granted") {
       Notification.requestPermission();
     }
 
-    // Socket Listeners
     if (socket) {
       socket.emit("addUser", localStorage.getItem("Althub_Id"));
 
@@ -93,122 +74,144 @@ export default function Navbar({ socket }) {
     }
   }, [pathname, socket, getUser, nav]);
 
-  // Reset dots when visiting pages
   useEffect(() => {
     if (pathname === "/message") setHasMsg(false);
     if (pathname === "/notification") setHasNotif(false);
+    setMobileOpen(false);
   }, [pathname]);
 
   if (!showNavbar) return null;
 
-  // --- Navigation Items Configuration ---
+  // Navigation Items
   const navItems = [
-    { text: "Home", icon: <Home />, path: "/home" },
-    { text: "My Posts", icon: <AccountBox />, path: "/my-posts" },
-    { text: "Search", icon: <Search />, path: "/search-profile" },
-    { text: "Message", icon: <Message />, path: "/message", badge: hasMsg },
-    { text: "Notification", icon: <Notifications />, path: "/notification", badge: hasNotif },
-    { text: "Scholarship", icon: <VolunteerActivism />, path: "/scholarship" }, // Added to Desktop too? Usually limited space.
-    { text: "Feedback", icon: <Feedback />, path: "/feedback" } // Mobile only usually, but added here based on your list
+    { text: "Home", icon: <Home size={20} className="nav-icon" />, path: "/home" },
+    { text: "My Posts", icon: <FileText size={20} className="nav-icon" />, path: "/my-posts" },
+    { text: "Search", icon: <Search size={20} className="nav-icon" />, path: "/search-profile" },
+    { text: "Message", icon: <MessageSquare size={20} className="nav-icon" />, path: "/message", badge: hasMsg },
+    { text: "Notification", icon: <Bell size={20} className="nav-icon" />, path: "/notification", badge: hasNotif },
+    { text: "Scholarship", icon: <Gift size={20} className="nav-icon" />, path: "/scholarship" },
+    { text: "Feedback", icon: <MessageCircle size={20} className="nav-icon" />, path: "/feedback" }
   ];
 
-  // Filter items for Desktop Navbar (keep it clean)
-  const desktopNavItems = navItems.filter(item => ["Home", "My Posts", "Search", "Message", "Notification"].includes(item.text));
-
-  const mobileList = (
-    <Box sx={{ width: 280 }} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
-      <div className="mobile-menu-header">
-        <Typography variant="h6" className="mobile-menu-title">Menu</Typography>
-        <IconButton onClick={toggleDrawer(false)}><Close /></IconButton>
-      </div>
-      <List>
-        {navItems.map((item) => (
-          <ListItem key={item.text} disablePadding onClick={() => nav(item.path)}>
-            <ListItemButton className="mobile-nav-item">
-              <ListItemIcon className="mobile-nav-icon">
-                {item.badge ? <Badge variant="dot" color="error">{item.icon}</Badge> : item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} className="mobile-nav-text" />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        <ListItem disablePadding onClick={handleLogout} className="mobile-logout">
-          <ListItemButton className="mobile-nav-item">
-            <ListItemIcon className="mobile-nav-icon"><LogoutIcon /></ListItemIcon>
-            <ListItemText primary="Logout" className="mobile-nav-text" />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Box>
-  );
+  // Desktop only shows first 5 items
+  const desktopItems = navItems.slice(0, 5);
 
   return (
-    <AppBar position="sticky" className="navbar-appbar" elevation={0}>
-      <Container maxWidth="xl" className="navbar-container">
-        <Toolbar className="navbar-toolbar">
+    <>
+      <nav className="navbar-wrapper">
+        <div className="navbar-container">
 
           {/* Logo */}
-          <Link to="/home" className="navbar-logo">
-            <img src="/images/Logo1.jpeg" alt="AltHub" />
-          </Link>
+          <div onClick={() => nav("/home")} className="nav-logo">
+            {/* <img src="/images/Logo1.jpeg" alt="AltHub" /> */}
+            <h1 className="nav-logo-text">
+              Alt<span className="logo-highlight">Hub</span>
+            </h1>
+          </div>
 
           {/* Desktop Navigation */}
-          <Box className="nav-links-box">
-            {desktopNavItems.map((item) => (
-              <Button
+          <div className="nav-links">
+            {desktopItems.map((item) => (
+              <button
                 key={item.text}
-                className={`nav-item ${pathname === item.path ? 'active' : ''}`}
+                // Added 'group' here manually to enable group-hover on child icons
+                className={`nav-item group ${pathname === item.path ? 'active' : ''}`}
                 onClick={() => nav(item.path)}
-                startIcon={
-                  item.badge ?
-                    <Badge variant="dot" className="nav-badge">{item.icon}</Badge> :
-                    item.icon
-                }
               >
-                {item.text}
-              </Button>
+                <div className="relative flex items-center justify-center">
+                  {item.icon}
+                  {item.badge && <span className="nav-badge-dot"></span>}
+                </div>
+                <span>{item.text}</span>
+              </button>
             ))}
-          </Box>
+          </div>
 
-          {/* Right Side: Profile & Mobile Toggle */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {/* Actions */}
+          <div className="nav-actions">
 
-            {/* Desktop Profile Button */}
-            <Box className="nav-profile-box">
-              <Button className="nav-profile-btn" onClick={() => nav("/view-profile")}>
-                <Avatar className="nav-avatar">
-                  <ProtectedImage
-                    imgSrc={user?.profilepic}
-                    defaultImage="images/profile1.png"
-                  />
-                </Avatar>
-                <Typography className="nav-user-name">
-                  {user.fname || "User"}
-                </Typography>
-              </Button>
-            </Box>
+            {/* Desktop Profile Button - Added 'group' here */}
+            <div className="profile-btn group" onClick={() => nav("/view-profile")}>
+              <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200">
+                <ProtectedImage
+                  imgSrc={user?.profilepic}
+                  defaultImage="images/profile1.png"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <span className="nav-username">{user.fname || "User"}</span>
+            </div>
 
-            {/* Mobile Menu Icon */}
-            <IconButton
-              className="nav-mobile-btn"
-              onClick={toggleDrawer(true)}
-              sx={{ color: '#555', ml: 1 }}
+            {/* Mobile Toggle */}
+            <button className="mobile-toggle" onClick={() => setMobileOpen(true)}>
+              <Menu size={24} />
+            </button>
+          </div>
+
+        </div>
+      </nav>
+
+      {/* --- Mobile Drawer --- */}
+
+      {mobileOpen && (
+        <div className="drawer-overlay" onClick={() => setMobileOpen(false)}></div>
+      )}
+
+      <div className={`drawer-panel ${mobileOpen ? 'open' : ''}`}>
+
+        {/* Header */}
+        <div className="drawer-header">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shadow-sm">
+              <ProtectedImage
+                imgSrc={user?.profilepic}
+                defaultImage="images/profile1.png"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-lg leading-tight">{user.fname} {user.lname}</p>
+              <p className="text-xs text-slate-500 font-medium">View Profile</p>
+            </div>
+          </div>
+          <button className="drawer-close" onClick={() => setMobileOpen(false)}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Menu Items */}
+        <div className="drawer-menu">
+          {navItems.map((item) => (
+            <button
+              key={item.text}
+              className={`drawer-item ${pathname === item.path ? 'active' : ''}`}
+              onClick={() => nav(item.path)}
             >
-              <MenuIcon />
-            </IconButton>
+              <div className="relative">
+                {item.icon}
+                {item.badge && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+              </div>
+              <span>{item.text}</span>
+            </button>
+          ))}
 
-          </Box>
+          <button
+            className={`drawer-item ${pathname === "/view-profile" ? 'active' : ''}`}
+            onClick={() => nav("/view-profile")}
+          >
+            <User size={20} />
+            <span>My Profile</span>
+          </button>
+        </div>
 
-          {/* Mobile Drawer */}
-          <Drawer anchor="right" open={mobileOpen} onClose={toggleDrawer(false)}>
-            {mobileList}
-          </Drawer>
+        {/* Footer */}
+        <div className="drawer-logout">
+          <button className="btn-logout" onClick={handleLogout}>
+            <LogOut size={20} /> Logout
+          </button>
+        </div>
 
-        </Toolbar>
-      </Container>
-    </AppBar>
+      </div>
+    </>
   );
 }

@@ -1,210 +1,245 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../styles/Main.css"; 
-
-// MUI Imports
 import {
-  AppBar, Toolbar, Button, Container, Grid, Typography, Box, 
-  Card, CardContent, Chip, List, ListItem, Link as MuiLink
-} from '@mui/material';
-
-// Icons
-import {
-  CheckCircle, Phone, Email, LinkedIn, GitHub
-} from '@mui/icons-material';
+    ArrowRight,
+    CheckCircle,
+    Calendar,
+    Users,
+    MessageSquare,
+    Linkedin,
+    Github,
+    Mail,
+    Phone
+} from 'lucide-react';
+import "../styles/Main.css";
 
 export default function Main() {
     const nav = useNavigate();
-    
+
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
     return (
-        <div className="landing-wrapper">
-            
+        <div className="page-wrapper">
+
             {/* --- NAVBAR --- */}
-            <AppBar position="fixed" className="landing-appbar" elevation={0}>
-                <Toolbar className="landing-toolbar">
-                    <img src="images/Logo1.jpeg" alt="AltHub" className="landing-logo" />
-                    <Box>
-                        <Button variant="outlined" className="landing-nav-btn btn-nav-login" onClick={() => nav('/login')}>
-                            Login
-                        </Button>
-                        <Button variant="contained" className="landing-nav-btn btn-nav-register" onClick={() => nav('/register')}>
-                            Register
-                        </Button>
-                    </Box>
-                </Toolbar>
-            </AppBar>
+            <nav className="nav-glass">
+                <div className="section-container">
+                    <div className="nav-inner">
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
+                            {/* Ensure you have a logo that fits, or use this text fallback */}
+                            <img src="images/Logo1.jpeg" alt="AltHub" className="h-12 w-100 rounded-lg shadow-sm" />
+                            {/* <span className="nav-logo-text">AltHub</span> */}
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <button className="btn-nav-login" onClick={() => nav('/login')}>
+                                Log in
+                            </button>
+                            <button className="btn-primary" onClick={() => nav('/register')}>
+                                Get Started
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
 
             {/* --- HERO SECTION --- */}
-            <Box className="hero-section">
-                <Container maxWidth="lg">
-                    <Grid container spacing={4} alignItems="center">
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h2" className="hero-title">
-                                Connecting Students & Alumni Together
-                            </Typography>
-                            <Typography variant="h6" className="hero-subtitle">
-                                A comprehensive platform bridging the gap between college management, current students, and alumni. 
-                                Unlock career advice, mentorship, and job opportunities in one place.
-                            </Typography>
-                            <Button 
-                                variant="contained" 
-                                className="hero-cta-btn btn-nav-register" 
-                                onClick={() => nav('/register')}
-                            >
-                                Get Started
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} md={6} display="flex" justifyContent="center">
-                            {/* Priority loading for Hero Image */}
-                            <img src="images/connect.png" alt="Connection" className="hero-img" loading="eager" />
-                        </Grid>
-                    </Grid>
-                </Container>
-            </Box>
+            <section className="hero-section">
+                <div className="section-container grid lg:grid-cols-2 gap-16 items-center">
 
-            {/* --- FEATURES GRID --- */ }
-            <Box className="features-section">
-                <Container maxWidth="lg">
-                    <Box className="section-title">
-                        <Typography variant="h3" component="h2">Explore Althub</Typography>
-                        <Typography variant="h6">Everything you need to stay connected</Typography>
-                    </Box>
-                    
-                    <Grid container spacing={4}>
-                        {[
-                            { img: "images/event.png", title: "Events", desc: "Keep up with reunions, webinars, and casual hangouts happening at your alma mater." },
-                            { img: "images/alumini-directory.png", title: "Alumni Directory", desc: "Find lost classmates, discover mentors, and build a professional network that matters." },
-                            { img: "images/content-library.png", title: "Secure Messaging", desc: "Directly connect with like-minded people using our secure, on-demand messaging system." }
-                        ].map((feature, idx) => (
-                            <Grid item xs={12} md={4} key={idx}>
-                                <Card className="feature-card" elevation={0}>
-                                    {/* Lazy load feature icons */}
-                                    <img src={feature.img} alt={feature.title} className="feature-icon" loading="lazy" />
-                                    <CardContent>
-                                        <Typography variant="h5" color="primary" fontWeight={700} gutterBottom>
-                                            {feature.title}
-                                        </Typography>
-                                        <Typography variant="body1" color="textSecondary">
-                                            {feature.desc}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </Container>
-            </Box>
+                    {/* Left Content */}
+                    <div className="z-10">
+                        <div className="hero-badge">
+                            <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                            Connecting DAU
+                        </div>
 
-            {/* --- JOB TAGS --- */}
-            <Box className="tags-section">
-                <Container maxWidth="md">
-                    <Box className="section-title">
-                        <Typography variant="h3" component="h2">Find the Right Connections</Typography>
-                        <Typography variant="h6">Connect with professionals across various fields</Typography>
-                    </Box>
-                    <Box display="flex" flexWrap="wrap" justifyContent="center" gap={1.5}>
+                        <h1 className="hero-title">
+                            Connecting Students & <br />
+                            <span className="hero-gradient-text">Alumni Together</span>
+                        </h1>
+
+                        <p className="hero-desc">
+                            A comprehensive platform bridging the gap between campus life and professional careers. Unlock career advice, mentorship, and job opportunities in one place.
+                        </p>
+
+                        <button onClick={() => nav('/register')} className="btn-hero-cta group">
+                            Join the Community
+                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+
+                    {/* Right Image */}
+                    <div className="hero-image-wrapper">
+                        {/* New Theme Blobs: Teal and Emerald */}
+                        <div className="bg-blob bg-brand-200 top-0 right-0 w-72 h-72"></div>
+                        <div className="bg-blob bg-secondary-200 bottom-0 left-0 w-72 h-72 animation-delay-2000"></div>
+
+                        <img
+                            src="images/connect.png"
+                            alt="Connection Illustration"
+                            className="hero-img"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* --- FEATURES SECTION --- */}
+            <section className="features-section">
+                <div className="section-container">
+                    <div className="section-header">
+                        <span className="section-tag">Features</span>
+                        <h2 className="section-title">Everything you need to grow</h2>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {/* Feature 1 */}
+                        <div className="feature-card group">
+                            <div className="feature-icon-box bg-orange-50 text-orange-500">
+                                <Calendar className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3">Events & Reunions</h3>
+                            <p className="text-slate-500 leading-relaxed">
+                                Keep up with reunions, webinars, and casual hangouts happening at your alma mater.
+                            </p>
+                        </div>
+
+                        {/* Feature 2 (Main) */}
+                        <div className="feature-card group">
+                            <div className="feature-icon-box bg-brand-50 text-brand-600">
+                                <Users className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3">Alumni Directory</h3>
+                            <p className="text-slate-500 leading-relaxed">
+                                Find lost classmates, discover mentors, and build a professional network that matters.
+                            </p>
+                        </div>
+
+                        {/* Feature 3 */}
+                        <div className="feature-card group">
+                            <div className="feature-icon-box bg-secondary-50 text-secondary-600">
+                                <MessageSquare className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3">Secure Messaging</h3>
+                            <p className="text-slate-500 leading-relaxed">
+                                Directly connect with like-minded people using our secure, on-demand messaging system.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* --- TAGS SECTION --- */}
+            <section className="tags-section">
+                <div className="section-container text-center">
+                    <h2 className="text-3xl font-bold text-slate-900 mb-8">Find Connections in Top Fields</h2>
+                    <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
                         {[
-                            "Network Administrator", "Designer", "System Analyst", 
-                            "Database Administrator", "Full-stack Developer", 
-                            "Software Engineer", "Data Scientist", "Cloud Engineer", 
-                            "IT Security Specialist", "Analytics Manager"
+                            "Network Administrator", "UI/UX Designer", "System Analyst",
+                            "Database Admin", "Full-stack Developer",
+                            "Software Engineer", "Data Scientist", "Cloud Engineer",
+                            "Cyber Security", "Product Manager"
                         ].map((job, index) => (
-                            <Chip key={index} label={job} className="tag-chip" clickable />
+                            <span key={index} className="job-tag">
+                                {job}
+                            </span>
                         ))}
-                    </Box>
-                </Container>
-            </Box>
+                    </div>
+                </div>
+            </section>
 
-            {/* --- INFO SECTIONS --- */}
-            <Box className="info-section">
-                <Container maxWidth="lg">
-                    {/* Why Althub */}
-                    <Grid container spacing={6} alignItems="center" className="info-container">
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h3" fontWeight={700} gutterBottom>Why Choose Althub?</Typography>
-                            <List>
+            {/* --- WHY US SECTION --- */}
+            <section className="info-section">
+                <div className="section-container space-y-32">
+
+                    {/* Block 1 */}
+                    <div className="grid md:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <span className="section-tag text-brand-600">Why Althub?</span>
+                            <h2 className="text-4xl font-extrabold text-slate-900 mb-8">Empowering the Alumni Network</h2>
+                            <div className="space-y-2">
                                 {[
                                     "Provide alumni a reason to give back their time & talent.",
                                     "Build alumni-centric programs designed for engagement.",
                                     "No app downloads required – accessible everywhere.",
-                                    "Simple for any age group to participate from anywhere."
+                                    "Simple for any age group to participate."
                                 ].map((text, i) => (
-                                    <ListItem key={i} className="info-list-item">
-                                        <CheckCircle className="info-icon" />
-                                        <Typography variant="body1" color="textSecondary">{text}</Typography>
-                                    </ListItem>
+                                    <div key={i} className="info-list-item">
+                                        <CheckCircle className="check-icon" />
+                                        <p className="text-slate-700 font-medium">{text}</p>
+                                    </div>
                                 ))}
-                            </List>
-                        </Grid>
-                        <Grid item xs={12} md={6} className="info-img-wrapper">
-                            {/* Lazy load secondary images */}
-                            <img src="images/Alumni-2.svg" alt="Why Althub" className="info-img" loading="lazy" />
-                        </Grid>
-                    </Grid>
+                            </div>
+                        </div>
+                        <div className="flex justify-center relative">
+                            {/* Teal Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-brand-100 to-transparent rounded-full blur-3xl opacity-50 -z-10"></div>
+                            <img src="images/Alumni-2.svg" alt="Why Althub" className="w-full max-w-md drop-shadow-xl hover:-translate-y-2 transition-transform duration-500" />
+                        </div>
+                    </div>
 
-                    {/* Alumni Center */}
-                    <Grid container spacing={6} alignItems="center" direction={{xs: 'column-reverse', md: 'row'}}>
-                        <Grid item xs={12} md={6} className="info-img-wrapper">
-                            <img src="images/Usability testing-bro.png" alt="Alumni Center" className="info-img" loading="lazy" />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h3" fontWeight={700} gutterBottom>Alumni at the Center</Typography>
-                            <Typography variant="body1" color="textSecondary" paragraph fontSize="1.1rem" lineHeight={1.8}>
-                                We believe that a strong alumni network is the backbone of any institution. 
-                                In today's value-focused reality, we provide the technology and strategy to make connecting easier, 
-                                more meaningful, and mutually beneficial.
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Container>
-            </Box>
+                    {/* Block 2 */}
+                    <div className="grid md:grid-cols-2 gap-16 items-center">
+                        <div className="order-2 md:order-1 flex justify-center relative">
+                            {/* Emerald Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-bl from-secondary-100 to-transparent rounded-full blur-3xl opacity-50 -z-10"></div>
+                            <img src="images/Usability testing-bro.png" alt="Alumni Center" className="w-full max-w-md drop-shadow-xl hover:-translate-y-2 transition-transform duration-500" />
+                        </div>
+                        <div className="order-1 md:order-2">
+                            <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Alumni at the Center</h2>
+                            <p className="text-lg text-slate-600 leading-loose">
+                                We believe that a strong alumni network is the backbone of any institution.
+                                In today's value-focused reality, we provide the technology and strategy to make connecting easier,
+                                more meaningful, and mutually beneficial for everyone involved.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
 
             {/* --- FOOTER --- */}
-            <footer className="landing-footer">
-                <Container maxWidth="lg">
-                    <Grid container spacing={5}>
-                        {/* About */}
-                        <Grid item xs={12} md={4} className="footer-col">
-                            <Typography variant="h5" className="footer-heading">About Althub</Typography>
-                            <Typography variant="body2" color="grey.400" lineHeight={1.8}>
-                                Althub bridges the gap between college management, current students, and alumni. 
-                                It enables seamless communication for job vacancies, career advice, and mentorship.
-                            </Typography>
-                        </Grid>
+            <footer className="footer-root">
+                <div className="section-container grid md:grid-cols-4 gap-12">
+                    <div className="col-span-1 md:col-span-2">
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="text-2xl font-bold text-white">AltHub</span>
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-400 max-w-sm">
+                            Bridging the gap between college management, current students, and alumni.
+                            Seamless communication for job vacancies, career advice, and mentorship.
+                        </p>
+                    </div>
 
-                        {/* Contact */}
-                        <Grid item xs={12} md={4} className="footer-col">
-                            <Typography variant="h5" className="footer-heading">Contact Us</Typography>
-                            <Box display="flex" flexDirection="column" gap={1}>
-                                <div className="footer-link"><Phone className="footer-icon" /> +91 6352314322</div>
-                                <MuiLink href="mailto:althub.daiict@gmail.com" className="footer-link" underline="none">
-                                    <Email className="footer-icon" /> althub.daiict@gmail.com
-                                </MuiLink>
-                            </Box>
-                        </Grid>
+                    <div>
+                        <h4 className="footer-heading">Contact Us</h4>
+                        <div className="space-y-4 text-sm">
+                            <div className="footer-link">
+                                <Phone className="w-4 h-4" /> +91 6352314322
+                            </div>
+                            <a href="mailto:althub.daiict@gmail.com" className="footer-link">
+                                <Mail className="w-4 h-4" /> althub.daiict@gmail.com
+                            </a>
+                        </div>
+                    </div>
 
-                        {/* Socials */}
-                        <Grid item xs={12} md={4} className="footer-col">
-                            <Typography variant="h5" className="footer-heading">Follow Us</Typography>
-                            <Box display="flex" flexDirection="column" gap={1}>
-                                <MuiLink href="https://www.linkedin.com/in/meetgandhi4041/" target="_blank" className="footer-link" underline="none">
-                                    <LinkedIn className="footer-icon" /> LinkedIn
-                                </MuiLink>
-                                <MuiLink href="https://github.com/meet4041" target="_blank" className="footer-link" underline="none">
-                                    <GitHub className="footer-icon" /> GitHub
-                                </MuiLink>
-                            </Box>
-                        </Grid>
-                    </Grid>
+                    <div>
+                        <h4 className="footer-heading">Follow Us</h4>
+                        <div className="space-y-4 text-sm">
+                            <a href="https://www.linkedin.com/in/meetgandhi4041/" target="_blank" rel="noreferrer" className="footer-link">
+                                <Linkedin className="w-4 h-4" /> LinkedIn
+                            </a>
+                            <a href="https://github.com/meet4041" target="_blank" rel="noreferrer" className="footer-link">
+                                <Github className="w-4 h-4" /> GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-                    <Box className="footer-bottom">
-                        <Typography variant="body2">&copy; {new Date().getFullYear()} Althub. All rights reserved.</Typography>
-                    </Box>
-                </Container>
+                <div className="section-container mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-600">
+                    &copy; {new Date().getFullYear()} Althub. All rights reserved.
+                </div>
             </footer>
-
         </div>
     )
 }

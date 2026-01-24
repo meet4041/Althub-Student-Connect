@@ -1,284 +1,172 @@
-/* ==========================================================================
-   REGISTER PAGE STYLES
-   ========================================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* --- Wrapper & Layout --- */
-.register-wrapper {
-    min-height: 100vh;
-    background-color: #fff;
-    display: flex;
-    font-family: 'Poppins', sans-serif;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+@layer components {
+  /* --- Layout --- */
+  .register-wrapper {
+    @apply min-h-screen flex flex-col lg:flex-row bg-white font-sans text-slate-900 selection:bg-brand-100 selection:text-brand-900;
   }
-  
-  /* --- Left Visual Side (Gradient) --- */
-  .reg-visual-side {
-    background: linear-gradient(135deg, #e3fdf5 0%, #ffe6fa 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 60px;
-    position: relative;
-    /* Ensure it fills height on large screens */
-    min-height: 100vh; 
+
+  /* --- Visual Side (Left) --- */
+  .register-visual-side {
+    @apply hidden lg:flex lg:w-5/12 relative bg-gradient-to-br from-brand-50 to-brand-100 flex-col items-center justify-center p-12 text-center sticky top-0 h-screen overflow-hidden;
   }
-  
-  /* Back Button styling */
-  .reg-back-btn {
-    position: absolute !important;
-    top: 40px;
-    left: 40px;
-    background-color: rgba(255, 255, 255, 0.8) !important;
-    border-radius: 30px !important;
-    padding: 10px 20px !important;
-    text-transform: none !important;
-    color: #333 !important;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: none !important;
-    cursor: pointer;
-    transition: all 0.3s ease !important;
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+
+  .visual-blob {
+    @apply absolute rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob;
   }
-  
-  .reg-back-btn:hover {
-    background-color: #fff !important;
-    transform: translateX(-3px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+
+  .visual-content {
+    @apply relative z-10 max-w-lg space-y-6;
   }
-  
-  /* Visual Content Text */
-  .reg-visual-content {
-    max-width: 500px;
-    z-index: 2; /* Ensure text is above background elements */
+
+  /* --- Form Side (Right) --- */
+  .register-form-side {
+    @apply flex-1 w-full flex flex-col items-center justify-center px-4 py-8 lg:px-16 lg:py-12 bg-white relative;
   }
-  
-  .reg-visual-content h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #2d3436;
-    line-height: 1.2;
+
+  .back-home-btn {
+    @apply absolute top-6 left-6 inline-flex items-center gap-2 p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-50 rounded-lg transition-all duration-200 cursor-pointer z-20;
   }
-  
-  .reg-visual-content p {
-    font-size: 1.1rem;
-    color: #636e72;
-    line-height: 1.6;
-    margin-bottom: 30px;
+
+  .form-container {
+    @apply w-full max-w-2xl mt-8;
   }
-  
-  /* Login Redirection Link */
-  .reg-login-redirect {
-    font-weight: 500;
-    color: #2d3436;
-    margin-top: 20px;
+
+  .form-title {
+    @apply text-3xl font-bold text-slate-900 mb-2;
   }
-  
-  .reg-login-link {
-    color: #66bd9e !important;
-    text-decoration: none !important;
-    font-weight: 700 !important;
-    margin-left: 5px;
-    cursor: pointer;
-    background: none !important;
-    padding: 0 !important;
-    min-width: auto !important;
+
+  /* --- Custom Stepper --- */
+  .stepper-container {
+    @apply flex items-center justify-between relative mb-10 w-full px-2;
   }
-  
-  .reg-login-link:hover {
-    text-decoration: underline !important;
-    background: none !important;
+
+  .stepper-line-bg {
+    @apply absolute left-0 top-1/2 w-full h-1 bg-slate-100 -z-10 -translate-y-1/2 rounded-full;
   }
-  
-  /* Image styling */
-  .reg-img {
-    margin-top: 40px;
-    width: 100%;
-    max-width: 450px;
-    height: auto;
-    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.08));
-    align-self: center;
+
+  .stepper-line-fill {
+    @apply absolute left-0 top-1/2 h-1 bg-brand-500 -z-10 -translate-y-1/2 rounded-full transition-all duration-500 ease-in-out;
   }
-  
-  /* Responsive Hide for Mobile */
-  @media (max-width: 900px) {
-    .reg-visual-side {
-      display: none; /* Hide entire left panel on small screens */
-    }
+
+  .step-item {
+    @apply flex flex-col items-center gap-2 bg-white px-2 cursor-default;
   }
-  
-  
-  /* --- Right Form Side --- */
-  .reg-form-side {
-    padding: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    min-height: 100vh;
+
+  .step-circle {
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300;
   }
-  
-  .reg-form-container {
-    width: 100%;
-    max-width: 600px;
+
+  .step-active {
+    @apply border-brand-500 bg-brand-500 text-white shadow-lg shadow-brand-500/30 scale-110;
   }
-  
-  /* Form Headers */
-  .reg-form-title {
-    font-size: 1.8rem !important;
-    font-weight: 700 !important;
-    color: #333 !important;
-    margin-bottom: 8px !important;
+
+  .step-completed {
+    @apply border-brand-500 bg-brand-500 text-white;
   }
-  
-  .reg-form-subtitle {
-    color: #888 !important;
-    margin-bottom: 30px !important;
-    font-size: 0.95rem !important;
+
+  .step-inactive {
+    @apply border-slate-200 text-slate-400 bg-white;
   }
-  
-  /* --- Material UI TextField Overrides --- */
-  .reg-textfield {
-    margin-bottom: 20px !important;
+
+  .step-label {
+    @apply text-xs font-semibold uppercase tracking-wider transition-colors duration-300 hidden sm:block;
   }
-  
-  .reg-textfield .MuiOutlinedInput-root {
-    background-color: #fcfcfc;
-    border-radius: 12px !important; /* Softer rounded corners */
-    transition: all 0.2s;
+
+  /* --- Inputs --- */
+  .input-group {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-5;
   }
-  
-  .reg-textfield .MuiOutlinedInput-root fieldset {
-    border-color: #e0e0e0;
+
+  .full-width {
+    @apply md:col-span-2;
   }
-  
-  .reg-textfield .MuiOutlinedInput-root:hover fieldset {
-    border-color: #66bd9e !important;
+
+  .input-label {
+    @apply block text-sm font-medium text-slate-700 ml-1 mb-1.5;
   }
-  
-  .reg-textfield .MuiOutlinedInput-root.Mui-focused {
-    background-color: #fff;
-    box-shadow: 0 4px 10px rgba(102, 189, 158, 0.1); /* Subtle shadow on focus */
+
+  .input-wrapper {
+    @apply relative flex items-center;
   }
-  
-  .reg-textfield .MuiOutlinedInput-root.Mui-focused fieldset {
-    border-color: #66bd9e !important;
-    border-width: 2px !important;
+
+  .input-icon {
+    @apply absolute left-4 h-5 w-5 text-slate-400 transition-colors duration-200 pointer-events-none;
   }
-  
-  /* --- Action Buttons --- */
-  .reg-btn-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 40px;
+
+  .custom-input {
+    @apply w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400 text-sm font-medium
+    focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
   }
-  
-  .reg-btn-next,
-  .reg-btn-submit {
-    padding: 10px 30px !important;
-    background-color: #66bd9e !important;
-    color: #fff !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    text-transform: none !important;
-    box-shadow: 0 4px 6px rgba(102, 189, 158, 0.2) !important; 
-    transition: all 0.2s !important;
+
+  .input-wrapper:focus-within .input-icon {
+    @apply text-brand-500;
   }
-  
-  .reg-btn-next:hover,
-  .reg-btn-submit:hover {
-    background-color: #479378 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(102, 189, 158, 0.3) !important;
+
+  /* --- Tag Input (Skills/Languages) --- */
+  .tag-container {
+    @apply flex flex-wrap gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/10 transition-all min-h-[52px];
   }
-  
-  /* Disabled state */
-  .reg-btn-next:disabled,
-  .reg-btn-submit:disabled {
-    background-color: #a5d6c5 !important;
-    color: #fff !important;
-    box-shadow: none !important;
-    cursor: not-allowed;
+
+  .tag-pill {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-100 text-brand-800 rounded-lg text-sm font-semibold animate-fade-in-up;
   }
-  
-  .reg-btn-prev {
-    padding: 10px 30px !important;
-    background-color: #f1f3f5 !important;
-    color: #555 !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    text-transform: none !important;
-    box-shadow: none !important;
-    transition: all 0.2s !important;
+
+  .tag-input {
+    @apply flex-1 bg-transparent outline-none min-w-[120px] px-2 py-1 text-slate-900 placeholder:text-slate-400 text-sm;
   }
-  
-  .reg-btn-prev:hover {
-    background-color: #e9ecef !important;
-    color: #333 !important;
+
+  /* --- Radio Group --- */
+  .radio-group {
+    @apply flex gap-4;
   }
-  
-  .reg-btn-prev:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+
+  .radio-label {
+    @apply flex items-center gap-3 px-5 py-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-all w-full;
   }
-  
-  /* --- Profile Picture Upload Area --- */
-  .reg-upload-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 25px;
-    margin-top: 20px;
+
+  .radio-label.selected {
+    @apply border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-500;
   }
-  
-  .reg-profile-preview {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #fff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    background-color: #f0f0f0;
+
+  .radio-circle {
+    @apply w-5 h-5 rounded-full border-2 flex items-center justify-center;
   }
-  
-  .reg-upload-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
-    border: 1px dashed #66bd9e;
-    background-color: #f0f9f6;
-    color: #66bd9e;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
+
+  .radio-dot {
+    @apply w-2.5 h-2.5 rounded-full bg-brand-500 opacity-0 transition-opacity;
   }
-  
-  .reg-upload-label:hover {
-    background-color: #e0f2ec;
-    border-style: solid;
+
+  .radio-label.selected .radio-dot {
+    @apply opacity-100;
   }
-  
-  /* --- Radio Group (Gender) --- */
-  .reg-gender-group {
-      margin-top: 10px;
+
+  /* --- Buttons --- */
+  .btn-nav {
+    @apply px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center gap-2;
   }
-  
-  /* --- Stepper Customization --- */
-  .MuiStepIcon-root.Mui-active {
-      color: #66bd9e !important; 
+
+  .btn-next {
+    @apply bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-500/20 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  .MuiStepIcon-root.Mui-completed {
-      color: #66bd9e !important; 
+
+  .btn-prev {
+    @apply bg-slate-100 hover:bg-slate-200 text-slate-600;
   }
-  .MuiStepLabel-label.Mui-active {
-      color: #2d3436 !important;
-      font-weight: 600 !important;
+
+  /* --- Image Upload --- */
+  .upload-area {
+    @apply flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-2xl p-8 transition-all hover:border-brand-400 hover:bg-brand-50/30 cursor-pointer group;
   }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}

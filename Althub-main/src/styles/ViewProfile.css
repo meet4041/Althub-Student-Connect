@@ -1,171 +1,223 @@
-/* --- Wrapper & Layout --- */
-.vp-wrapper {
-    background-color: #f3f2ef;
-    min-height: 100vh;
-    padding: 30px 0;
-    font-family: 'Poppins', sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* --- Page Layout --- */
+  .vp-wrapper {
+    @apply min-h-screen bg-[#f8f9fa] font-sans text-slate-900 py-8 px-4 sm:px-6 lg:px-8;
+  }
+
+  .vp-container {
+    @apply max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start;
+  }
+
+  /* --- Left Column --- */
+  .vp-main-col {
+    @apply lg:col-span-8 xl:col-span-9 space-y-6;
+  }
+
+  /* --- Header Card --- */
+  .vp-header-card {
+    @apply bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative mb-6;
+  }
+
+  .vp-banner {
+    @apply h-52 w-full bg-gradient-to-r from-teal-600 to-emerald-500 relative;
+  }
+
+  .vp-content-wrapper {
+    @apply px-8 pb-8 flex flex-col md:flex-row gap-6 relative;
+  }
+
+  .vp-avatar-container {
+    @apply -mt-16 flex-shrink-0 relative z-10;
+  }
+
+  .vp-avatar {
+    @apply w-36 h-36 rounded-full border-[5px] border-white bg-white shadow-md object-cover;
+  }
+
+  .vp-info {
+    @apply pt-4 flex-1;
+  }
+
+  .vp-name-row {
+    @apply flex items-center justify-between flex-wrap gap-2 mb-1;
+  }
+
+  .vp-name {
+    @apply text-3xl font-extrabold text-slate-900 tracking-tight;
+  }
+
+  .vp-badge {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-bold border border-teal-100 uppercase tracking-wide ml-3 align-middle;
+  }
+
+  .vp-headline {
+    @apply text-lg text-slate-600 font-medium mb-3;
+  }
+
+  .vp-meta-row {
+    @apply flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-5;
+  }
+
+  .vp-meta-item {
+    @apply flex items-center gap-1.5;
+  }
+
+  /* Stats */
+  .vp-stats {
+    @apply flex gap-6 text-sm py-4 border-t border-slate-50 mt-2;
+  }
+
+  .stat-box {
+    /* REMOVED 'group' from here. It is added in JSX. */
+    @apply flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors;
+  }
+
+  .stat-val {
+    /* group-hover works here because we add 'group' in JSX */
+    @apply font-bold text-slate-900 group-hover:text-teal-600;
+  }
+
+  .stat-label {
+    @apply text-slate-500 font-medium;
+  }
+
+  /* Action Buttons */
+  .vp-actions {
+    @apply flex gap-3 mt-4 md:mt-0 md:absolute md:top-4 md:right-8;
+  }
+
+  .btn-primary {
+    @apply flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold shadow-md shadow-teal-500/20 hover:bg-teal-700 hover:-translate-y-0.5 transition-all;
+  }
+
+  .btn-secondary {
+    @apply flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all;
+  }
+
+  .btn-icon {
+    @apply p-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:text-teal-600 hover:border-teal-200 transition-all;
+  }
+
+  /* --- Section Cards --- */
+  .vp-section {
+    @apply bg-white rounded-3xl shadow-sm border border-slate-200 p-8 mb-6 relative overflow-hidden;
+  }
+
+  .section-header {
+    @apply flex justify-between items-center mb-6;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-slate-900 flex items-center gap-2;
+  }
+
+  .section-add-btn {
+    @apply p-2 rounded-lg text-teal-600 hover:bg-teal-50 transition-colors;
+  }
+
+  .vp-about-text {
+    @apply text-slate-600 leading-loose whitespace-pre-line;
+  }
+
+  /* List Items */
+  .timeline-item {
+    @apply flex gap-5 mb-8 last:mb-0 relative;
+  }
+
+  .timeline-item::before {
+    @apply content-[''] absolute left-[26px] top-14 bottom-[-32px] w-[2px] bg-slate-100 last:hidden;
+  }
+
+  .timeline-logo {
+    @apply w-14 h-14 rounded-xl object-contain bg-white border border-slate-100 p-1 shadow-sm z-10 relative;
+  }
+
+  .timeline-content {
+    @apply flex-1 pt-1;
+  }
+
+  .timeline-role {
+    @apply text-lg font-bold text-slate-900 leading-tight;
+  }
+
+  .timeline-company {
+    @apply text-sm font-medium text-slate-700 mb-1;
+  }
+
+  .timeline-date {
+    @apply text-xs text-slate-400 font-semibold uppercase tracking-wide mb-3 block;
+  }
+
+  .timeline-desc {
+    @apply text-sm text-slate-500 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100;
+  }
+
+  .item-edit-btn {
+    @apply p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all absolute right-0 top-0;
+  }
+
+  /* --- Right Sidebar --- */
+  .vp-sidebar-col {
+    @apply lg:col-span-4 xl:col-span-3 space-y-6 sticky top-24;
+  }
+
+  .sidebar-card {
+    @apply bg-white rounded-3xl shadow-sm border border-slate-200 p-6;
+  }
+
+  .sidebar-title {
+    @apply text-sm font-bold text-slate-900 uppercase tracking-wide mb-4 flex items-center gap-2;
+  }
+
+  .chip-wrapper {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .skill-chip {
+    @apply px-3 py-1.5 bg-teal-50 text-teal-700 text-xs font-bold rounded-lg border border-teal-100 hover:bg-teal-100 transition-colors cursor-default;
+  }
+
+  .lang-chip {
+    @apply px-3 py-1.5 bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg border border-slate-200;
+  }
+
+  .suggest-item {
+    @apply flex items-center gap-3 mb-4 last:mb-0 p-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer;
+  }
+
+  .suggest-avatar {
+    @apply w-10 h-10 rounded-full border border-slate-200 object-cover;
+  }
+
+  .suggest-info h4 {
+    @apply text-sm font-bold text-slate-900 line-clamp-1;
+  }
+
+  .suggest-info p {
+    @apply text-xs text-slate-500 line-clamp-1;
+  }
+
+  .suggest-arrow {
+    @apply ml-auto text-slate-300;
+  }
+
+  .menu-dropdown {
+    @apply absolute right-0 top-12 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-fade-in origin-top-right;
+  }
+
+  .menu-item {
+    @apply flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-teal-600 transition-colors w-full text-left;
+  }
 }
 
-/* --- Header Card Section --- */
-.vp-header-card {
-    border-radius: 12px !important;
-    overflow: hidden;
-    margin-bottom: 24px;
-    position: relative;
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
-
-.vp-cover {
-    height: 180px;
-    background: linear-gradient(135deg, #66bd9e 0%, #479378 100%);
-}
-
-.vp-header-body {
-    padding: 0 30px 30px 30px;
-    position: relative;
-}
-
-.vp-avatar-container {
-    margin-top: -75px; /* Pulls avatar into the banner */
-}
-
-/* FIXED Profile Avatar */
-.vp-avatar {
-    width: 150px !important;
-    height: 150px !important;
-    border: 5px solid #fff !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    background-color: #f5f5f5 !important;
-    overflow: hidden !important;
-}
-
-.vp-avatar img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important; /* Prevents zooming */
-}
-
-.vp-header-actions {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-/* Details Section */
-.vp-details {
-    margin-top: 15px;
-}
-
-.vp-name {
-    font-weight: 700 !important;
-    color: #2d3436;
-}
-
-.vp-role {
-    font-size: 1.1rem !important;
-    color: #636e72;
-    margin-bottom: 8px !important;
-}
-
-.vp-location {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: #7f8c8d;
-    font-size: 0.9rem !important;
-}
-
-.vp-stats {
-    margin-top: 15px;
-    display: flex;
-    gap: 20px;
-}
-
-.vp-stat-item {
-    font-weight: 600;
-    color: #66bd9e;
-    cursor: pointer;
-}
-
-.vp-stat-item:hover {
-    text-decoration: underline;
-}
-
-.vp-social-links {
-    margin-top: 15px;
-}
-
-/* --- Content Sections (About, Exp, Edu) --- */
-.vp-section-card {
-    border-radius: 12px !important;
-    margin-bottom: 24px;
-}
-
-.vp-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.vp-list-item {
-    padding: 15px 0;
-    border-bottom: 1px solid #f0f0f0;
-    gap: 20px;
-}
-
-.vp-list-item:last-child {
-    border-bottom: none;
-}
-
-.vp-list-logo {
-    width: 56px;
-    height: 56px;
-    object-fit: contain; /* Prevents company/college logo zoom */
-    border-radius: 4px;
-    background: #f9f9f9;
-}
-
-.vp-edit-icon {
-    cursor: pointer;
-    color: #999;
-}
-
-.vp-edit-icon:hover {
-    color: #66bd9e;
-}
-
-/* --- Sidebar --- */
-.vp-sidebar-card {
-    border-radius: 12px !important;
-    margin-bottom: 24px;
-}
-
-.vp-chip {
-    margin: 4px !important;
-}
-
-.vp-suggestion-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f9f9f9;
-}
-
-/* FIXED Sidebar Avatar */
-.vp-suggestion-avatar {
-    background-color: #f5f5f5 !important;
-    border: 1px solid #eee;
-}
-
-.vp-suggestion-avatar img {
-    object-fit: contain !important;
-}
-
-.vp-view-btn {
-    margin-left: auto !important;
-    text-transform: none !important;
-    border-radius: 20px !important;
-    color: #66bd9e !important;
-    border-color: #66bd9e !important;
+.animate-fade-in {
+  animation: fadeIn 0.1s ease-out forwards;
 }

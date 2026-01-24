@@ -1,129 +1,100 @@
-/* --- Visual Side (Left Gradient) --- */
-.login-visual-side {
-    flex: 1;
-    background: linear-gradient(135deg, #e3fdf5 0%, #ffe6fa 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* --- Layout --- */
+  .login-wrapper {
+    @apply min-h-screen flex bg-white font-sans text-slate-900 selection:bg-brand-100 selection:text-brand-900;
   }
-  
-  /* The Circle Decoration */
-  .login-visual-side::before {
-    content: '';
-    position: absolute;
-    width: 600px;
-    height: 600px;
-    background: #fff;
-    opacity: 0.3;
-    border-radius: 50%;
-    top: -150px;
-    right: -150px;
-    z-index: 0;
+
+  /* --- Left Side (Visual) --- */
+  .login-visual-side {
+    @apply hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-brand-50 to-brand-100 items-center justify-center overflow-hidden p-12;
   }
-  
-  /* Hide visual on mobile/tablet (below 900px) */
-  @media (max-width: 900px) {
-    .login-visual-side {
-      display: none;
-    }
+
+  .visual-blob {
+    @apply absolute rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob;
   }
-  
-  /* --- Back Button --- */
-  .login-back-btn {
-    position: absolute !important;
-    top: 30px;
-    left: 30px;
-    color: #666 !important;
-    background-color: #f8f9fa !important;
-    border-radius: 30px !important;
-    padding: 8px 24px !important;
-    text-transform: none !important;
-    font-weight: 500 !important;
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: all 0.2s ease-in-out !important;
+
+  .visual-content {
+    @apply relative z-10 max-w-lg text-center space-y-6;
   }
-  
-  .login-back-btn:hover {
-    background-color: #e9ecef !important;
-    color: #333 !important;
-    transform: translateX(-3px);
+
+  /* --- Right Side (Form) --- */
+  .login-form-side {
+    @apply flex-1 flex flex-col items-center justify-center p-6 sm:p-12 lg:p-24 bg-white relative;
   }
-  
-  /* --- Custom TextField Styling --- */
-  .login-textfield {
-    margin-bottom: 20px !important;
+
+  /* CHANGED: Positioning for the Back Button on the white side */
+  .back-home-btn {
+    @apply absolute top-6 left-6 inline-flex items-center gap-2 p-2 
+    text-slate-500 hover:text-brand-600 hover:bg-slate-50 
+    rounded-lg transition-all duration-200 cursor-pointer;
   }
-  
-  /* Target internal MUI elements for the custom input look */
-  .login-textfield .MuiOutlinedInput-root {
-    background-color: #f8f9fa;
-    border-radius: 12px !important;
-    transition: all 0.3s;
+
+  .form-container {
+    @apply w-full max-w-md space-y-8;
   }
-  
-  .login-textfield .MuiOutlinedInput-root fieldset {
-    border: 2px solid #f1f2f6;
+
+  .form-header {
+    @apply text-center space-y-2;
   }
-  
-  .login-textfield .MuiOutlinedInput-root:hover fieldset {
-    border-color: #66bd9e !important;
+
+  .form-title {
+    @apply text-3xl font-bold tracking-tight text-slate-900;
   }
-  
-  .login-textfield .MuiOutlinedInput-root.Mui-focused {
-    background-color: #fff;
-    box-shadow: 0 4px 15px rgba(102, 189, 158, 0.1);
+
+  .form-subtitle {
+    @apply text-slate-500;
   }
-  
-  .login-textfield .MuiOutlinedInput-root.Mui-focused fieldset {
-    border-color: #66bd9e !important;
-    border-width: 2px !important;
+
+  /* --- Inputs & Buttons --- */
+  .input-group {
+    @apply space-y-5;
   }
-  
-  .login-textfield input {
-    padding: 15px 20px;
-    font-size: 1rem;
-    color: #333;
+
+  .input-wrapper {
+    @apply relative;
   }
-  
-  /* --- Login Button --- */
-  .login-submit-btn {
-    margin-top: 10px !important;
-    padding-top: 14px !important;
-    padding-bottom: 14px !important;
-    background-color: #66bd9e !important;
-    color: #fff !important;
-    border-radius: 12px !important;
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    text-transform: none !important;
-    box-shadow: 0 4px 15px rgba(102, 189, 158, 0.3) !important;
-    transition: all 0.3s !important;
+
+  .input-icon {
+    @apply absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 transition-colors duration-200;
   }
-  
-  .login-submit-btn:hover {
-    background-color: #479378 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 189, 158, 0.4) !important;
+
+  .custom-input {
+    @apply w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400
+    focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
   }
-  
-  .login-submit-btn:disabled {
-    background-color: #a5d6c5 !important;
-    color: #fff !important;
-    cursor: not-allowed;
+
+  .input-wrapper:focus-within .input-icon {
+    @apply text-brand-500;
   }
-  
-  /* --- Links (Forgot Pass, Signup) --- */
-  .login-link {
-    color: #66bd9e !important;
-    cursor: pointer;
-    font-weight: 600 !important;
-    text-decoration: none !important;
+
+  .submit-btn {
+    @apply w-full py-3.5 px-6 flex items-center justify-center gap-2 
+    bg-brand-600 hover:bg-brand-700 
+    text-white font-bold text-lg rounded-xl 
+    shadow-md hover:shadow-lg transition-all duration-200 
+    hover:-translate-y-0.5 active:scale-95 
+    disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none;
   }
-  
-  .login-link:hover {
-    text-decoration: underline !important;
+
+  .auth-link {
+    @apply font-semibold text-brand-600 hover:text-brand-700 hover:underline transition-colors;
   }
+}
+
+/* Animations remain the same */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
