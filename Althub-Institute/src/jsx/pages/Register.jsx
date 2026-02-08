@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import axiosInstance from '../../service/axios';
 
-import '../../styles/login.css'; 
-import '../../styles/register.css'; 
+import '../../styles/login.css';
+import '../../styles/register.css';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -16,7 +16,7 @@ const Register = () => {
         phone: '',
         password: '',
         confirmPassword: '',
-        role: 'institute', 
+        role: 'institute',
         parent_institute_id: '',
         masterKey: ''
     });
@@ -40,7 +40,7 @@ const Register = () => {
 
     const handleInput = (e) => {
         const { name, value } = e.target;
-        
+
         if (name === 'role') {
             let autoName = formData.name;
             if (value === 'alumni_office') autoName = 'Alumni Office';
@@ -52,7 +52,7 @@ const Register = () => {
                 role: value,
                 name: autoName,
                 // Reset parent if switching to Main Institute
-                parent_institute_id: value === 'institute' ? '' : prev.parent_institute_id 
+                parent_institute_id: value === 'institute' ? '' : prev.parent_institute_id
             }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -71,7 +71,7 @@ const Register = () => {
 
         setLoading(true);
         try {
-            const response = await axiosInstance.post('/api/registerInstitute', { 
+            const response = await axiosInstance.post('/api/registerInstitute', {
                 ...formData
             });
 
@@ -92,17 +92,31 @@ const Register = () => {
             <ToastContainer theme="colored" position="top-right" />
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
+
+                    {/* --- UPDATED LEFT SIDE: BRAND VISUALS --- */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
-                            <div className="logo-box-modern">
-                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
+                            <div className="glass-logo-box">
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '65px', borderRadius: '8px' }} />
                             </div>
-                            <h1 className="title-text">Join <span className="text-highlight">Althub</span></h1>
-                            <p className="subtitle-text">Unified management ecosystem for modern institutions.</p>
+
+                            <h1 className="title-text">Welcome <br /> to <span className="text-highlight">Althub</span></h1>
+
+                            <p className="subtitle-text">
+                                Create your institutional profile and start managing your campus, alumni, and placements today.
+                            </p>
+
+                            <div className="feature-badges mt-5">
+                                <span className="badge-pill-custom"><i className="fa fa-university mr-2"></i> Campus</span>
+                                <span className="badge-pill-custom"><i className="fa fa-users mr-2"></i> Alumni</span>
+                                <span className="badge-pill-custom"><i className="fa fa-briefcase mr-2"></i> Placement</span>
+                            </div>
                         </div>
                     </div>
+                    {/* ---------------------------------------- */}
 
+                    {/* RIGHT SIDE: FORM (UNCHANGED) */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="form-heading mb-4">
@@ -128,10 +142,10 @@ const Register = () => {
                                         <label className="label-modern">SELECT PARENT INSTITUTE</label>
                                         <div className="input-wrapper-modern">
                                             <i className="fa fa-university icon-left"></i>
-                                            <select 
-                                                name="parent_institute_id" 
-                                                value={formData.parent_institute_id} 
-                                                onChange={handleInput} 
+                                            <select
+                                                name="parent_institute_id"
+                                                value={formData.parent_institute_id}
+                                                onChange={handleInput}
                                                 className="modern-select"
                                                 required
                                             >

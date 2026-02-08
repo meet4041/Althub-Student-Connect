@@ -21,6 +21,14 @@ const user = new mongoose.Schema({
     role: { type: String, default: "student" },
     about: { type: String, default: '' },
     institute: { type: String },
+    
+    // [CRITICAL NEW FIELD] Links student to a specific Institute
+    institute_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'institutetb1', 
+        required: true // Uncomment this after you migrate existing data
+    },
+
     isOnline: { type: Boolean, default: false },
     socketId: { type: String, default: "" },
     lastSeen: { type: Date, default: Date.now },

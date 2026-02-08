@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
-import axios from 'axios'; // We can use your instance here too, but raw axios is fine for login
+import axios from 'axios'; 
 import { ALTHUB_API_URL } from './baseURL';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,18 +42,13 @@ const Login = () => {
                         const responseData = response.data.data;
                         const token = response.data.token;
 
-                        // 1. SAVE CRITICAL AUTH DATA
                         localStorage.setItem('token', token);
                         localStorage.setItem('userDetails', JSON.stringify(responseData));
-                        
-                        // Save Role (Vital for routing)
                         localStorage.setItem('userRole', responseData.role); 
 
-                        // Handle Legacy Keys (You can keep these if your app uses them)
                         localStorage.setItem('AlmaPlus_institute_Id', responseData._id);
                         localStorage.setItem('AlmaPlus_institute_Name', responseData.name);
 
-                        // 2. HANDLE REMEMBER ME
                         if (rememberMe) {
                             localStorage.setItem('althub_remembered_email', loginInfo.email);
                             localStorage.setItem('althub_remembered_password', loginInfo.password);
@@ -64,18 +59,12 @@ const Login = () => {
                             localStorage.setItem('althub_remember_me_status', 'false');
                         }
 
-                        // 3. ROLE BASED REDIRECT
-                        // This prevents Alumni from loading a dashboard that might crash them
                         setTimeout(() => {
                             setDisable(false);
-                            
-                            // If you have separate dashboards, route them here.
-                            // For now, we send everyone to /dashboard, but the saved 'userRole' 
-                            // will help your dashboard page know what to load.
                             if (responseData.role === 'alumni_office') {
-                                navigate('/dashboard'); // Change to '/alumni-dashboard' if you create one
+                                navigate('/dashboard'); 
                             } else if (responseData.role === 'placement_cell') {
-                                navigate('/dashboard'); // Change to '/placement-dashboard' if you create one
+                                navigate('/dashboard'); 
                             } else {
                                 navigate('/dashboard');
                             }
@@ -103,7 +92,6 @@ const Login = () => {
     }
 
     useEffect(() => {
-        // Only redirect if token exists AND userDetails exist (prevents partial login state)
         if (localStorage.getItem("token") && localStorage.getItem("userDetails")) {
             navigate('/dashboard');
         }
@@ -124,39 +112,47 @@ const Login = () => {
 
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
-                    {/* LEFT SIDE: BRAND VISUALS */}
+                    
+                    {/* --- UPDATED LEFT SIDE: BRAND VISUALS --- */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
-                            <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '14px', display: 'inline-block', marginBottom: '25px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
-                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
+                            <div className="glass-logo-box">
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '65px', borderRadius: '8px' }} />
                             </div>
-                            <h1 className="title-text">Althub <span className="text-highlight">Institute</span></h1>
-                            <p className="subtitle-text">Empowering the next generation of educators with advanced analytics and seamless management.</p>
+                            
+                            <h1 className="title-text">Welcome <br /> to <span className="text-highlight">Althub.</span></h1>
+                            
+                            <p className="subtitle-text">
+                                The unified ecosystem for modern Institutions, Alumni Offices, and Placement Cells.
+                            </p>
+                            
                             <div className="feature-badges mt-5">
-                                <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure SSL</span>
-                                <span className="badge-pill-custom"><i className="fa fa-check-circle mr-2"></i> Admin Verified</span>
+                                <span className="badge-pill-custom"><i className="fa fa-university mr-2"></i> Campus</span>
+                                <span className="badge-pill-custom"><i className="fa fa-users mr-2"></i> Alumni</span>
+                                <span className="badge-pill-custom"><i className="fa fa-briefcase mr-2"></i> Placement</span>
                             </div>
                         </div>
                     </div>
+                    {/* ---------------------------------------- */}
 
-                    {/* RIGHT SIDE: FORM */}
+                    {/* RIGHT SIDE: FORM (UNCHANGED) */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="mobile-header d-lg-none text-center mb-4">
                                 <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
-                                <h3 className="font-weight-bold text-navy">Althub Institute</h3>
+                                <h3 className="font-weight-bold text-navy">Althub Portal</h3>
                             </div>
                             <div className="form-heading mb-5">
-                                <h2 className="font-weight-bold text-navy">Althub LOGIN</h2>
-                                <p className="text-muted">Enter your registered institutional credentials</p>
+                                <h2 className="font-weight-bold text-navy">Login to Althub</h2>
+                                <p className="text-muted">Enter your departmental credentials to continue</p>
                             </div>
                             <form onSubmit={submitHandler}>
                                 <div className="modern-form-group">
                                     <label className="label-modern">Email Address</label>
                                     <div className={`input-wrapper-modern ${errors.email_err ? 'error-border' : ''}`}>
                                         <i className="fa fa-envelope-open icon-left"></i>
-                                        <input type="email" placeholder="your@institute.com" name="email" onChange={InputEvent} value={loginInfo.email} />
+                                        <input type="email" placeholder="eg@edu.com" name="email" onChange={InputEvent} value={loginInfo.email} />
                                     </div>
                                     {errors.email_err && <div className="error-msg-modern">{errors.email_err}</div>}
                                 </div>
@@ -179,12 +175,11 @@ const Login = () => {
                                     <a onClick={() => navigate('/forgot-password')} className="forgot-pass-link" style={{ cursor: 'pointer', color: '#002b5b', textDecoration: 'none', fontWeight: '600' }}>Forgot Password?</a>
                                 </div>
                                 <button type="submit" className="btn-modern-submit" disabled={disable}>
-                                    {disable ? 'AUTHENTICATING...' : 'LOGIN TO ALTHUB'}
+                                    {disable ? 'VERIFYING...' : 'ACCESS DASHBOARD'}
                                 </button>
                                 
-                                {/* NEW SIGNUP REDIRECT SECTION */}
                                 <div className="signup-redirect-wrapper">
-                                    <p className="signup-text">New to Althub ?</p>
+                                    <p className="signup-text">New to Althub?</p>
                                     <button 
                                         type="button" 
                                         className="btn-signup-link" 

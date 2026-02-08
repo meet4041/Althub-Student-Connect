@@ -30,3 +30,5 @@ public/userImages/
 *.swo
 .idea/
 .vscode/
+
+migrate.js

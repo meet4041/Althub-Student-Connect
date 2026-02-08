@@ -4,17 +4,101 @@
 .auth-main-wrapper {
     height: 100vh;
     overflow: hidden;
+    background-color: #f8fafc;
 }
 
-/* Identical Logo Box styling from Login */
-.logo-box-modern {
-    background-color: #ffffff;
-    padding: 12px;
-    border-radius: 14px;
-    display: inline-block;
-    margin-bottom: 25px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+.auth-split-container {
+    display: flex;
+    width: 100%;
 }
+
+/* --- UPDATED LEFT SIDE STYLES (MATCHING LOGIN) --- */
+.auth-visual-side {
+    width: 50%;
+    /* Same updated Gradient as Login */
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: white;
+    overflow: hidden;
+}
+
+.mesh-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.05;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.visual-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 520px;
+}
+
+/* Glass effect for logo container */
+.glass-logo-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    padding: 15px;
+    border-radius: 16px;
+    display: inline-block;
+    margin-bottom: 35px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+.title-text {
+    font-size: 3.8rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+.text-highlight {
+    color: #38bdf8; /* Lighter blue for better contrast */
+    position: relative;
+}
+
+.subtitle-text {
+    font-size: 1.15rem;
+    color: #cbd5e1; /* Slate-300 */
+    line-height: 1.6;
+    max-width: 90%;
+}
+
+.feature-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.badge-pill-custom {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.badge-pill-custom:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+/* ------------------------------------------------ */
+
+
+/* RIGHT SIDE: FORM (EXISTING STYLES) */
 
 /* Horizontal Row for Email/Phone and Password/Confirm */
 .form-row-custom {
@@ -62,6 +146,7 @@
 }
 
 @media (max-width: 991px) {
+    .auth-visual-side { display: none !important; }
     .auth-main-wrapper {
         overflow-y: auto; /* Enable scroll only on mobile */
     }
