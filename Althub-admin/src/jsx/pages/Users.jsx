@@ -1,281 +1,220 @@
-/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import Loader from '../layout/Loader.jsx';
+import axiosInstance from '../../services/axios';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
-import { ALTHUB_API_URL } from '../baseURL.jsx';
-import SweetAlert from 'react-bootstrap-sweetalert';
-import axios from 'axios';
+import { ALTHUB_API_URL } from '../baseURL';
 
-// IMPORT NEW STYLES
 import '../styles/users.css';
 
 const Users = () => {
+    const [institutes, setInstitutes] = useState([]);
+    const [selectedInst, setSelectedInst] = useState(null); 
     const [users, setUsers] = useState([]);
-    const [displayUsers, setDisplayUsers] = useState([]);
-    const [isTableLoading, setIsTableLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    // MODAL STATE
     const [selectedUser, setSelectedUser] = useState(null);
 
-    const rows = [10, 20, 30];
-    const [usersPerPage, setUsersPerPage] = useState(rows[0]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
     useEffect(() => {
+        if (document.getElementById('page-loader')) document.getElementById('page-loader').style.display = 'none';
         const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
-        getUsersData();
+        fetchInstitutes();
     }, []);
 
-    const getUsersData = () => {
-        setIsTableLoading(true);
-        const token = localStorage.getItem('AlmaPlus_admin_Token'); // Using Admin Token
-        axios({
-            method: "get",
-            url: `${ALTHUB_API_URL}/api/getUsers`, 
-            headers: { 'Authorization': `Bearer ${token}` },
-        }).then((response) => {
-            setUsers(response.data.data || []);
-            setIsTableLoading(false);
-        }).catch(() => setIsTableLoading(false));
+    const fetchInstitutes = () => {
+        setLoading(true);
+        axiosInstance.get('/api/getInstitutes')
+            .then(res => {
+                setInstitutes(res.data.data || []);
+                setLoading(false);
+            }).catch(() => setLoading(false));
     };
 
-    useEffect(() => {
-        let processedUsers = [...users];
-        if (searchTerm) {
-            processedUsers = processedUsers.filter(user => 
-                user.fname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        if (sortConfig.key === 'fname') {
-            processedUsers.sort((a, b) => {
-                let aValue = (a.fname || '').toLowerCase();
-                let bValue = (b.fname || '').toLowerCase();
-                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
+    const handleSelectInstitute = (inst) => {
+        setLoading(true);
+        setSelectedInst(inst);
+        axiosInstance.get(`/api/getUsersByInstName/${inst.name}`)
+            .then(res => {
+                setUsers(res.data.data || []);
+                setLoading(false);
+            }).catch((err) => {
+                console.error("Fetch Error:", err);
+                setUsers([]);
+                setLoading(false);
             });
-        }
-        setDisplayUsers(processedUsers);
-        setCurrentPage(1);
-    }, [searchTerm, users, sortConfig]);
-
-    const requestSort = (key) => {
-        let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
-        setSortConfig({ key, direction });
     };
 
-    const getSortIcon = (key) => {
-        if (sortConfig.key !== key) return <i className="fa fa-sort opacity-20 ml-2"></i>;
-        return sortConfig.direction === 'asc' 
-            ? <i className="fa fa-sort-up text-primary ml-2"></i> 
-            : <i className="fa fa-sort-down text-primary ml-2"></i>;
-    };
-
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentUsers = displayUsers.slice(indexOfFirstUser, indexOfLastUser);
-    const pageNumbers = Array.from({ length: Math.ceil(displayUsers.length / usersPerPage) }, (_, i) => i + 1);
-
-    const [deleteId, setDeleteId] = useState('');
-    const [alert, setAlert] = useState(false);
-    const [alert2, setAlert2] = useState(false);
-
-    const handleDeleteUser = (id) => {
-        setDeleteId(id);
-        setAlert(true);
-        setSelectedUser(null);
-    }
-
-    const DeleteUser = () => {
-        const token = localStorage.getItem('AlmaPlus_admin_Token');
-        axios({
-            method: "delete",
-            url: `${ALTHUB_API_URL}/api/deleteUser/${deleteId}`,
-            headers: { 'Authorization': `Bearer ${token}` }
-        }).then((response) => {
-            if (response.data.success) {
-                setAlert(false);
-                setAlert2(true);
-            }
-        });
-    }
+    const filteredUsers = users.filter(u => 
+        `${u.fname} ${u.lname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <Fragment>
-            <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content users-wrapper">
                     
-                    {/* Header Section */}
-                    <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
-                            <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                                <li className="breadcrumb-item active">Student Directory</li>
-                            </ol>
-                            <h1 className="page-header mb-0">Manage Members</h1>
+                            <h1 className="page-header mb-1">Ecosystem Directory</h1>
+                            <p className="text-muted small font-weight-bold mb-0">
+                                {selectedInst ? (
+                                    <><span className="text-primary">{selectedInst.name}</span> • {users.length} Active Records</>
+                                ) : 'Select an institution to access its secure member database'}
+                            </p>
                         </div>
+                        {selectedInst && (
+                            <button className="btn btn-white shadow-sm rounded-pill px-4 btn-sm font-weight-bold" onClick={() => setSelectedInst(null)}>
+                                <i className="fa fa-exchange-alt mr-2 text-primary"></i> Change Campus
+                            </button>
+                        )}
                     </div>
 
-                    <div className="directory-card">
-                        {/* Search & Filter */}
-                        <div className="filter-bar">
-                            <div className="row align-items-center">
-                                <div className="col-md-6">
-                                    <div className="search-input-group">
-                                        <i className="fa fa-search"></i>
-                                        <input 
-                                            type="text" 
-                                            className="form-control" 
-                                            placeholder="Search by name or email..." 
-                                            value={searchTerm} 
-                                            onChange={(e) => setSearchTerm(e.target.value)} 
-                                        />
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <i className="fa fa-circle-notch fa-spin fa-3x text-primary opacity-20"></i>
+                        </div>
+                    ) : !selectedInst ? (
+                        <div className="row">
+                            {institutes.map(inst => (
+                                <div key={inst._id} className="col-lg-4 col-md-6 mb-4">
+                                    <div className="inst-floating-card" onClick={() => handleSelectInstitute(inst)}>
+                                        <div className="inst-card-body">
+                                            <div className="d-flex justify-content-between">
+                                                <div className="inst-icon-glow"><i className="fa fa-university"></i></div>
+                                                <i className="fa fa-arrow-right inst-arrow"></i>
+                                            </div>
+                                            <div className="mt-4">
+                                                <h5 className="inst-title">{inst.name}</h5>
+                                                <p className="inst-subtitle"><i className="fa fa-map-marker-alt mr-1"></i> {inst.location || 'Campus Domain'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="inst-card-footer">
+                                            <span>Access Directory</span>
+                                            <span className="badge badge-primary-soft">Secure</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="col-md-6 text-md-right mt-3 mt-md-0">
-                                    <label className="text-muted small font-weight-bold mr-2 mb-0">SHOWING</label>
-                                    <select 
-                                        className="custom-select custom-select-sm w-auto border-0 bg-light" 
-                                        value={usersPerPage} 
-                                        onChange={(e) => setUsersPerPage(Number(e.target.value))}
-                                    >
-                                        {rows.map(v => <option key={v} value={v}>{v} Users</option>)}
-                                    </select>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="directory-container glass-effect">
+                            <div className="directory-search-bar">
+                                <div className="search-input-group-modern">
+                                    <i className="fa fa-search"></i>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        placeholder={`Search among ${users.length} members...`} 
+                                        value={searchTerm} 
+                                        onChange={(e) => setSearchTerm(e.target.value)} 
+                                    />
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Table */}
-                        <div className="table-responsive">
-                            <table className="table table-hover user-table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th style={{width: '100px'}}>Photo</th>
-                                        <th onClick={() => requestSort('fname')} style={{ cursor: 'pointer' }}>
-                                            Full Name {getSortIcon('fname')}
-                                        </th>
-                                        <th className="text-center">Classification</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {isTableLoading ? (
-                                        <tr><td colSpan="3" className="text-center py-5"><i className="fa fa-circle-notch fa-spin fa-2x text-primary"></i></td></tr>
-                                    ) : currentUsers.length > 0 ? currentUsers.map((elem) => (
-                                        <tr key={elem._id}>
-                                            <td>
-                                                <img 
-                                                    src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/profile1.png'} 
-                                                    className="user-avatar" 
-                                                    alt='user'
-                                                />
-                                            </td>
-                                            <td className="user-name-cell" onClick={() => setSelectedUser(elem)}>
-                                                <span className="user-name-text">{elem.fname} {elem.lname}</span>
-                                                <span className="user-subtext">{elem.email}</span>
-                                            </td>
-                                            <td className="text-center">
-                                                {elem.type === 'Student' ? (
-                                                    <span className="status-pill pill-student">Student</span>
-                                                ) : elem.type === 'Alumni' ? (
-                                                    <span className="status-pill pill-alumni">Alumni</span>
-                                                ) : "-"}
-                                            </td>
+                            <div className="table-responsive">
+                                <table className="table althub-modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th># Profile Identification</th>
+                                            <th>Classification</th>
+                                            <th>Timeline</th>
+                                            <th className="text-right">Intelligence</th>
                                         </tr>
-                                    )) : (
-                                        <tr><td colSpan="3" className="text-center py-5 text-muted">No matching records found.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {filteredUsers.length > 0 ? filteredUsers.map((user, index) => (
+                                            <tr key={user._id}>
+                                                <td>
+                                                    <div className="profile-identity">
+                                                        <span className="index-number">{index + 1}</span>
+                                                        <img src={user.profilepic ? `${ALTHUB_API_URL}${user.profilepic}` : 'assets/img/profile1.png'} className="profile-squircle" alt="pfp" />
+                                                        <div>
+                                                            <div className="profile-name-main">{user.fname} {user.lname}</div>
+                                                            <div className="profile-email-sub">{user.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`status-pill-modern ${user.type === 'Student' ? 'pill-blue' : 'pill-amber'}`}>
+                                                        <i className={`fa ${user.type === 'Student' ? 'fa-book' : 'fa-graduation-cap'} mr-1`}></i> {user.type}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="timeline-badge">
+                                                        {user.eduStart?.split('-')[0] || '20XX'} — {user.eduEnd?.split('-')[0] || '20XX'}
+                                                    </div>
+                                                </td>
+                                                <td className="text-right">
+                                                    <button className="btn-view-intelligence" onClick={() => setSelectedUser(user)}>
+                                                        View Full Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan="4" className="text-center py-5 text-muted">
+                                                    <i className="fa fa-folder-open fa-3x mb-3 opacity-20"></i>
+                                                    <p className="font-weight-bold">No member records found.</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-
-                        {/* Pagination */}
-                        <div className="p-4 d-flex justify-content-between align-items-center bg-white">
-                            <span className="text-muted small">
-                                Showing {indexOfFirstUser + 1} - {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length}
-                            </span>
-                            <nav>
-                                <ul className="pagination pagination-sm mb-0">
-                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                        <button className="page-link" onClick={() => setCurrentPage(prev => prev - 1)}>Prev</button>
-                                    </li>
-                                    {pageNumbers.map(num => (
-                                        <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(num)}>{num}</button>
-                                        </li>
-                                    ))}
-                                    <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                        <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)}>Next</button>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
-                {/* Profile Modal */}
+                {/* --- INTELLIGENCE MODAL (POPUP) --- */}
                 {selectedUser && (
-                    <div className="modal fade show profile-modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)' }}>
-                        <div className="modal-dialog modal-dialog-centered modal-lg">
-                            <div className="modal-content shadow-lg">
-                                <div className="modal-header border-0">
-                                    <button type="button" className="close" onClick={() => setSelectedUser(null)}>&times;</button>
-                                </div>
-                                <div className="modal-body px-5 pb-5">
-                                    <div className="row">
-                                        <div className="col-md-4 text-center border-right">
-                                            <img 
-                                                src={selectedUser.profilepic ? `${ALTHUB_API_URL}${selectedUser.profilepic}` : 'assets/img/profile1.png'} 
-                                                className="modal-profile-img mb-3" 
-                                                alt='profile'
-                                            />
-                                            <h4 className="font-weight-bold">{selectedUser.fname} {selectedUser.lname}</h4>
-                                            <div className="mt-2">
-                                                {selectedUser.type === 'Student' ? 
-                                                    <span className="status-pill pill-student">Student Member</span> : 
-                                                    <span className="status-pill pill-alumni">Alumni Member</span>
-                                                }
-                                            </div>
-                                        </div>
-                                        <div className="col-md-8 pl-md-5">
-                                            <h6 className="font-weight-bold text-muted small mb-4">PERSONAL DETAILS</h6>
-                                            <div className="mb-3">
-                                                <small className="text-muted d-block">Email Address</small>
-                                                <span className="font-weight-bold">{selectedUser.email}</span>
-                                            </div>
-                                            <div className="mb-3">
-                                                <small className="text-muted d-block">Contact Number</small>
-                                                <span>{selectedUser.phone || "Not Provided"}</span>
-                                            </div>
-                                            <div className="mb-4">
-                                                <small className="text-muted d-block">Date of Birth</small>
-                                                <span>{selectedUser.dob ? selectedUser.dob.split('T')[0] : "Not Provided"}</span>
-                                            </div>
-
-                                            <h6 className="font-weight-bold text-muted small mb-3">EDUCATION PERIOD</h6>
-                                            <div className="d-flex gap-3">
-                                                <div className="timeline-box mr-3">
-                                                    <span className="timeline-label">COMMENCED</span>
-                                                    <span className="timeline-date">{selectedUser.eduStart}</span>
-                                                </div>
-                                                <div className="timeline-box">
-                                                    <span className="timeline-label">CONCLUDED</span>
-                                                    <span className="timeline-date">{selectedUser.eduEnd}</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                    <div className="althub-modal-overlay" onClick={() => setSelectedUser(null)}>
+                        <div className="althub-modal-card" onClick={e => e.stopPropagation()}>
+                            <div className="modal-top-accent"></div>
+                            <button className="modal-close-btn" onClick={() => setSelectedUser(null)}>&times;</button>
+                            
+                            <div className="modal-content-inner">
+                                <div className="modal-profile-section">
+                                    <img src={selectedUser.profilepic ? `${ALTHUB_API_URL}${selectedUser.profilepic}` : 'assets/img/profile1.png'} className="modal-squircle-lg" alt="profile" />
+                                    <div className="ml-4">
+                                        <h2 className="modal-user-name">{selectedUser.fname} {selectedUser.lname}</h2>
+                                        <span className={`status-pill-modern ${selectedUser.type === 'Student' ? 'pill-blue' : 'pill-amber'}`}>
+                                            {selectedUser.type}
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="modal-footer bg-light border-0">
-                                    <button className="btn btn-link text-muted font-weight-bold" onClick={() => setSelectedUser(null)}>Close</button>
-                                    <button className="btn btn-danger px-4 font-weight-bold" onClick={() => handleDeleteUser(selectedUser._id)}>
-                                        <i className="fa fa-trash-alt mr-2"></i> Delete Record
+
+                                <div className="modal-details-grid mt-5">
+                                    <div className="detail-item">
+                                        <label>Email Address</label>
+                                        <p>{selectedUser.email}</p>
+                                    </div>
+                                    <div className="detail-item">
+                                        <label>Contact Number</label>
+                                        <p>{selectedUser.phone || 'Not Provided'}</p>
+                                    </div>
+                                    <div className="detail-item">
+                                        <label>Academic Institution</label>
+                                        <p>{selectedInst?.name || selectedUser.institute}</p>
+                                    </div>
+                                    <div className="detail-item">
+                                        <label>Education Period</label>
+                                        <p className="font-weight-bold text-primary">
+                                            {selectedUser.eduStart} to {selectedUser.eduEnd}
+                                        </p>
+                                    </div>
+                                    <div className="detail-item full-width">
+                                        <label>Account ID</label>
+                                        <code className="text-muted">{selectedUser._id}</code>
+                                    </div>
+                                </div>
+                                
+                                <div className="modal-footer-actions mt-5">
+                                    <button className="btn btn-primary btn-block rounded-pill py-3 font-weight-bold shadow-lg" onClick={() => setSelectedUser(null)}>
+                                        Acknowledge Intelligence
                                     </button>
                                 </div>
                             </div>
@@ -283,32 +222,10 @@ const Users = () => {
                     </div>
                 )}
 
-                <SweetAlert
-                    warning
-                    show={alert}
-                    showCancel
-                    confirmBtnText="Confirm Delete"
-                    confirmBtnBsStyle="danger"
-                    title="Permanently Delete?"
-                    onConfirm={DeleteUser}
-                    onCancel={() => setAlert(false)}
-                >
-                    This action cannot be undone. User history will be wiped.
-                </SweetAlert>
-
-                <SweetAlert
-                    success
-                    show={alert2}
-                    title="Record Deleted"
-                    onConfirm={() => { setAlert2(false); getUsersData(); }}
-                >
-                    The student directory has been updated successfully.
-                </SweetAlert>
-
                 <Footer />
             </div>
         </Fragment>
-    )
-}
+    );
+};
 
 export default Users;

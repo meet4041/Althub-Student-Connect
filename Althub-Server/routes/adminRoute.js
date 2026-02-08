@@ -65,7 +65,10 @@ admin_route.post('/uploadAdminImage', requireAuth, upload.single('profilepic'), 
         return res.status(500).send({ success: false, msg: err.message });
     }
 });
-
+// Add this route to adminRoute.js
+admin_route.get('/getUsersByInstitute/:instituteId', requireAuth, admin_controller.getUsersByInstitute);
+// Add to adminRoute.js
+admin_route.get('/getUsersByInstName/:instituteName', requireAuth, admin_controller.getUsersByInstituteName);
 admin_route.get('/getAdminById/:_id', requireAuth, admin_controller.getAdminById);
 
 export default admin_route;

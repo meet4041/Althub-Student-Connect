@@ -1,184 +1,132 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 import axiosInstance from '../../services/axios'; 
 
+// IMPORT UPDATED BLUE THEME STYLES
+import '../styles/dashboard.css';
+
 function Dashboard() {        
-    const [users, setUsers] = useState(0);
-    const [institutes, setInstitutes] = useState(0);
-    const [feedback, setFeedback] = useState(0);
+    const [counts, setCounts] = useState({
+        users: 0,
+        institutes: 0,
+        feedback: 0
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const initDashboard = async () => {
+            // Bypass template loader lag
+            if (document.getElementById('page-loader')) {
+                document.getElementById('page-loader').style.display = 'none';
+            }
+            
             setLoading(true);
-            setError(null);
             try {
-                var element = document.getElementById("page-container");
+                const element = document.getElementById("page-container");
                 if (element) element.classList.add("show");
                 
-                await Promise.all([
-                    getTotalUser(),
-                    getTotalInstitutes(),
-                    getTotalFeedback(),
+                // Fetch all data in parallel for maximum speed
+                const [uRes, iRes, fRes] = await Promise.all([
+                    axiosInstance.get(`/api/getUsers`),
+                    axiosInstance.get(`/api/getInstitutes`),
+                    axiosInstance.get(`/api/getFeedback`)
                 ]);
+
+                setCounts({
+                    users: uRes?.data?.data?.length || 0,
+                    institutes: iRes?.data?.data?.length || 0,
+                    feedback: fRes?.data?.data?.length || 0
+                });
             } catch (err) {
-                console.error('Dashboard initialization error:', err);
+                console.error('Dashboard error:', err);
                 if(err.response?.status !== 401) {
-                    setError(err.message);
+                    setError("Communication with server failed.");
                 }
             } finally {
-                // Smooth transition: delay loader removal slightly for better UX
-                setTimeout(() => setLoading(false), 500);
+                setLoading(false);
             }
         };
         
         initDashboard();
     }, []);
 
-    const getTotalUser = async () => {
-        try {
-            const response = await axiosInstance.get(`/api/getUsers`);
-            if (response?.data?.data && Array.isArray(response.data.data)) {
-                setUsers(response.data.data.length);
-            }
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            setUsers(0);
-        }
-    };
-
-    const getTotalInstitutes = async () => {
-        try {
-            const response = await axiosInstance.get(`/api/getInstitutes`);
-            if (response.data && response.data.success === true && Array.isArray(response.data.data)) {
-                setInstitutes(response.data.data.length);
-            }
-        } catch (err) {
-            console.error('Error fetching institutes:', err);
-            setInstitutes(0);
-        }
-    };
-
-    const getTotalFeedback = async () => {
-        try {
-            const response = await axiosInstance.get(`/api/getFeedback`);
-            if (response.data && response.data.success === true && Array.isArray(response.data.data)) {
-                setFeedback(response.data.data.length);
-            }
-        } catch (err) {
-            console.error('Error fetching feedback:', err);
-            setFeedback(0);
-        }
-    };
-
     return (
-        <>
+        <Fragment>
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
-                    {/* BREADCRUMB UI IMPROVEMENT */}
-                    <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Home</Link></li>
-                        <li className="breadcrumb-item active">Dashboard</li>
-                    </ol>
-                    
-                    <h1 className="page-header text-dark font-weight-bold">
-                        Dashboard Overview <small>Statistics and system insights</small>
-                    </h1>
+                
+                <div id="content" className="content dashboard-wrapper">
+                    <div className="d-flex justify-content-between align-items-end mb-5">
+                        <div>
+                            <h1 className="dashboard-title">System Overview</h1>
+                            <span className="dashboard-subtitle text-muted">Administrative Control & Analytics</span>
+                        </div>
+                        <nav>
+                            <ol className="breadcrumb bg-transparent p-0 m-0">
+                                <li className="breadcrumb-item"><Link to="/dashboard" className="text-primary">Console</Link></li>
+                                <li className="breadcrumb-item active">Metrics</li>
+                            </ol>
+                        </nav>
+                    </div>
 
                     {loading ? (
-                        <div className="d-flex align-items-center justify-content-center" style={{minHeight: '60vh'}}>
-                            <Loader />
+                        <div className="d-flex align-items-center justify-content-center" style={{minHeight: '50vh'}}>
+                            <i className="fa fa-circle-notch fa-spin fa-3x text-primary"></i>
                         </div>
                     ) : (
-                        <>
-                            {error && (
-                                <div className="alert alert-danger fade show shadow-sm">
-                                    <i className="fa fa-exclamation-triangle mr-2"></i>
-                                    Error loading dashboard data: {error}
-                                </div>
-                            )}
+                        <Fragment>
+                            {error && <div className="alert alert-danger border-0 shadow-sm mb-4">{error}</div>}
 
-                            <div className="row">
-                                {/* USERS CARD - Gradient Blue */}
-                                <div className="col-xl-4 col-md-6">
-                                    <div className="widget widget-stats bg-gradient-blue shadow-lg border-0 rounded-lg overflow-hidden transition-all hover-up">
-                                        <div className="stats-icon stats-icon-lg"><i className="fa fa-users fa-fw"></i></div>
-                                        <div className="stats-content">
-                                            <div className="stats-title text-white-700">TOTAL REGISTERED USERS</div>
-                                            <div className="stats-number text-white">{users.toLocaleString()}</div>
-                                            <div className="stats-progress progress progress-xs">
-                                                <div className="progress-bar bg-white" style={{width: '70%'}}></div>
-                                            </div>
-                                            <div className="stats-desc text-white-700">70% increase compared to last month</div>
-                                        </div>
-                                        <div className="stats-link">
-                                            <Link to="/users" className="text-white">View User Directory <i className="fa fa-arrow-alt-circle-right"></i></Link>
-                                        </div>
-                                    </div>
+                            <div className="stats-grid">
+                                {/* USERS CARD */}
+                                <div className="stat-card bg-users">
+                                    <i className="fa fa-user-graduate card-icon"></i>
+                                    <div className="card-label">Verified Members</div>
+                                    <div className="card-value">{counts.users.toLocaleString()}</div>
+                                    <Link to="/users" className="card-footer-link">
+                                        Directory Management <i className="fa fa-arrow-right ml-2"></i>
+                                    </Link>
                                 </div>
 
-                                {/* INSTITUTES CARD - Gradient Purple/Pink */}
-                                <div className="col-xl-4 col-md-6">
-                                    <div className="widget widget-stats bg-gradient-purple shadow-lg border-0 rounded-lg overflow-hidden transition-all hover-up">
-                                        <div className="stats-icon stats-icon-lg"><i className="fa fa-university fa-fw"></i></div>
-                                        <div className="stats-content">
-                                            <div className="stats-title text-white-700">PARTNER INSTITUTES</div>
-                                            <div className="stats-number text-white">{institutes.toLocaleString()}</div>
-                                            <div className="stats-progress progress progress-xs">
-                                                <div className="progress-bar bg-white" style={{width: '45%'}}></div>
-                                            </div>
-                                            <div className="stats-desc text-white-700">Active institutional connections</div>
-                                        </div>
-                                        <div className="stats-link">
-                                            <Link to="/institute" className="text-white">Manage Institutes <i className="fa fa-arrow-alt-circle-right"></i></Link>
-                                        </div>
-                                    </div>
+                                {/* INSTITUTES CARD */}
+                                <div className="stat-card bg-institutes">
+                                    <i className="fa fa-university card-icon"></i>
+                                    <div className="card-label">Active Institutes</div>
+                                    <div className="card-value">{counts.institutes.toLocaleString()}</div>
+                                    <Link to="/institute" className="card-footer-link">
+                                        Campus Governance <i className="fa fa-arrow-right ml-2"></i>
+                                    </Link>
                                 </div>
 
-                                {/* FEEDBACK CARD - Gradient Teal/Green */}
-                                <div className="col-xl-4 col-md-6">
-                                    <div className="widget widget-stats bg-gradient-teal shadow-lg border-0 rounded-lg overflow-hidden transition-all hover-up">
-                                        <div className="stats-icon stats-icon-lg"><i className="fa fa-comments fa-fw"></i></div>
-                                        <div className="stats-content">
-                                            <div className="stats-title text-white-700">USER FEEDBACKS</div>
-                                            <div className="stats-number text-white">{feedback.toLocaleString()}</div>
-                                            <div className="stats-progress progress progress-xs">
-                                                <div className="progress-bar bg-white" style={{width: '60%'}}></div>
-                                            </div>
-                                            <div className="stats-desc text-white-700">Recent responses received</div>
-                                        </div>
-                                        <div className="stats-link">
-                                            <Link to="/feedback" className="text-white">Read Feedback <i className="fa fa-arrow-alt-circle-right"></i></Link>
-                                        </div>
-                                    </div>
+                                {/* FEEDBACK CARD */}
+                                <div className="stat-card bg-feedback">
+                                    <i className="fa fa-star card-icon"></i>
+                                    <div className="card-label">User Feedback</div>
+                                    <div className="card-value">{counts.feedback.toLocaleString()}</div>
+                                    <Link to="/feedback" className="card-footer-link">
+                                        Review Analytics <i className="fa fa-arrow-right ml-2"></i>
+                                    </Link>
                                 </div>
                             </div>
 
-                            {/* OPTIONAL: ADD A SECONDARY ROW FOR SYSTEM STATUS */}
-                            <div className="row mt-4">
-                                <div className="col-xl-12">
-                                    <div className="panel panel-inverse border-0 shadow-sm">
-                                        <div className="panel-heading bg-dark text-white border-0">
-                                            <h4 className="panel-title">System Insights</h4>
-                                        </div>
-                                        <div className="panel-body bg-light">
-                                            <p className="mb-0">The administrator dashboard currently tracks <b>{users + institutes}</b> total database nodes. System performance is optimal.</p>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="info-panel mt-5">
+                                <h5 className="info-title">Administrative Insight</h5>
+                                <p className="info-text mb-0">
+                                    You are currently overseeing <strong>{counts.users + counts.institutes}</strong> active entities within the Althub ecosystem. 
+                                    All system modules are operational, and the database synchronization is up to date.
+                                </p>
                             </div>
-                        </>
+                        </Fragment>
                     )}
                 </div>
                 <Footer />
             </div>
-        </>
-    )
+        </Fragment>
+    );
 }
 
 export default Dashboard;

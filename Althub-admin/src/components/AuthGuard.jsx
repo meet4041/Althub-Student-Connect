@@ -1,13 +1,27 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 const AuthGuard = ({ children }) => {
-    // FIX: Check for both token and user ID for security
-    const hasToken = !!localStorage.getItem('AlmaPlus_admin_Token');
-    const hasId = !!localStorage.getItem('AlmaPlus_admin_Id');
-    
-    if (!hasToken || !hasId) {
-        return <Navigate to="/" replace />;
+    const location = useLocation();
+    const [isChecking, setIsChecking] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('AlmaPlus_admin_Token');
+        const adminId = localStorage.getItem('AlmaPlus_admin_Id');
+
+        if (token && adminId) {
+            setIsAuthenticated(true);
+        } else {
+            setIsAuthenticated(false);
+        }
+        setIsChecking(false);
+    }, [location]); // Re-check whenever the URL changes
+
+    if (isChecking) return null; // Prevents "ghost" redirects
+
+    if (!isAuthenticated) {
+        return <Navigate to="/" state={{ from: location }} replace />;
     }
 
     return children;

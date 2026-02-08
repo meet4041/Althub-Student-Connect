@@ -19,8 +19,13 @@ const AlumniOffice = () => {
     const [alert2, setAlert2] = useState(false);
 
     useEffect(() => {
+        // Force hide standard template loader
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
         const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
+
         fetchData();
     }, []);
 
@@ -28,17 +33,22 @@ const AlumniOffice = () => {
         setLoading(true);
         axiosInstance.get('/api/getAlumniOffices')
             .then(res => {
-                setData(res.data.data || []);
-                setDisplayData(res.data.data || []);
+                const results = res.data.data || [];
+                setData(results);
+                setDisplayData(results);
                 setLoading(false);
-            }).catch(() => setLoading(false));
+            })
+            .catch((err) => {
+                console.error("Fetch Error:", err);
+                setLoading(false);
+            });
     };
 
     useEffect(() => {
         const filtered = data.filter(item => 
-            item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.parent_institute_id?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+            (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (item.parent_institute_id?.name && item.parent_institute_id.name.toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setDisplayData(filtered);
     }, [searchTerm, data]);
@@ -48,6 +58,7 @@ const AlumniOffice = () => {
             .then(() => {
                 setAlert(false);
                 setAlert2(true);
+                fetchData();
             });
     };
 
@@ -93,7 +104,7 @@ const AlumniOffice = () => {
                                 </thead>
                                 <tbody>
                                     {loading ? (
-                                        <tr><td colSpan="4" className="text-center py-5"><i className="fa fa-spinner fa-spin fa-2x text-primary"></i></td></tr>
+                                        <tr><td colSpan="4" className="text-center py-5"><i className="fa fa-circle-notch fa-spin fa-2x text-primary"></i></td></tr>
                                     ) : displayData.length > 0 ? displayData.map((item) => (
                                         <tr key={item._id}>
                                             <td className="user-name-text">{item.name}</td>
@@ -123,7 +134,7 @@ const AlumniOffice = () => {
                     Access for this office will be revoked.
                 </SweetAlert>
 
-                <SweetAlert success show={alert2} title="Deleted!" onConfirm={() => { setAlert2(false); fetchData(); }}>
+                <SweetAlert success show={alert2} title="Deleted!" onConfirm={() => setAlert2(false)}>
                     Office removed successfully.
                 </SweetAlert>
                 <Footer />

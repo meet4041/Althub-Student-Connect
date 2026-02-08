@@ -3,11 +3,9 @@ import { Link } from 'react-router-dom';
 import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
-import { ALTHUB_API_URL } from '../baseURL.jsx';
 import axiosInstance from '../../services/axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
-// RE-USING THE DIRECTORY STYLES
 import '../styles/users.css';
 
 const PlacementCell = () => {
@@ -16,14 +14,18 @@ const PlacementCell = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     
-    // Alert States
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
 
     useEffect(() => {
+        // Force hide standard template loader
+        if (document.getElementById('page-loader')) {
+            document.getElementById('page-loader').style.display = 'none';
+        }
         const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
+        
         fetchData();
     }, []);
 
@@ -31,32 +33,32 @@ const PlacementCell = () => {
         setLoading(true);
         axiosInstance.get('/api/getPlacementCells')
             .then(res => {
-                setData(res.data.data || []);
-                setDisplayData(res.data.data || []);
+                const results = res.data.data || [];
+                setData(results);
+                setDisplayData(results);
                 setLoading(false);
-            }).catch(() => setLoading(false));
+            })
+            .catch((err) => {
+                console.error("Fetch Error:", err);
+                setLoading(false); // Stop loading even on error
+            });
     };
 
-    // Filter Logic
     useEffect(() => {
         const filtered = data.filter(item => 
-            item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.parent_institute_id?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+            (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (item.parent_institute_id?.name && item.parent_institute_id.name.toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setDisplayData(filtered);
     }, [searchTerm, data]);
-
-    const confirmDelete = (id) => {
-        setDeleteId(id);
-        setAlert(true);
-    };
 
     const executeDelete = () => {
         axiosInstance.delete(`/api/deletePlacementCell/${deleteId}`)
             .then(() => {
                 setAlert(false);
                 setAlert2(true);
+                fetchData(); // Refresh data
             });
     };
 
@@ -102,7 +104,7 @@ const PlacementCell = () => {
                                 </thead>
                                 <tbody>
                                     {loading ? (
-                                        <tr><td colSpan="4" className="text-center py-5"><i className="fa fa-spinner fa-spin fa-2x text-primary"></i></td></tr>
+                                        <tr><td colSpan="4" className="text-center py-5"><i className="fa fa-circle-notch fa-spin fa-2x text-primary"></i></td></tr>
                                     ) : displayData.length > 0 ? displayData.map((item) => (
                                         <tr key={item._id}>
                                             <td className="user-name-text">{item.name}</td>
@@ -114,13 +116,13 @@ const PlacementCell = () => {
                                             </td>
                                             <td>{item.email}</td>
                                             <td className="text-center">
-                                                <button className="btn btn-outline-danger btn-sm rounded-pill px-3" onClick={() => confirmDelete(item._id)}>
+                                                <button className="btn btn-outline-danger btn-sm rounded-pill px-3" onClick={() => {setDeleteId(item._id); setAlert(true);}}>
                                                     <i className="fa fa-trash-alt mr-1"></i> Delete
                                                 </button>
                                             </td>
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan="4" className="text-center py-5 text-muted">No placement cells registered.</td></tr>
+                                        <tr><td colSpan="4" className="text-center py-5 text-muted">No placement cells found.</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -132,7 +134,7 @@ const PlacementCell = () => {
                     This office will no longer have access to the system.
                 </SweetAlert>
 
-                <SweetAlert success show={alert2} title="Deleted!" onConfirm={() => { setAlert2(false); fetchData(); }}>
+                <SweetAlert success show={alert2} title="Deleted!" onConfirm={() => setAlert2(false)}>
                     Office removed successfully.
                 </SweetAlert>
                 <Footer />

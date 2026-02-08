@@ -1,6 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../../services/axios';
+
+// IMPORT NEW STYLES
+import '../styles/menu.css';
 
 function Menu() {
    const navigate = useNavigate();
@@ -46,81 +49,88 @@ function Menu() {
    const isActive = (path) => location.pathname === path ? "active" : "";
 
    return (
-      <>
-         {/* HEADER */}
-         <div id="header" className="header navbar-default shadow-sm">
-            <div className="navbar-header">
-               <Link to="/dashboard" className="navbar-brand">
-                  <img src='Logo1.png' className="rounded-sm" style={{ marginRight: '1px', height: '50px' }} alt="logo" />
-                  <span className="brand-text">Admin</span>
-               </Link>
+      <Fragment>
+         {/* MODERN HEADER */}
+         <header className="admin-header">
+            <Link to="/dashboard" className="admin-logo-link">
+               <img src='Logo1.png' className="admin-logo-img" alt="logo" />
+               <span className="admin-brand-name">Admin</span>
+            </Link>
+
+            <div className="dropdown">
+               <button
+                  className="user-dropdown-btn dropdown-toggle border-0"
+                  data-toggle="dropdown"
+                  aria-haspopup="true" 
+                  aria-expanded="false"
+               >
+                  <span className="user-name-label">{admin?.name}</span>
+                  <i className="fa fa-chevron-down small ml-2 text-muted"></i>
+               </button>
+
+               <div className="dropdown-menu dropdown-menu-right border-0 shadow-lg mt-2">
+                  <div className="dropdown-header text-uppercase small font-weight-bold">Account Settings</div>
+                  <Link to="/profile" className="dropdown-item">
+                     <i className="fa fa-user-edit mr-2 text-primary"></i> Edit Profile
+                  </Link>
+                  <div className="dropdown-divider"></div>
+                  <button onClick={Logout} className="dropdown-item text-danger border-0 bg-transparent w-100 text-left">
+                     <i className="fa fa-sign-out-alt mr-2"></i> Log Out
+                  </button>
+               </div>
+            </div>
+         </header>
+
+         {/* MODERN SIDEBAR */}
+         <aside className="admin-sidebar">
+            <div className="sidebar-profile">
+               <span className="profile-name">{admin.name}</span>
+               <span className="profile-role">Administrator</span>
             </div>
 
-            <ul className="navbar-nav navbar-right px-3">
-               <li className="dropdown navbar-user">
-                  {/* ENLARGED DAU BUTTON */}
-                  <button
-                     className="dropdown-toggle btn btn-link d-flex align-items-center text-decoration-none"
-                     data-toggle="dropdown"
-                     style={{
-                        color: '#333',
-                        padding: '10px 15px',
-                        fontSize: '18px', // Increased Font Size
-                        borderRadius: '8px',
-                        transition: 'background 0.3s'
-                     }}
-                  >
-                     <span className="font-weight-bold" style={{ letterSpacing: '1px' }}>{admin?.name}</span>
-                     <b className="caret ml-2" style={{ transform: 'scale(1.2)' }}></b>
-                  </button>
+            <div className="nav-header-text">Main Navigation</div>
 
-                  <div className="dropdown-menu dropdown-menu-right border-0 shadow mt-2">
-                     <div className="dropdown-header text-uppercase font-weight-bold">Account Settings</div>
-                     <Link to="/profile" className="dropdown-item">
-                        <i className="fa fa-user-edit mr-2"></i> Edit Profile
-                     </Link>
-                     <div className="dropdown-divider"></div>
-                     <button onClick={Logout} className="dropdown-item text-danger border-0 bg-transparent w-100 text-left">
-                        <i className="fa fa-sign-out-alt mr-2"></i> Log Out
-                     </button>
-                  </div>
+            <ul className="admin-nav-list">
+               <li className="admin-nav-item">
+                  <Link to="/dashboard" className={`admin-nav-link ${isActive("/dashboard")}`}>
+                     <i className="fa fa-th-large"></i> <span>Dashboard</span>
+                  </Link>
+               </li>
+
+               <li className="admin-nav-item">
+                  <Link to="/institute" className={`admin-nav-link ${isActive("/institute")}`}>
+                     <i className="fa fa-university"></i> <span>All Institutes</span>
+                  </Link>
+               </li>
+
+               <li className="admin-nav-item">
+                  <Link to="/users" className={`admin-nav-link ${isActive("/users")}`}>
+                     <i className="fa fa-users"></i> <span>All Users</span>
+                  </Link>
+               </li>
+
+               {/* NEW: PLACEMENT CELL BUTTON */}
+               <li className="admin-nav-item">
+                  <Link to="/placement-cell" className={`admin-nav-link ${isActive("/placement-cell")}`}>
+                     <i className="fa fa-briefcase"></i> <span>All Placement Cells</span>
+                  </Link>
+               </li>
+
+               {/* NEW: ALUMNI OFFICE BUTTON */}
+               <li className="admin-nav-item">
+                  <Link to="/alumni-office" className={`admin-nav-link ${isActive("/alumni-office")}`}>
+                     <i className="fa fa-graduation-cap"></i> <span>All Alumni Offices</span>
+                  </Link>
+               </li>
+
+               <li className="admin-nav-item">
+                  <Link to="/feedback" className={`admin-nav-link ${isActive("/feedback")}`}>
+                     <i className="fa fa-comments"></i> <span>Feedback</span>
+                  </Link>
                </li>
             </ul>
-         </div>
-
-         {/* SIDEBAR */}
-         <div id="sidebar" className="sidebar">
-            <div data-scrollbar="true" data-height="100%">
-               <ul className="nav">
-                  <li className="nav-profile border-bottom mb-2">
-                     <div className="cover with-shadow"></div>
-                     <div className="image">
-                     </div>
-                     <div className="info">
-                        {admin.name}
-                        <small>Administrator</small>
-                     </div>
-                  </li>
-
-                  <li className="nav-header">Navigation</li>
-
-                  <li className={isActive("/dashboard")}>
-                     <Link to="/dashboard"><i className="fa fa-th-large"></i> <span>Dashboard</span></Link>
-                  </li>
-                  <li className={isActive("/users")}>
-                     <Link to="/users"><i className="fa fa-users"></i> <span>Users</span></Link>
-                  </li>
-                  <li className={isActive("/institute")}>
-                     <Link to="/institute"><i className="fa fa-university"></i> <span>Institutes</span></Link>
-                  </li>
-                  <li className={isActive("/feedback")}>
-                     <Link to="/feedback"><i className="fa fa-comments"></i> <span>Feedback</span></Link>
-                  </li>
-               </ul>
-            </div>
-         </div>
-         <div className="sidebar-bg"></div>
-      </>
+         </aside>
+      </Fragment>
    )
 }
 

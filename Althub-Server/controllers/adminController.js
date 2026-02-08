@@ -1,6 +1,7 @@
 import Admin from "../models/adminModel.js";
 import User from "../models/userModel.js";
-import Education from "../models/educationModel.js"; 
+import Education from "../models/educationModel.js";
+import Institute from "../models/instituteModel.js";
 import config from "../config/config.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -41,6 +42,115 @@ const sendresetpasswordMail = async (name, email, token) => {
     }
 }
 
+export const getAllAlumniOffices = async (req, res) => {
+    try {
+        // Fetch institutes that have the role 'Alumni'
+        const data = await Institute.find({ role: 'Alumni' }).populate('parent_id', 'name');
+        res.status(200).send({ success: true, data: data });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
+
+export const getAllPlacementCells = async (req, res) => {
+    try {
+        // Fetch institutes that have the role 'Placement'
+        const data = await Institute.find({ role: 'Placement' }).populate('parent_id', 'name');
+        res.status(200).send({ success: true, data: data });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
+
+// Add this to adminController.js
+export const getUsersByInstitute = async (req, res) => {
+    try {
+        const { instituteId } = req.params;
+
+        // 1. Fetch users belonging to this specific ID
+        const data = await User.aggregate([
+            {
+                $match: { institute_id: new mongoose.Types.ObjectId(instituteId) }
+            },
+            {
+                $lookup: {
+                    from: Education.collection.name,
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        { $project: { course: 1, joindate: 1, enddate: 1 } }
+                    ],
+                    as: "educationList"
+                }
+            }
+        ]);
+
+        // 2. Format the data for the frontend (Calculates Student vs Alumni status)
+        const finalData = data.map(user => {
+            const type = determineUserStatus(user.educationList); // Re-uses your existing utility
+            let eduStart = "-";
+            let eduEnd = "-";
+
+            if (user.educationList && user.educationList.length > 0) {
+                const sortedEdu = user.educationList.sort((a, b) => new Date(b.enddate) - new Date(a.enddate));
+                const latest = sortedEdu[0];
+                if (latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                if (latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+            }
+
+            return { ...user, type, eduStart, eduEnd };
+        });
+
+        res.status(200).send({ success: true, data: finalData });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
+// Add to adminController.js
+export const getUsersByInstituteName = async (req, res) => {
+    try {
+        const { instituteName } = req.params; // This will be "DAU", etc.
+
+        const data = await User.aggregate([
+            {
+                // Matches the string value in the 'institute' field
+                $match: { institute: instituteName } 
+            },
+            {
+                $lookup: {
+                    from: Education.collection.name,
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        { $project: { course: 1, joindate: 1, enddate: 1 } }
+                    ],
+                    as: "educationList"
+                }
+            }
+        ]);
+
+        const finalData = data.map(user => {
+            const type = determineUserStatus(user.educationList);
+            let eduStart = "-";
+            let eduEnd = "-";
+            
+            if (user.educationList && user.educationList.length > 0) {
+                const sortedEdu = user.educationList.sort((a, b) => new Date(b.enddate) - new Date(a.enddate));
+                const latest = sortedEdu[0];
+                if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+            }
+            
+            return { ...user, type, eduStart, eduEnd };
+        });
+
+        res.status(200).send({ success: true, data: finalData });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
 // --- STATUS CALCULATION LOGIC ---
 const determineUserStatus = (educations) => {
     if (!educations || educations.length === 0) return "-";
@@ -55,7 +165,7 @@ const determineUserStatus = (educations) => {
         if (edu.enddate) {
             const d = new Date(edu.enddate);
             if (!isNaN(d.getTime())) gradYear = d.getFullYear();
-        } 
+        }
         // 2. Try to use Join Date + Duration
         else if (edu.joindate && edu.course) {
             const s = new Date(edu.joindate);
@@ -63,7 +173,7 @@ const determineUserStatus = (educations) => {
                 const startYear = s.getFullYear();
                 const courseName = (edu.course || "").toLowerCase();
                 let duration = 0;
-                
+
                 if (courseName.includes('b.tech') || courseName.includes('btech') || courseName.includes('bachelor')) {
                     duration = 4;
                 } else if (courseName.includes('m.tech') || courseName.includes('mtech') || courseName.includes('master')) {
@@ -80,7 +190,7 @@ const determineUserStatus = (educations) => {
             const cutoffDate = new Date(gradYear, 4, 15); // May 15th
             if (now <= cutoffDate) {
                 isStudent = true;
-                break; 
+                break;
             }
         }
     }
@@ -100,9 +210,9 @@ export const registerAdmin = async (req, res) => {
         }
 
         if (!validatePassword(password)) {
-            return res.status(400).send({ 
-                success: false, 
-                msg: "Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number." 
+            return res.status(400).send({
+                success: false,
+                msg: "Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number."
             });
         }
 
@@ -191,21 +301,21 @@ export const getUsers = async (req, res) => {
             const type = determineUserStatus(user.educationList);
             let eduStart = "-";
             let eduEnd = "-";
-            
+
             if (user.educationList && user.educationList.length > 0) {
                 const sortedEdu = user.educationList.sort((a, b) => {
                     const dateA = new Date(a.enddate || "1900-01-01");
                     const dateB = new Date(b.enddate || "1900-01-01");
                     return dateB - dateA;
                 });
-                
+
                 const latest = sortedEdu[0];
-                if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
-                if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+                if (latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                if (latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
             }
-            
+
             delete user.educationList;
-            
+
             return { ...user, type, eduStart, eduEnd };
         });
 
@@ -219,7 +329,7 @@ export const updatePassword = async (req, res) => {
     try {
         const { admin_id, oldpassword, newpassword } = req.body;
         const data = await Admin.findById(admin_id).select("+password");
-        
+
         if (data) {
             const match = await bcryptjs.compare(oldpassword, data.password);
             if (match) {
@@ -228,12 +338,12 @@ export const updatePassword = async (req, res) => {
                 }
 
                 const hashedPassword = await bcryptjs.hash(newpassword, 10);
-                
-                await Admin.findByIdAndUpdate(admin_id, { 
+
+                await Admin.findByIdAndUpdate(admin_id, {
                     $set: { password: hashedPassword, token: '' },
-                    $inc: { tokenVersion: 1 } 
+                    $inc: { tokenVersion: 1 }
                 });
-                
+
                 res.clearCookie("jwt_token");
                 return res.status(200).send({ success: true, msg: "Password updated successfully." });
             } else {
