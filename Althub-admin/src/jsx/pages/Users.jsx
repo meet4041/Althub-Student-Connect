@@ -8,38 +8,30 @@ import { ALTHUB_API_URL } from '../baseURL.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
+// IMPORT NEW STYLES
+import '../styles/users.css';
+
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [displayUsers, setDisplayUsers] = useState([]);
     const [isTableLoading, setIsTableLoading] = useState(true);
-    
-    // Modal State
     const [selectedUser, setSelectedUser] = useState(null);
 
     const rows = [10, 20, 30];
     const [usersPerPage, setUsersPerPage] = useState(rows[0]);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Sorting State
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-    // Theme constant
-    const themeColor = '#2563EB';
-
     useEffect(() => {
-        const loader = document.getElementById('page-loader');
         const element = document.getElementById("page-container");
-        if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
-        
         getUsersData();
     }, []);
 
     const getUsersData = () => {
         setIsTableLoading(true);
-        const token = localStorage.getItem('token');
-        // Admin endpoint to get all users
+        const token = localStorage.getItem('AlmaPlus_admin_Token'); // Using Admin Token
         axios({
             method: "get",
             url: `${ALTHUB_API_URL}/api/getUsers`, 
@@ -50,42 +42,35 @@ const Users = () => {
         }).catch(() => setIsTableLoading(false));
     };
 
-    // Filter and Sort Logic
     useEffect(() => {
         let processedUsers = [...users];
-
         if (searchTerm) {
             processedUsers = processedUsers.filter(user => 
                 user.fname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 user.email?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-
         if (sortConfig.key === 'fname') {
             processedUsers.sort((a, b) => {
-                let aValue = a.fname ? a.fname.toLowerCase() : '';
-                let bValue = b.fname ? b.fname.toLowerCase() : '';
-
+                let aValue = (a.fname || '').toLowerCase();
+                let bValue = (b.fname || '').toLowerCase();
                 if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
                 if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
                 return 0;
             });
         }
-
         setDisplayUsers(processedUsers);
         setCurrentPage(1);
     }, [searchTerm, users, sortConfig]);
 
     const requestSort = (key) => {
         let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
+        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
         setSortConfig({ key, direction });
     };
 
     const getSortIcon = (key) => {
-        if (sortConfig.key !== key) return <i className="fa fa-sort text-muted ml-2" style={{ opacity: 0.3 }}></i>;
+        if (sortConfig.key !== key) return <i className="fa fa-sort opacity-20 ml-2"></i>;
         return sortConfig.direction === 'asc' 
             ? <i className="fa fa-sort-up text-primary ml-2"></i> 
             : <i className="fa fa-sort-down text-primary ml-2"></i>;
@@ -100,7 +85,6 @@ const Users = () => {
     const [alert, setAlert] = useState(false);
     const [alert2, setAlert2] = useState(false);
 
-    // Delete actions triggered from modal
     const handleDeleteUser = (id) => {
         setDeleteId(id);
         setAlert(true);
@@ -108,7 +92,7 @@ const Users = () => {
     }
 
     const DeleteUser = () => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('AlmaPlus_admin_Token');
         axios({
             method: "delete",
             url: `${ALTHUB_API_URL}/api/deleteUser/${deleteId}`,
@@ -121,202 +105,177 @@ const Users = () => {
         });
     }
 
-    const getStatusBadge = (type) => {
-        if (type === 'Student') return <span className="badge badge-pill badge-primary px-3 py-2">Student</span>;
-        if (type === 'Alumni') return <span className="badge badge-pill badge-success px-3 py-2">Alumni</span>;
-        return <span className="text-muted font-weight-bold" style={{fontSize: '16px'}}>-</span>;
-    };
-
-    const openUserDetails = (user) => {
-        setSelectedUser(user);
-    }
-
-    const closeUserDetails = () => {
-        setSelectedUser(null);
-    }
-
     return (
         <Fragment>
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{backgroundColor: '#F8FAFC'}}>
-                    <div className="d-flex align-items-center justify-content-between mb-3">
+                <div id="content" className="content users-wrapper">
+                    
+                    {/* Header Section */}
+                    <div className="d-flex align-items-center justify-content-between mb-4">
                         <div>
                             <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColor}}>Dashboard</Link></li>
-                                <li className="breadcrumb-item active">Users</li>
+                                <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
+                                <li className="breadcrumb-item active">Student Directory</li>
                             </ol>
-                            <h1 className="page-header mb-0">Student Directory</h1>
+                            <h1 className="page-header mb-0">Manage Members</h1>
                         </div>
-                        <Link to="/add-user" className="btn btn-primary btn-lg shadow-sm" 
-                              style={{borderRadius: '8px', backgroundColor: themeColor, borderColor: themeColor}}>
-                            <i className="fa fa-user-plus mr-2"></i> Add New User
-                        </Link>
                     </div>
 
-                    <div className="card border-0 shadow-sm" style={{ borderRadius: '15px' }}>
-                        <div className="card-body p-0">
-                            {/* Search & Filter Bar */}
-                            <div className="p-4 border-bottom bg-white" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }}>
-                                <div className="row align-items-center">
-                                    <div className="col-md-6">
-                                        <div className="input-group bg-light border rounded-pill px-3 py-1 shadow-none">
-                                            <div className="input-group-prepend">
-                                                <span className="input-group-text bg-transparent border-0"><i className="fa fa-search text-muted"></i></span>
-                                            </div>
-                                            <input type="text" className="form-control border-0 bg-transparent" placeholder="Search by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6 text-md-right mt-3 mt-md-0">
-                                        <span className="text-muted mr-2">Show</span>
-                                        <select className="custom-select custom-select-sm w-auto border-0 shadow-sm" style={{borderRadius: '5px'}} value={usersPerPage} onChange={(e) => setUsersPerPage(Number(e.target.value))}>
-                                            {rows.map(v => <option key={v} value={v}>{v} Users</option>)}
-                                        </select>
+                    <div className="directory-card">
+                        {/* Search & Filter */}
+                        <div className="filter-bar">
+                            <div className="row align-items-center">
+                                <div className="col-md-6">
+                                    <div className="search-input-group">
+                                        <i className="fa fa-search"></i>
+                                        <input 
+                                            type="text" 
+                                            className="form-control" 
+                                            placeholder="Search by name or email..." 
+                                            value={searchTerm} 
+                                            onChange={(e) => setSearchTerm(e.target.value)} 
+                                        />
                                     </div>
                                 </div>
+                                <div className="col-md-6 text-md-right mt-3 mt-md-0">
+                                    <label className="text-muted small font-weight-bold mr-2 mb-0">SHOWING</label>
+                                    <select 
+                                        className="custom-select custom-select-sm w-auto border-0 bg-light" 
+                                        value={usersPerPage} 
+                                        onChange={(e) => setUsersPerPage(Number(e.target.value))}
+                                    >
+                                        {rows.map(v => <option key={v} value={v}>{v} Users</option>)}
+                                    </select>
+                                </div>
                             </div>
+                        </div>
 
-                            <div className="table-responsive">
-                                <table className="table table-hover mb-0">
-                                    <thead style={{backgroundColor: '#F1F5F9', color: '#334155'}}>
-                                        <tr>
-                                            <th className="border-0 pl-4" style={{width: '100px'}}>Avatar</th>
-                                            <th className="border-0" 
-                                                onClick={() => requestSort('fname')} 
-                                                style={{ cursor: 'pointer', userSelect: 'none' }}
-                                                title="Sort by Name">
-                                                Username {getSortIcon('fname')}
-                                            </th>
-                                            <th className="border-0 text-center">Status</th>
+                        {/* Table */}
+                        <div className="table-responsive">
+                            <table className="table table-hover user-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style={{width: '100px'}}>Photo</th>
+                                        <th onClick={() => requestSort('fname')} style={{ cursor: 'pointer' }}>
+                                            Full Name {getSortIcon('fname')}
+                                        </th>
+                                        <th className="text-center">Classification</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {isTableLoading ? (
+                                        <tr><td colSpan="3" className="text-center py-5"><i className="fa fa-circle-notch fa-spin fa-2x text-primary"></i></td></tr>
+                                    ) : currentUsers.length > 0 ? currentUsers.map((elem) => (
+                                        <tr key={elem._id}>
+                                            <td>
+                                                <img 
+                                                    src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/profile1.png'} 
+                                                    className="user-avatar" 
+                                                    alt='user'
+                                                />
+                                            </td>
+                                            <td className="user-name-cell" onClick={() => setSelectedUser(elem)}>
+                                                <span className="user-name-text">{elem.fname} {elem.lname}</span>
+                                                <span className="user-subtext">{elem.email}</span>
+                                            </td>
+                                            <td className="text-center">
+                                                {elem.type === 'Student' ? (
+                                                    <span className="status-pill pill-student">Student</span>
+                                                ) : elem.type === 'Alumni' ? (
+                                                    <span className="status-pill pill-alumni">Alumni</span>
+                                                ) : "-"}
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {isTableLoading ? (
-                                            <tr><td colSpan="3" className="text-center p-5"><i className="fa fa-spinner fa-spin fa-2x" style={{color: themeColor}}></i></td></tr>
-                                        ) : currentUsers.length > 0 ? currentUsers.map((elem, index) => (
-                                            <tr key={elem._id}>
-                                                <td className="pl-4 align-middle">
-                                                    <img 
-                                                        src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/profile1.png'} 
-                                                        alt='profile' 
-                                                        className="rounded-circle shadow-sm" 
-                                                        style={{ width: '45px', height: '45px', objectFit: 'cover', border: '2px solid #fff' }} 
-                                                    />
-                                                </td>
-                                                <td className="align-middle">
-                                                    <div 
-                                                        onClick={() => openUserDetails(elem)}
-                                                        className="font-weight-bold text-dark" 
-                                                        style={{ cursor: 'pointer', fontSize: '15px' }}
-                                                        onMouseOver={(e) => e.currentTarget.style.color = themeColor}
-                                                        onMouseOut={(e) => e.currentTarget.style.color = '#2d353c'}
-                                                    >
-                                                        {elem.fname} {elem.lname}
-                                                    </div>
-                                                    <small className="text-muted">Click to view details</small>
-                                                </td>
-                                                <td className="align-middle text-center">
-                                                    {getStatusBadge(elem.type)}
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr><td colSpan="3" className="text-center p-5 text-muted">No members found.</td></tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    )) : (
+                                        <tr><td colSpan="3" className="text-center py-5 text-muted">No matching records found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                            {/* Pagination */}
-                            <div className="p-4 d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff', borderBottomLeftRadius: '15px', borderBottomRightRadius: '15px' }}>
-                                <div className="text-muted small">
-                                    Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length} users
-                                </div>
-                                <nav>
-                                    <ul className="pagination pagination-sm mb-0">
-                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev - 1)} style={{color: themeColor}}>Previous</button>
+                        {/* Pagination */}
+                        <div className="p-4 d-flex justify-content-between align-items-center bg-white">
+                            <span className="text-muted small">
+                                Showing {indexOfFirstUser + 1} - {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length}
+                            </span>
+                            <nav>
+                                <ul className="pagination pagination-sm mb-0">
+                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        <button className="page-link" onClick={() => setCurrentPage(prev => prev - 1)}>Prev</button>
+                                    </li>
+                                    {pageNumbers.map(num => (
+                                        <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
+                                            <button className="page-link" onClick={() => setCurrentPage(num)}>{num}</button>
                                         </li>
-                                        {pageNumbers.map(num => (
-                                            <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                                <button 
-                                                    className="page-link" 
-                                                    onClick={() => setCurrentPage(num)}
-                                                    style={currentPage === num ? {backgroundColor: themeColor, borderColor: themeColor} : {color: themeColor}}
-                                                >
-                                                    {num}
-                                                </button>
-                                            </li>
-                                        ))}
-                                        <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)} style={{color: themeColor}}>Next</button>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
+                                    ))}
+                                    <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
+                                        <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)}>Next</button>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
 
-                {/* --- USER DETAILS MODAL --- */}
+                {/* Profile Modal */}
                 {selectedUser && (
-                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal fade show profile-modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)' }}>
                         <div className="modal-dialog modal-dialog-centered modal-lg">
-                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '15px'}}>
-                                <div className="modal-header border-0 pb-0">
-                                    <h5 className="modal-title font-weight-bold ml-2 mt-2">Member Profile</h5>
-                                    <button type="button" className="close" onClick={closeUserDetails} style={{outline: 'none'}}>
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
+                            <div className="modal-content shadow-lg">
+                                <div className="modal-header border-0">
+                                    <button type="button" className="close" onClick={() => setSelectedUser(null)}>&times;</button>
                                 </div>
-                                <div className="modal-body p-4">
-                                    <div className="row align-items-center mb-4">
+                                <div className="modal-body px-5 pb-5">
+                                    <div className="row">
                                         <div className="col-md-4 text-center border-right">
                                             <img 
                                                 src={selectedUser.profilepic ? `${ALTHUB_API_URL}${selectedUser.profilepic}` : 'assets/img/profile1.png'} 
-                                                alt='profile' 
-                                                className="rounded-circle shadow mb-3" 
-                                                style={{ width: '120px', height: '120px', objectFit: 'cover' }} 
+                                                className="modal-profile-img mb-3" 
+                                                alt='profile'
                                             />
-                                            <h4 className="mb-1 font-weight-bold text-dark">{selectedUser.fname} {selectedUser.lname}</h4>
-                                            <div className="mb-2">{getStatusBadge(selectedUser.type)}</div>
+                                            <h4 className="font-weight-bold">{selectedUser.fname} {selectedUser.lname}</h4>
+                                            <div className="mt-2">
+                                                {selectedUser.type === 'Student' ? 
+                                                    <span className="status-pill pill-student">Student Member</span> : 
+                                                    <span className="status-pill pill-alumni">Alumni Member</span>
+                                                }
+                                            </div>
                                         </div>
-                                        <div className="col-md-8 pl-md-4 mt-3 mt-md-0">
-                                            <h6 className="text-uppercase text-muted small font-weight-bold mb-3" style={{letterSpacing: '1px'}}>Contact & Personal Info</h6>
-                                            <div className="row mb-3">
-                                                <div className="col-sm-4 text-muted"><i className="far fa-envelope mr-2"></i> Email:</div>
-                                                <div className="col-sm-8 text-dark font-weight-bold">{selectedUser.email}</div>
+                                        <div className="col-md-8 pl-md-5">
+                                            <h6 className="font-weight-bold text-muted small mb-4">PERSONAL DETAILS</h6>
+                                            <div className="mb-3">
+                                                <small className="text-muted d-block">Email Address</small>
+                                                <span className="font-weight-bold">{selectedUser.email}</span>
                                             </div>
-                                            <div className="row mb-3">
-                                                <div className="col-sm-4 text-muted"><i className="fa fa-phone mr-2"></i> Phone:</div>
-                                                <div className="col-sm-8 text-dark">{selectedUser.phone || <span className="text-muted">-</span>}</div>
+                                            <div className="mb-3">
+                                                <small className="text-muted d-block">Contact Number</small>
+                                                <span>{selectedUser.phone || "Not Provided"}</span>
                                             </div>
-                                            <div className="row mb-3">
-                                                <div className="col-sm-4 text-muted"><i className="fa fa-birthday-cake mr-2"></i> DOB:</div>
-                                                <div className="col-sm-8 text-dark">{selectedUser.dob ? selectedUser.dob.split('T')[0] : <span className="text-muted">-</span>}</div>
+                                            <div className="mb-4">
+                                                <small className="text-muted d-block">Date of Birth</small>
+                                                <span>{selectedUser.dob ? selectedUser.dob.split('T')[0] : "Not Provided"}</span>
                                             </div>
-                                            
-                                            <hr className="my-4" />
-                                            
-                                            <h6 className="text-uppercase text-muted small font-weight-bold mb-3" style={{letterSpacing: '1px'}}>Education Timeline</h6>
-                                            <div className="d-flex align-items-center">
-                                                <div className="p-3 rounded bg-light mr-3 text-center" style={{minWidth: '100px'}}>
-                                                    <small className="d-block text-muted">Join Date</small>
-                                                    <strong style={{color: themeColor}}>{selectedUser.eduStart}</strong>
+
+                                            <h6 className="font-weight-bold text-muted small mb-3">EDUCATION PERIOD</h6>
+                                            <div className="d-flex gap-3">
+                                                <div className="timeline-box mr-3">
+                                                    <span className="timeline-label">COMMENCED</span>
+                                                    <span className="timeline-date">{selectedUser.eduStart}</span>
                                                 </div>
-                                                <i className="fa fa-arrow-right text-muted"></i>
-                                                <div className="p-3 rounded bg-light ml-3 text-center" style={{minWidth: '100px'}}>
-                                                    <small className="d-block text-muted">End Date</small>
-                                                    <strong style={{color: themeColor}}>{selectedUser.eduEnd}</strong>
+                                                <div className="timeline-box">
+                                                    <span className="timeline-label">CONCLUDED</span>
+                                                    <span className="timeline-date">{selectedUser.eduEnd}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="modal-footer bg-light border-0" style={{borderRadius: '0 0 15px 15px'}}>
-                                    <button type="button" className="btn btn-white shadow-sm font-weight-bold" onClick={closeUserDetails}>Close</button>
-                                    <button type="button" className="btn btn-danger shadow-sm font-weight-bold ml-2" onClick={() => handleDeleteUser(selectedUser._id)}>
-                                        <i className="fa fa-trash-alt mr-2"></i> Delete User
+                                <div className="modal-footer bg-light border-0">
+                                    <button className="btn btn-link text-muted font-weight-bold" onClick={() => setSelectedUser(null)}>Close</button>
+                                    <button className="btn btn-danger px-4 font-weight-bold" onClick={() => handleDeleteUser(selectedUser._id)}>
+                                        <i className="fa fa-trash-alt mr-2"></i> Delete Record
                                     </button>
                                 </div>
                             </div>
@@ -328,23 +287,24 @@ const Users = () => {
                     warning
                     show={alert}
                     showCancel
-                    confirmBtnText="Yes, delete it!"
+                    confirmBtnText="Confirm Delete"
                     confirmBtnBsStyle="danger"
-                    title="Remove User?"
+                    title="Permanently Delete?"
                     onConfirm={DeleteUser}
                     onCancel={() => setAlert(false)}
                 >
-                    All data associated with this user will be permanently removed.
+                    This action cannot be undone. User history will be wiped.
                 </SweetAlert>
 
                 <SweetAlert
                     success
                     show={alert2}
-                    title="User Removed"
+                    title="Record Deleted"
                     onConfirm={() => { setAlert2(false); getUsersData(); }}
                 >
-                    The member directory has been updated.
+                    The student directory has been updated successfully.
                 </SweetAlert>
+
                 <Footer />
             </div>
         </Fragment>

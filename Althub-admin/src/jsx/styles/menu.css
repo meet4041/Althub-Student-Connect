@@ -1,0 +1,147 @@
+/* admin/src/jsx/styles/menu.css */
+
+/* HEADER STYLES */
+.admin-header {
+    background: #ffffff;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 12px;
+}
+
+.admin-logo-img {
+    height: 45px;
+    border-radius: 8px;
+}
+
+.admin-brand-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+/* USER DROPDOWN */
+.user-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.user-dropdown-btn:hover {
+    background: #f1f5f9;
+}
+
+.user-name-label {
+    font-weight: 700;
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+/* SIDEBAR STYLES */
+.admin-sidebar {
+    width: 260px;
+    background: #0f172a; /* Deep Navy */
+    position: fixed;
+    top: 70px;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    padding-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-profile {
+    padding: 0 25px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 20px;
+}
+
+.profile-name {
+    color: white;
+    font-weight: 700;
+    display: block;
+    font-size: 1rem;
+}
+
+.profile-role {
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-header-text {
+    padding: 10px 25px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* NAV LINKS */
+.admin-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-nav-item {
+    padding: 2px 15px;
+}
+
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.admin-nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.admin-nav-link:hover {
+    color: white;
+    background: rgba(255,255,255,0.05);
+    text-decoration: none;
+}
+
+.admin-nav-link.active {
+    background: #38bdf8; /* Sky Blue Accent */
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.admin-nav-link.active i {
+    color: #0f172a;
+}

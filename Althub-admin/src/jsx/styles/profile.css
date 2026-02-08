@@ -1,0 +1,128 @@
+/* admin/src/jsx/styles/profile.css */
+
+.profile-wrapper {
+    padding: 30px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Panel & Card Design */
+.profile-panel {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.profile-panel-header {
+    padding: 20px 25px;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.profile-panel-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.profile-panel-body {
+    padding: 25px;
+}
+
+/* Form Styling */
+.profile-form-group {
+    margin-bottom: 20px;
+}
+
+.profile-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.profile-input:focus {
+    border-color: #0f172a;
+    background: white;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05);
+}
+
+/* Password Input with Eye Button */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.eye-toggle-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+
+.eye-toggle-btn:hover {
+    color: #1e293b;
+}
+
+/* Button Styling */
+.btn-save-profile {
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-save-profile:hover:not(:disabled) {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
+
+.btn-update-password {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-update-password:hover:not(:disabled) {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.error-text {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    display: block;
+}

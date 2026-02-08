@@ -1,0 +1,118 @@
+/* admin/src/jsx/styles/dashboard.css */
+
+.dashboard-wrapper {
+    padding: 30px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.dashboard-header {
+    margin-bottom: 35px;
+}
+
+.dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.dashboard-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+    display: block;
+}
+
+/* Stat Cards Container */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+/* Modern Stat Card */
+.stat-card {
+    position: relative;
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 180px;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Gradient Variants */
+.bg-users { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+.bg-institutes { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+.bg-feedback { background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); }
+
+.card-icon {
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    font-size: 5rem;
+    opacity: 0.15;
+    transform: rotate(-15deg);
+}
+
+.card-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.card-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+.card-footer-link {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.card-footer-link:hover {
+    opacity: 1;
+    color: white;
+}
+
+/* Info Section */
+.info-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.info-title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.info-text {
+    color: #64748b;
+    line-height: 1.6;
+}
