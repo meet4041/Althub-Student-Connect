@@ -81,7 +81,7 @@ const Institutes = () => {
                                 Global Directory of <span className="text-primary">{institutes.length}</span> Partner Campuses
                             </p>
                         </div>
-                        <div className="search-input-group-modern" style={{ minWidth: '350px' }}>
+                        <div className="search-input-group-modern" style={{ minWidth: '350px', borderColor:'#2563eb'}}>
                             <i className="fa fa-search"></i>
                             <input 
                                 type="text" 

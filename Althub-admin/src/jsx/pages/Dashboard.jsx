@@ -67,8 +67,8 @@ function Dashboard() {
                         </div>
                         <nav>
                             <ol className="breadcrumb bg-transparent p-0 m-0">
-                                <li className="breadcrumb-item"><Link to="/dashboard" className="text-primary">Console</Link></li>
-                                <li className="breadcrumb-item active">Metrics</li>
+                                <li className="breadcrumb-item"><Link to="/dashboard" className="text-primary">Dashboard</Link></li>
+                                <li className="breadcrumb-item active">Admin</li>
                             </ol>
                         </nav>
                     </div>
@@ -103,14 +103,14 @@ function Dashboard() {
                                 </div>
 
                                 {/* FEEDBACK CARD */}
-                                <div className="stat-card bg-feedback">
+                                {/* <div className="stat-card bg-feedback">
                                     <i className="fa fa-star card-icon"></i>
                                     <div className="card-label">User Feedback</div>
                                     <div className="card-value">{counts.feedback.toLocaleString()}</div>
                                     <Link to="/feedback" className="card-footer-link">
                                         Review Analytics <i className="fa fa-arrow-right ml-2"></i>
                                     </Link>
-                                </div>
+                                </div> */}
                             </div>
 
                             <div className="info-panel mt-5">

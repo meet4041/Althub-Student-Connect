@@ -1,6 +1,7 @@
 /* admin/src/jsx/styles/dashboard.css */
 
 .dashboard-wrapper {
+    margin-top: -30px;
     padding: 40px;
     background-color: var(--althub-bg); /* Clean light grey/blue from index.css */
     min-height: 100vh;

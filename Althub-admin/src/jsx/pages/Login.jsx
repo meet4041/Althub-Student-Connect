@@ -116,7 +116,6 @@ const Login = () => {
                                 <div className="modern-form-group">
                                     <label className="label-modern">Email Address</label>
                                     <div className="input-wrapper-modern">
-                                        <i className="fa fa-envelope icon-left mr-2 text-muted"></i>
                                         <input 
                                             type="email" 
                                             placeholder="admin@althub.com" 
@@ -130,14 +129,13 @@ const Login = () => {
                                 <div className="modern-form-group">
                                     <label className="label-modern">Password</label>
                                     <div className="input-wrapper-modern position-relative">
-                                        <i className="fa fa-lock icon-left mr-2 text-muted"></i>
                                         <input 
                                             type={showPassword ? "text" : "password"} 
                                             placeholder="••••••••" 
                                             name="password" 
                                             onChange={InputEvent} 
                                             value={loginInfo.password} 
-                                            style={{ paddingRight: '45px' }} 
+                                            style={{ paddingRight: '45px'}} 
                                         />
                                         <span 
                                             onClick={() => setShowPassword(!showPassword)} 

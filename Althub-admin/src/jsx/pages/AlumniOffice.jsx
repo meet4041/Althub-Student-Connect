@@ -1,11 +1,11 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import Loader from '../layout/Loader.jsx';
+import axiosInstance from '../../services/axios';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
-import axiosInstance from '../../services/axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
+// USING THE PREMIUM THEME
 import '../styles/users.css';
 
 const AlumniOffice = () => {
@@ -15,22 +15,20 @@ const AlumniOffice = () => {
     const [searchTerm, setSearchTerm] = useState('');
     
     const [deleteId, setDeleteId] = useState('');
-    const [alert, setAlert] = useState(false);
-    const [alert2, setAlert2] = useState(false);
+    const [showDeletePrompt, setShowDeletePrompt] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        // Force hide standard template loader
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
+        if (document.getElementById('page-loader')) document.getElementById('page-loader').style.display = 'none';
         const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
-
+        
         fetchData();
     }, []);
 
     const fetchData = () => {
         setLoading(true);
+        // Unrestricted fetch for all Alumni Office records
         axiosInstance.get('/api/getAlumniOffices')
             .then(res => {
                 const results = res.data.data || [];
@@ -39,7 +37,7 @@ const AlumniOffice = () => {
                 setLoading(false);
             })
             .catch((err) => {
-                console.error("Fetch Error:", err);
+                console.error("Alumni Fetch Error:", err);
                 setLoading(false);
             });
     };
@@ -48,7 +46,7 @@ const AlumniOffice = () => {
         const filtered = data.filter(item => 
             (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (item.parent_institute_id?.name && item.parent_institute_id.name.toLowerCase().includes(searchTerm.toLowerCase()))
+            (item.institute && item.institute.toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setDisplayData(filtered);
     }, [searchTerm, data]);
@@ -56,87 +54,100 @@ const AlumniOffice = () => {
     const executeDelete = () => {
         axiosInstance.delete(`/api/deleteAlumniOffice/${deleteId}`)
             .then(() => {
-                setAlert(false);
-                setAlert2(true);
+                setShowDeletePrompt(false);
+                setShowSuccessAlert(true);
                 fetchData();
-            });
+            }).catch(() => setShowDeletePrompt(false));
     };
 
     return (
         <Fragment>
-            <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content users-wrapper">
-                    <div className="d-flex align-items-center justify-content-between mb-4">
+                    
+                    {/* PREMIUM HEADER */}
+                    <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
-                            <ol className="breadcrumb mb-1">
-                                <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                                <li className="breadcrumb-item active">Alumni Offices</li>
-                            </ol>
-                            <h1 className="page-header mb-0">Alumni Office Directory</h1>
+                            <h1 className="page-header mb-1">Alumni Governance</h1>
+                            <p className="text-muted small font-weight-bold mb-0">
+                                Campus Hubs: <span className="text-primary">{data.length}</span> Verified Alumni Offices
+                            </p>
+                        </div>
+                        <div className="search-input-group-modern" style={{ minWidth: '350px', borderColor:'#2563eb'}}>
+                            <i className="fa fa-search"></i>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="Search Alumni-Office" 
+                                value={searchTerm} 
+                                onChange={(e) => setSearchTerm(e.target.value)} 
+                            />
                         </div>
                     </div>
 
-                    <div className="directory-card">
-                        <div className="filter-bar">
-                            <div className="search-input-group">
-                                <i className="fa fa-search"></i>
-                                <input 
-                                    type="text" 
-                                    className="form-control" 
-                                    placeholder="Search by name or institute..." 
-                                    value={searchTerm} 
-                                    onChange={(e) => setSearchTerm(e.target.value)} 
-                                />
-                            </div>
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <i className="fa fa-circle-notch fa-spin fa-3x text-primary opacity-20"></i>
                         </div>
-
-                        <div className="table-responsive">
-                            <table className="table user-table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Office Name</th>
-                                        <th>Parent Institute</th>
-                                        <th>Contact Email</th>
-                                        <th className="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loading ? (
-                                        <tr><td colSpan="4" className="text-center py-5"><i className="fa fa-circle-notch fa-spin fa-2x text-primary"></i></td></tr>
-                                    ) : displayData.length > 0 ? displayData.map((item) => (
-                                        <tr key={item._id}>
-                                            <td className="user-name-text">{item.name}</td>
-                                            <td>
-                                                <span className="badge badge-light px-3 py-2" style={{fontSize: '13px'}}>
-                                                    <i className="fa fa-graduation-cap mr-2 text-muted"></i>
-                                                    {item.parent_institute_id?.name || "Independent"}
-                                                </span>
-                                            </td>
-                                            <td>{item.email}</td>
-                                            <td className="text-center">
-                                                <button className="btn btn-outline-danger btn-sm rounded-pill px-3" onClick={() => {setDeleteId(item._id); setAlert(true);}}>
-                                                    <i className="fa fa-trash-alt mr-1"></i> Delete
+                    ) : (
+                        <div className="row">
+                            {displayData.length > 0 ? displayData.map((item) => (
+                                <div key={item._id} className="col-lg-4 col-md-6 mb-4">
+                                    <div className="inst-floating-card h-100">
+                                        <div className="inst-card-body">
+                                            <div className="d-flex justify-content-between">
+                                                <div className="inst-icon-glow">
+                                                    <i className="fa fa-graduation-cap"></i>
+                                                </div>
+                                                <button 
+                                                    className="btn btn-light-danger btn-xs rounded-pill px-2" 
+                                                    onClick={() => {setDeleteId(item._id); setShowDeletePrompt(true);}}
+                                                >
+                                                    <i className="fa fa-trash-alt text-danger"></i>
                                                 </button>
-                                            </td>
-                                        </tr>
-                                    )) : (
-                                        <tr><td colSpan="4" className="text-center py-5 text-muted">No alumni offices found.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                            </div>
+
+                                            <div className="mt-4">
+                                                <h5 className="inst-title mb-1">{item.name}</h5>
+                                                <p className="profile-email-sub mb-3">
+                                                    <i className="fa fa-envelope mr-2"></i>{item.email}
+                                                </p>
+                                                
+                                                <div className="inst-detail-grid">
+                                                    <div className="detail-point full-width">
+                                                        <label>Campus Hub</label>
+                                                        <span className="text-primary font-weight-bold">
+                                                            <i className="fa fa-university mr-2"></i>
+                                                            {item.institute || "Global Network"}
+                                                        </span>
+                                                    </div>
+                                                    <div className="detail-point">
+                                                        <label>Office Number</label>
+                                                        <span>{item.phone || "N/A"}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="col-12 text-center py-5">
+                                    <h4 className="text-muted font-weight-bold">No alumni offices found in the registry.</h4>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
                 </div>
 
-                <SweetAlert warning show={alert} showCancel confirmBtnText="Delete" confirmBtnBsStyle="danger" title="Remove Alumni Office?" onConfirm={executeDelete} onCancel={() => setAlert(false)}>
-                    Access for this office will be revoked.
+                <SweetAlert warning show={showDeletePrompt} showCancel confirmBtnText="Confirm" confirmBtnBsStyle="danger" title="Purge Record?" onConfirm={executeDelete} onCancel={() => setShowDeletePrompt(false)}>
+                    This office will be permanently removed from the Althub registry.
                 </SweetAlert>
 
-                <SweetAlert success show={alert2} title="Deleted!" onConfirm={() => setAlert2(false)}>
-                    Office removed successfully.
+                <SweetAlert success show={showSuccessAlert} title="Purged" onConfirm={() => setShowSuccessAlert(false)}>
+                    Record successfully removed.
                 </SweetAlert>
+                
                 <Footer />
             </div>
         </Fragment>

@@ -1,0 +1,145 @@
+/* admin/src/jsx/styles/feedback.css */
+
+.feedback-wrapper {
+    margin-top: -35px;
+    padding: 30px 40px;
+    background-color: var(--althub-bg); /* Clean backdrop for high-contrast tables */
+}
+
+/* --- IDENTITY & AVATAR --- */
+.profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.feedback-avatar-sm {
+    width: 32px;
+    height: 32px;
+    background: #eff6ff;
+    color: var(--althub-blue-primary);
+    border-radius: 8px; /* Squircle design */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.05);
+}
+
+.profile-name-main {
+    font-weight: 700;
+    color: var(--althub-blue-deep);
+    font-size: 0.9rem;
+}
+
+/* --- COURSE BADGES --- */
+.course-badge {
+    background: #f0f9ff;
+    color: #0369a1;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #e0f2fe;
+    display: inline-block;
+}
+
+.course-badge-alt {
+    background: #f8fafc;
+    color: #475569;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #f1f5f9;
+    display: inline-block;
+}
+
+/* --- STARS & SENTIMENT --- */
+.feedback-stars {
+    display: flex;
+    gap: 3px;
+    white-space: nowrap;
+}
+
+.text-star-active { color: #f59e0b; font-size: 0.7rem; }
+.text-star-muted { color: #e2e8f0; font-size: 0.7rem; }
+
+/* --- MESSAGE TESTIMONY --- */
+.feedback-table-text {
+    font-size: 0.82rem;
+    color: #64748b;
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 350px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* --- ACTION BUTTONS --- */
+.btn-light-danger {
+    background: #fff1f2;
+    border: 1px solid #ffe4e6;
+    color: #ef4444;
+    font-weight: 800;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-light-danger:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* --- TABLE CONTAINER DESIGN --- */
+.directory-container {
+    background: white;
+    border-radius: 30px;
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    box-shadow: var(--althub-shadow-md); /* Consistent with premium theme */
+}
+
+.althub-modern-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.althub-modern-table thead th {
+    background: #f8fafc;
+    padding: 18px 25px;
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    border: none;
+}
+
+.althub-modern-table tbody td {
+    padding: 18px 25px;
+    vertical-align: middle;
+    border-top: 1px solid #f1f5f9;
+    transition: background 0.2s ease;
+}
+
+.althub-modern-table tbody tr:hover td {
+    background: #fcfdfe; /* Subtle highlight on hover */
+}
+
+.index-number {
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: #cbd5e1;
+    min-width: 20px;
+}

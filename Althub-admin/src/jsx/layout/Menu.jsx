@@ -53,8 +53,8 @@ function Menu() {
          {/* MODERN HEADER */}
          <header className="admin-header">
             <Link to="/dashboard" className="admin-logo-link">
-               <img src='Logo1.png' className="admin-logo-img" alt="logo" />
-               <span className="admin-brand-name">Admin</span>
+               {/* <img src='Logo1.png' className="admin-logo-img" alt="logo" /> */}
+               <span className="admin-brand-name">Althub Admin</span>
             </Link>
 
             <div className="dropdown">

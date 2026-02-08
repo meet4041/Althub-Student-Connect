@@ -445,3 +445,23 @@ export const deleteUser = async (req, res) => {
         res.status(400).send({ success: false, msg: error.message });
     }
 }
+
+// Fetch ALL Placement Cells
+export const getPlacementCells = async (req, res) => {
+    try {
+        const data = await PlacementCell.find({}); // Unrestricted fetch
+        res.status(200).send({ success: true, count: data.length, data: data });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
+// Fetch ALL Alumni Offices
+export const getAlumniOffices = async (req, res) => {
+    try {
+        const data = await AlumniOffice.find({}); // Unrestricted fetch
+        res.status(200).send({ success: true, count: data.length, data: data });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}

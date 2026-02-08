@@ -1,0 +1,65 @@
+/* admin/src/jsx/styles/users.css - ADDITION */
+
+.inst-icon-glow {
+    width: 50px;
+    height: 50px;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
+}
+
+.inst-detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 18px;
+    border: 1px solid #edf2f7;
+}
+
+.detail-point label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+.detail-point span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--althub-blue-deep);
+}
+
+.detail-point.full-width {
+    border-bottom: 1px solid #eef2f6;
+    padding-bottom: 8px;
+}
+
+.btn-light-danger {
+    background: #fff1f2;
+    border: none;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-light-danger:hover {
+    background: #ef4444;
+}
+
+.btn-light-danger:hover i {
+    color: white !important;
+}
