@@ -1,0 +1,158 @@
+/* admin/src/jsx/styles/login.css */
+
+.auth-main-wrapper {
+    min-height: 100vh;
+    display: flex;
+    background-color: #f8fafc;
+}
+
+.auth-split-container {
+    display: flex;
+    width: 100%;
+}
+
+/* LEFT SIDE: BRAND VISUALS (Matching Institute) */
+.auth-visual-side {
+    width: 50%;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: white;
+    overflow: hidden;
+}
+
+.mesh-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.05;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.visual-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 520px;
+}
+
+.glass-logo-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    padding: 15px;
+    border-radius: 16px;
+    display: inline-block;
+    margin-bottom: 35px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.title-text {
+    font-size: 3.8rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+    line-height: 1.1;
+}
+
+.text-highlight {
+    color: #38bdf8;
+}
+
+.subtitle-text {
+    font-size: 1.15rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.badge-pill-custom {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    margin-right: 10px;
+    backdrop-filter: blur(4px);
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* RIGHT SIDE: FORM */
+.auth-form-side {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 40px;
+}
+
+.form-card-inner {
+    width: 100%;
+    max-width: 420px;
+}
+
+.text-navy {
+    color: #0f172a;
+}
+
+.modern-form-group {
+    margin-bottom: 25px;
+}
+
+.label-modern {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.input-wrapper-modern {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 2px 16px;
+    transition: 0.3s;
+}
+
+.input-wrapper-modern:focus-within {
+    border-color: #0f172a;
+    background: white;
+}
+
+.input-wrapper-modern input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+    padding: 14px 0 14px 12px;
+}
+
+.icon-left {
+    color: #94a3b8;
+}
+
+/* BUTTON */
+.btn-modern-submit {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #0f172a;
+    color: white;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-modern-submit:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 991px) {
+    .auth-visual-side { display: none !important; }
+    .auth-form-side { width: 100%; }
+}
