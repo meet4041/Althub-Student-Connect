@@ -1,0 +1,50 @@
+/* admin/src/jsx/styles/institutes.css */
+
+.inst-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    background: #fcfdfe;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid #f1f5f9;
+}
+
+.detail-point label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.detail-point span, .detail-point a {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--althub-blue-deep);
+}
+
+.btn-light-danger {
+    background: #fff1f2;
+    border: none;
+    transition: 0.3s;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-light-danger:hover {
+    background: #ef4444;
+}
+
+.btn-light-danger:hover i {
+    color: white !important;
+}
+
+.inst-floating-card:hover {
+    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.12);
+}

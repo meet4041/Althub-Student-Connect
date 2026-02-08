@@ -1,18 +1,18 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom';
-import Loader from '../layout/Loader.jsx';
+import axiosInstance from '../../services/axios';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
-import { ALTHUB_API_URL } from '../baseURL.jsx';
+import { ALTHUB_API_URL } from '../baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
-import axiosInstance from '../../services/axios';
+
+// RE-USING PREMIUM THEME STYLES
+import '../styles/users.css'; 
 
 const Institutes = () => {
     const [institutes, setInstitutes] = useState([]);
     const [displayInstitutes, setDisplayInstitutes] = useState([]);
-    const rows = [10, 20, 30];
-    const [institutesPerPage, setInstitutesPerPage] = useState(rows[0]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Deletion States
     const [deleteId, setDeleteId] = useState('');
@@ -20,51 +20,30 @@ const Institutes = () => {
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        var element = document.getElementById("page-container");
+        if (document.getElementById('page-loader')) document.getElementById('page-loader').style.display = 'none';
+        const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
         getInstitutesData();
     }, []);
 
     const getInstitutesData = () => {
-        // 1. Get the token from storage
-        const token = localStorage.getItem('token');
-
-        // 2. Pass it in the Authorization header
-        axiosInstance.get(`/api/getInstitutes`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        }).then((response) => {
-            if (response.data.success === true) {
-                setInstitutes(response.data.data);
-            }
-        }).catch(err => {
-            console.error("Fetch error:", err);
-            // Optional: Redirect to login if token is expired
-            if (err.response && err.response.status === 401) {
-                window.location.href = '/login';
-            }
-        });
+        setLoading(true);
+        axiosInstance.get(`/api/getInstitutes`)
+            .then((response) => {
+                if (response.data.success === true) {
+                    setInstitutes(response.data.data);
+                    setDisplayInstitutes(response.data.data);
+                }
+                setLoading(false);
+            }).catch(err => {
+                console.error("Fetch error:", err);
+                setLoading(false);
+            });
     };
 
-    useEffect(() => {
-        setDisplayInstitutes(institutes);
-    }, [institutes]);
-
-    const indexOfLastInstitute = currentPage * institutesPerPage;
-    const indexOfFirstInstitute = indexOfLastInstitute - institutesPerPage;
-    const currentInstitutes = displayInstitutes.slice(indexOfFirstInstitute, indexOfLastInstitute);
-    const pageNumbers = [];
-
-    for (let i = 1; i <= Math.ceil(displayInstitutes.length / institutesPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
     const handleSearch = (e) => {
-        let search = e.target.value.toLowerCase();
+        const search = e.target.value.toLowerCase();
+        setSearchTerm(search);
         setDisplayInstitutes(institutes.filter(
             (elem) =>
                 elem.email.toLowerCase().includes(search) ||
@@ -83,150 +62,121 @@ const Institutes = () => {
             if (response.data.success === true) {
                 setShowDeletePrompt(false);
                 setShowSuccessAlert(true);
-                setDeleteId('');
                 getInstitutesData();
             }
-        }).catch(err => {
-            setShowDeletePrompt(false);
-            console.error("Deletion failed", err);
-        });
+        }).catch(() => setShowDeletePrompt(false));
     }
 
     return (
         <Fragment>
-            <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content">
-                    <ol className="breadcrumb float-xl-right">
-                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
-                        <li className="breadcrumb-item active">Institutes</li>
-                    </ol>
-                    <h1 className="page-header text-dark font-weight-bold">
-                        Institutes <small>Manage institutional partners</small>
-                    </h1>
-
-                    <div className="card border-0 shadow-sm rounded-lg">
-                        <div className="card-body">
-                            {/* MODERN SEARCH BAR */}
-                            <div className="input-group mb-4 shadow-sm" style={{ maxWidth: '400px' }}>
-                                <div className="input-group-prepend">
-                                    <span className="input-group-text bg-white border-right-0"><i className="fa fa-search text-muted"></i></span>
-                                </div>
-                                <input
-                                    type="search"
-                                    className="form-control border-left-0 shadow-none"
-                                    placeholder='Search by Name, Email or Location...'
-                                    onChange={handleSearch}
-                                />
-                            </div>
-
-                            <div className="table-responsive">
-                                <table className="table table-hover align-middle">
-                                    <thead className="bg-light">
-                                        <tr>
-                                            <th className="border-top-0">Sr.</th>
-                                            <th className="border-top-0">Logo</th>
-                                            <th className="border-top-0">Institute Name</th>
-                                            <th className="border-top-0">Contact Info</th>
-                                            <th className="border-top-0">Address</th>
-                                            <th className="border-top-0 text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {currentInstitutes.length > 0 ? currentInstitutes.map((elem, index) => (
-                                            <tr key={index}>
-                                                <td className="font-weight-bold text-muted">{indexOfFirstInstitute + index + 1}</td>
-                                                <td>
-                                                    <img
-                                                        src={elem.image ? `${ALTHUB_API_URL}${elem.image}` : 'assets/img/login-bg/profile1.png'}
-                                                        alt='Logo'
-                                                        className="rounded shadow-sm border"
-                                                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <div className="font-weight-600 text-dark" style={{ fontSize: '15px' }}>{elem.name}</div>
-                                                    {elem.website && (
-                                                        <a href={elem.website.startsWith('http') ? elem.website : `https://${elem.website}`} target="_blank" rel="noreferrer" className="badge badge-soft-blue text-primary text-decoration-none mt-1">
-                                                            <i className="fa fa-link mr-1"></i> Website
-                                                        </a>
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    <div className="small mb-1"><i className="fa fa-envelope text-muted mr-2"></i>{elem.email}</div>
-                                                    <div className="small"><i className="fa fa-phone text-muted mr-2"></i>{elem.phone || 'N/A'}</div>
-                                                </td>
-                                                <td>
-                                                    <div className="text-muted small" style={{ maxWidth: '200px', lineHeight: '1.4' }}>
-                                                        {elem.address || 'Location not specified'}
-                                                    </div>
-                                                </td>
-                                                <td className="text-center">
-                                                    <button
-                                                        className="btn btn-outline-danger btn-sm rounded-circle shadow-none"
-                                                        onClick={() => handleDeleteClick(elem._id)}
-                                                        title="Delete Institute"
-                                                        style={{ width: '32px', height: '32px', padding: '0' }}
-                                                    >
-                                                        <i className='fa fa-trash-alt'></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr><td colSpan="6" className="text-center py-5 text-muted font-italic">No institutions found.</td></tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* MODERN PAGINATION SECTION */}
-                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top">
-                                <nav>
-                                    <ul className="pagination mb-0">
-                                        {pageNumbers.map((number) =>
-                                            <li key={number} className={`page-item ${currentPage === number ? "active" : ""}`}>
-                                                <button className="page-link shadow-none" onClick={() => setCurrentPage(number)}>{number}</button>
-                                            </li>
-                                        )}
-                                    </ul>
-                                </nav>
-                                <div className="mt-3 mt-md-0 d-flex align-items-center bg-light px-3 py-2 rounded">
-                                    <small className="text-muted mr-2">Show:</small>
-                                    <select
-                                        className="custom-select custom-select-sm border-0 bg-transparent font-weight-bold shadow-none"
-                                        style={{ width: 'auto', cursor: 'pointer' }}
-                                        onChange={(e) => setInstitutesPerPage(Number(e.target.value))}
-                                        value={institutesPerPage}
-                                    >
-                                        {rows.map(value => <option key={value} value={value}>{value}</option>)}
-                                    </select>
-                                </div>
-                            </div>
+                <div id="content" className="content users-wrapper">
+                    
+                    {/* DIRECTORY HEADER */}
+                    <div className="d-flex justify-content-between align-items-center mb-5">
+                        <div>
+                            <h1 className="page-header mb-1">Institutional Registry</h1>
+                            <p className="text-muted small font-weight-bold mb-0">
+                                Global Directory of <span className="text-primary">{institutes.length}</span> Partner Campuses
+                            </p>
+                        </div>
+                        <div className="search-input-group-modern" style={{ minWidth: '350px' }}>
+                            <i className="fa fa-search"></i>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="Search Institute" 
+                                value={searchTerm}
+                                onChange={handleSearch} 
+                            />
                         </div>
                     </div>
+
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <i className="fa fa-circle-notch fa-spin fa-3x text-primary opacity-20"></i>
+                        </div>
+                    ) : (
+                        <div className="row">
+                            {displayInstitutes.length > 0 ? displayInstitutes.map((inst) => (
+                                <div key={inst._id} className="col-lg-4 col-md-6 mb-4">
+                                    <div className="inst-floating-card h-100">
+                                        <div className="inst-card-body">
+                                            <div className="d-flex justify-content-between">
+                                                <div className="profile-squircle" style={{ width: '65px', height: '65px' }}>
+                                                    <img 
+                                                        src={inst.image ? `${ALTHUB_API_URL}${inst.image}` : 'assets/img/login-bg/profile1.png'} 
+                                                        alt='Campus Logo'
+                                                        className="w-100 h-100 object-fit-cover rounded"
+                                                    />
+                                                </div>
+                                                <div className="d-flex flex-column align-items-end">
+                                                    <span className="badge-primary-soft mb-2">Verified</span>
+                                                    <button 
+                                                        className="btn btn-light-danger btn-xs rounded-pill px-2"
+                                                        onClick={() => handleDeleteClick(inst._id)}
+                                                    >
+                                                        <i className="fa fa-trash-alt text-danger"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4">
+                                                <h5 className="inst-title mb-1">{inst.name}</h5>
+                                                <p className="profile-email-sub mb-3"><i className="fa fa-envelope-open mr-2"></i>{inst.email}</p>
+                                                
+                                                <div className="inst-detail-grid">
+                                                    <div className="detail-point">
+                                                        <label>Primary Contact</label>
+                                                        <span>{inst.phone || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="detail-point">
+                                                        <label>Digital Presence</label>
+                                                        {inst.website ? (
+                                                            <a href={inst.website.startsWith('http') ? inst.website : `https://${inst.website}`} target="_blank" rel="noreferrer" className="text-primary font-weight-bold">
+                                                                Visit Site <i className="fa fa-external-link-alt ml-1" style={{fontSize: '10px'}}></i>
+                                                            </a>
+                                                        ) : <span>N/A</span>}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="timeline-badge mt-3 w-100">
+                                                    <i className="fa fa-map-marker-alt mr-2 text-primary"></i>
+                                                    {inst.address || 'Global/Remote Campus'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="col-12 text-center py-5">
+                                    <h4 className="text-muted">No records found in the directory.</h4>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                {/* DOUBLE CONFIRMATION POPUPS */}
+                {/* DELETE CONFIRMATION */}
                 {showDeletePrompt && (
                     <SweetAlert
                         warning
                         showCancel
-                        confirmBtnText="Confirm Delete"
+                        confirmBtnText="Remove Record"
                         confirmBtnBsStyle="danger"
                         cancelBtnText="Cancel"
-                        title="Delete Institute?"
+                        title="Remove from Registry?"
                         onConfirm={executeDeletion}
-                        onCancel={() => { setShowDeletePrompt(false); setDeleteId(''); }}
-                        focusCancelBtn
+                        onCancel={() => setShowDeletePrompt(false)}
                     >
-                        You are about to remove this institute. This action will delete all associated data permanently.
+                        Are you sure you want to remove this institution from the Althub directory?
                     </SweetAlert>
                 )}
 
                 {showSuccessAlert && (
-                    <SweetAlert success title="Success!" onConfirm={() => setShowSuccessAlert(false)}>
-                        The institute has been successfully removed.
+                    <SweetAlert success title="Success" onConfirm={() => setShowSuccessAlert(false)}>
+                        The institution has been removed.
                     </SweetAlert>
                 )}
 
