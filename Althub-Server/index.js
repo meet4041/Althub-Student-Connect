@@ -31,7 +31,6 @@ import education_route from "./routes/educationRoute.js";
 import experience_route from "./routes/experienceRoute.js";
 import company_route from "./routes/companyRoute.js";
 import notification_route from "./routes/notificationRoute.js";
-import financialaid_route from "./routes/financialaidRoute.js";
 import images_route from "./routes/imagesRoute.js";
 
 const app = express();
@@ -137,7 +136,6 @@ app.use("/api", experience_route);
 app.use("/api", feedback_route);
 app.use("/api", company_route);
 app.use("/api", notification_route);
-app.use("/api", financialaid_route);
 app.use("/api/images", images_route); 
 
 // Health Check

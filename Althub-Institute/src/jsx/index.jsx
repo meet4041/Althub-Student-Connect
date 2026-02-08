@@ -14,9 +14,6 @@ import EditEvent from './pages/EditEvent.jsx';
 import Register from './pages/Register.jsx';
 import EditPost from './pages/EditPost.jsx';
 import NewPassword from './pages/NewPassword.jsx';
-import FinancialPole from './pages/FinancialPole.jsx';
-import AddFinancialHelp from './pages/AddFinancialHelp.jsx';
-import EditFinancialAid from './pages/EditFinancialAid.jsx';
 import Feedback from './pages/Feedback.jsx';
 import Leaderboard from './pages/Leaderboard.jsx'; // Already imported
 
@@ -38,9 +35,6 @@ const Markup = () => {
             <Route path='/edit-post' element={<EditPost />} />
             <Route path='/posts' element={<Posts />} />
             <Route path='/add-post' element={<AddPost />} />
-            <Route path='/financial-aid' element={<FinancialPole />} />
-            <Route path='/add-financial-aid' element={<AddFinancialHelp />} />
-            <Route path='/edit-financial-aid' element={<EditFinancialAid />} />
             
             {/* ADDED LEADERBOARD ROUTE BELOW */}
             <Route path='/leaderboard' element={<Leaderboard />} />

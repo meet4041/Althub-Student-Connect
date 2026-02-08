@@ -44,7 +44,6 @@
 - **Event Management**: Create and manage institutional events
 - **Content Library**: Secure repository for educational materials
 - **Analytics Dashboard**: Track engagement and platform usage
-- **Financial Aid Management**: Manage financial-aid and aid programs
 
 ### **Platform Features**
 - **Real-time Communication**: Socket.IO powered messaging

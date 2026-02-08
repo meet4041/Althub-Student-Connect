@@ -13,7 +13,6 @@ The **Institute Dashboard** empowers educational institutions to manage their pr
 * **Course Management:** Add, update, or delete academic courses offered.
 * **Event Hosting:** Create and manage official college events and webinars.
 * **Alumni Tracking:** Monitor the growth and placement of the institute's alumni network.
-* **Financial Aid:** Manage scholarship programs and financial aid requests.
 * **Notices:** Post official updates visible to all students of the institute.
 
 ## 🛠️ Tech Stack

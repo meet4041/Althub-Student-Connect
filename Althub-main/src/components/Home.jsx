@@ -103,7 +103,6 @@ export default function Home({ socket }) {
     checkEducation();
     axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
     axios.get(`${WEB_URL}/api/getEvents`).then((res) => setEvents(res.data.data));
-    axios.get(`${WEB_URL}/api/getFinancialAid`).then((res) => setAids(res.data.data));
   }, [getUser, checkEducation]);
 
   // CHANGED: Fetch suggestions only after we have user data (to know who we follow)

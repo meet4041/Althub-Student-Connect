@@ -49,7 +49,7 @@ function Menu() {
             <div className="navbar-header">
                <Link to="/dashboard" className="navbar-brand" style={{ display: 'flex', alignItems: 'center', padding: 0 }}>
                   <b>Althub</b>
-                  <span className="brand-badge">Institute</span>
+                  <span className="brand-badge">{profileInfo.name}</span>
                </Link>
             </div>
             
@@ -107,12 +107,6 @@ function Menu() {
                      </Link>
                   </li>
                   
-                  <li className={isActive("/financial-aid")}>
-                     <Link to="/financial-aid">
-                        <i className="fa fa-graduation-cap"></i>
-                        <span>Scholarships</span>
-                     </Link>
-                  </li>
 
                   {/* --- NEW LEADERBOARD LINK --- */}
                   <li className={isActive("/leaderboard")}>
