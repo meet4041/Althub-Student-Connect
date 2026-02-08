@@ -1,215 +1,218 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../../service/axios';
+
+import '../../styles/login.css'; 
+import '../../styles/register.css'; 
 
 const Register = () => {
     const navigate = useNavigate();
-
-    // Theme Constant
-    const themeColor = '#2563EB'; // Royal Blue
-
+    const [institutesList, setInstitutesList] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
         password: '',
         confirmPassword: '',
+        role: 'institute', 
+        parent_institute_id: '',
         masterKey: ''
     });
     const [loading, setLoading] = useState(false);
 
+    // Fetch Institutes
+    useEffect(() => {
+        const fetchInstitutes = async () => {
+            try {
+                const res = await axiosInstance.get('/api/getInstitutes');
+                if (res.data.success) {
+                    console.log("Institutes Fetched:", res.data.data);
+                    setInstitutesList(res.data.data);
+                }
+            } catch (err) {
+                console.error("API Error - Could not load institutes:", err);
+            }
+        };
+        fetchInstitutes();
+    }, []);
+
     const handleInput = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        
+        if (name === 'role') {
+            let autoName = formData.name;
+            if (value === 'alumni_office') autoName = 'Alumni Office';
+            else if (value === 'placement_cell') autoName = 'Placement Cell';
+            else if (value === 'institute') autoName = '';
+
+            setFormData((prev) => ({
+                ...prev,
+                role: value,
+                name: autoName,
+                // Reset parent if switching to Main Institute
+                parent_institute_id: value === 'institute' ? '' : prev.parent_institute_id 
+            }));
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const submitHandler = async (e) => {
         e.preventDefault();
-
-        // 1. Check if passwords match
         if (formData.password !== formData.confirmPassword) {
             return toast.error("Passwords do not match!");
         }
 
-        // 2. STRONG PASSWORD VALIDATION
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-        if (!passwordRegex.test(formData.password)) {
-            return toast.error("Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number.");
+        if (formData.role !== 'institute' && !formData.parent_institute_id) {
+            return toast.error("Please select your Parent Institute from the list.");
         }
 
         setLoading(true);
         try {
-            const response = await axiosInstance.post('/api/registerInstitute', {
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                password: formData.password,
-                masterKey: formData.masterKey
+            const response = await axiosInstance.post('/api/registerInstitute', { 
+                ...formData
             });
 
             if (response.data.success) {
-                toast.success("Institute Registered Successfully!");
-                setTimeout(() => navigate('/login'), 2000);
+                toast.success(`${formData.role.replace('_', ' ').toUpperCase()} Registered Successfully!`);
+                setTimeout(() => navigate('/login'), 1500);
             }
         } catch (error) {
-            toast.error(error.response?.data?.msg || "Registration failed.");
+            console.error("Register Error:", error);
+            toast.error(error.response?.data?.msg || "Registration Failed.");
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
-
-        // Apply body background for the auth page
-        document.body.style.backgroundColor = '#F1F5F9';
-
-        return () => {
-            document.body.style.backgroundColor = '';
-        }
-    }, []);
-
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
-            <ToastContainer />
-
-            <div className="login-container" style={{ width: '100%', maxWidth: '500px', padding: '20px' }}>
-                {/* Header / Logo Section */}
-                <div className="text-center mb-4">
-                    <div className="d-flex justify-content-center align-items-center mb-2">
-                        <img src="Logo1.jpeg" alt="Logo" style={{ width: '40px', borderRadius: '6px', marginRight: '10px' }} />
-                        <h2 className="mb-0 font-weight-bold" style={{ color: themeColor }}>Althub</h2>
+        <Fragment>
+            <ToastContainer theme="colored" position="top-right" />
+            <div className="auth-main-wrapper">
+                <div className="auth-split-container">
+                    <div className="auth-visual-side d-none d-lg-flex">
+                        <div className="mesh-overlay"></div>
+                        <div className="visual-inner">
+                            <div className="logo-box-modern">
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
+                            </div>
+                            <h1 className="title-text">Join <span className="text-highlight">Althub</span></h1>
+                            <p className="subtitle-text">Unified management ecosystem for modern institutions.</p>
+                        </div>
                     </div>
-                    <h5 className="text-muted font-weight-normal">Secure Institute Registration</h5>
-                </div>
 
-                {/* White Card */}
-                <div className="card border-0 shadow-lg" style={{ borderRadius: '15px', backgroundColor: '#ffffff' }}>
-                    <div className="card-body p-5">
-                        <form onSubmit={submitHandler}>
-
-                            <div className="form-group mb-3">
-                                <label className="small font-weight-bold text-muted">INSTITUTE NAME</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    className="form-control form-control-lg"
-                                    placeholder="e.g. Springfield University"
-                                    onChange={handleInput}
-                                    required
-                                    style={{ fontSize: '15px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
-                                />
+                    <div className="auth-form-side">
+                        <div className="form-card-inner">
+                            <div className="form-heading mb-4">
+                                <h2 className="font-weight-bold text-navy">Create Account</h2>
+                                <p className="text-muted">Enter your departmental credentials</p>
                             </div>
 
-                            <div className="row">
-                                <div className="col-md-6 form-group mb-3">
-                                    <label className="small font-weight-bold text-muted">EMAIL ADDRESS</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        className="form-control form-control-lg"
-                                        placeholder="admin@institute.edu"
-                                        onChange={handleInput}
-                                        required
-                                        style={{ fontSize: '15px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
-                                    />
+                            <form onSubmit={submitHandler} className="registration-form-layout">
+                                <div className="modern-form-group">
+                                    <label className="label-modern">ACCOUNT TYPE</label>
+                                    <div className="input-wrapper-modern">
+                                        <i className="fa fa-building icon-left"></i>
+                                        <select name="role" value={formData.role} onChange={handleInput} className="modern-select">
+                                            <option value="institute">Institute</option>
+                                            <option value="alumni_office">Alumni Office</option>
+                                            <option value="placement_cell">Placement Cell</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="col-md-6 form-group mb-3">
-                                    <label className="small font-weight-bold text-muted">PHONE NUMBER</label>
-                                    <input
-                                        type="text"
-                                        name="phone"
-                                        className="form-control form-control-lg"
-                                        placeholder="+1 234 567 890"
-                                        onChange={handleInput}
-                                        required
-                                        style={{ fontSize: '15px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
-                                    />
-                                </div>
-                            </div>
 
-                            <div className="row">
-                                <div className="col-md-6 form-group mb-3">
-                                    <label className="small font-weight-bold text-muted">PASSWORD</label>
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        className="form-control form-control-lg"
-                                        placeholder="Create password"
-                                        onChange={handleInput}
-                                        required
-                                        style={{ fontSize: '15px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
-                                    />
-                                </div>
-                                <div className="col-md-6 form-group mb-3">
-                                    <label className="small font-weight-bold text-muted">CONFIRM</label>
-                                    <input
-                                        type="password"
-                                        name="confirmPassword"
-                                        className="form-control form-control-lg"
-                                        placeholder="Repeat password"
-                                        onChange={handleInput}
-                                        required
-                                        style={{ fontSize: '15px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
-                                    />
-                                </div>
-                            </div>
+                                {formData.role !== 'institute' && (
+                                    <div className="modern-form-group" style={{ animation: 'fadeIn 0.5s' }}>
+                                        <label className="label-modern">SELECT PARENT INSTITUTE</label>
+                                        <div className="input-wrapper-modern">
+                                            <i className="fa fa-university icon-left"></i>
+                                            <select 
+                                                name="parent_institute_id" 
+                                                value={formData.parent_institute_id} 
+                                                onChange={handleInput} 
+                                                className="modern-select"
+                                                required
+                                            >
+                                                <option value="">
+                                                    {institutesList.length > 0 ? "-- Select Your Institute --" : "Loading Institutes..."}
+                                                </option>
+                                                {institutesList.map((inst) => (
+                                                    <option key={inst._id} value={inst._id}>
+                                                        {inst.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {institutesList.length === 0 && (
+                                            <small className="text-danger">
+                                                No institutes found. Please register a Main Institute first.
+                                            </small>
+                                        )}
+                                    </div>
+                                )}
 
-                            {/* Master Key Section - Styled for attention but professional */}
-                            <div className="form-group mb-4">
-                                <label className="small font-weight-bold" style={{ color: themeColor }}>
-                                    <i className="fa fa-key mr-1"></i> SECURITY MASTER KEY
-                                </label>
-                                <input
-                                    type="password"
-                                    name="masterKey"
-                                    className="form-control form-control-lg"
-                                    style={{
-                                        border: `2px solid ${themeColor}40`, // Transparent blue border
-                                        backgroundColor: '#EFF6FF', // Very light blue bg
-                                        color: '#1E293B',
-                                        fontSize: '15px'
-                                    }}
-                                    placeholder="Enter authorization key"
-                                    onChange={handleInput}
-                                    required
-                                />
-                                <small className="text-muted">This key is required to authorize new institute accounts.</small>
-                            </div>
+                                <div className="modern-form-group">
+                                    <label className="label-modern">OFFICIAL NAME</label>
+                                    <div className="input-wrapper-modern">
+                                        <i className="fa fa-id-card icon-left"></i>
+                                        <input type="text" name="name" value={formData.name} placeholder="Institute Name" onChange={handleInput} required />
+                                    </div>
+                                </div>
 
-                            <div className="login-buttons">
-                                <button type="submit" className="btn btn-block btn-lg shadow-sm font-weight-bold text-white"
-                                    disabled={loading}
-                                    style={{ backgroundColor: themeColor, border: 'none', borderRadius: '8px' }}>
-                                    {loading ? (
-                                        <span><i className="fa fa-spinner fa-spin mr-2"></i> Registering...</span>
-                                    ) : (
-                                        "Create Account"
-                                    )}
+                                <div className="form-row-custom">
+                                    <div className="modern-form-group flex-1">
+                                        <label className="label-modern">EMAIL</label>
+                                        <div className="input-wrapper-modern">
+                                            <input type="email" name="email" placeholder="eg@edu.com" onChange={handleInput} required />
+                                        </div>
+                                    </div>
+                                    <div className="modern-form-group flex-1 ml-2">
+                                        <label className="label-modern">PHONE</label>
+                                        <div className="input-wrapper-modern">
+                                            <input type="text" name="phone" placeholder="Contact" onChange={handleInput} required />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-row-custom">
+                                    <div className="modern-form-group flex-1">
+                                        <label className="label-modern">PASSWORD</label>
+                                        <div className="input-wrapper-modern">
+                                            <input type="password" name="password" placeholder="••••••••" onChange={handleInput} required />
+                                        </div>
+                                    </div>
+                                    <div className="modern-form-group flex-1 ml-2">
+                                        <label className="label-modern">CONFIRM</label>
+                                        <div className="input-wrapper-modern">
+                                            <input type="password" name="confirmPassword" placeholder="••••••••" onChange={handleInput} required />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="modern-form-group master-key-container">
+                                    <label className="label-modern text-primary">SECURITY MASTER KEY</label>
+                                    <div className="input-wrapper-modern master-input-wrapper">
+                                        <i className="fa fa-key icon-left"></i>
+                                        <input type="password" name="masterKey" placeholder="Authorization Key" onChange={handleInput} required />
+                                    </div>
+                                </div>
+
+                                <button type="submit" className="btn-modern-submit mt-2" disabled={loading}>
+                                    {loading ? 'REGISTERING...' : 'CREATE ACCOUNT'}
                                 </button>
-                            </div>
 
-                            <div className="m-t-20 text-center mt-4">
-                                <span className="text-muted">Already registered? </span>
-                                <Link to="/login" className="font-weight-bold" style={{ color: themeColor }}>
-                                    Sign In
-                                </Link>
-                            </div>
-                        </form>
+                                <div className="text-center mt-3">
+                                    <p className="text-muted small mb-0">Already registered?</p>
+                                    <a onClick={() => navigate('/login')} className="forgot-pass-link" style={{ cursor: 'pointer' }}>Sign In Here</a>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-
-                {/* Footer Info */}
-                <div className="text-center mt-3 text-muted small">
-                    &copy; 2025 Althub Inc. All rights reserved.
                 </div>
             </div>
-        </div>
+        </Fragment>
     );
 };
 

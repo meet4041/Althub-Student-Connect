@@ -10,7 +10,7 @@ let gridFSBucket = null;
 const mongoURI = process.env.MONGO_URI;
 const storage = multer.memoryStorage();
 
-// Allowed MIME types (images + common videos)
+// Allowed MIME types
 const ALLOWED_MIMES = [
   'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
   'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'
@@ -38,15 +38,13 @@ export function uploadArray(fieldName, maxCount = 5, options = {}) {
   return createMulter(fieldName, options).array(fieldName, maxCount);
 }
 
+// [FIX] Improved Connection Logic
 export const connectToMongo = async () => {
   try {
+    // 1. Check if already connected
     if (mongoose.connection.readyState === 1) {
-      if (!gridFSBucket) {
-         const db = mongoose.connection.db;
-         // Ensure db is available before creating bucket
-         if (db) {
-            gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
-         }
+      if (!gridFSBucket && mongoose.connection.db) {
+         gridFSBucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
       }
       console.log("Using existing MongoDB connection");
       return mongoose.connection;
@@ -58,6 +56,7 @@ export const connectToMongo = async () => {
 
     mongoose.set("strictQuery", false);
 
+    // 2. Create new connection
     const connection = await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
@@ -65,11 +64,11 @@ export const connectToMongo = async () => {
 
     cachedConnection = connection;
 
-    try {
-      const db = connection.connection ? connection.connection.db : mongoose.connection.db;
-      gridFSBucket = new GridFSBucket(db, { bucketName: 'uploads' });
-    } catch (err) {
-      console.error('Failed to initialize GridFSBucket', err.message);
+    // 3. Initialize GridFS immediately if DB is available
+    if (connection.connection && connection.connection.db) {
+      gridFSBucket = new GridFSBucket(connection.connection.db, { bucketName: 'uploads' });
+    } else if (mongoose.connection.db) {
+      gridFSBucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
     }
 
     console.log("Connected to MongoDB successfully");
@@ -80,11 +79,17 @@ export const connectToMongo = async () => {
   }
 };
 
+// [FIX] Safer Bucket Retrieval
 export const getGridFSBucket = () => {
-  if (!gridFSBucket) {
-    throw new Error('GridFS Bucket not initialized. Ensure connectToMongo() was called first.');
+  if (gridFSBucket) return gridFSBucket;
+  
+  // Try to recover if connection exists but bucket is missing
+  if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
+    gridFSBucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+    return gridFSBucket;
   }
-  return gridFSBucket;
+
+  throw new Error('GridFS Bucket not initialized. Database not ready.');
 };
 
 export async function uploadFromBuffer(buffer, filename, contentType) {
@@ -106,18 +111,22 @@ export async function getFileInfo(id) {
 }
 
 export function streamToResponse(id, res, options = {}) {
-  const bucket = getGridFSBucket();
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send('Invalid ID');
+  try {
+    const bucket = getGridFSBucket();
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send('Invalid ID');
 
-  const _id = typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id;
-  
-  const downloadStream = bucket.openDownloadStream(_id, options);
-  
-  downloadStream.on('error', (err) => {
-    if (!res.headersSent) {
-      res.status(404).send({ success: false, msg: 'File not found' });
-    }
-  });
-  
-  downloadStream.pipe(res);
+    const _id = typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id;
+    const downloadStream = bucket.openDownloadStream(_id, options);
+    
+    downloadStream.on('error', (err) => {
+      if (!res.headersSent) {
+        res.status(404).send({ success: false, msg: 'File not found' });
+      }
+    });
+    
+    downloadStream.pipe(res);
+  } catch (err) {
+    console.error("Stream Error:", err);
+    res.status(500).send("Internal Server Error");
+  }
 }

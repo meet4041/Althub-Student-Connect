@@ -1,0 +1,74 @@
+/* src/styles/register.css */
+
+/* Prevent scrolling on the registration view */
+.auth-main-wrapper {
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Identical Logo Box styling from Login */
+.logo-box-modern {
+    background-color: #ffffff;
+    padding: 12px;
+    border-radius: 14px;
+    display: inline-block;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Horizontal Row for Email/Phone and Password/Confirm */
+.form-row-custom {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+/* Select styling to match modern inputs */
+.modern-select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 10px 0;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+/* Master Key specific styling for professional feel */
+.master-key-container {
+    background-color: #f0f7ff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px dashed #2563eb;
+    margin-bottom: 15px !important;
+}
+
+.master-input-wrapper {
+    background: #ffffff !important;
+    border: 1.5px solid #dbeafe !important;
+}
+
+/* Reducing margins for a perfect fit on screen */
+.modern-form-group {
+    margin-bottom: 10px !important;
+}
+
+.form-heading {
+    margin-bottom: 20px !important;
+}
+
+@media (max-width: 991px) {
+    .auth-main-wrapper {
+        overflow-y: auto; /* Enable scroll only on mobile */
+    }
+    .form-row-custom {
+        flex-direction: column;
+    }
+    .flex-1 {
+        margin-left: 0 !important;
+    }
+}

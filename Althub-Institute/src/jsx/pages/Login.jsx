@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
-import axios from 'axios';
+import axios from 'axios'; // We can use your instance here too, but raw axios is fine for login
 import { ALTHUB_API_URL } from './baseURL';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 // COMPANY STANDARD: Import external CSS
 import '../../styles/login.css'; 
 
+// Ensure cookies are sent
 axios.defaults.withCredentials = true;
 
 const Login = () => {
@@ -32,15 +33,27 @@ const Login = () => {
         if (validate()) {
             setDisable(true);
             const myurl = `${ALTHUB_API_URL}/api/instituteLogin`;
+            
             axios.post(myurl, { email: loginInfo.email, password: loginInfo.password })
                 .then((response) => {
                     if (response.data.success === true) {
                         toast.success('Login Successful!');
-                        localStorage.setItem('token', response.data.token);
-                        localStorage.setItem('userDetails', JSON.stringify(response.data.data));
-                        localStorage.setItem('AlmaPlus_institute_Id', response.data.data._id);
-                        localStorage.setItem('AlmaPlus_institute_Name', response.data.data.name);
+                        
+                        const responseData = response.data.data;
+                        const token = response.data.token;
 
+                        // 1. SAVE CRITICAL AUTH DATA
+                        localStorage.setItem('token', token);
+                        localStorage.setItem('userDetails', JSON.stringify(responseData));
+                        
+                        // Save Role (Vital for routing)
+                        localStorage.setItem('userRole', responseData.role); 
+
+                        // Handle Legacy Keys (You can keep these if your app uses them)
+                        localStorage.setItem('AlmaPlus_institute_Id', responseData._id);
+                        localStorage.setItem('AlmaPlus_institute_Name', responseData.name);
+
+                        // 2. HANDLE REMEMBER ME
                         if (rememberMe) {
                             localStorage.setItem('althub_remembered_email', loginInfo.email);
                             localStorage.setItem('althub_remembered_password', loginInfo.password);
@@ -51,16 +64,30 @@ const Login = () => {
                             localStorage.setItem('althub_remember_me_status', 'false');
                         }
 
+                        // 3. ROLE BASED REDIRECT
+                        // This prevents Alumni from loading a dashboard that might crash them
                         setTimeout(() => {
                             setDisable(false);
-                            navigate('/dashboard', { replace: true });
-                        }, 1500);
+                            
+                            // If you have separate dashboards, route them here.
+                            // For now, we send everyone to /dashboard, but the saved 'userRole' 
+                            // will help your dashboard page know what to load.
+                            if (responseData.role === 'alumni_office') {
+                                navigate('/dashboard'); // Change to '/alumni-dashboard' if you create one
+                            } else if (responseData.role === 'placement_cell') {
+                                navigate('/dashboard'); // Change to '/placement-dashboard' if you create one
+                            } else {
+                                navigate('/dashboard');
+                            }
+                        }, 1000);
+
                     } else {
                         setDisable(false);
                         toast.error('Invalid Email or Password');
                     }
                 }).catch((error) => {
                     setDisable(false);
+                    console.error("Login Error:", error);
                     toast.error(error.response?.data?.msg || "Login Failed.");
                 })
         }
@@ -76,7 +103,11 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (localStorage.getItem("token")) navigate('/dashboard');
+        // Only redirect if token exists AND userDetails exist (prevents partial login state)
+        if (localStorage.getItem("token") && localStorage.getItem("userDetails")) {
+            navigate('/dashboard');
+        }
+        
         const savedStatus = localStorage.getItem('althub_remember_me_status');
         if (savedStatus === 'true') {
             setRememberMe(true);
@@ -117,7 +148,7 @@ const Login = () => {
                                 <h3 className="font-weight-bold text-navy">Althub Institute</h3>
                             </div>
                             <div className="form-heading mb-5">
-                                <h2 className="font-weight-bold text-navy">Institute Sign In</h2>
+                                <h2 className="font-weight-bold text-navy">Althub LOGIN</h2>
                                 <p className="text-muted">Enter your registered institutional credentials</p>
                             </div>
                             <form onSubmit={submitHandler}>
@@ -148,8 +179,20 @@ const Login = () => {
                                     <a onClick={() => navigate('/forgot-password')} className="forgot-pass-link" style={{ cursor: 'pointer', color: '#002b5b', textDecoration: 'none', fontWeight: '600' }}>Forgot Password?</a>
                                 </div>
                                 <button type="submit" className="btn-modern-submit" disabled={disable}>
-                                    {disable ? 'AUTHENTICATING...' : 'SIGN IN TO ALTHUB INSTITUTE'}
+                                    {disable ? 'AUTHENTICATING...' : 'LOGIN TO ALTHUB'}
                                 </button>
+                                
+                                {/* NEW SIGNUP REDIRECT SECTION */}
+                                <div className="signup-redirect-wrapper">
+                                    <p className="signup-text">New to Althub ?</p>
+                                    <button 
+                                        type="button" 
+                                        className="btn-signup-link" 
+                                        onClick={() => navigate('/register')}
+                                    >
+                                        Create a new account
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
