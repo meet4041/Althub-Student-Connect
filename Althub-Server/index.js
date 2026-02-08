@@ -56,7 +56,7 @@ app.use(helmet({
         "http://localhost:5173", 
         "http://localhost:5001", 
         "http://127.0.0.1:5173",
-        "https://althub-student-connect.vercel.app"
+        "https://althub-connect.vercel.app"
       ],
       fontSrc: ["'self'", 'https:', 'data:'],
       objectSrc: ["'none'"],

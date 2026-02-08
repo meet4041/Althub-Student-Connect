@@ -89,7 +89,6 @@ export default function Navbar({ socket }) {
     { text: "Search", icon: <Search size={20} className="nav-icon" />, path: "/search-profile" },
     { text: "Message", icon: <MessageSquare size={20} className="nav-icon" />, path: "/message", badge: hasMsg },
     { text: "Notification", icon: <Bell size={20} className="nav-icon" />, path: "/notification", badge: hasNotif },
-    { text: "Scholarship", icon: <Gift size={20} className="nav-icon" />, path: "/scholarship" },
     { text: "Feedback", icon: <MessageCircle size={20} className="nav-icon" />, path: "/feedback" }
   ];
 

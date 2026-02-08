@@ -22,7 +22,6 @@ const Message = lazy(() => import("./components/Message"));
 const Notification = lazy(() => import("./components/Notification"));
 const ForgetPassword = lazy(() => import("./components/ForgetPassword"));
 const NewPassword = lazy(() => import("./components/NewPassword"));
-const Scholarship = lazy(() => import("./components/Scholarship"));
 const MyPosts = lazy(() => import("./components/MyPosts"));
 
 axios.defaults.withCredentials = true;
@@ -123,7 +122,6 @@ function App() {
               <Route path="/search-profile" element={<SearchProfile />} />
               <Route path="/message" element={<Message socket={socket} />} />
               <Route path="/notification" element={<Notification />} />
-              <Route path="/scholarship" element={<Scholarship />} />
               <Route path="/my-posts" element={<MyPosts />} />
           </Route>
         </Routes>
