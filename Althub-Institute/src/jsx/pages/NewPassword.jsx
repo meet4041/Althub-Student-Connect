@@ -60,7 +60,7 @@ function NewPassword() {
                     toast.success(response.data.msg);
                     setTimeout(() => {
                         navigate('/');
-                    }, [2000])
+                    }, 2000);
                 }
             }).catch((error) => {
                 setDisable(false);
@@ -112,11 +112,11 @@ function NewPassword() {
                     </div>
 
                     <div className="login-content">
-                        <form>
+                        <form onSubmit={submitHandler}>
                             <fieldset>
                                 <div className="row">
                                     <div className="col-md-12 form-group">
-                                        <label for="exampleInputNewPass">New Password:</label>
+                                        <label htmlFor="exampleInputNewPass">New Password:</label>
                                         <input
                                             type="password"
                                             className="form-control"
@@ -131,7 +131,7 @@ function NewPassword() {
                                 </div>
                                 <div className="row">
                                     <div className="col-md-12 form-group">
-                                        <label for="exampleInputConfirmPass">
+                                        <label htmlFor="exampleInputConfirmPass">
                                             Confirm Password:
                                         </label>
                                         <input
@@ -153,7 +153,6 @@ function NewPassword() {
                                     type="submit"
                                     className="btn btn-success btn-block btn-lg"
                                     disabled={disable}
-                                    onClick={submitHandler}
                                 >
                                     {disable ? "Processing..." : "Submit"}
                                 </button>

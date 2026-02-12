@@ -6,6 +6,7 @@ const config = {
     secret_refresh: process.env.SECRET_REFRESH || process.env.SECRET_JWT,
     emailUser: process.env.EMAIL_USER ,
     emailPassword: process.env.EMAIL_PASSWORD ,
+    clientUrl: process.env.CLIENT_URL,
     masterKey: process.env.MASTER_KEY,
 };
 

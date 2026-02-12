@@ -141,10 +141,14 @@ const Profile = () => {
         return Object.keys(errs).length === 0;
     };
 
+    const validatePasswordStrength = (pwd) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pwd);
+
     const validateTwo = () => {
         let errs = {};
         if (!changepass.oldpassword) errs.oldpassword_err = "Current password required";
-        if (changepass.newpassword.length < 6) errs.newpassword_err = "Minimum 6 characters";
+        if (!validatePasswordStrength(changepass.newpassword)) {
+            errs.newpassword_err = "8+ chars with uppercase, lowercase, and number.";
+        }
         if (changepass.newpassword !== changepass.confirmpassword) errs.confirmpassword_err = "Passwords don't match";
         setErrors(errs);
         return Object.keys(errs).length === 0;

@@ -22,6 +22,8 @@ const securePassword = async (password) => {
 
 const sendresetpasswordMail = async (name, email, token) => {
     try {
+        const baseUrl = (config.clientUrl || "http://localhost:3000").replace(/\/$/, "");
+        const resetUrl = `${baseUrl}/new-password?token=${token}`;
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
@@ -32,7 +34,7 @@ const sendresetpasswordMail = async (name, email, token) => {
             from: config.emailUser,
             to: email,
             subject: 'For Reset Password',
-            html: `<p>Hello ${name}, Please copy the link to <a href="http://localhost:3000/new-password?token=${token}">reset your password</a></p>`
+            html: `<p>Hello ${name}, Please copy the link to <a href="${resetUrl}">reset your password</a></p>`
         }
         await transporter.sendMail(mailoptions);
     } catch (error) { console.error("Mail Error:", error.message); }
