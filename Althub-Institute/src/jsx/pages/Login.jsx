@@ -1,16 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
-import axios from 'axios'; 
-import { ALTHUB_API_URL } from './baseURL';
+import axiosInstance from '../../service/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-// COMPANY STANDARD: Import external CSS
-import '../../styles/login.css'; 
-
-// Ensure cookies are sent
-axios.defaults.withCredentials = true;
+import '../../styles/login.css';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -32,9 +27,7 @@ const Login = () => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            const myurl = `${ALTHUB_API_URL}/api/instituteLogin`;
-            
-            axios.post(myurl, { email: loginInfo.email, password: loginInfo.password })
+            axiosInstance.post('/api/instituteLogin', { email: loginInfo.email.trim().toLowerCase(), password: loginInfo.password })
                 .then((response) => {
                     if (response.data.success === true) {
                         toast.success('Login Successful!');
@@ -51,11 +44,9 @@ const Login = () => {
 
                         if (rememberMe) {
                             localStorage.setItem('althub_remembered_email', loginInfo.email);
-                            localStorage.setItem('althub_remembered_password', loginInfo.password);
                             localStorage.setItem('althub_remember_me_status', 'true');
                         } else {
                             localStorage.removeItem('althub_remembered_email');
-                            localStorage.removeItem('althub_remembered_password');
                             localStorage.setItem('althub_remember_me_status', 'false');
                         }
 
@@ -99,10 +90,10 @@ const Login = () => {
         const savedStatus = localStorage.getItem('althub_remember_me_status');
         if (savedStatus === 'true') {
             setRememberMe(true);
-            setLoginInfo({
-                email: localStorage.getItem('althub_remembered_email') || '',
-                password: localStorage.getItem('althub_remembered_password') || ''
-            });
+            setLoginInfo((prev) => ({
+                ...prev,
+                email: localStorage.getItem('althub_remembered_email') || ''
+            }));
         }
     }, [navigate]);
 
@@ -152,7 +143,7 @@ const Login = () => {
                                     <label className="label-modern">Email Address</label>
                                     <div className={`input-wrapper-modern ${errors.email_err ? 'error-border' : ''}`}>
                                         <i className="fa fa-envelope-open icon-left"></i>
-                                        <input type="email" placeholder="eg@edu.com" name="email" onChange={InputEvent} value={loginInfo.email} />
+                                        <input type="email" placeholder="eg@edu.com" name="email" onChange={InputEvent} value={loginInfo.email} autoComplete="email" />
                                     </div>
                                     {errors.email_err && <div className="error-msg-modern">{errors.email_err}</div>}
                                 </div>
@@ -160,7 +151,7 @@ const Login = () => {
                                     <label className="label-modern">Password</label>
                                     <div className={`input-wrapper-modern ${errors.password_err ? 'error-border' : ''}`} style={{ position: 'relative' }}>
                                         <i className="fa fa-shield-alt icon-left"></i>
-                                        <input type={showPassword ? "text" : "password"} placeholder="••••••••" name="password" onChange={InputEvent} value={loginInfo.password} style={{ paddingRight: '45px' }} />
+                                        <input type={showPassword ? "text" : "password"} placeholder="••••••••" name="password" onChange={InputEvent} value={loginInfo.password} style={{ paddingRight: '45px' }} autoComplete="current-password" />
                                         <span onClick={togglePasswordVisibility} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
                                             <i className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                                         </span>

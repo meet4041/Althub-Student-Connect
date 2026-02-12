@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
 import axios from '../../service/axios'; 
 import { ALTHUB_API_URL } from '../pages/baseURL';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 
@@ -32,8 +33,14 @@ function Menu() {
    }, [location.pathname]);
 
    const Logout = () => {
-      localStorage.clear(); 
-      navigate(`/login`, { replace: true });
+      localStorage.removeItem('token');
+      localStorage.removeItem('userDetails');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('AlmaPlus_institute_Id');
+      localStorage.removeItem('AlmaPlus_institute_Name');
+      localStorage.removeItem('althub_remembered_email');
+      localStorage.removeItem('althub_remember_me_status');
+      navigate('/login', { replace: true });
    }
 
    const getData = (id) => {
@@ -65,8 +72,9 @@ function Menu() {
                <li className="dropdown navbar-user">
                   <a href="#" className="dropdown-toggle" data-toggle="dropdown" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', textDecoration: 'none' }} onClick={(e) => e.preventDefault()}>
                      <img 
-                        src={profileInfo.image ? `${ALTHUB_API_URL}${profileInfo.image}` : 'assets/img/profile1.png'} 
+                        src={getImageUrl(profileInfo.image, FALLBACK_IMAGES.profile)} 
                         alt="Profile"
+                        onError={getImageOnError(FALLBACK_IMAGES.profile)}
                      />
                      <span className="d-none d-md-inline">{profileInfo.name}</span> 
                      <b className="caret" style={{ marginLeft: '8px', color: '#94a3b8' }}></b>

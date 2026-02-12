@@ -3,8 +3,9 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import axiosInstance from '../../service/axios';
 import { ALTHUB_API_URL } from './baseURL';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
@@ -35,23 +36,11 @@ const Profile = () => {
     const [disable, setDisable] = useState(false);
     const [disable2, setDisable2] = useState(false);
 
-    /**
-     * Normalizes the image path to prevent 404 errors.
-     * Ensures ALTHUB_API_URL is only prepended if the path is relative.
-     */
-    const getFullImagePath = (path) => {
-        if (!path) return "assets/img/profile1.png";
-        if (path.includes('http')) return path;
-        // Fix for potential double-slashes or missing slashes
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `${ALTHUB_API_URL}${cleanPath}`;
-    };
 
     const getData = (id) => {
         if (!id) return;
         setIsDataLoading(true);
-        const myurl = `${ALTHUB_API_URL}/api/getInstituteById/${id}`;
-        axios.get(myurl).then((response) => {
+        axiosInstance.get(`/api/getInstituteById/${id}`).then((response) => {
             if (response.data.success === true) {
                 const fetchedData = response.data.data;
                 setProfileInfo({
@@ -92,14 +81,13 @@ const Profile = () => {
         }
 
         const body = new FormData();
-        body.append('profilepic', file);
+        body.append('image', file);
 
-        axios.post(`${ALTHUB_API_URL}/api/uploadUserImage`, body, {
+        axiosInstance.post(`/api/uploadInstituteImage`, body, {
             headers: { 'Content-Type': "multipart/form-data" },
         }).then((response) => {
             if (response.data.success === true) {
-                // Captures the new path immediately after upload
-                const newPath = response.data.data.url || response.data.data;
+                const newPath = response.data.data?.url || response.data.data;
                 setProfileInfo({ ...profileInfo, image: newPath });
                 toast.info("Logo uploaded successfully. Click Save to finalize.");
             }
@@ -110,7 +98,7 @@ const Profile = () => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axios.post(`${ALTHUB_API_URL}/api/instituteUpdate`, {
+            axiosInstance.post(`/api/instituteUpdate`, {
                 id: institute_Id,
                 name: profileInfo.name,
                 phone: profileInfo.phone,
@@ -130,7 +118,7 @@ const Profile = () => {
         e.preventDefault();
         if (validateTwo()) {
             setDisable2(true);
-            axios.post(`${ALTHUB_API_URL}/api/instituteUpdatePassword`, {
+            axiosInstance.post(`/api/instituteUpdatePassword`, {
                 institute_id: institute_Id,
                 oldpassword: changepass.oldpassword,
                 newpassword: changepass.newpassword
@@ -197,13 +185,10 @@ const Profile = () => {
                                         <div className="avatar-master-wrapper">
                                             {/* IMAGE COMPONENT WITH FALLBACKS */}
                                             <img 
-                                                src={getFullImagePath(profileInfo.image)} 
+                                                src={getImageUrl(profileInfo.image, FALLBACK_IMAGES.profile)} 
                                                 className="avatar-large-circle" 
                                                 alt="logo" 
-                                                onError={(e) => { 
-                                                    e.target.onerror = null; 
-                                                    e.target.src = "assets/img/profile1.png"; 
-                                                }}
+                                                onError={getImageOnError(FALLBACK_IMAGES.profile)}
                                             />
                                             <div>
                                                 <input type="file" id="pImgUpload" className="d-none" onChange={handleImg} />

@@ -5,6 +5,7 @@ import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
@@ -209,9 +210,10 @@ const Events = () => {
                                         >
                                             <div className="events-card-image-wrap">
                                                 <img
-                                                    src={elem.photos?.length > 0 ? `${ALTHUB_API_URL}${elem.photos[0]}` : 'assets/img/Events-amico.png'}
+                                                    src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.event)}
                                                     className="events-card-image"
                                                     alt={elem.title}
+                                                    onError={getImageOnError(FALLBACK_IMAGES.event)}
                                                 />
                                                 <div className="events-card-overlay"></div>
                                                 <span className={`events-card-date-badge ${isUpcoming(elem.date) ? 'upcoming' : 'past'}`}>
@@ -253,9 +255,10 @@ const Events = () => {
                                                     <td><span className="events-table-num">{(indexOfFirstEvent + index + 1).toString().padStart(2, '0')}</span></td>
                                                     <td>
                                                         <img
-                                                            src={elem.photos?.length > 0 ? `${ALTHUB_API_URL}${elem.photos[0]}` : 'assets/img/Events-amico.png'}
+                                                            src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.event)}
                                                             className="events-table-thumb"
                                                             alt=""
+                                                            onError={getImageOnError(FALLBACK_IMAGES.event)}
                                                         />
                                                     </td>
                                                     <td>
@@ -323,8 +326,9 @@ const Events = () => {
                             <div className="events-modal-layout">
                                 <div className="events-modal-image">
                                     <img
-                                        src={selectedEvent.photos?.length > 0 ? `${ALTHUB_API_URL}${selectedEvent.photos[0]}` : 'assets/img/Events-amico.png'}
+                                        src={getImageUrl(selectedEvent.photos?.[0], FALLBACK_IMAGES.event)}
                                         alt={selectedEvent.title}
+                                        onError={getImageOnError(FALLBACK_IMAGES.event)}
                                     />
                                     <div className="events-modal-image-overlay"></div>
                                     <div className="events-modal-badges">

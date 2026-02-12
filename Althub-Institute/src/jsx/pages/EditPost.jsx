@@ -2,8 +2,8 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { ALTHUB_API_URL } from './baseURL';
-import axios from 'axios';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
+import axiosInstance from '../../service/axios';
 
 import Loader from '../layout/Loader.jsx'
 import Menu from '../layout/Menu.jsx';
@@ -73,15 +73,8 @@ const EditPost = () => {
             });
         }
 
-        const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('user')) && JSON.parse(localStorage.getItem('user')).token);
-
         try {
-            await axios.post(`${ALTHUB_API_URL}/api/editPost`, formData, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                    // Note: Browser automatically sets multipart/form-data boundary
-                },
-            });
+            await axiosInstance.post('/api/editPost', formData);
             
             toast.success("Post Updated Successfully");
             setTimeout(() => navigate('/posts'), 1200);
@@ -149,10 +142,11 @@ const EditPost = () => {
                                                         {existingPhotos.map((photoUrl, index) => (
                                                             <img 
                                                                 key={index} 
-                                                                src={`${ALTHUB_API_URL}${photoUrl}`} 
+                                                                src={getImageUrl(photoUrl, FALLBACK_IMAGES.post)} 
                                                                 className="mr-2 mb-2 post-preview-img"
                                                                 style={{ width: '80px', height: '80px' }}
                                                                 alt="existing"
+                                                                onError={getImageOnError(FALLBACK_IMAGES.post)}
                                                             />
                                                         ))}
                                                     </div>

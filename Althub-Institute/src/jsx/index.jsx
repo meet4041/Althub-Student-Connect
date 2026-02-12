@@ -1,6 +1,8 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import { useSessionTimeout } from './hooks/useSessionTimeout.js';
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import Login from './pages/Login.jsx';
@@ -20,31 +22,29 @@ import AlumniOffice from './pages/AlumniOffice.jsx';
 import PlacementOffice from './pages/PlacementOffice.jsx';
 
 const Markup = () => {
+    useSessionTimeout(true);
+
     return (
         <Routes>
             <Route path='/' element={<Login />} />
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
-            <Route path='/feedback' element={<Feedback />} />
             <Route path='/new-password' element={<NewPassword />} />
-            <Route path='/dashboard' element={<Dashboard />} />
-            <Route path='/profile' element={<Profile />} />
-            <Route path='/users' element={<Users />} />
-            <Route path='/events' element={<Events />} />
-            <Route path='/add-event' element={<AddEvent />} />
-            <Route path='/edit-event' element={<EditEvent />} />
-            <Route path='/edit-post' element={<EditPost />} />
-            <Route path='/posts' element={<Posts />} />
-            <Route path='/add-post' element={<AddPost />} />
-            
-            {/* ADDED LEADERBOARD ROUTE BELOW */}
-            <Route path='/leaderboard' element={<Leaderboard />} />
-            
-            {/* Offices Dropdown Routes */}
-            <Route path='/alumni-office' element={<AlumniOffice />} />
-            <Route path='/placement-office' element={<PlacementOffice />} />
-            
+            <Route path='/feedback' element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+            <Route path='/dashboard' element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path='/users' element={<ProtectedRoute><Users /></ProtectedRoute>} />
+            <Route path='/events' element={<ProtectedRoute><Events /></ProtectedRoute>} />
+            <Route path='/add-event' element={<ProtectedRoute><AddEvent /></ProtectedRoute>} />
+            <Route path='/edit-event' element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
+            <Route path='/edit-post' element={<ProtectedRoute><EditPost /></ProtectedRoute>} />
+            <Route path='/posts' element={<ProtectedRoute><Posts /></ProtectedRoute>} />
+            <Route path='/add-post' element={<ProtectedRoute><AddPost /></ProtectedRoute>} />
+            <Route path='/leaderboard' element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path='/alumni-office' element={<ProtectedRoute><AlumniOffice /></ProtectedRoute>} />
+            <Route path='/placement-office' element={<ProtectedRoute><PlacementOffice /></ProtectedRoute>} />
+            <Route path='*' element={<Navigate to="/login" replace />} />
         </Routes>
     )
 }

@@ -5,6 +5,7 @@ import Loader from '../layout/Loader.jsx'
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
@@ -222,7 +223,7 @@ const Users = () => {
                                                         </span>
                                                     </td>
                                                     <td className="align-middle">
-                                                        <img src={elem.profilepic ? `${ALTHUB_API_URL}${elem.profilepic}` : 'assets/img/profile1.png'} alt='profile' className="rounded-circle" style={{ width: '42px', height: '42px', objectFit: 'cover', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }} />
+                                                        <img src={getImageUrl(elem.profilepic, FALLBACK_IMAGES.profile)} alt='profile' className="rounded-circle" style={{ width: '42px', height: '42px', objectFit: 'cover', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }} onError={getImageOnError(FALLBACK_IMAGES.profile)} />
                                                     </td>
                                                     <td className="align-middle">
                                                         <div className="font-weight-bold text-dark mb-0" style={{ fontSize: '15px' }}>{elem.fname}</div>
@@ -269,7 +270,7 @@ const Users = () => {
                                         <button type="button" className="close text-dark opacity-50" onClick={() => setSelectedUser(null)}>&times;</button>
                                     </div>
                                     <div className="p-5 text-center bg-white">
-                                        <img src={selectedUser.profilepic ? `${ALTHUB_API_URL}${selectedUser.profilepic}` : 'assets/img/profile1.png'} alt='profile' className="rounded-circle mb-3 shadow-sm" style={{ width: '100px', height: '100px', objectFit: 'cover', border: '4px solid #F1F5F9' }} />
+                                        <img src={getImageUrl(selectedUser.profilepic, FALLBACK_IMAGES.profile)} alt='profile' className="rounded-circle mb-3 shadow-sm" style={{ width: '100px', height: '100px', objectFit: 'cover', border: '4px solid #F1F5F9' }} onError={getImageOnError(FALLBACK_IMAGES.profile)} />
                                         <h4 className="font-weight-bold mb-1" style={{ color: '#1E293B' }}>{selectedUser.fname}</h4>
                                         <div className="mb-4">{getStatusBadge(selectedUser.type)}</div>
                                         <div className="text-left bg-light p-4" style={{ borderRadius: '14px' }}>

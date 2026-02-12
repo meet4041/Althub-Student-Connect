@@ -18,6 +18,8 @@ function NewPassword() {
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
 
+    const validatePasswordStrength = (pwd) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pwd);
+
     const validate = () => {
         let input = changepass;
         let errors = {};
@@ -25,6 +27,9 @@ function NewPassword() {
         if (!input["password"]) {
             isValid = false;
             errors["new_password_err"] = "Please Enter New Password";
+        } else if (!validatePasswordStrength(input["password"])) {
+            isValid = false;
+            errors["new_password_err"] = "8+ chars with uppercase, lowercase, and number.";
         }
         if (!input["confirm_password"]) {
             isValid = false;

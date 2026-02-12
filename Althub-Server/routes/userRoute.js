@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadSingle } from '../db/conn.js';
+import { uploadSingle, uploadFromBuffer, connectToMongo } from '../db/conn.js';
 import user_controller from "../controllers/userController.js"; 
 import { requireAuth } from "../middleware/authMiddleware.js";
 
@@ -22,13 +22,15 @@ user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);
 user_route.put('/updateProfilePic', requireAuth, uploadSingle('image'), user_controller.updateProfilePic);
 
 // Image Uploads
-user_route.post('/uploadUserImage', requireAuth, uploadSingle('profilepic'), (req, res) => {
+user_route.post('/uploadUserImage', requireAuth, uploadSingle('profilepic'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
-        const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
+        await connectToMongo();
+        const filename = `user-${Date.now()}-${req.file.originalname}`;
+        const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
         return res.status(200).send({ success: true, data: { url: `/api/images/${fileId}` } });
     } catch (err) {
-        res.status(500).send({ success: false, msg: err.message });
+        return res.status(500).send({ success: false, msg: err.message });
     }
 });
 

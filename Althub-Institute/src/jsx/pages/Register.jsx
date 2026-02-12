@@ -28,8 +28,7 @@ const Register = () => {
             try {
                 const res = await axiosInstance.get('/api/getInstitutes');
                 if (res.data.success) {
-                    console.log("Institutes Fetched:", res.data.data);
-                    setInstitutesList(res.data.data);
+                    setInstitutesList(res.data.data || []);
                 }
             } catch (err) {
                 console.error("API Error - Could not load institutes:", err);
@@ -59,21 +58,32 @@ const Register = () => {
         }
     };
 
+    const validatePasswordStrength = (pwd) => {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pwd);
+    };
+
     const submitHandler = async (e) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
             return toast.error("Passwords do not match!");
         }
-
+        if (!validatePasswordStrength(formData.password)) {
+            return toast.error("Password must be 8+ chars with uppercase, lowercase, and number.");
+        }
         if (formData.role !== 'institute' && !formData.parent_institute_id) {
             return toast.error("Please select your Parent Institute from the list.");
         }
 
         setLoading(true);
         try {
-            const response = await axiosInstance.post('/api/registerInstitute', {
-                ...formData
-            });
+            const payload = {
+                ...formData,
+                email: (formData.email || '').trim().toLowerCase(),
+                name: (formData.name || '').trim().slice(0, 200),
+                phone: (formData.phone || '').trim().slice(0, 20)
+            };
+            delete payload.confirmPassword;
+            const response = await axiosInstance.post('/api/registerInstitute', payload);
 
             if (response.data.success) {
                 toast.success(`${formData.role.replace('_', ' ').toUpperCase()} Registered Successfully!`);

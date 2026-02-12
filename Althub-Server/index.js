@@ -56,7 +56,8 @@ app.use(helmet({
         "http://localhost:5173", 
         "http://localhost:5001", 
         "http://127.0.0.1:5173",
-        "https://althub-connect.vercel.app"
+        "https://althub-connect.vercel.app",
+        "https://althub-server.onrender.com"
       ],
       fontSrc: ["'self'", 'https:', 'data:'],
       objectSrc: ["'none'"],
@@ -75,17 +76,25 @@ app.use(xss());
 
 // --- RATE LIMITING ---
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, 
-  message: { success: false, msg: "Too many login attempts. Please try again later." },
-  standardHeaders: true, 
-  legacyHeaders: false, 
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, msg: "Too many login attempts. Try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 1000, 
-  message: { success: false, msg: 'Too many requests, please try again later.' },
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  message: { success: false, msg: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const imageLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 120,
+  message: { success: false, msg: 'Image request limit exceeded.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -98,7 +107,8 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  'https://althub-student-connect.vercel.app' 
+  'https://althub-student-connect.vercel.app',
+  'https://althub-institute.vercel.app'
 ];
 
 const corsOptions = {
@@ -136,7 +146,7 @@ app.use("/api", experience_route);
 app.use("/api", feedback_route);
 app.use("/api", company_route);
 app.use("/api", notification_route);
-app.use("/api/images", images_route); 
+app.use("/api/images", imageLimiter, images_route); 
 
 // Health Check
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));

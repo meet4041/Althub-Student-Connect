@@ -23,19 +23,17 @@ instance.interceptors.request.use(
 
 // --- RESPONSE INTERCEPTOR ---
 instance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     (error) => {
-        // Check for 401 (Unauthorized)
-        if (error.response && error.response.status === 401) {
-            console.warn("Session Expired or Invalid Token.");
-            
-            // [CRITICAL FIX] Prevent infinite loops
-            // Only redirect if we are NOT already on the login or register page
+        if (error.response?.status === 401) {
             const currentPath = window.location.pathname;
-            if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/') {
-                localStorage.clear();
+            const publicPaths = ['/login', '/register', '/forgot-password', '/new-password', '/'];
+            if (!publicPaths.includes(currentPath)) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userDetails');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('AlmaPlus_institute_Id');
+                localStorage.removeItem('AlmaPlus_institute_Name');
                 window.location.href = '/login';
             }
         }

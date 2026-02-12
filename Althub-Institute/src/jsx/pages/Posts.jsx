@@ -5,6 +5,7 @@ import Loader from '../layout/Loader.jsx'
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import axios from 'axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
@@ -146,7 +147,7 @@ const Posts = () => {
                                                     <tr key={elem._id || index} className="post-row">
                                                         <td className="pl-4 align-middle"><span className="post-id-badge">{(indexOfFirstPost + index + 1).toString().padStart(2, '0')}</span></td>
                                                         <td className="align-middle">
-                                                            <img src={elem.photos?.[0] ? `${ALTHUB_API_URL}${elem.photos[0]}` : 'assets/img/Events-amico.png'} className="post-media-preview" alt="post" />
+                                                            <img src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.post)} className="post-media-preview" alt="post" onError={getImageOnError(FALLBACK_IMAGES.post)} />
                                                         </td>
                                                         <td className="align-middle">
                                                             <div className="text-dark" style={{ fontSize: '14px', fontWeight: '500', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
