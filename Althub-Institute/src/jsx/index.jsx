@@ -15,7 +15,9 @@ import Register from './pages/Register.jsx';
 import EditPost from './pages/EditPost.jsx';
 import NewPassword from './pages/NewPassword.jsx';
 import Feedback from './pages/Feedback.jsx';
-import Leaderboard from './pages/Leaderboard.jsx'; // Already imported
+import Leaderboard from './pages/Leaderboard.jsx';
+import AlumniOffice from './pages/AlumniOffice.jsx';
+import PlacementOffice from './pages/PlacementOffice.jsx';
 
 const Markup = () => {
     return (
@@ -38,6 +40,10 @@ const Markup = () => {
             
             {/* ADDED LEADERBOARD ROUTE BELOW */}
             <Route path='/leaderboard' element={<Leaderboard />} />
+            
+            {/* Offices Dropdown Routes */}
+            <Route path='/alumni-office' element={<AlumniOffice />} />
+            <Route path='/placement-office' element={<PlacementOffice />} />
             
         </Routes>
     )

@@ -31,6 +31,8 @@ institute_route.post('/instituteUpdatePassword', requireAuth, institute_controll
 institute_route.post('/instituteUpdate', requireAuth, institute_controller.updateInstitute);
 institute_route.delete('/deleteInstitute/:id', requireAuth, institute_controller.deleteInstitute);
 institute_route.get('/getInstituteById/:_id', requireAuth, institute_controller.getInstituteById);
+institute_route.get('/getAlumniOfficeByInstitute/:instituteId', requireAuth, institute_controller.getAlumniOfficeByInstitute);
+institute_route.get('/getPlacementCellByInstitute/:instituteId', requireAuth, institute_controller.getPlacementCellByInstitute);
 institute_route.post('/inviteUser', requireAuth, institute_controller.inviteUser);
 
 // --- IMAGE UPLOAD (Protected) ---

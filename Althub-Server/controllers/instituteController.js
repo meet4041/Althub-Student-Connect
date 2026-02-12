@@ -302,6 +302,32 @@ const inviteUser = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
+// Get Alumni Office(s) linked to institute
+const getAlumniOfficeByInstitute = async (req, res) => {
+    try {
+        const instituteId = req.params.instituteId;
+        const data = await AlumniOffice.find({ parent_institute_id: instituteId })
+            .select("-password -token")
+            .lean();
+        res.status(200).send({ success: true, data });
+    } catch (error) {
+        res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
+// Get Placement Cell(s) linked to institute
+const getPlacementCellByInstitute = async (req, res) => {
+    try {
+        const instituteId = req.params.instituteId;
+        const data = await PlacementCell.find({ parent_institute_id: instituteId })
+            .select("-password -token")
+            .lean();
+        res.status(200).send({ success: true, data });
+    } catch (error) {
+        res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
 const uploadInstituteImage = async (req, res) => {
     try {
         if (req.file !== undefined) {
@@ -329,5 +355,7 @@ export default {
     deleteInstitute,
     getInstitutes,
     inviteUser,
-    uploadInstituteImage
+    uploadInstituteImage,
+    getAlumniOfficeByInstitute,
+    getPlacementCellByInstitute
 };

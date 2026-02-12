@@ -16,12 +16,20 @@ function Menu() {
    });
 
    const isActive = (path) => location.pathname === path ? "active" : "";
+   const isOfficeActive = (path) => location.pathname.startsWith(path) ? "active" : "";
+   const [officeDropdownOpen, setOfficeDropdownOpen] = useState(false);
 
    useEffect(() => {
       const id = localStorage.getItem("AlmaPlus_institute_Id");
       if (!id) return;
       getData(id);
    }, []);
+
+   useEffect(() => {
+      if (location.pathname.startsWith("/alumni-office") || location.pathname.startsWith("/placement-office")) {
+         setOfficeDropdownOpen(true);
+      }
+   }, [location.pathname]);
 
    const Logout = () => {
       localStorage.clear(); 
@@ -114,6 +122,29 @@ function Menu() {
                         <i className="fa fa-trophy text-warning"></i>
                         <span>Leaderboard</span>
                      </Link>
+                  </li>
+
+                  {/* --- OFFICES DROPDOWN --- */}
+                  <li className={`nav-dropdown ${(isOfficeActive("/alumni-office") || isOfficeActive("/placement-office")) ? "active" : ""} ${officeDropdownOpen ? "open" : ""}`}>
+                     <a href="#" onClick={(e) => { e.preventDefault(); setOfficeDropdownOpen(!officeDropdownOpen); }}>
+                        <i className="fa fa-building"></i>
+                        <span>Offices</span>
+                        <b className="caret" style={{ marginLeft: 'auto', color: '#94a3b8' }}></b>
+                     </a>
+                     <ul className={`nav-dropdown-submenu ${officeDropdownOpen ? "open" : ""}`}>
+                        <li>
+                           <Link to="/alumni-office" className={isOfficeActive("/alumni-office")} onClick={() => setOfficeDropdownOpen(false)}>
+                              <i className="fa fa-graduation-cap"></i>
+                              <span>Alumni Office</span>
+                           </Link>
+                        </li>
+                        <li>
+                           <Link to="/placement-office" className={isOfficeActive("/placement-office")} onClick={() => setOfficeDropdownOpen(false)}>
+                              <i className="fa fa-briefcase"></i>
+                              <span>Placement Office</span>
+                           </Link>
+                        </li>
+                     </ul>
                   </li>
 
                   <li className={isActive("/feedback")}>
