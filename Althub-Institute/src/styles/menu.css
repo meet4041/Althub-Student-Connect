@@ -19,6 +19,31 @@
     font-weight: 800;
 }
 
+.navbar-brand-link {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    text-decoration: none !important;
+}
+
+.navbar-right-group {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-user-link {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+
+.navbar-caret {
+    margin-left: 8px;
+    color: #94a3b8;
+}
+
 /* --- Brand Badge --- */
 .brand-badge {
     background: #eef2ff;
@@ -74,6 +99,10 @@
     padding-top: 15px !important;
     z-index: 1010 !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-scroll {
+    height: 100%;
 }
 
 .sidebar .nav li a {

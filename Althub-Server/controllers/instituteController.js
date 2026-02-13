@@ -58,6 +58,48 @@ const sendInvitationMail = async (name, email, tempPass) => {
     } catch (error) { console.error("Invitation Mail Error:", error.message); }
 }
 
+const sendAlumniInviteMail = async (instituteName, email, tempPass) => {
+    try {
+        const baseUrl = (config.clientUrl || "http://localhost:3000").replace(/\/$/, "");
+        const loginUrl = `${baseUrl}/login`;
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: { user: config.emailUser, pass: config.emailPassword }
+        });
+        const mailoptions = {
+            from: config.emailUser,
+            to: email,
+            subject: `Your ${instituteName} Alumni Account is Ready`,
+            html: `
+                <p>Hello,</p>
+                <p>Your alumni account for <b>${instituteName}</b> has been created.</p>
+                <p><b>Email:</b> ${email}<br/>
+                <b>Temporary Password:</b> ${tempPass}</p>
+                <p>Please login here: <a href="${loginUrl}">${loginUrl}</a></p>
+                <p>After logging in, please change your password.</p>
+            `
+        };
+        await transporter.sendMail(mailoptions);
+    } catch (error) { console.error("Alumni Invite Mail Error:", error.message); }
+};
+
+const parseCsvEmails = (buffer) => {
+    const content = buffer.toString('utf-8');
+    const lines = content.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) return [];
+    const emails = [];
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const firstCol = line.split(',')[0]?.trim();
+        if (!firstCol) continue;
+        if (i === 0 && /email/i.test(firstCol)) continue;
+        emails.push(firstCol);
+    }
+    return Array.from(new Set(emails));
+};
+
 // --- CONTROLLERS ---
 
 // [UPDATED] REGISTER: ROUTES TO THE CORRECT TABLE
@@ -304,6 +346,63 @@ const inviteUser = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
+const bulkInviteAlumniCsv = async (req, res) => {
+    try {
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).send({ success: false, msg: "CSV file required" });
+        }
+        if (!config.emailUser || !config.emailPassword) {
+            return res.status(400).send({ success: false, msg: "Email service not configured" });
+        }
+
+        const emails = parseCsvEmails(req.file.buffer);
+        if (emails.length === 0) {
+            return res.status(400).send({ success: false, msg: "No valid emails found in CSV" });
+        }
+
+        let instituteId = req.user._id;
+        let instituteName = '';
+        if (req.user.role === 'alumni_office' && req.user.parent_institute_id) {
+            instituteId = req.user.parent_institute_id;
+        }
+        const institute = await Institute.findById(instituteId);
+        if (institute) instituteName = institute.name || institute.insname || 'Institute';
+
+        const created = [];
+        const skipped = [];
+
+        for (const email of emails) {
+            const exists = await User.findOne({ email });
+            if (exists) {
+                skipped.push(email);
+                continue;
+            }
+            const tempPass = randomstring.generate({ length: 10, charset: 'alphanumeric' });
+            const spassword = await securePassword(tempPass);
+            const user = new User({
+                fname: '',
+                lname: '',
+                email,
+                password: spassword,
+                role: 'alumni',
+                institute: instituteName,
+                institute_id: instituteId,
+                tokenVersion: 0
+            });
+            await user.save();
+            await sendAlumniInviteMail(instituteName, email, tempPass);
+            created.push(email);
+        }
+
+        return res.status(200).send({
+            success: true,
+            data: { createdCount: created.length, skippedCount: skipped.length, created, skipped }
+        });
+    } catch (error) {
+        return res.status(500).send({ success: false, msg: error.message });
+    }
+};
+
 // Get Alumni Office(s) linked to institute
 const getAlumniOfficeByInstitute = async (req, res) => {
     try {
@@ -357,6 +456,7 @@ export default {
     deleteInstitute,
     getInstitutes,
     inviteUser,
+    bulkInviteAlumniCsv,
     uploadInstituteImage,
     getAlumniOfficeByInstitute,
     getPlacementCellByInstitute

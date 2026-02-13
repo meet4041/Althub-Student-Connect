@@ -10,6 +10,10 @@ const education = new mongoose.Schema({
     course: {
         type: String
     },
+    specialization: {
+        type: String,
+        default: ""
+    },
     joindate: {
         type: String
     },

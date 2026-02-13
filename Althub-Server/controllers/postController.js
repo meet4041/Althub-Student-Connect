@@ -6,38 +6,62 @@ import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
 const addPost = async (req, res) => {
     try {
-        await connectToMongo();
-
-        let photoIds = [];
-        if (req.files && req.files.length > 0) {
-            for (const file of req.files) {
-                const filename = `post-${Date.now()}-${file.originalname}`;
-                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
-                photoIds.push(`/api/images/${fileId}`);
-            }
+        console.log('addPost req.files length:', req.files ? req.files.length : 0);
+        let photos = [];
+        // 1. If middleware set a single image (legacy)
+        if (req.body.image) {
+            photos = [req.body.image];
         }
 
+        // 2. If req.images already prepared by middleware
+        else if (req.images) {
+            photos = req.images;
+        }
+
+        // 3. If files were uploaded via uploadArray('photos'), process them
+        else if (req.files && req.files.length > 0) {
+            // Enforce maximum count and validate that uploader owns the userid
+            const MAX_FILES = 5;
+            if (req.files.length > MAX_FILES) return res.status(400).send({ success: false, msg: 'Too many files uploaded' });
+
+            // Security: Ensure the authenticated user matches the userid in the body
+            if (req.user && req.body.userid && req.user._id.toString() !== req.body.userid.toString()) {
+                return res.status(403).send({ success: false, msg: 'Unauthorized: userid mismatch' });
+            }
+
+            await connectToMongo();
+            for (const file of req.files) {
+                // Basic safety: ensure buffer exists
+                if (!file.buffer || !file.originalname) continue;
+                const filename = `post-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photos.push(`/api/images/${fileId}`);
+            }
+            console.log('addPost uploaded photos:', photos);
+        }
+
+        // Limit description length
         const description = typeof req.body.description === 'string' ? req.body.description.slice(0, 5000) : '';
 
-        const newPost = new Post({
-            // MANDATORY FIX: Ensure the ID from localstorage (senderid) 
-            // is saved into 'userid' so the feed can query it correctly.
-            userid: req.body.senderid || req.body.userid,
-            senderid: req.body.senderid || req.body.userid,
+        const post = new Post({
+            userid: req.body.userid,
             fname: req.body.fname,
             lname: req.body.lname,
             companyname: req.body.companyname,
             profilepic: req.body.profilepic,
-            title: req.body.title || "Update",
             description: description,
             date: req.body.date || new Date(),
-            photos: photoIds
+            photos: photos
         });
 
-        const savedPost = await newPost.save();
+        // FIXED: Changed 'newPost.save()' to 'post.save()'
+        const savedPost = await post.save();
+        console.log('addPost saved:', savedPost);
+
         res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 
     } catch (error) {
+        console.error("Add Post Error:", error);
         res.status(400).send({ success: false, msg: error.message });
     }
 };
@@ -45,15 +69,17 @@ const addPost = async (req, res) => {
 // --- 2. GET POST BY ID (MATCHING FIX) ---
 const getPostById = async (req, res) => {
     try {
-        const id = req.params.userid; // This matches the frontend call parameter
-
-        const post_data = await Post.find({
+        // We search by 'userid' because that is what we are now saving in addPost
+        // We also use $or to find old posts that might only have 'senderid'
+        const id = req.params.userid;
+        
+        const post_data = await Post.find({ 
             $or: [
-                { userid: id },
+                { userid: id }, 
                 { senderid: id }
-            ]
+            ] 
         }).sort({ date: -1 }).lean();
-
+        
         res.status(200).send({ success: true, data: post_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -64,9 +90,9 @@ const getPostById = async (req, res) => {
 const editPost = async (req, res) => {
     try {
         await connectToMongo();
-
+        
         const { id, title, description } = req.body;
-
+        
         const post = await Post.findById(id);
         if (!post) {
             return res.status(404).send({ success: false, msg: "Post not found" });
@@ -90,8 +116,8 @@ const editPost = async (req, res) => {
         };
 
         const updatedPost = await Post.findByIdAndUpdate(
-            id,
-            { $set: updateData },
+            id, 
+            { $set: updateData }, 
             { new: true }
         );
 
@@ -129,11 +155,11 @@ const likeUnlikePost = async (req, res) => {
         const post = await Post.findById(req.params.id);
         if (!post.likes.includes(req.body.userId)) {
             await post.updateOne({ $push: { likes: req.body.userId } });
-
+            
             // Notification logic
             try {
                 const liker = await User.findById(req.body.userId);
-                if (liker && post.userid !== req.body.userId) {
+                if (liker && post.userid !== req.body.userId) { 
                     const notification = new Notification({
                         userid: post.userid || post.senderid, // Handle both
                         senderid: req.body.userId,

@@ -137,6 +137,22 @@ const Users = () => {
         return <span className="text-muted small">-</span>;
     };
 
+    const formatDate = (value) => {
+        if (!value) return 'N/A';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('en-CA');
+    };
+
+    const formatYear = (value) => {
+        if (!value) return 'N/A';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'N/A';
+        return String(date.getFullYear());
+    };
+
+    const safeText = (value) => (value && String(value).trim() ? value : 'N/A');
+
     // Calculate count for Alumni
     const alumniCount = users.filter(u => u.type === 'Alumni').length;
 
@@ -145,40 +161,28 @@ const Users = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{
-                    backgroundColor: '#F1F5F9',
-                    minHeight: '100vh',
-                }}>
-                    <div style={{ padding: '25px' }}>
+                <div id="content" className="content users-content-wrapper">
+                    <div className="directory-container">
                         <div className="d-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
-                                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
-                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Member Directory</li>
+                                    <ol className="breadcrumb mb-1 users-breadcrumb">
+                                        <li className="breadcrumb-item"><Link to="/dashboard" className="users-breadcrumb-link">Home</Link></li>
+                                        <li className="breadcrumb-item active">Member Directory</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>Member Directory</h1>
+                                <h1 className="page-header users-header">Member Directory</h1>
                             </div>
                             
                             {/* ALUMNI FILTER BUTTON */}
                             <div className="d-flex align-items-center">
                                 <button 
-                                    className={`btn shadow-sm d-flex align-items-center ${filterType === 'Alumni' ? 'btn-primary' : 'btn-white'}`}
+                                    className={`btn shadow-sm d-flex align-items-center alumni-filter-btn ${filterType === 'Alumni' ? 'btn-primary' : 'btn-white'}`}
                                     onClick={() => setFilterType(filterType === 'Alumni' ? 'all' : 'Alumni')}
-                                    style={{ 
-                                        borderRadius: '10px', 
-                                        fontWeight: '700', 
-                                        padding: '10px 20px',
-                                        transition: 'all 0.3s'
-                                    }}
                                 >
                                     <i className={`fa fa-graduation-cap mr-2 ${filterType === 'Alumni' ? 'text-white' : 'text-primary'}`}></i>
                                     {filterType === 'Alumni' ? 'Showing Alumni' : 'Show Alumni Only'}
-                                    <span className="badge ml-2" style={{ 
-                                        backgroundColor: filterType === 'Alumni' ? 'rgba(255,255,255,0.2)' : '#F1F5F9', 
-                                        color: filterType === 'Alumni' ? '#fff' : '#64748B' 
-                                    }}>
+                                    <span className={`badge ml-2 alumni-filter-count ${filterType === 'Alumni' ? 'alumni-filter-count-active' : ''}`}>
                                         {alumniCount}
                                     </span>
                                 </button>
@@ -187,16 +191,16 @@ const Users = () => {
 
                         <div className="card border-0 shadow-sm directory-card">
                             <div className="card-body p-0 bg-white">
-                                <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                    <div className="input-group search-pill-container" style={{ maxWidth: '450px' }}>
+                                <div className="p-4 d-flex flex-wrap align-items-center justify-content-between toolbar-container">
+                                    <div className="input-group search-pill-container">
                                         <div className="input-group-prepend">
-                                            <span className="input-group-text bg-light border-0" style={{ borderRadius: '8px 0 0 8px' }}><i className="fa fa-search text-muted"></i></span>
+                                            <span className="input-group-text bg-light border-0 search-input-icon"><i className="fa fa-search text-muted"></i></span>
                                         </div>
-                                        <input type="text" className="form-control border-0 bg-light" style={{ borderRadius: '0 8px 8px 0', fontSize: '14px', height: '42px' }} placeholder="Search by name or email address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                        <input type="text" className="form-control border-0 bg-light search-input-modern" placeholder="Search by name or email address..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                     </div>
                                     <div className="d-flex align-items-center mt-2 mt-md-0">
                                         <span className="text-muted small mr-3 font-weight-bold">SHOWING</span>
-                                        <select className="custom-select custom-select-sm border-0 bg-light font-weight-bold" style={{ borderRadius: '6px', width: '110px', height: '38px', cursor: 'pointer' }} value={usersPerPage} onChange={(e) => setUsersPerPage(Number(e.target.value))}>
+                                        <select className="custom-select custom-select-sm border-0 bg-light font-weight-bold rows-select-modern" value={usersPerPage} onChange={(e) => setUsersPerPage(Number(e.target.value))}>
                                             {rows.map(v => <option key={v} value={v}>{v} Rows</option>)}
                                         </select>
                                     </div>
@@ -205,29 +209,29 @@ const Users = () => {
                                 <div className="table-responsive">
                                     <table className="table table-hover mb-0">
                                         <thead>
-                                            <tr style={{ backgroundColor: '#F8FAFC' }}>
-                                                <th className="border-0 pl-4 py-3" style={{ width: '80px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>ID</th>
-                                                <th className="border-0 py-3" style={{ width: '100px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>Profile</th>
-                                                <th className="border-0 py-3" onClick={() => requestSort('fname')} style={{ cursor: 'pointer', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>Member Details {getSortIcon('fname')}</th>
-                                                <th className="border-0 text-right pr-5 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>Category</th>
+                                            <tr className="users-table-head">
+                                                <th className="border-0 pl-4 py-3 users-th users-th-id">ID</th>
+                                                <th className="border-0 py-3 users-th users-th-profile">Profile</th>
+                                                <th className="border-0 py-3 users-th users-th-name" onClick={() => requestSort('fname')}>Member Details {getSortIcon('fname')}</th>
+                                                <th className="border-0 text-right pr-5 py-3 users-th users-th-category">Category</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {isTableLoading ? (
                                                 <tr><td colSpan="4" className="text-center p-5"><div className="spinner-border text-primary"></div></td></tr>
                                             ) : currentUsers.length > 0 ? currentUsers.map((elem, index) => (
-                                                <tr key={elem._id} className="table-user-row" style={{ cursor: 'pointer' }} onClick={() => setSelectedUser(elem)}>
+                                                <tr key={elem._id} className="table-user-row" onClick={() => setSelectedUser(elem)}>
                                                     <td className="pl-4 align-middle">
-                                                        <span style={{ backgroundColor: '#F1F5F9', color: '#64748B', fontWeight: '700', fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}>
+                                                        <span className="id-badge-soft">
                                                             {(indexOfFirstUser + index + 1).toString().padStart(2, '0')}
                                                         </span>
                                                     </td>
                                                     <td className="align-middle">
-                                                        <img src={getImageUrl(elem.profilepic, FALLBACK_IMAGES.profile)} alt='profile' className="rounded-circle" style={{ width: '42px', height: '42px', objectFit: 'cover', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }} onError={getImageOnError(FALLBACK_IMAGES.profile)} />
+                                                        <img src={getImageUrl(elem.profilepic, FALLBACK_IMAGES.profile)} alt='profile' className="rounded-circle user-avatar-img" onError={getImageOnError(FALLBACK_IMAGES.profile)} />
                                                     </td>
                                                     <td className="align-middle">
-                                                        <div className="font-weight-bold text-dark mb-0" style={{ fontSize: '15px' }}>{elem.fname}</div>
-                                                        <div style={{ color: '#64748B', fontSize: '12px', fontWeight: '500' }}>{elem.email}</div>
+                                                        <div className="font-weight-bold text-dark mb-0 user-name-text">{elem.fname}</div>
+                                                        <div className="user-email-text">{elem.email}</div>
                                                     </td>
                                                     <td className="align-middle text-right pr-5">{getStatusBadge(elem.type)}</td>
                                                 </tr>
@@ -238,20 +242,20 @@ const Users = () => {
                                     </table>
                                 </div>
 
-                                <div className="p-4 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
+                                <div className="p-4 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center table-footer">
                                     <p className="text-muted small mb-3 mb-md-0 font-weight-bold">Showing {indexOfFirstUser + 1} - {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length} total members</p>
                                     <nav>
                                         <ul className="pagination mb-0">
                                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link border-0 bg-light mr-2" onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }} style={{ borderRadius: '6px', color: themeColor, width: '36px', textAlign: 'center' }}><i className="fa fa-chevron-left"></i></button>
+                                                <button className="page-link border-0 bg-light mr-2 pagination-btn" onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }}><i className="fa fa-chevron-left"></i></button>
                                             </li>
                                             {pageNumbers.map(num => (
                                                 <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
-                                                    <button className="page-link border-0 mx-1 shadow-none" onClick={(e) => { e.stopPropagation(); setCurrentPage(num); }} style={currentPage === num ? { backgroundColor: themeColor, color: '#fff', borderRadius: '6px', width: '36px', fontWeight: 'bold' } : { backgroundColor: '#F8FAFC', color: '#64748B', borderRadius: '6px', width: '36px' }}>{num}</button>
+                                                    <button className={`page-link border-0 mx-1 shadow-none pagination-btn ${currentPage === num ? 'pagination-btn-active' : ''}`} onClick={(e) => { e.stopPropagation(); setCurrentPage(num); }}>{num}</button>
                                                 </li>
                                             ))}
                                             <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                                <button className="page-link border-0 bg-light ml-2" onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }} style={{ borderRadius: '6px', color: themeColor, width: '36px', textAlign: 'center' }}><i className="fa fa-chevron-right"></i></button>
+                                                <button className="page-link border-0 bg-light ml-2 pagination-btn" onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }}><i className="fa fa-chevron-right"></i></button>
                                             </li>
                                         </ul>
                                     </nav>
@@ -262,37 +266,118 @@ const Users = () => {
                 </div>
 
                 {selectedUser && (
-                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(6px)', zIndex: 1050 }}>
-                        <div className="modal-dialog modal-dialog-centered">
-                            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+                    <div className="modal fade show modal-backdrop-custom">
+                        <div className="modal-dialog modal-dialog-centered user-modal-wide">
+                            <div className="modal-content modal-content-premium">
                                 <div className="modal-body p-0">
-                                    <div className="text-right p-3 position-absolute" style={{ right: 0, zIndex: 10 }}>
-                                        <button type="button" className="close text-dark opacity-50" onClick={() => setSelectedUser(null)}>&times;</button>
+                                    <div className="user-modal-close">
+                                        <button type="button" className="close user-modal-close-btn" onClick={() => setSelectedUser(null)} aria-label="Close">&times;</button>
                                     </div>
-                                    <div className="p-5 text-center bg-white">
-                                        <img src={getImageUrl(selectedUser.profilepic, FALLBACK_IMAGES.profile)} alt='profile' className="rounded-circle mb-3 shadow-sm" style={{ width: '100px', height: '100px', objectFit: 'cover', border: '4px solid #F1F5F9' }} onError={getImageOnError(FALLBACK_IMAGES.profile)} />
-                                        <h4 className="font-weight-bold mb-1" style={{ color: '#1E293B' }}>{selectedUser.fname}</h4>
-                                        <div className="mb-4">{getStatusBadge(selectedUser.type)}</div>
-                                        <div className="text-left bg-light p-4" style={{ borderRadius: '14px' }}>
-                                            <div className="mb-3">
-                                                <small className="text-muted d-block text-uppercase font-weight-bold" style={{ fontSize: '9px', letterSpacing: '1px', marginBottom: '2px' }}>Personal Email</small>
-                                                <span className="font-weight-bold" style={{ color: '#334155', fontSize: '13px' }}>{selectedUser.email}</span>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col-6">
-                                                    <small className="text-muted d-block text-uppercase font-weight-bold" style={{ fontSize: '9px', letterSpacing: '1px', marginBottom: '2px' }}>Graduation</small>
-                                                    <span className="font-weight-bold" style={{ color: themeColor, fontSize: '13px' }}>{selectedUser.eduEnd || 'N/A'}</span>
+                                    <div className="user-modal-header">
+                                        <div className="user-avatar-ring">
+                                            <img
+                                                src={getImageUrl(selectedUser.profilepic, FALLBACK_IMAGES.profile)}
+                                                alt="profile"
+                                                className="rounded-circle user-modal-avatar"
+                                                onError={getImageOnError(FALLBACK_IMAGES.profile)}
+                                            />
+                                        </div>
+                                        <h4 className="user-modal-name">{selectedUser.fname}</h4>
+                                        <div className="user-modal-badge">{getStatusBadge(selectedUser.type)}</div>
+                                    </div>
+                                    <div className="user-modal-body">
+                                        <div className="user-info-section">
+                                            <div className="user-info-section-title">Contact</div>
+                                            <div className="user-info-grid">
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">Email</small>
+                                                    {selectedUser.email ? (
+                                                        <a className="user-info-link" href={`mailto:${selectedUser.email}`}>
+                                                            {selectedUser.email}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="user-info-value">N/A</span>
+                                                    )}
                                                 </div>
-                                                <div className="col-6">
-                                                    <small className="text-muted d-block text-uppercase font-weight-bold" style={{ fontSize: '9px', letterSpacing: '1px', marginBottom: '2px' }}>Contact Number</small>
-                                                    <span className="font-weight-bold" style={{ color: '#334155', fontSize: '13px' }}>{selectedUser.phone || 'N/A'}</span>
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">Phone</small>
+                                                    <span className="user-info-value">{safeText(selectedUser.phone)}</span>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div className="user-info-section">
+                                            <div className="user-info-section-title">Academic Overview</div>
+                                            <div className="user-info-grid">
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">Start Year</small>
+                                                    <span className="user-info-value">{formatYear(selectedUser.eduStart)}</span>
+                                                </div>
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">Graduation Year</small>
+                                                    <span className="user-info-value user-info-accent">{formatYear(selectedUser.eduEnd)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="user-info-section">
+                                            <div className="user-info-section-title">Location</div>
+                                            <div className="user-info-grid user-info-grid-3">
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">City</small>
+                                                    <span className="user-info-value">{safeText(selectedUser.city)}</span>
+                                                </div>
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">State</small>
+                                                    <span className="user-info-value">{safeText(selectedUser.state)}</span>
+                                                </div>
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">Country</small>
+                                                    <span className="user-info-value">{safeText(selectedUser.nation)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="user-info-section">
+                                            <div className="user-info-section-title">Skills & Links</div>
+                                            <div className="user-info-grid user-info-grid-stack">
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">GitHub</small>
+                                                    {selectedUser.github ? (
+                                                        <a className="user-info-link" href={selectedUser.github} target="_blank" rel="noreferrer">
+                                                            {selectedUser.github}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="user-info-value">N/A</span>
+                                                    )}
+                                                </div>
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">LinkedIn</small>
+                                                    {selectedUser.linkedin ? (
+                                                        <a className="user-info-link" href={selectedUser.linkedin} target="_blank" rel="noreferrer">
+                                                            {selectedUser.linkedin}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="user-info-value">N/A</span>
+                                                    )}
+                                                </div>
+                                                <div className="user-info-item">
+                                                    <small className="user-info-label">Portfolio</small>
+                                                    {selectedUser.portfolioweb ? (
+                                                        <a className="user-info-link" href={selectedUser.portfolioweb} target="_blank" rel="noreferrer">
+                                                            {selectedUser.portfolioweb}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="user-info-value">N/A</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
-                                    <div className="p-4 bg-light d-flex justify-content-between">
-                                        <button type="button" className="btn btn-white font-weight-bold px-4" style={{ borderRadius: '8px', fontSize: '13px', border: '1px solid #E2E8F0' }} onClick={() => setSelectedUser(null)}>Close Preview</button>
-                                        <button type="button" className="btn btn-danger font-weight-bold px-4 shadow-sm" style={{ borderRadius: '8px', fontSize: '13px' }} onClick={() => handleDeleteUser(selectedUser._id)}>Delete Account</button>
+                                    <div className="user-modal-actions">
+                                        <button type="button" className="btn btn-white font-weight-bold px-4 user-modal-btn-outline" onClick={() => setSelectedUser(null)}>Close Preview</button>
+                                        <button type="button" className="btn btn-danger font-weight-bold px-4 shadow-sm user-modal-btn-danger" onClick={() => handleDeleteUser(selectedUser._id)}>Delete Account</button>
                                     </div>
                                 </div>
                             </div>

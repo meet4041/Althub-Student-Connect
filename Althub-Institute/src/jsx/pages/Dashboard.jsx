@@ -8,17 +8,24 @@ import axiosInstance from '../../service/axios';
 
 // COMPANY STANDARD: Import external CSS
 import '../../styles/dashboard.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Dashboard() {
     const navigate = useNavigate();
     const [users, setUsers] = useState(null); 
+    const [alumniMembers, setAlumniMembers] = useState(null);
     const [events, setEvents] = useState(null);
     const [posts, setPosts] = useState(null);
     const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showCsvModal, setShowCsvModal] = useState(false);
+    const [csvFile, setCsvFile] = useState(null);
 
     const themeColors = { primary: '#2563EB' };
+    const userRole = localStorage.getItem('userRole');
+    const isAlumniOffice = userRole === 'alumni_office';
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -51,6 +58,27 @@ function Dashboard() {
         }
     }, [institute_Id, institute_Name]);
 
+    const handleCsvUpload = async (e) => {
+        e.preventDefault();
+        if (!csvFile) {
+            toast.error("Please select a CSV file");
+            return;
+        }
+        try {
+            const formData = new FormData();
+            formData.append('file', csvFile);
+            const res = await axiosInstance.post('/api/bulkInviteAlumniCsv', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const { createdCount, skippedCount } = res.data?.data || {};
+            toast.success(`Created: ${createdCount || 0}, Skipped: ${skippedCount || 0}`);
+            setShowCsvModal(false);
+            setCsvFile(null);
+        } catch (err) {
+            toast.error(err.response?.data?.msg || "Upload failed");
+        }
+    };
+
     const fetchAllStats = async () => {
         Promise.all([
             getTotalUser(),
@@ -63,6 +91,12 @@ function Dashboard() {
         try {
             const response = await axiosInstance.get(`/api/getUsersOfInstitute/${institute_Name}`);
             setUsers(response.data.success ? response.data.data.length : 0);
+            if (response.data.success) {
+                const alumniCount = (response.data.data || []).filter(u => u.type === 'Alumni').length;
+                setAlumniMembers(alumniCount);
+            } else {
+                setAlumniMembers(0);
+            }
         } catch (err) { setUsers(0); }
     };
 
@@ -82,6 +116,7 @@ function Dashboard() {
 
     return (
         <>
+            <ToastContainer theme="colored" position="top-right" />
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
@@ -90,11 +125,11 @@ function Dashboard() {
                     {/* Header Section */}
                     <div className="d-sm-flex align-items-center justify-content-between mb-4 mt-2">
                         <div>
-                            <ol className="breadcrumb mb-1" style={{background: 'transparent', padding: 0}}>
-                                <li className="breadcrumb-item"><Link to="/dashboard" style={{color: themeColors.primary, fontWeight: '500'}}>Home</Link></li>
-                                <li className="breadcrumb-item active">Overview</li>
+                            <ol className="breadcrumb mb-1 dashboard-breadcrumb">
+                                <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
+                                <li className="breadcrumb-item active">{isAlumniOffice ? 'Alumni Office' : 'Overview'}</li>
                             </ol>
-                            <h1 className="dashboard-header-h1">Dashboard Summary</h1>
+                            <h1 className="dashboard-header-h1">{isAlumniOffice ? 'Alumni Office Summary' : 'Dashboard Summary'}</h1>
                         </div>
                         <div className="mt-2 mt-sm-0">
                             <span className="badge institute-badge text-white">
@@ -102,6 +137,14 @@ function Dashboard() {
                             </span>
                         </div>
                     </div>
+
+                    {isAlumniOffice && (
+                        <div className="d-flex justify-content-end mb-3">
+                            <button className="btn btn-primary dashboard-csv-btn" onClick={() => setShowCsvModal(true)}>
+                                <i className="fa fa-file-upload mr-2"></i> Upload Alumni CSV
+                            </button>
+                        </div>
+                    )}
 
                     <hr className="mb-4 opacity-50" />
                     
@@ -112,47 +155,90 @@ function Dashboard() {
                         </div>
                     ) : (
                         <div className="row">
-                            {/* Card 1: Users */}
-                            <div className="col-xl-4 col-md-6 mb-4">
-                                <div className="widget widget-stats shadow-sm stat-card-modern">
-                                    <div className="stats-icon text-white-50"><i className="fa fa-users"></i></div>
-                                    <div className="stats-info">
-                                        <h4 className="font-weight-bold text-white">INSTITUTE USERS</h4>
-                                        <p className="text-white">{users === null ? '...' : users.toLocaleString()}</p>
+                            {isAlumniOffice ? (
+                                <>
+                                    <div className="col-xl-4 col-md-6 mb-4">
+                                        <div className="widget widget-stats shadow-sm stat-card-modern">
+                                            <div className="stats-icon text-white-50"><i className="fa fa-calendar-alt"></i></div>
+                                            <div className="stats-info">
+                                                <h4 className="font-weight-bold text-white">ALUMNI EVENTS</h4>
+                                                <p className="text-white">{events === null ? '...' : events.toLocaleString()}</p>
+                                            </div>
+                                            <div className="stats-link">
+                                                <Link to="/alumni-events" className="text-white-50">Manage Events <i className="fa fa-arrow-right ml-2"></i></Link>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="stats-link">
-                                        <Link to="/users" className="text-white-50">Manage Users <i className="fa fa-arrow-right ml-2"></i></Link>
+                                    <div className="col-xl-4 col-md-6 mb-4">
+                                        <div className="widget widget-stats shadow-sm stat-card-modern">
+                                            <div className="stats-icon text-white-50"><i className="fa fa-bullhorn"></i></div>
+                                            <div className="stats-info">
+                                                <h4 className="font-weight-bold text-white">ALUMNI POSTS</h4>
+                                                <p className="text-white">{posts === null ? '...' : posts.toLocaleString()}</p>
+                                            </div>
+                                            <div className="stats-link">
+                                                <Link to="/posts" className="text-white-50">Manage Posts <i className="fa fa-arrow-right ml-2"></i></Link>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                    <div className="col-xl-4 col-md-6 mb-4">
+                                        <div className="widget widget-stats shadow-sm stat-card-modern">
+                                            <div className="stats-icon text-white-50"><i className="fa fa-user-graduate"></i></div>
+                                            <div className="stats-info">
+                                                <h4 className="font-weight-bold text-white">ALUMNI MEMBERS</h4>
+                                                <p className="text-white">{alumniMembers === null ? '...' : alumniMembers.toLocaleString()}</p>
+                                            </div>
+                                            <div className="stats-link">
+                                                <Link to="/alumni-members" className="text-white-50">View Members <i className="fa fa-arrow-right ml-2"></i></Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Card 1: Users */}
+                                    <div className="col-xl-4 col-md-6 mb-4">
+                                        <div className="widget widget-stats shadow-sm stat-card-modern">
+                                            <div className="stats-icon text-white-50"><i className="fa fa-users"></i></div>
+                                            <div className="stats-info">
+                                                <h4 className="font-weight-bold text-white">INSTITUTE USERS</h4>
+                                                <p className="text-white">{users === null ? '...' : users.toLocaleString()}</p>
+                                            </div>
+                                            <div className="stats-link">
+                                                <Link to="/users" className="text-white-50">Manage Users <i className="fa fa-arrow-right ml-2"></i></Link>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                            {/* Card 2: Events */}
-                            <div className="col-xl-4 col-md-6 mb-4">
-                                <div className="widget widget-stats shadow-sm stat-card-modern">
-                                    <div className="stats-icon text-white-50"><i className="fa fa-calendar-alt"></i></div>
-                                    <div className="stats-info">
-                                        <h4 className="font-weight-bold text-white">UPCOMING EVENTS</h4>
-                                        <p className="text-white">{events === null ? '...' : events.toLocaleString()}</p>
+                                    {/* Card 2: Events */}
+                                    <div className="col-xl-4 col-md-6 mb-4">
+                                        <div className="widget widget-stats shadow-sm stat-card-modern">
+                                            <div className="stats-icon text-white-50"><i className="fa fa-calendar-alt"></i></div>
+                                            <div className="stats-info">
+                                                <h4 className="font-weight-bold text-white">UPCOMING EVENTS</h4>
+                                                <p className="text-white">{events === null ? '...' : events.toLocaleString()}</p>
+                                            </div>
+                                            <div className="stats-link">
+                                                <Link to="/events" className="text-white-50">View Calendar <i className="fa fa-arrow-right ml-2"></i></Link>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="stats-link">
-                                        <Link to="/events" className="text-white-50">View Calendar <i className="fa fa-arrow-right ml-2"></i></Link>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Card 3: Posts */}
-                            <div className="col-xl-4 col-md-6 mb-4">
-                                <div className="widget widget-stats shadow-sm stat-card-modern">
-                                    <div className="stats-icon text-white-50"><i className="fa fa-newspaper"></i></div>
-                                    <div className="stats-info">
-                                        <h4 className="font-weight-bold text-white">TOTAL CONTRIBUTIONS</h4>
-                                        <p className="text-white">{posts === null ? '...' : posts.toLocaleString()}</p>
+                                    {/* Card 3: Posts */}
+                                    <div className="col-xl-4 col-md-6 mb-4">
+                                        <div className="widget widget-stats shadow-sm stat-card-modern">
+                                            <div className="stats-icon text-white-50"><i className="fa fa-newspaper"></i></div>
+                                            <div className="stats-info">
+                                                <h4 className="font-weight-bold text-white">TOTAL CONTRIBUTIONS</h4>
+                                                <p className="text-white">{posts === null ? '...' : posts.toLocaleString()}</p>
+                                            </div>
+                                            <div className="stats-link">
+                                                <Link to="/posts" className="text-white-50">Manage Content <i className="fa fa-arrow-right ml-2"></i></Link>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="stats-link">
-                                        <Link to="/posts" className="text-white-50">Manage Content <i className="fa fa-arrow-right ml-2"></i></Link>
-                                    </div>
-                                </div>
-                            </div>
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -175,6 +261,30 @@ function Dashboard() {
                 </div>
                 <Footer />
             </div>
+
+            {showCsvModal && (
+                <div className="csv-modal-backdrop" onClick={() => setShowCsvModal(false)}>
+                    <div className="csv-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="csv-modal-header">
+                            <h4 className="csv-modal-title">Upload Alumni CSV</h4>
+                            <button className="csv-modal-close" onClick={() => setShowCsvModal(false)} aria-label="Close">&times;</button>
+                        </div>
+                        <form onSubmit={handleCsvUpload} className="csv-modal-body">
+                            <p className="text-muted small mb-3">CSV should contain emails in the first column (optional header: email).</p>
+                            <input
+                                type="file"
+                                accept=".csv,text/csv"
+                                className="form-control"
+                                onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                            />
+                            <div className="csv-modal-actions">
+                                <button type="button" className="btn btn-light" onClick={() => setShowCsvModal(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary">Upload & Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     )
 }

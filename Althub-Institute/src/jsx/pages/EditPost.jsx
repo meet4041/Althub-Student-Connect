@@ -98,10 +98,10 @@ const EditPost = () => {
                         {/* Header Section */}
                         <div className="d-flex align-items-center justify-content-between mb-3">
                             <div>
-                                <h1 className="page-header mb-0" style={{ fontSize: '22px', fontWeight: '800', color: '#1E293B' }}>Edit Post Details</h1>
+                                <h1 className="page-header edit-event-title mb-0">Edit Post Details</h1>
                                 <p className="text-muted small mb-0">Modify content or add new media to your community post</p>
                             </div>
-                            <Link to="/posts" className="btn btn-light btn-sm font-weight-bold shadow-sm" style={{ borderRadius: '8px' }}>
+                            <Link to="/posts" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back to Feed
                             </Link>
                         </div>
@@ -124,7 +124,7 @@ const EditPost = () => {
                                                     style={{ resize: 'none', minHeight: '300px' }}
                                                     required
                                                 />
-                                                <div className="mt-3 p-3 bg-light rounded" style={{ borderLeft: `4px solid ${themeColor}` }}>
+                                                <div className="mt-3 p-3 bg-light rounded edit-event-note">
                                                     <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Note: Editing this post will update it for all users in the feed instantly.</small>
                                                 </div>
                                             </div>
@@ -138,13 +138,12 @@ const EditPost = () => {
                                             {existingPhotos.length > 0 && (
                                                 <div className="mb-4 p-3 bg-light rounded border">
                                                     <small className="text-muted font-weight-bold d-block mb-2">Current Post Photos:</small>
-                                                    <div className="d-flex flex-wrap">
+                                                    <div className="post-preview-grid">
                                                         {existingPhotos.map((photoUrl, index) => (
                                                             <img 
                                                                 key={index} 
                                                                 src={getImageUrl(photoUrl, FALLBACK_IMAGES.post)} 
-                                                                className="mr-2 mb-2 post-preview-img"
-                                                                style={{ width: '80px', height: '80px' }}
+                                                                className="post-preview-img"
                                                                 alt="existing"
                                                                 onError={getImageOnError(FALLBACK_IMAGES.post)}
                                                             />
@@ -154,7 +153,7 @@ const EditPost = () => {
                                             )}
 
                                             {/* Upload New Photos Zone */}
-                                            <div className="post-upload-zone" style={{ minHeight: '150px', padding: '20px' }}>
+                                            <div className="post-upload-zone">
                                                 <input 
                                                     type='file' multiple className="d-none" id="editPostFile" 
                                                     accept="image/*" onChange={imgChange} 
@@ -167,13 +166,12 @@ const EditPost = () => {
 
                                                 {/* New Selection Preview */}
                                                 {newFiles.length > 0 && (
-                                                    <div className="post-preview-grid mt-3">
+                                                    <div className="post-preview-grid">
                                                         {newFiles.map((file, i) => (
                                                             <img 
                                                                 key={i} 
                                                                 src={URL.createObjectURL(file)} 
                                                                 className="post-preview-img" 
-                                                                style={{ width: '70px', height: '70px' }}
                                                                 alt="preview" 
                                                             />
                                                         ))}
@@ -190,9 +188,8 @@ const EditPost = () => {
                                     <Link to="/posts" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
                                     <button 
                                         type="submit" 
-                                        className="btn btn-primary px-5 shadow-sm" 
+                                        className="btn btn-primary px-5 shadow-sm edit-event-save-btn" 
                                         disabled={disable} 
-                                        style={{ borderRadius: '10px', backgroundColor: themeColor, border: 'none', fontWeight: '700' }}
                                     >
                                         {disable ? 'Updating Feed...' : 'Save & Update Post'}
                                     </button>

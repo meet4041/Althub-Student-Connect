@@ -1,0 +1,38 @@
+/* src/styles/loader.css */
+
+#page-loader {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(248, 250, 252, 0.9);
+    backdrop-filter: blur(2px);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+#page-loader.show {
+    opacity: 1;
+}
+
+#page-loader .spinner {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
+    animation: althub-spin 0.9s linear infinite;
+}
+
+@keyframes althub-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #page-loader .spinner {
+        animation: none;
+        border-top-color: #94a3b8;
+    }
+}

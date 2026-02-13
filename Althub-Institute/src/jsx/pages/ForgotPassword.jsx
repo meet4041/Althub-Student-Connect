@@ -75,7 +75,7 @@ function ForgotPassword() {
                                 <h3 className="font-weight-bold text-navy">Althub Institute</h3>
                             </div>
 
-                            <div className="form-heading mb-5">
+                            <div className="form-heading mb-4">
                                 <h2 className="font-weight-bold text-navy">Forgot Password?</h2>
                                 <p className="text-muted">Enter the email associated with your account</p>
                             </div>
@@ -99,7 +99,7 @@ function ForgotPassword() {
                                     {disable ? 'PROCESSING...' : 'SEND RESET LINK'}
                                 </button>
 
-                                <div className="text-center mt-4">
+                                <div className="text-center mt-3">
                                     <p className="text-muted">
                                         Remember credentials? 
                                         <Link to="/" className="back-to-login-link ml-1">

@@ -20,6 +20,11 @@ import Feedback from './pages/Feedback.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import AlumniOffice from './pages/AlumniOffice.jsx';
 import PlacementOffice from './pages/PlacementOffice.jsx';
+import AlumniMembers from './pages/AlumniMembers.jsx';
+import AlumniEvents from './pages/AlumniEvents.jsx';
+import AlumniAddCourse from './pages/AlumniAddCourse.jsx';
+import AlumniAddEvent from './pages/AlumniAddEvent.jsx';
+import AlumniEditEvent from './pages/AlumniEditEvent.jsx';
 
 const Markup = () => {
     useSessionTimeout(true);
@@ -44,6 +49,11 @@ const Markup = () => {
             <Route path='/leaderboard' element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path='/alumni-office' element={<ProtectedRoute><AlumniOffice /></ProtectedRoute>} />
             <Route path='/placement-office' element={<ProtectedRoute><PlacementOffice /></ProtectedRoute>} />
+            <Route path='/alumni-members' element={<ProtectedRoute><AlumniMembers /></ProtectedRoute>} />
+            <Route path='/alumni-events' element={<ProtectedRoute><AlumniEvents /></ProtectedRoute>} />
+            <Route path='/alumni-add-course' element={<ProtectedRoute><AlumniAddCourse /></ProtectedRoute>} />
+            <Route path='/alumni-add-event' element={<ProtectedRoute><AlumniAddEvent /></ProtectedRoute>} />
+            <Route path='/alumni-edit-event' element={<ProtectedRoute><AlumniEditEvent /></ProtectedRoute>} />
             <Route path='*' element={<Navigate to="/login" replace />} />
         </Routes>
     )

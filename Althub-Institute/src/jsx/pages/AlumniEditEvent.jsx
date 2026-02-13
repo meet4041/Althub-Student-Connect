@@ -1,18 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import React, { useState, useEffect, Fragment } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
 
-import Loader from '../layout/Loader.jsx'
+import Loader from '../layout/Loader.jsx';
 import Menu from '../layout/Menu.jsx';
 import Footer from '../layout/Footer.jsx';
 
-// Import newly created styles
 import '../../styles/edit-event.css';
 
-const EditEvent = () => {
+const AlumniEditEvent = () => {
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -24,7 +23,6 @@ const EditEvent = () => {
         venue: "",
     });
     const location = useLocation();
-    const themeColor = '#2563EB';
 
     const geteventData = () => {
         if (location.state && location.state.data) {
@@ -37,7 +35,7 @@ const EditEvent = () => {
                 venue: state.venue,
             });
         }
-    }
+    };
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -53,7 +51,7 @@ const EditEvent = () => {
 
     const [fileList, setFileList] = useState(null);
     const files = fileList ? [...fileList] : [];
-    const imgChange = (e) => { setFileList(e.target.files); }
+    const imgChange = (e) => { setFileList(e.target.files); };
 
     const submitHandler = (e) => {
         e.preventDefault();
@@ -65,7 +63,7 @@ const EditEvent = () => {
             body.append("description", data.description);
             body.append("date", data.date);
             body.append("venue", data.venue);
-            
+
             files.forEach((file) => {
                 body.append(`photos`, file, file.name);
             });
@@ -83,7 +81,7 @@ const EditEvent = () => {
             }).then(() => {
                 setDisable(false);
                 toast.success("Changes saved successfully");
-                setTimeout(() => navigate('/events'), 1200);
+                setTimeout(() => navigate('/alumni-events'), 1200);
             }).catch((error) => {
                 setDisable(false);
                 toast.error(error.response?.data?.msg || "Update failed");
@@ -99,12 +97,12 @@ const EditEvent = () => {
         if (!data.venue) errs.venue_err = "Venue is required";
         setErrors(errs);
         return Object.keys(errs).length === 0;
-    }
+    };
 
     const getFormattedDate = (dateString) => {
         if (!dateString) return "";
         return dateString.split('T')[0];
-    }
+    };
 
     return (
         <Fragment>
@@ -114,14 +112,12 @@ const EditEvent = () => {
                 <Menu />
                 <div id="content" className="content edit-event-wrapper">
                     <div className="edit-event-container">
-                        
-                        {/* [HEADER SECTION] with Top-Right Button matching Add Event Page */}
                         <div className="d-flex align-items-center justify-content-between mb-3">
                             <div>
-                                <h1 className="page-header edit-event-title mb-0">Edit Event Details</h1>
+                                <h1 className="page-header edit-event-title mb-0">Edit Alumni Event</h1>
                                 <p className="text-muted small mb-0">Modify the fields below to update your event listing</p>
                             </div>
-                            <Link to="/events" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
+                            <Link to="/alumni-events" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back to Events
                             </Link>
                         </div>
@@ -130,7 +126,6 @@ const EditEvent = () => {
                             <form onSubmit={submitHandler} className="d-flex flex-column h-100">
                                 <div className="form-body-scroll">
                                     <div className="row h-100">
-                                        {/* LEFT COLUMN: Basic Info */}
                                         <div className="col-md-5 border-right pr-md-4">
                                             <div className="form-group mb-4">
                                                 <label className="form-label-modern">Event Title</label>
@@ -158,17 +153,16 @@ const EditEvent = () => {
                                             </div>
                                         </div>
 
-                                        {/* RIGHT COLUMN: Media Upload */}
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-modern">Media & Photos Update</label>
                                             <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="editImgUpload" onChange={imgChange} />
-                                                <label htmlFor="editImgUpload" className="text-center cursor-pointer mb-0">
+                                                <input type='file' multiple className="d-none" id="editImgUploadAlumni" onChange={imgChange} />
+                                                <label htmlFor="editImgUploadAlumni" className="text-center cursor-pointer mb-0">
                                                     <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
                                                     <p className="mb-0 font-weight-bold">Click to replace or add photos</p>
                                                     <small className="text-muted">Maximum file size: 10MB (JPG, PNG)</small>
                                                 </label>
-                                                
+
                                                 {files.length > 0 && (
                                                     <div className="preview-grid">
                                                         {files.map((elem, index) => (
@@ -184,9 +178,8 @@ const EditEvent = () => {
                                     </div>
                                 </div>
 
-                                {/* STICKY FOOTER ACTIONS */}
                                 <div className="form-footer-sticky">
-                                    <Link to="/events" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
+                                    <Link to="/alumni-events" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
                                     <button type="submit" className="btn btn-primary px-5 shadow-sm edit-event-save-btn" disabled={disable}>
                                         {disable ? 'Saving Changes...' : 'Update Event Listing'}
                                     </button>
@@ -198,7 +191,7 @@ const EditEvent = () => {
                 <Footer />
             </div>
         </Fragment>
-    )
-}
+    );
+};
 
-export default EditEvent;
+export default AlumniEditEvent;

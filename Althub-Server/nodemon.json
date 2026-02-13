@@ -1,0 +1,18 @@
+{
+    "watch": [
+        "index.js",
+        "controllers",
+        "routes",
+        "models",
+        "db",
+        "middleware",
+        "config"
+    ],
+    "ignore": [
+        "node_modules",
+        "*.log",
+        ".git"
+    ],
+    "ext": "js,json",
+    "legacyWatch": true
+}

@@ -99,9 +99,8 @@ const editEvent = async (req, res) => {
             }
         }
 
-        // 3. Combine existing photos with new ones (Appends new photos)
-        // If you want to completely replace photos, remove `...existingEvent.photos`
-        const updatedPhotos = [...(existingEvent.photos || []), ...newPhotoUrls];
+        // 3. Replace photos if new files are uploaded, otherwise keep existing
+        const updatedPhotos = newPhotoUrls.length > 0 ? newPhotoUrls : (existingEvent.photos || []);
 
         // 4. Update the event
         const updateData = {

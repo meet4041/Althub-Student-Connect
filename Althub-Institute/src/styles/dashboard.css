@@ -4,7 +4,7 @@
     background-color: #F1F5F9 !important;
     min-height: 100vh;
     /* FIX: Add margin-left to push content away from the fixed sidebar */
-    margin-left: 250px !important; 
+    margin-left: 260px !important; 
     /* FIX: Padding-top to clear the 65px fixed header */
     padding-top: 35px !important; 
     padding-left: 25px;
@@ -26,6 +26,21 @@
     font-weight: 800;
     font-size: 24px;
     letter-spacing: -0.5px;
+}
+
+.dashboard-breadcrumb {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+.dashboard-breadcrumb-link {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.dashboard-breadcrumb-link:hover {
+    text-decoration: underline;
 }
 
 .institute-badge {
@@ -79,4 +94,66 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.dashboard-csv-btn {
+    border-radius: 10px;
+    background-color: #2563EB;
+    border: none;
+    padding: 10px 18px;
+    font-weight: 700;
+}
+
+.csv-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(6px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.csv-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 520px;
+    max-width: 92vw;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+    overflow: hidden;
+}
+
+.csv-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.csv-modal-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.csv-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.csv-modal-body {
+    padding: 18px 20px 20px;
+}
+
+.csv-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
 }

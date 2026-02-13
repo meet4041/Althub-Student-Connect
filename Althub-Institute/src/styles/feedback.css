@@ -5,7 +5,7 @@
     height: 100vh;
     /* FIX: Standard offsets for sidebar and header */
     margin-left: 215px !important; 
-    padding-top: 25px !important; 
+    padding-top: 35px !important; 
     margin-top: 0 !important;
     overflow: hidden; /* Lock page-level scroll */
     transition: margin-left 0.3s ease;

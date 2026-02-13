@@ -9,6 +9,15 @@ const institute_route = express.Router();
 // Multer Memory Storage Configuration - allows req.file.buffer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const csvUpload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const ok = file.mimetype === 'text/csv' || file.originalname.toLowerCase().endsWith('.csv');
+        if (!ok) return cb(new Error('Only CSV files are allowed'));
+        cb(null, true);
+    }
+});
 
 // ==============================
 // PUBLIC ROUTES (No Login Required)
@@ -34,6 +43,7 @@ institute_route.get('/getInstituteById/:_id', requireAuth, institute_controller.
 institute_route.get('/getAlumniOfficeByInstitute/:instituteId', requireAuth, institute_controller.getAlumniOfficeByInstitute);
 institute_route.get('/getPlacementCellByInstitute/:instituteId', requireAuth, institute_controller.getPlacementCellByInstitute);
 institute_route.post('/inviteUser', requireAuth, institute_controller.inviteUser);
+institute_route.post('/bulkInviteAlumniCsv', requireAuth, csvUpload.single('file'), institute_controller.bulkInviteAlumniCsv);
 
 // --- IMAGE UPLOAD (Protected) ---
 institute_route.post('/uploadInstituteImage', requireAuth, upload.single('image'), institute_controller.uploadInstituteImage);

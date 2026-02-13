@@ -42,6 +42,7 @@ user_route.post('/getTopUsers', requireAuth, user_controller.getTopUsers);
 user_route.get('/searchUserById/:_id', requireAuth, user_controller.searchUserById);
 //user_route.get('/searchFollowings/:userId/:query', user_controller.searchFollowings);
 user_route.get('/getUsersOfInstitute/:institute', requireAuth, user_controller.getUsersOfInstitute);
+user_route.get('/getAlumniByCourseSpec', requireAuth, user_controller.getAlumniByCourseSpec);
 
 // Social Actions
 user_route.put("/follow/:id", requireAuth, user_controller.followUser);

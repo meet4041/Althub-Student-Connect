@@ -129,9 +129,9 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 // --- MOUNT ROUTES ---
-app.use("/api/adminLogin", loginLimiter);
-app.use("/api/instituteLogin", loginLimiter);
-app.use("/api/userLogin", loginLimiter); 
+app.post("/api/adminLogin", loginLimiter);
+app.post("/api/instituteLogin", loginLimiter);
+app.post("/api/userLogin", loginLimiter); 
 
 app.use("/api", user_route);
 app.use("/api", event_route);
