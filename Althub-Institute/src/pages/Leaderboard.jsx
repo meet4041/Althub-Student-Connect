@@ -2,9 +2,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import axios from 'axios';
 import { ALTHUB_API_URL } from './baseURL';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
 const Leaderboard = () => {
     const [data, setData] = useState([]);

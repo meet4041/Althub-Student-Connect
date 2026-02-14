@@ -5,11 +5,11 @@ import { toast, ToastContainer } from 'react-toastify';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
 
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
-import '../../styles/edit-event.css';
+import '../styles/edit-event.css';
 
 const AlumniEditEvent = () => {
     const navigate = useNavigate();

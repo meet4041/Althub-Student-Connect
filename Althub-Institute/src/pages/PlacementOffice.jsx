@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axiosInstance from '../../service/axios';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import axiosInstance from '../service/axios';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
-import '../../styles/feedback.css';
-import '../../styles/dashboard.css';
+import '../styles/feedback.css';
+import '../styles/dashboard.css';
 
-const AlumniOffice = () => {
-    const [alumniStaff, setAlumniStaff] = useState([]);
+const PlacementOffice = () => {
+    const [placementStaff, setPlacementStaff] = useState([]);
     const [displayStaff, setDisplayStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -31,10 +31,10 @@ const AlumniOffice = () => {
         setInstitute_Id(id);
         setInstitute_Name(localStorage.getItem("AlmaPlus_institute_Name") || '');
 
-        axiosInstance.get(`/api/getAlumniOfficeByInstitute/${id}`)
+        axiosInstance.get(`/api/getPlacementCellByInstitute/${id}`)
             .then((response) => {
                 if (response.data.success) {
-                    setAlumniStaff(response.data.data || []);
+                    setPlacementStaff(response.data.data || []);
                 }
                 setLoading(false);
             })
@@ -50,14 +50,14 @@ const AlumniOffice = () => {
     }, []);
 
     useEffect(() => {
-        const filtered = alumniStaff.filter(item =>
+        const filtered = placementStaff.filter(item =>
             item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.phone?.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setDisplayStaff(filtered);
         setCurrentPage(1);
-    }, [searchTerm, alumniStaff]);
+    }, [searchTerm, placementStaff]);
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -77,14 +77,14 @@ const AlumniOffice = () => {
                                     <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
                                         <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
                                         <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Offices</Link></li>
-                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Alumni Office</li>
+                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Placement Office</li>
                                     </ol>
                                 </nav>
                                 <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>
-                                    <i className="fa fa-graduation-cap mr-2" style={{ color: themeColor }}></i>
-                                    Alumni Office
+                                    <i className="fa fa-briefcase mr-2" style={{ color: themeColor }}></i>
+                                    Placement Office
                                 </h1>
-                                <p className="text-muted small mt-1 mb-0">Manage and view alumni office staff linked to {institute_Name}</p>
+                                <p className="text-muted small mt-1 mb-0">Manage and view placement cell staff linked to {institute_Name}</p>
                             </div>
                             <span className="badge institute-badge text-white mt-3 mt-sm-0">
                                 <i className="fa fa-university mr-2"></i> {institute_Name}
@@ -136,9 +136,9 @@ const AlumniOffice = () => {
                                                     <tr>
                                                         <td colSpan="5" className="text-center p-5">
                                                             <div className="py-4">
-                                                                <i className="fa fa-graduation-cap fa-3x text-muted mb-3"></i>
-                                                                <p className="text-muted mb-0">No alumni office staff linked to this institute.</p>
-                                                                <small className="text-muted">Alumni office accounts can be registered and linked during setup.</small>
+                                                                <i className="fa fa-briefcase fa-3x text-muted mb-3"></i>
+                                                                <p className="text-muted mb-0">No placement office staff linked to this institute.</p>
+                                                                <small className="text-muted">Placement cell accounts can be registered and linked during setup.</small>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -172,4 +172,4 @@ const AlumniOffice = () => {
     );
 };
 
-export default AlumniOffice;
+export default PlacementOffice;

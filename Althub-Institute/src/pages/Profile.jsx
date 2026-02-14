@@ -3,15 +3,15 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axiosInstance from '../../service/axios';
+import axiosInstance from '../service/axios';
 import { ALTHUB_API_URL } from './baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
 // Import CSS
-import '../../styles/profile.css';
+import '../styles/profile.css';
 
 const Profile = () => {
     const navigate = useNavigate();

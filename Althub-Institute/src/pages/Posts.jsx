@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/alt-text, no-unused-vars */
 import React, { useState, useEffect, Fragment, useCallback } from 'react';
 import { Link } from 'react-router-dom'
-import Loader from '../layout/Loader.jsx'
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx'
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import axios from 'axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 // Import CSS
-import '../../styles/posts.css';
+import '../styles/posts.css';
 
 const Posts = () => {
     const [institute_Id, setInstitute_Id] = useState(null);

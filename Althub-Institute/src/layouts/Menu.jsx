@@ -1,12 +1,12 @@
 /* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
-import axios from '../../service/axios'; 
+import axios from '../service/axios'; 
 import { ALTHUB_API_URL } from '../pages/baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 
 // COMPANY STANDARD: Import external CSS
-import '../../styles/menu.css'; 
+import '../styles/menu.css'; 
 
 function Menu() {
    const navigate = useNavigate();
@@ -110,6 +110,12 @@ function Menu() {
                            <Link to="/alumni-events">
                               <i className="fa fa-calendar-alt"></i>
                               <span>Alumni Events</span>
+                           </Link>
+                        </li>
+                        <li className={isActive("/alumni-posts")}>
+                           <Link to="/alumni-posts">
+                              <i className="fa fa-bullhorn"></i>
+                              <span>Alumni Posts</span>
                            </Link>
                         </li>
                      </>

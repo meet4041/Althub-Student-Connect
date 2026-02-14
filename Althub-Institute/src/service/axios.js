@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ALTHUB_API_URL } from '../jsx/pages/baseURL';
+import { ALTHUB_API_URL } from '../pages/baseURL';
 
 const instance = axios.create({
     baseURL: ALTHUB_API_URL,

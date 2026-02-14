@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../../service/axios';
+import axiosInstance from '../service/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-import '../../styles/login.css';
+import '../styles/login.css';
 
 const Login = () => {
     const navigate = useNavigate();

@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import Loader from '../layout/Loader.jsx'
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx'
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
 // COMPANY STANDARD: Import external CSS
-import '../../styles/users.css';
+import '../styles/users.css';
 
 const Users = () => {
     const [institute_Name, setInstitute_Name] = useState(null);

@@ -7,8 +7,8 @@ import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
 
 // COMPANY STANDARD: Import external CSS files
-import '../../styles/login.css';    // Reusing the shared split-screen layout
-import '../../styles/password.css'; // Importing page-specific styles
+import '../styles/login.css';    // Reusing the shared split-screen layout
+import '../styles/password.css'; // Importing page-specific styles
 
 function ForgotPassword() {
     const navigate = useNavigate();

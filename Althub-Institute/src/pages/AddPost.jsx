@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
 // Import the specific Posts CSS
-import '../../styles/add-post.css';
+import '../styles/add-post.css';
 
 const AddPost = () => {
     const [institute_Id, setInstitute_Id] = useState(null);

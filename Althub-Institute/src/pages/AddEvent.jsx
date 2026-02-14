@@ -1,19 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, Fragment } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify';
 import { ALTHUB_API_URL } from './baseURL';
 import axios from 'axios';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx'
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
-import '../../styles/edit-event.css';
+import '../styles/edit-event.css';
 
-const AlumniAddEvent = () => {
+const AddEvent = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
+    const themeColor = '#2563EB';
+    const token = localStorage.getItem('token'); // Retrieve auth token
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -46,28 +47,32 @@ const AlumniAddEvent = () => {
         if (validate() && institute_Id) {
             setDisable(true);
             const body = new FormData();
+            
+            // Backend expects 'organizerid'
             body.append("organizerid", institute_Id);
             body.append("title", data.title);
             body.append("description", data.description);
             body.append("date", data.date);
             body.append("venue", data.venue);
+            
+            // Critical Fix: Use 'photos' key to match your uploadArray middleware
             fileList.forEach(file => body.append(`photos`, file));
 
             axios.post(`${ALTHUB_API_URL}/api/addEvent`, body, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
+                headers: { 
+                    'Authorization': `Bearer ${token}`, // Include token for requireAuth
+                    'Content-Type': 'multipart/form-data' 
                 }
             })
-                .then((res) => {
-                    if (res.data.success) {
-                        toast.success("Event Published Successfully");
-                        setTimeout(() => navigate('/alumni-events'), 1200);
-                    }
-                }).catch(() => {
-                    setDisable(false);
-                    toast.error("Submission failed. Check if you are logged in.");
-                });
+            .then((res) => {
+                if(res.data.success) {
+                    toast.success("Event Published Successfully");
+                    setTimeout(() => navigate('/events'), 1500);
+                }
+            }).catch((err) => {
+                setDisable(false);
+                toast.error("Submission failed. Check if you are logged in.");
+            });
         }
     };
 
@@ -91,10 +96,10 @@ const AlumniAddEvent = () => {
                     <div className="edit-event-container">
                         <div className="d-flex align-items-center justify-content-between mb-3">
                             <div>
-                                <h1 className="page-header edit-event-title mb-0">Create Alumni Event</h1>
-                                <p className="text-muted small mb-0">Fill in the details to publish a new alumni event</p>
+                                <h1 className="page-header edit-event-title mb-0">Create New Event</h1>
+                                <p className="text-muted small mb-0">Fill in the details to publish a new institutional event</p>
                             </div>
-                            <Link to="/alumni-events" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
+                            <Link to="/events" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back
                             </Link>
                         </div>
@@ -130,8 +135,8 @@ const AlumniAddEvent = () => {
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-modern">Event Media</label>
                                             <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="addImgUploadAlumni" onChange={imgChange} />
-                                                <label htmlFor="addImgUploadAlumni" className="text-center cursor-pointer mb-0">
+                                                <input type='file' multiple className="d-none" id="addImgUpload" onChange={imgChange} />
+                                                <label htmlFor="addImgUpload" className="text-center cursor-pointer mb-0">
                                                     <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
                                                     <h6 className="font-weight-bold">Click to upload photos</h6>
                                                 </label>
@@ -162,4 +167,4 @@ const AlumniAddEvent = () => {
     );
 };
 
-export default AlumniAddEvent;
+export default AddEvent;

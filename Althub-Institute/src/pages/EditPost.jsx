@@ -3,14 +3,14 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
-import axiosInstance from '../../service/axios';
+import axiosInstance from '../service/axios';
 
-import Loader from '../layout/Loader.jsx'
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx'
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
 // Import the specific Posts CSS for split-screen layout
-import '../../styles/add-post.css';
+import '../styles/add-post.css';
 
 const EditPost = () => {
     const navigate = useNavigate();

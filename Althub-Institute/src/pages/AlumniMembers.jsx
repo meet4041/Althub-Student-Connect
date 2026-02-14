@@ -1,13 +1,13 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../../service/axios';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import axiosInstance from '../service/axios';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 
-import '../../styles/alumni-pages.css';
-import '../../styles/users.css';
+import '../styles/alumni-pages.css';
+import '../styles/users.css';
 
 const AlumniMembers = () => {
     const [courses, setCourses] = useState([]);

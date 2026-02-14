@@ -1,17 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 import { ALTHUB_API_URL } from './baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axios from 'axios';
 
-import '../../styles/events.css';
+import '../styles/events.css';
 
-const AlumniEvents = () => {
+const Events = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
@@ -23,6 +23,8 @@ const AlumniEvents = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    const themeColor = '#2563EB';
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -43,7 +45,10 @@ const AlumniEvents = () => {
                 if (response.data.success) {
                     setEvents(response.data.data || []);
                 }
-            }).catch(() => setEvents([]));
+            }).catch((err) => {
+                console.error("Fetch Error:", err);
+                setEvents([]);
+            });
         }
     }, [institute_Id, token]);
 
@@ -97,7 +102,7 @@ const AlumniEvents = () => {
                     setAlert2(true);
                     setSelectedEvent(null);
                 }
-            }).catch(() => {});
+            }).catch(err => console.error("Delete Error:", err));
     };
 
     const formatDate = (dateString) => {
@@ -119,23 +124,25 @@ const AlumniEvents = () => {
                 <Menu />
                 <div id="content" className="content events-content-wrapper">
                     <div className="events-container">
+                        {/* Header */}
                         <div className="events-header">
                             <div>
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb mb-1">
-                                        <li className="breadcrumb-item"><Link to="/alumni-members">Home</Link></li>
-                                        <li className="breadcrumb-item active">Alumni Events</li>
+                                    <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
+                                        <li className="breadcrumb-item active">Events</li>
                                     </ol>
                                 </nav>
                                 <h1 className="events-title">
-                                    Alumni Events
+                                    Events Management
                                 </h1>
                             </div>
-                            <Link to="/alumni-add-event" className="btn-events-create">
+                            <Link to="/add-event" className="btn-events-create">
                                 <i className="fa fa-plus-circle mr-2"></i> Create Event
                             </Link>
                         </div>
 
+                        {/* Stats Strip */}
                         <div className="events-stats-strip">
                             <div className="events-stat-card">
                                 <span className="events-stat-value">{events.length}</span>
@@ -147,6 +154,7 @@ const AlumniEvents = () => {
                             </div>
                         </div>
 
+                        {/* Toolbar: Search, Filter Tabs, View Toggle */}
                         <div className="events-toolbar">
                             <div className="events-search-wrap">
                                 <i className="fa fa-search events-search-icon"></i>
@@ -187,123 +195,126 @@ const AlumniEvents = () => {
                             </div>
                         </div>
 
+                        {/* Content Area */}
                         <div className="events-content-card">
-                            <div className="events-content-area">
-                                {viewMode === 'grid' ? (
-                                    <div className="events-grid">
-                                        {currentEvents.length > 0 ? currentEvents.map((elem, index) => (
-                                            <div
-                                                key={elem._id || index}
-                                                className="events-card"
-                                                onClick={() => setSelectedEvent(elem)}
-                                            >
-                                                <div className="events-card-image-wrap">
-                                                    <img
-                                                        src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.event)}
-                                                        className="events-card-image"
-                                                        alt={elem.title}
-                                                        onError={getImageOnError(FALLBACK_IMAGES.event)}
-                                                    />
-                                                    <div className="events-card-overlay"></div>
-                                                    <span className={`events-card-date-badge ${isUpcoming(elem.date) ? 'upcoming' : 'past'}`}>
-                                                        {formatDateShort(elem.date)}
-                                                    </span>
-                                                    {isUpcoming(elem.date) && <span className="events-card-live-badge">Upcoming</span>}
-                                                </div>
-                                                <div className="events-card-body">
-                                                    <h3 className="events-card-title">{elem.title || 'Untitled Event'}</h3>
-                                                    <p className="events-card-venue">
-                                                        <i className="fa fa-map-marker-alt"></i> {elem.venue || 'Venue TBD'}
-                                                    </p>
-                                                    {elem.description && <p className="events-card-desc">{(elem.description || '').slice(0, 80)}{(elem.description || '').length > 80 ? '...' : ''}</p>}
-                                                </div>
-                                            </div>
-                                        )) : (
-                                            <div className="events-empty">
-                                                <div className="events-empty-icon"><i className="fa fa-calendar-plus"></i></div>
-                                                <h3>No events found</h3>
-                                                <p>Create your first alumni event</p>
-                                                <Link to="/alumni-add-event" className="btn-events-create btn-events-empty">Create Event</Link>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="events-table-wrap">
-                                        <table className="events-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>#</th>
-                                                    <th>Preview</th>
-                                                    <th>Event Details</th>
-                                                    <th>Date & Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {currentEvents.length > 0 ? currentEvents.map((elem, index) => (
-                                                    <tr key={elem._id || index} onClick={() => setSelectedEvent(elem)}>
-                                                        <td><span className="events-table-num">{(indexOfFirstEvent + index + 1).toString().padStart(2, '0')}</span></td>
-                                                        <td>
-                                                            <img
-                                                                src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.event)}
-                                                                className="events-table-thumb"
-                                                                alt=""
-                                                                onError={getImageOnError(FALLBACK_IMAGES.event)}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <div className="events-table-title">{elem.title || 'Untitled'}</div>
-                                                            <div className="events-table-venue"><i className="fa fa-map-marker-alt"></i> {elem.venue || '-'}</div>
-                                                        </td>
-                                                        <td className="text-center">
-                                                            <div className="events-table-date">{formatDate(elem.date)}</div>
-                                                            {isUpcoming(elem.date) && <span className="events-badge-upcoming">Upcoming</span>}
-                                                        </td>
-                                                    </tr>
-                                                )) : (
-                                                    <tr><td colSpan="4" className="events-table-empty">No events found.</td></tr>
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-
-                            {displayEvents.length > 0 && (
-                                <div className="events-pagination">
-                                    <p className="events-pagination-info">
-                                        Showing {indexOfFirstEvent + 1}–{Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length}
-                                    </p>
-                                    <div className="events-pagination-controls">
-                                        <select
-                                            className="events-rows-select"
-                                            value={eventsPerPage}
-                                            onChange={(e) => { setEventsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        <div className="events-content-area">
+                            {viewMode === 'grid' ? (
+                                <div className="events-grid">
+                                    {currentEvents.length > 0 ? currentEvents.map((elem, index) => (
+                                        <div
+                                            key={elem._id || index}
+                                            className="events-card"
+                                            onClick={() => setSelectedEvent(elem)}
                                         >
-                                            {rows.map(v => <option key={v} value={v}>{v} per page</option>)}
-                                        </select>
-                                        <nav>
-                                            <button className="events-page-btn" disabled={currentPage === 1} onClick={() => paginate(currentPage - 1)}>
-                                                <i className="fa fa-chevron-left"></i>
-                                            </button>
-                                            {pageNumbers.slice(0, 5).map(num => (
-                                                <button
-                                                    key={num}
-                                                    className={`events-page-btn ${currentPage === num ? 'active' : ''}`}
-                                                    onClick={() => paginate(num)}
-                                                >{num}</button>
-                                            ))}
-                                            {pageNumbers.length > 5 && <span className="events-page-dots">…</span>}
-                                            <button className="events-page-btn" disabled={currentPage === pageNumbers.length} onClick={() => paginate(currentPage + 1)}>
-                                                <i className="fa fa-chevron-right"></i>
-                                            </button>
-                                        </nav>
-                                    </div>
+                                            <div className="events-card-image-wrap">
+                                                <img
+                                                    src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.event)}
+                                                    className="events-card-image"
+                                                    alt={elem.title}
+                                                    onError={getImageOnError(FALLBACK_IMAGES.event)}
+                                                />
+                                                <div className="events-card-overlay"></div>
+                                                <span className={`events-card-date-badge ${isUpcoming(elem.date) ? 'upcoming' : 'past'}`}>
+                                                    {formatDateShort(elem.date)}
+                                                </span>
+                                                {isUpcoming(elem.date) && <span className="events-card-live-badge">Upcoming</span>}
+                                            </div>
+                                            <div className="events-card-body">
+                                                <h3 className="events-card-title">{elem.title || 'Untitled Event'}</h3>
+                                                <p className="events-card-venue">
+                                                    <i className="fa fa-map-marker-alt"></i> {elem.venue || 'Venue TBD'}
+                                                </p>
+                                                {elem.description && <p className="events-card-desc">{(elem.description || '').slice(0, 80)}{(elem.description || '').length > 80 ? '...' : ''}</p>}
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div className="events-empty">
+                                            <div className="events-empty-icon"><i className="fa fa-calendar-plus"></i></div>
+                                            <h3>No events found</h3>
+                                            <p>Create your first event to get started</p>
+                                            <Link to="/add-event" className="btn-events-create btn-events-empty">Create Event</Link>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="events-table-wrap">
+                                    <table className="events-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Preview</th>
+                                                <th>Event Details</th>
+                                                <th>Date & Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentEvents.length > 0 ? currentEvents.map((elem, index) => (
+                                                <tr key={elem._id || index} onClick={() => setSelectedEvent(elem)}>
+                                                    <td><span className="events-table-num">{(indexOfFirstEvent + index + 1).toString().padStart(2, '0')}</span></td>
+                                                    <td>
+                                                        <img
+                                                            src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.event)}
+                                                            className="events-table-thumb"
+                                                            alt=""
+                                                            onError={getImageOnError(FALLBACK_IMAGES.event)}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <div className="events-table-title">{elem.title || 'Untitled'}</div>
+                                                        <div className="events-table-venue"><i className="fa fa-map-marker-alt"></i> {elem.venue || '-'}</div>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <div className="events-table-date">{formatDate(elem.date)}</div>
+                                                        {isUpcoming(elem.date) && <span className="events-badge-upcoming">Upcoming</span>}
+                                                    </td>
+                                                </tr>
+                                            )) : (
+                                                <tr><td colSpan="4" className="events-table-empty">No events found.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Pagination */}
+                        {displayEvents.length > 0 && (
+                            <div className="events-pagination">
+                                <p className="events-pagination-info">
+                                    Showing {indexOfFirstEvent + 1}–{Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length}
+                                </p>
+                                <div className="events-pagination-controls">
+                                    <select
+                                        className="events-rows-select"
+                                        value={eventsPerPage}
+                                        onChange={(e) => { setEventsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                                    >
+                                        {rows.map(v => <option key={v} value={v}>{v} per page</option>)}
+                                    </select>
+                                    <nav>
+                                        <button className="events-page-btn" disabled={currentPage === 1} onClick={() => paginate(currentPage - 1)}>
+                                            <i className="fa fa-chevron-left"></i>
+                                        </button>
+                                        {pageNumbers.slice(0, 5).map(num => (
+                                            <button
+                                                key={num}
+                                                className={`events-page-btn ${currentPage === num ? 'active' : ''}`}
+                                                onClick={() => paginate(num)}
+                                            >{num}</button>
+                                        ))}
+                                        {pageNumbers.length > 5 && <span className="events-page-dots">…</span>}
+                                        <button className="events-page-btn" disabled={currentPage === pageNumbers.length} onClick={() => paginate(currentPage + 1)}>
+                                            <i className="fa fa-chevron-right"></i>
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+                        )}
                         </div>
                     </div>
                 </div>
 
+                {/* Detail Modal */}
                 {selectedEvent && (
                     <div className="events-modal-backdrop" onClick={() => setSelectedEvent(null)}>
                         <div className="events-modal" onClick={e => e.stopPropagation()}>
@@ -335,7 +346,7 @@ const AlumniEvents = () => {
                                         {selectedEvent.description || 'No description provided.'}
                                     </div>
                                     <div className="events-modal-actions">
-                                        <button className="events-modal-btn primary" onClick={() => navigate('/alumni-edit-event', { state: { data: selectedEvent } })}>
+                                        <button className="events-modal-btn primary" onClick={() => navigate('/edit-event', { state: { data: selectedEvent } })}>
                                             <i className="fa fa-edit mr-2"></i> Edit Event
                                         </button>
                                         <button className="events-modal-btn danger" onClick={() => handleDeleteEvent(selectedEvent._id)}>
@@ -356,4 +367,4 @@ const AlumniEvents = () => {
     );
 };
 
-export default AlumniEvents;
+export default Events;
