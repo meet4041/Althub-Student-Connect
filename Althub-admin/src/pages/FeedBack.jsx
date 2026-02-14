@@ -1,184 +1,190 @@
+/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../service/axios';
+import { ALTHUB_API_URL } from './baseURL';
+import Loader from '../layouts/Loader.jsx';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
-// IMPORT UPDATED TABLE STYLES
+// Import CSS
 import '../styles/feedback.css';
 
-const FeedBack = () => {
-    const [feedback, setFeedBack] = useState([]);
-    const [displayFeedBack, setDisplayFeedBack] = useState([]);
+const Feedback = () => {
+    const [feedbacks, setFeedbacks] = useState([]);
+    const [displayFeedbacks, setDisplayFeedbacks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
     const [deleteId, setDeleteId] = useState('');
-    const [showDeletePrompt, setShowDeletePrompt] = useState(false);
-    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
+    const themeColor = '#2563EB';
 
-    useEffect(() => {
-        // KILL INFINITE LOADER IMMEDIATELY
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
-        getFeedBackData();
-    }, []);
-
-    const getFeedBackData = () => {
+    const fetchFeedbackData = () => {
         setLoading(true);
-        axiosInstance.get(`/api/getFeedback`).then((response) => {
-            if (response.data.success === true) {
-                setFeedBack(response.data.data);
-                setDisplayFeedBack(response.data.data);
+        axiosInstance.get(`${ALTHUB_API_URL}/api/getFeedback`, {
+        })
+        .then((response) => {
+            if (response.data.success) {
+                setFeedbacks(response.data.data || []);
             }
             setLoading(false);
-        }).catch(err => {
-            console.error("Error fetching feedback:", err);
-            setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        fetchFeedbackData();
+        const loader = document.getElementById('page-loader');
+        const container = document.getElementById("page-container");
+        if (loader) loader.style.display = 'none';
+        if (container) container.classList.add("show");
+    }, []);
+
+    useEffect(() => {
+        const filtered = feedbacks.filter(item => 
+            item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.selected_user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.message?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setDisplayFeedbacks(filtered);
+        setCurrentPage(1);
+    }, [searchTerm, feedbacks]);
+
+    const confirmDelete = () => {
+        axiosInstance.delete(`${ALTHUB_API_URL}/api/deleteFeedback/${deleteId}`, {
+        })
+        .then((response) => {
+            if (response.data.success) {
+                setShowAlert(false);
+                fetchFeedbackData();
+            }
         });
     };
 
-    const handleSearch = (e) => {
-        let search = e.target.value.toLowerCase();
-        setSearchTerm(search);
-        setDisplayFeedBack(feedback.filter(
-            (elem) =>
-                (elem.message && elem.message.toLowerCase().includes(search)) ||
-                (elem.name && elem.name.toLowerCase().includes(search)) ||
-                (elem.selected_user && elem.selected_user.toLowerCase().includes(search))
-        ));
-    }
-
-    const handleDeleteClick = (id) => {
-        setDeleteId(id);
-        setShowDeletePrompt(true);
-    }
-
-    const executeDeletion = () => {
-        axiosInstance.delete(`/api/deleteFeedback/${deleteId}`).then((response) => {
-            if (response.data.success === true) {
-                setShowDeletePrompt(false);
-                setShowSuccessAlert(true);
-                getFeedBackData();
-            }
-        }).catch(() => setShowDeletePrompt(false));
-    }
-
-    const renderStars = (rating) => {
-        const stars = [];
-        for (let i = 1; i <= 5; i++) {
-            stars.push(
-                <i key={i} className={`fa fa-star ${i <= rating ? 'text-star-active' : 'text-star-muted'}`}></i>
-            );
-        }
-        return stars;
-    };
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = displayFeedbacks.slice(indexOfFirstItem, indexOfLastItem);
+    const pageNumbers = Array.from({ length: Math.ceil(displayFeedbacks.length / itemsPerPage) }, (_, i) => i + 1);
 
     return (
         <Fragment>
+            <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content feedback-wrapper">
-
-                    {/* PREMIUM HEADER */}
-                    <div className="d-flex justify-content-between align-items-end mb-5">
-                        <div>
-                            <h1 className="page-header mb-1">Sentiment Registry</h1>
-                            <p className="text-muted small font-weight-bold mb-0">
-                                Global Oversight: <span className="text-primary">{feedback.length}</span> Verified User Reviews
-                            </p>
-                        </div>
-                        <div className="search-input-group-modern" style={{ minWidth: '350px', borderColor: '#2563eb' }}>
-                            <i className="fa fa-search"></i>
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Search message"
-                                value={searchTerm}
-                                onChange={handleSearch}
-                            />
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="text-center py-5">
-                            <i className="fa fa-circle-notch fa-spin fa-3x text-primary opacity-20"></i>
-                        </div>
-                    ) : (
-                        <div className="directory-container glass-effect">
-                            <div className="table-responsive">
-                                <table className="table althub-modern-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Identification</th>
-                                            <th>Sent To</th>
-                                            <th style={{ width: '40%' }}>Detailed Testimony</th>
-                                            <th>Rate</th>
-                                            <th className="text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {displayFeedBack.length > 0 ? displayFeedBack.map((item, index) => (
-                                            <tr key={item._id}>
-                                                <td>
-                                                    <div className="profile-identity">
-                                                        <span className="index-number">{index + 1}</span>
-                                                        <div className="feedback-avatar-sm">
-                                                            {item.name ? item.name.charAt(0).toUpperCase() : 'A'}
-                                                        </div>
-                                                        <div>
-                                                            <div className="profile-name-main">{item.name || 'Anonymous'}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span className="status-pill-modern pill-blue">
-                                                        <i className="fa fa-bullseye mr-2"></i>
-                                                        {item.selected_user || 'Ecosystem'}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <p className="feedback-table-text">"{item.message}"</p>
-                                                </td>
-                                                <td>
-                                                    <div className="feedback-stars">{renderStars(item.rate)}</div>
-                                                </td>
-                                                <td className="text-right">
-                                                    <button className="btn btn-light-danger btn-xs rounded-pill px-3" onClick={() => handleDeleteClick(item._id)}>
-                                                        <i className="fa fa-trash-alt mr-1"></i> Purge
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr>
-                                                <td colSpan="5" className="text-center py-5 text-muted font-weight-bold">
-                                                    No sentiment records found.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                <div id="content" className="content feedback-content-wrapper">
+                    <div className="feedback-container">
+                        
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
+                                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
+                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>User Feedback</li>
+                                    </ol>
+                                </nav>
+                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>Feedback Management</h1>
                             </div>
                         </div>
-                    )}
+
+                        <div className="feedback-scroll-area">
+                            <div className="card feedback-main-card">
+                                <div className="card-body p-0 bg-white">
+                                    
+                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                        <div className="input-group" style={{ maxWidth: '400px' }}>
+                                            <div className="input-group-prepend">
+                                                <span className="input-group-text bg-light border-0" style={{ borderRadius: '8px 0 0 8px' }}><i className="fa fa-search text-muted"></i></span>
+                                            </div>
+                                            <input type="text" className="form-control border-0 bg-light" style={{ borderRadius: '0 8px 8px 0', fontSize: '14px', height: '42px' }} placeholder="Search feedback or users..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                        </div>
+                                    </div>
+
+                                    <div className="table-responsive">
+                                        <table className="table table-hover mb-0">
+                                            <thead>
+                                                <tr style={{ backgroundColor: '#F8FAFC' }}>
+                                                    <th className="border-0 pl-4 py-3" style={{ width: '60px', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>#</th>
+                                                    <th className="border-0 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Sender</th>
+                                                    <th className="border-0 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Recipient</th>
+                                                    <th className="border-0 py-3" style={{ width: '35%', color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Message</th>
+                                                    <th className="border-0 py-3 text-center" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Score</th>
+                                                    <th className="border-0 text-right pr-5 py-3" style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase' }}>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {loading ? (
+                                                    <tr><td colSpan="6" className="text-center p-5"><div className="spinner-border text-primary"></div></td></tr>
+                                                ) : currentItems.length > 0 ? currentItems.map((item, index) => (
+                                                    <tr key={item._id} className="feedback-row">
+                                                        <td className="pl-4 align-middle"><span className="feedback-id-badge">{(indexOfFirstItem + index + 1).toString().padStart(2, '0')}</span></td>
+                                                        
+                                                        {/* FROM Column */}
+                                                        <td className="align-middle">
+                                                            <div className="font-weight-bold text-dark" style={{ fontSize: '14px' }}>{item.name || 'Anonymous'}</div>
+                                                        </td>
+
+                                                        {/* TO Column */}
+                                                        <td className="align-middle">
+                                                            <div className="text-primary font-weight-bold" style={{ fontSize: '14px' }}>{item.selected_user || 'General'}</div>
+                                                        </td>
+
+                                                        <td className="align-middle">
+                                                            <div className="message-box" title={item.message}>"{item.message}"</div>
+                                                        </td>
+
+                                                        {/* Numerical Rating Column */}
+                                                        <td className="align-middle text-center">
+                                                            <span style={{ 
+                                                                backgroundColor: item.rate >= 4 ? '#DCFCE7' : item.rate >= 3 ? '#FEF9C3' : '#FEE2E2', 
+                                                                color: item.rate >= 4 ? '#166534' : item.rate >= 3 ? '#854D0E' : '#991B1B',
+                                                                padding: '4px 12px',
+                                                                borderRadius: '20px',
+                                                                fontWeight: '800',
+                                                                fontSize: '13px'
+                                                            }}>
+                                                                {item.rate}<small className="ml-1 opacity-50">/ 5</small>
+                                                            </span>
+                                                        </td>
+
+                                                        <td className="align-middle text-right pr-5">
+                                                            <button className="btn btn-light btn-sm border" style={{ borderRadius: '6px' }} onClick={() => { setDeleteId(item._id); setShowAlert(true); }}>
+                                                                <i className="fa fa-trash-alt text-danger"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                )) : (
+                                                    <tr><td colSpan="6" className="text-center p-5 text-muted">No feedback records found.</td></tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
+                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, displayFeedbacks.length)}</p>
+                                        <nav>
+                                            <ul className="pagination mb-0">
+                                                {pageNumbers.map(num => (
+                                                    <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
+                                                        <button className="page-link border-0 mx-1" onClick={() => setCurrentPage(num)} style={currentPage === num ? { backgroundColor: themeColor, color: '#fff', borderRadius: '6px' } : { backgroundColor: '#F8FAFC', color: themeColor, borderRadius: '6px' }}>{num}</button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <SweetAlert warning show={showDeletePrompt} showCancel confirmBtnText="Confirm Removal" confirmBtnBsStyle="danger" title="Purge Feedback?" onConfirm={executeDeletion} onCancel={() => setShowDeletePrompt(false)}>
-                    This record will be permanently removed from the system registry.
-                </SweetAlert>
-
-                <SweetAlert success show={showSuccessAlert} title="Purged Successfully" onConfirm={() => setShowSuccessAlert(false)}>
-                    The sentiment record has been removed.
-                </SweetAlert>
-
+                <SweetAlert warning show={showAlert} showCancel confirmBtnText="Confirm" confirmBtnBsStyle="danger" cancelBtnBsStyle="light" title="Delete Review?" onConfirm={confirmDelete} onCancel={() => setShowAlert(false)} style={{ borderRadius: '16px' }} />
                 <Footer />
             </div>
         </Fragment>
-    )
-}
+    );
+};
 
-export default FeedBack;
+export default Feedback;

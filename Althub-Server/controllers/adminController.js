@@ -4,6 +4,7 @@ import Education from "../models/educationModel.js";
 import Institute from "../models/instituteModel.js";
 import config from "../config/config.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import nodemailer from "nodemailer";
 import randomstring from "randomstring";
 import bcryptjs from "bcryptjs";
@@ -267,13 +268,20 @@ export const adminLogin = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000
         });
 
+        const csrfToken = crypto.randomBytes(32).toString('hex');
+        res.cookie('csrf_token', csrfToken, {
+            httpOnly: false,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            maxAge: 24 * 60 * 60 * 1000
+        });
+
         const { password: _, tokenVersion: __, ...data } = adminData._doc;
 
         return res.status(200).send({
             success: true,
             msg: "Login Successful",
-            data: { ...data },
-            token: token
+            data: { ...data }
         });
 
     } catch (error) {
@@ -362,9 +370,11 @@ export const forgetPassword = async (req, res) => {
         const { email } = req.body;
         const adminData = await Admin.findOne({ email });
         if (adminData) {
-            const randomString = randomstring.generate();
-            await Admin.updateOne({ email }, { $set: { token: randomString } });
-            sendresetpasswordMail(adminData.name, adminData.email, randomString);
+            const resetToken = randomstring.generate();
+            const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+            const tokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+            await Admin.updateOne({ email }, { $set: { token: hashedToken, tokenExpires } });
+            sendresetpasswordMail(adminData.name, adminData.email, resetToken);
             res.status(200).send({ success: true, msg: "Please check your email" });
         } else {
             res.status(404).send({ success: false, msg: "Email does not exist" });
@@ -377,14 +387,16 @@ export const forgetPassword = async (req, res) => {
 export const resetpassword = async (req, res) => {
     try {
         const token = req.query.token;
-        const tokenData = await Admin.findOne({ token: token });
+        if (!token) return res.status(400).send({ success: false, msg: "Token missing" });
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const tokenData = await Admin.findOne({ token: hashedToken, tokenExpires: { $gt: new Date() } });
         if (tokenData) {
             if (!validatePassword(req.body.password)) {
                 return res.status(400).send({ success: false, msg: "Password is too weak." });
             }
             const hashedPassword = await bcryptjs.hash(req.body.password, 10);
             await Admin.findByIdAndUpdate(tokenData._id, {
-                $set: { password: hashedPassword, token: '' },
+                $set: { password: hashedPassword, token: '', tokenExpires: null },
                 $inc: { tokenVersion: 1 }
             });
             res.status(200).send({ success: true, msg: "Password reset successfully" });
@@ -403,7 +415,7 @@ export const updateAdmin = async (req, res) => {
             return res.status(400).send({ success: false, msg: "No data provided" });
         }
         const updateData = {};
-        const fieldsToUpdate = ['name', 'phone', 'email'];
+        const fieldsToUpdate = ['name', 'phone', 'email', 'profilepic'];
         fieldsToUpdate.forEach(field => {
             if (req.body[field]) updateData[field] = req.body[field];
         });
@@ -420,7 +432,9 @@ export const updateAdmin = async (req, res) => {
 
 export const adminLogout = async (req, res) => {
     try {
-        res.clearCookie("jwt_token");
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.clearCookie("jwt_token", { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax' });
+        res.clearCookie("csrf_token", { httpOnly: false, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax' });
         res.status(200).send({ success: true, msg: "Logged Out" });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });

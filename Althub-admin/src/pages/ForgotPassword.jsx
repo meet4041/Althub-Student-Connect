@@ -1,12 +1,14 @@
+/* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
-import { ALTHUB_API_URL } from '../config/baseURL';
-import axios from 'axios';
+import { ALTHUB_API_URL } from './baseURL';
+import axiosInstance from '../service/axios';
 
-// SHARED LOGIN STYLES
-import '../styles/login.css';
+// COMPANY STANDARD: Import external CSS files
+import '../styles/login.css';    // Reusing the shared split-screen layout
+import '../styles/password.css'; // Importing page-specific styles
 
 function ForgotPassword() {
     const navigate = useNavigate();
@@ -14,121 +16,98 @@ function ForgotPassword() {
     const [err, setErr] = useState('');
     const [disable, setDisable] = useState(false);
 
-    const InputEvent = (e) => {
-        setEmail(e.target.value);
-        if (err) setErr("");
-    }
+    const InputEvent = (e) => setEmail(e.target.value);
 
     const validate = () => {
-        let isValid = true;
-        if (!email) {
-            isValid = false;
-            setErr("Registered Email is required");
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-            isValid = false;
-            setErr("Please enter a valid administrative email");
+        if (!email) { 
+            setErr("Please Enter Email Address"); 
+            return false; 
         }
-        return isValid;
+        setErr(""); 
+        return true;
     }
 
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            const myurl = `${ALTHUB_API_URL}/api/forgetpassword`;
-            axios({
-                method: "post",
-                url: myurl,
-                data: { email: email },
-            }).then((response) => {
-                if (response.data.success === true) {
+            axiosInstance.post(`${ALTHUB_API_URL}/api/instituteForgetPassword`, { email })
+                .then((response) => {
+                    if (response.data.success) {
+                        toast.success(response.data.msg || "Reset link sent!");
+                        setTimeout(() => navigate('/'), 2000);
+                    }
+                }).catch((error) => {
                     setDisable(false);
-                    toast.success("Recovery instructions sent to your email");
-                    setTimeout(() => {
-                        navigate('/');
-                    }, 2500);
-                }
-            }).catch((error) => {
-                setDisable(false);
-                toast.error(error.response?.data?.msg || "Recovery attempt failed");
-            })
+                    toast.error(error.response?.data?.message || "Something went wrong");
+                })
         }
     }
 
-    useEffect(() => {
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-    }, []);
-
     return (
         <Fragment>
-            <ToastContainer autoClose={2500} hideProgressBar theme="colored" />
+            <ToastContainer theme="colored" position="top-right" />
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
-                    
-                    {/* LEFT SIDE: SHARED BRAND VISUALS */}
+
+                    {/* LEFT SIDE: BRAND VISUALS */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
-                            <div className="glass-logo-box">
-                                <img src='Logo1.png' alt="Althub Logo" style={{ height: '60px', borderRadius: '8px' }} />
+                            <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '14px', display: 'inline-block', marginBottom: '25px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
                             </div>
-                            <h1 className="title-text">Secure <br /> <span className="text-highlight">Recovery.</span></h1>
-                            <p className="subtitle-text">Administrative account recovery protocol. Enter your registered email to receive a secure reset link.</p>
+                            <h1 className="title-text">Althub <span className="text-highlight">Institute</span></h1>
+                            <p className="subtitle-text">Empowering the next generation of educators with advanced analytics and seamless management.</p>
                             <div className="feature-badges mt-5">
-                                <span className="badge-pill-custom"><i className="fa fa-envelope-open mr-2"></i> Verified Dispatch</span>
-                                <span className="badge-pill-custom"><i className="fa fa-key mr-2"></i> Access Rotation</span>
+                                <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure SSL</span>
+                                <span className="badge-pill-custom"><i className="fa fa-check-circle mr-2"></i> Admin Verified</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* RIGHT SIDE: RECOVERY FORM */}
+                    {/* RIGHT SIDE: FORGOT PASSWORD FORM */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
-                            <div className="form-heading mb-5">
-                                <h2 className="font-weight-bold text-navy">Recover Password</h2>
-                                <p className="text-muted small">Authentication credentials lost? Initiate recovery below.</p>
+                            {/* Mobile Logo View */}
+                            <div className="mobile-header d-lg-none text-center mb-4">
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
+                                <h3 className="font-weight-bold text-navy">Althub Admin</h3>
+                            </div>
+
+                            <div className="form-heading mb-4">
+                                <h2 className="font-weight-bold text-navy">Forgot Password?</h2>
+                                <p className="text-muted">Enter the email associated with your account</p>
                             </div>
 
                             <form onSubmit={submitHandler}>
                                 <div className="modern-form-group">
-                                    <label className="label-modern">Administrative Email</label>
-                                    <div className="input-wrapper-modern">
+                                    <label className="label-modern">Registered Email</label>
+                                    <div className={`input-wrapper-modern ${err ? 'error-border' : ''}`}>
+                                        <i className="fa fa-envelope-open icon-left"></i>
                                         <input 
                                             type="email" 
-                                            name="email" 
-                                            placeholder="admin@althub.com" 
+                                            placeholder="your@institute.com" 
                                             value={email} 
                                             onChange={InputEvent} 
                                         />
                                     </div>
-                                    {err && <small className="text-danger font-weight-bold" style={{fontSize: '11px'}}>{err}</small>}
+                                    {err && <div className="error-msg-modern">{err}</div>}
                                 </div>
 
-                                <button type="submit" className="btn-modern-submit mt-3" disabled={disable}>
-                                    {disable ? (
-                                        <span><i className="fa fa-spinner fa-spin mr-2"></i> DISPATCHING...</span>
-                                    ) : (
-                                        <>SEND RESET LINK <i className="fa fa-paper-plane ml-2"></i></>
-                                    )}
+                                <button type="submit" className="btn-modern-submit" disabled={disable}>
+                                    {disable ? 'PROCESSING...' : 'SEND RESET LINK'}
                                 </button>
+
+                                <div className="text-center mt-3">
+                                    <p className="text-muted">
+                                        Remember credentials? 
+                                        <Link to="/" className="back-to-login-link ml-1">
+                                            Back to Login
+                                        </Link>
+                                    </p>
+                                </div>
                             </form>
-
-                            <div className="text-center mt-5">
-                                <p className="mb-0 text-muted small font-weight-bold">
-                                    RECALLED YOUR CREDENTIALS?{' '}
-                                    <Link to='/' className="text-primary text-decoration-none">
-                                        <b>SIGN IN</b>
-                                    </Link>
-                                </p>
-                            </div>
-
-                            <div className="mt-5 pt-5 text-center opacity-50">
-                                <p className="small font-weight-bold text-uppercase letter-spacing-1">
-                                    Protected by Althub Security Protocol
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>

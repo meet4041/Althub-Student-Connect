@@ -43,15 +43,21 @@ const addPost = async (req, res) => {
         // Limit description length
         const description = typeof req.body.description === 'string' ? req.body.description.slice(0, 5000) : '';
 
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && req.body.userid && requesterId !== req.body.userid.toString()) {
+            return res.status(403).send({ success: false, msg: 'Unauthorized: userid mismatch' });
+        }
+
         const post = new Post({
-            userid: req.body.userid,
+            userid: req.body.userid || requesterId,
             fname: req.body.fname,
             lname: req.body.lname,
             companyname: req.body.companyname,
             profilepic: req.body.profilepic,
             description: description,
             date: req.body.date || new Date(),
-            photos: photos
+            photos: photos,
+            createdByRole: req.user?.role || "institute"
         });
 
         // FIXED: Changed 'newPost.save()' to 'post.save()'
@@ -96,6 +102,11 @@ const editPost = async (req, res) => {
         const post = await Post.findById(id);
         if (!post) {
             return res.status(404).send({ success: false, msg: "Post not found" });
+        }
+        const ownerId = (post.userid || post.senderid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            return res.status(403).send({ success: false, msg: "Forbidden: cannot edit this post" });
         }
 
         let newPhotoUrls = [];
@@ -143,6 +154,13 @@ const getPosts = async (req, res) => {
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
+        const post = await Post.findById(id).lean();
+        if (!post) return res.status(404).send({ success: false, msg: "Post not found" });
+        const ownerId = (post.userid || post.senderid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            return res.status(403).send({ success: false, msg: "Forbidden: cannot delete this post" });
+        }
         await Post.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'Post Deleted successfully' });
     } catch (error) {

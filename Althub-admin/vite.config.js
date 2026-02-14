@@ -8,12 +8,6 @@ export default defineConfig({
     open: true,
   },
   build: {
-    outDir: 'build', // Keeps the output folder name consistent with CRA
-  },
-
-  esbuild: {
-    loader: "jsx",
-    include: /src\/.*\.[jt]sx?$/, // This matches .js, .jsx, .ts, and .tsx
-    exclude: [],
+    outDir: 'build', // Keeps the output folder name same as CRA
   },
 });

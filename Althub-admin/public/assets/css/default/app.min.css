@@ -34263,16 +34263,12 @@ hr {
 }
 
 .login.login-v2 {
-    width: 450px;
+    width: 400px;
     position: absolute;
-    top: 4rem;
-    bottom: 4rem;
+    top: 0;
+    bottom: 0;
     margin: 0 0 0 -200px;
     left: 50%;
-    background: rgba(108, 108, 108, 0.26); 
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-radius: 18px;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -34284,7 +34280,7 @@ hr {
     -ms-flex-pack: center;
     justify-content: center;
     -webkit-border-radius: 4px;
-    border-radius: 25px
+    border-radius: 4px
 }
 
 @media (max-width:575.98px) {
@@ -34298,10 +34294,9 @@ hr {
     }
 }
 
-.login.login-v2 a small{
-    color: #000000;
+.login.login-v2 a {
+    color: #fff
 }
-
 
 .login.login-v2 label {
     color: rgba(255, 255, 255, .6)
@@ -34351,7 +34346,7 @@ hr {
 .login.login-v2 .login-header .brand small {
     font-size: 14px;
     display: block;
-    color: white;
+    color: rgba(255, 255, 255, .6)
 }
 
 @media (max-width:575.98px) {
@@ -34385,7 +34380,7 @@ hr {
 
 .login.login-v2 .login-content {
     padding: 20px;
-    color: white;
+    color: #9ba8b4
 }
 
 .login.login-v2 .login-content .form-control {

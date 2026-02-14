@@ -1,0 +1,174 @@
+/* admin/src/jsx/styles/menu.css */
+
+/* --- MODERN HEADER (GLASSMORPHISM) --- */
+.admin-header {
+    background: var(--althub-glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--althub-shadow-sm);
+}
+
+.admin-logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none !important;
+    gap: 15px;
+}
+
+.admin-logo-img {
+    height: 45px;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.admin-logo-link:hover .admin-logo-img {
+    transform: rotate(-5deg) scale(1.05);
+}
+
+.admin-brand-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--althub-blue-deep);
+    letter-spacing: -0.8px;
+}
+
+/* --- USER DROPDOWN --- */
+.user-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--althub-white);
+    border: 1px solid var(--althub-border);
+    padding: 8px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.user-dropdown-btn:hover {
+    border-color: var(--althub-blue-primary);
+    background: var(--althub-blue-light);
+}
+
+.user-name-label {
+    font-weight: 700;
+    color: var(--althub-blue-deep);
+    font-size: 0.9rem;
+}
+
+/* --- FLOATING SIDEBAR --- */
+.admin-sidebar {
+    width: 280px;
+    background: linear-gradient(165deg, var(--althub-blue-primary) 0%, var(--althub-blue-deep) 100%);
+    position: fixed;
+    top: 90px; /* Space from top */
+    bottom: 20px; /* Space from bottom */
+    left: 20px; /* Space from left */
+    z-index: 1040;
+    border-radius: 24px; /* Fully rounded floating card */
+    padding-top: 30px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 15px 0 40px rgba(37, 99, 235, 0.15);
+}
+
+.sidebar-profile {
+    padding: 0 30px 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 25px;
+}
+
+.profile-name {
+    color: var(--althub-white);
+    font-weight: 700;
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.profile-role {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.nav-header-text {
+    padding: 10px 30px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* --- NAV LINKS --- */
+.admin-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-nav-item {
+    padding: 4px 20px;
+}
+
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 18px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none !important;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.admin-nav-link i {
+    width: 22px;
+    text-align: center;
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.admin-nav-link:hover {
+    color: var(--althub-white);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-nav-link:hover i {
+    transform: translateX(3px);
+}
+
+/* THE "POPPING" ACTIVE STATE */
+.admin-nav-link.active {
+    background: var(--althub-white);
+    color: var(--althub-blue-primary) !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.admin-nav-link.active i {
+    color: var(--althub-blue-primary);
+}
+
+/* Adjust main content to respect floating sidebar */
+#content {
+    margin-left: 320px !important;
+    padding-top: 100px !important;
+    transition: all 0.3s ease;
+}

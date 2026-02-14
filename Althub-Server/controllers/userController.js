@@ -211,6 +211,14 @@ export const userlogin = async (req, res) => {
                     path: '/api'
                 });
 
+                const csrfToken = crypto.randomBytes(32).toString('hex');
+                res.cookie('csrf_token', csrfToken, {
+                    httpOnly: false,
+                    secure: isProduction,
+                    sameSite: isProduction ? 'None' : 'Lax',
+                    maxAge: 24 * 60 * 60 * 1000
+                });
+
                 const userResult = {
                     _id: userData._id,
                     fname: userData.fname,

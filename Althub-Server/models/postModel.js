@@ -27,6 +27,10 @@ const post = new mongoose.Schema({
     photos: {
         type: Array
     },
+    createdByRole: {
+        type: String,
+        default: "institute"
+    },
     likes: {
         type: Array,
         default: []

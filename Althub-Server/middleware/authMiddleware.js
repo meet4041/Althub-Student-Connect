@@ -45,10 +45,12 @@ const verifyUser = async (token) => {
 // Does NOT allow token in URL query params (Secure)
 export const requireAuth = async (req, res, next) => {
     try {
-        const token = 
-            (req.headers["authorization"] && req.headers["authorization"].split(" ")[1]) || 
-            req.cookies.institute_token || 
-            req.cookies.admin_token || 
+        const headerToken = req.headers["authorization"] && req.headers["authorization"].split(" ")[1];
+        const normalizedHeaderToken = headerToken && headerToken !== "null" && headerToken !== "undefined" ? headerToken : null;
+        const token =
+            normalizedHeaderToken ||
+            req.cookies.institute_token ||
+            req.cookies.admin_token ||
             req.cookies.jwt_token;
 
         if (!token) {
@@ -66,6 +68,20 @@ export const requireAuth = async (req, res, next) => {
     } catch (error) {
         return res.status(401).json({ success: false, msg: "Authentication Error" });
     }
+};
+
+// --- 3. ROLE-BASED AUTHORIZATION ---
+// Usage: requireRole('admin') or requireRole('institute', 'alumni_office')
+export const requireRole = (...allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user || !req.user.role) {
+            return res.status(401).json({ success: false, msg: "Access Denied. No role found." });
+        }
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ success: false, msg: "Forbidden. Insufficient role." });
+        }
+        next();
+    };
 };
 
 // --- 2. IMAGE AUTH (For <img> tags) ---

@@ -1,4 +1,4 @@
-/* admin/src/jsx/styles/login.css */
+/* src/styles/login.css */
 
 .auth-main-wrapper {
     min-height: 100vh;
@@ -11,15 +11,16 @@
     width: 100%;
 }
 
-/* LEFT SIDE: BRAND VISUALS (Matching Institute) */
+/* --- UPDATED LEFT SIDE STYLES --- */
 .auth-visual-side {
     width: 50%;
+    /* Updated Gradient for a fresher look */
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 60px;
+    padding: 48px;
     color: white;
     overflow: hidden;
 }
@@ -38,31 +39,42 @@
     max-width: 520px;
 }
 
+/* Glass effect for logo container */
 .glass-logo-box {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
     padding: 15px;
     border-radius: 16px;
     display: inline-block;
-    margin-bottom: 35px;
+    margin-bottom: 28px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
 }
 
 .title-text {
-    font-size: 3.8rem;
+    font-size: 3.2rem;
     font-weight: 800;
-    margin-bottom: 25px;
+    margin-bottom: 18px;
     line-height: 1.1;
+    letter-spacing: -1px;
 }
 
 .text-highlight {
-    color: #38bdf8;
+    color: #38bdf8; /* Lighter blue for better contrast on dark bg */
+    position: relative;
 }
 
 .subtitle-text {
-    font-size: 1.15rem;
-    color: #cbd5e1;
+    font-size: 1.05rem;
+    color: #cbd5e1; /* Slate-300 */
     line-height: 1.6;
+    max-width: 90%;
+}
+
+.feature-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .badge-pill-custom {
@@ -70,21 +82,29 @@
     padding: 10px 20px;
     border-radius: 50px;
     font-size: 0.9rem;
-    margin-right: 10px;
+    font-weight: 500;
     backdrop-filter: blur(4px);
     display: inline-flex;
     align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
 }
 
-/* RIGHT SIDE: FORM */
+.badge-pill-custom:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+/* ------------------------------- */
+
+
+/* RIGHT SIDE: FORM (UNCHANGED) */
 .auth-form-side {
     width: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 40px;
+    padding: 32px;
 }
 
 .form-card-inner {
@@ -92,12 +112,17 @@
     max-width: 420px;
 }
 
+.form-heading {
+    margin-bottom: 24px !important;
+}
+
 .text-navy {
     color: #0f172a;
 }
 
+/* FORM FIELDS */
 .modern-form-group {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .label-modern {
@@ -121,64 +146,143 @@
 .input-wrapper-modern:focus-within {
     border-color: #0f172a;
     background: white;
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05);
 }
 
 .input-wrapper-modern input {
-    margin-left: -10px;
     border: none;
     background: transparent;
     width: 100%;
     outline: none;
-    padding: 14px 0 14px 12px;
+    font-size: 1rem;
+    padding: 12px 0 12px 12px;
+    color: #0f172a;
 }
 
 .icon-left {
     color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.error-border {
+    border-color: #ef4444 !important;
+}
+
+.error-msg-modern {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* CUSTOM CHECKBOX */
+.custom-checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.custom-checkbox-container input {
+    display: none;
+}
+
+.checkmark-box {
+    height: 18px;
+    width: 18px;
+    background-color: white;
+    border-radius: 4px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid #cbd5e1;
+}
+
+.custom-checkbox-container input:checked + .checkmark-box {
+    background-color: #0f172a;
+    border-color: #0f172a;
+}
+
+.checkmark-box:after {
+    content: "";
+    display: none;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.custom-checkbox-container input:checked + .checkmark-box:after {
+    display: block;
 }
 
 /* BUTTON */
 .btn-modern-submit {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     border-radius: 12px;
     border: none;
     background: #0f172a;
     color: white;
     font-weight: 600;
+    letter-spacing: 0.5px;
     transition: 0.3s;
+    margin-top: 10px;
+    font-size: 0.95rem;
 }
 
 .btn-modern-submit:hover {
     background: #1e293b;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
+.btn-modern-submit:disabled {
+    background: #94a3b8;
+    transform: none;
+    box-shadow: none;
+}
+
+/* RESPONSIVE */
 @media (max-width: 991px) {
     .auth-visual-side { display: none !important; }
-    .auth-form-side { width: 100%; }
+    .auth-form-side { width: 100%; padding: 20px; }
 }
 
-/* admin/src/jsx/styles/login.css Additions */
-
-.letter-spacing-1 {
-    letter-spacing: 1px;
+/* Registration link section */
+.signup-redirect-wrapper {
+    margin-top: 24px;
+    padding-top: 16px;
+    text-align: center;
+    border-top: 1px solid #f1f5f9;
 }
 
-.auth-form-side .form-card-inner .text-muted.small {
-    line-height: 1.5;
+.signup-text {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
-/* Ensure the input matches the login styling exactly */
-.input-wrapper-modern input::placeholder {
-    color: #94a3b8;
-    opacity: 0.6;
+.btn-signup-link {
+    background: none;
+    border: none;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    padding: 5px 10px;
 }
 
-.btn-modern-submit i.fa-paper-plane {
-    font-size: 0.8rem;
-    transition: transform 0.3s;
-}
-
-.btn-modern-submit:hover i.fa-paper-plane {
-    transform: translateX(3px) translateY(-3px);
+.btn-signup-link:hover {
+    color: #3b82f6;
+    text-decoration: underline;
 }

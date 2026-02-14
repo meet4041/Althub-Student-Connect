@@ -60,7 +60,7 @@
 ```mermaid
 graph TB
     A[Althub-Main<br/>Student/Alumni Portal] --> D[Althub-Server<br/>Backend API]
-    B[Althub-Admin<br/>Super Admin Panel] --> D
-    C[Althub-Institute<br/>Institute Management] --> D
+    B[Althub-super-admin<br/>Super Admin Panel] --> D
+    C[Althub-Admin<br/>Institute Management] --> D
     D --> E[(MongoDB Database)]
     D --> F[(Socket.IO WebSockets)]

@@ -10,6 +10,7 @@ const instituteSchema = new mongoose.Schema({
     image: { type: String },
     active: { type: Boolean, default: false },
     token: { type: String, default: '' },
+    tokenExpires: { type: Date, default: null },
     
     // Fixed role for this table
     role: { type: String, default: 'institute' },

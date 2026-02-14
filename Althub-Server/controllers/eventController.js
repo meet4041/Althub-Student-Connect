@@ -9,6 +9,10 @@ import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 const addEvents = async (req, res) => {
     try {
         await connectToMongo();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && req.body.organizerid && requesterId !== req.body.organizerid.toString()) {
+            return res.status(403).send({ success: false, msg: 'Unauthorized: organizer mismatch' });
+        }
         let photoIds = [];
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
@@ -18,12 +22,13 @@ const addEvents = async (req, res) => {
             }
         }
         const event = new Event({
-            organizerid: req.body.organizerid,
+            organizerid: req.body.organizerid || requesterId,
             title: req.body.title,
             description: req.body.description,
             date: req.body.date,
             venue: req.body.venue,
-            photos: photoIds
+            photos: photoIds,
+            createdByRole: req.user?.role || "institute"
         });
         const event_data = await event.save();
         
@@ -66,9 +71,17 @@ const getEventsByInstitute = async (req, res) => {
     }
 }
 
+
 const deleteEvent = async (req, res) => {
     try {
         const id = req.params.id;
+        const event = await Event.findById(id).lean();
+        if (!event) return res.status(404).send({ success: false, msg: 'Event not found' });
+        const ownerId = (event.organizerid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            return res.status(403).send({ success: false, msg: 'Forbidden: cannot delete this event' });
+        }
         await Event.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'Event Deleted successfully' });
     } catch (error) {
@@ -87,6 +100,11 @@ const editEvent = async (req, res) => {
         const existingEvent = await Event.findById(id);
         if (!existingEvent) {
             return res.status(404).send({ success: false, msg: 'Event not found' });
+        }
+        const ownerId = (existingEvent.organizerid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            return res.status(403).send({ success: false, msg: 'Forbidden: cannot edit this event' });
         }
 
         // 2. Handle New File Uploads

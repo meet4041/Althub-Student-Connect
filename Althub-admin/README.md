@@ -1,25 +1,26 @@
-# 🎓 Althub Student Connect - Admin Portal
+# 🎓 Althub Student Connect - Institute Portal
 
-**For the Super Admin Panel**
+**For the Institute Management Dashboard**
 
 ```markdown
-# 🛡️ Althub Student Connect - Admin Panel
+# 🏫 Althub Student Connect - Institute Dashboard
 
-The **Super Admin Panel** is a restricted-access dashboard designed for platform administrators. It allows for the high-level management of the entire Althub ecosystem.
+The **Institute Dashboard** empowers educational institutions to manage their presence on the Althub platform. It serves as the command center for college registrars and faculty admins.
 
 ## ✨ Features
 
-* **Dashboard Analytics:** Overview of total users, active institutes, and platform engagement.
-* **User Management:** Ability to view, verify, or ban user accounts (Students/Alumni).
-* **Institute Management:** Add, edit, or remove participating educational institutions.
-* **Content Moderation:** Monitor posts and feedback to ensure community guidelines.
+* **Student Verification:** Approve or reject student registration requests linked to the institute.
+* **Course Management:** Add, update, or delete academic courses offered.
+* **Event Hosting:** Create and manage official college events and webinars.
+* **Alumni Tracking:** Monitor the growth and placement of the institute's alumni network.
+* **Notices:** Post official updates visible to all students of the institute.
 
 ## 🛠️ Tech Stack
 
 * **Framework:** React.js (v17)
-* **UI Framework:** Material UI, Bootstrap
-* **Charts:** ApexCharts, Chart.js (for analytics)
-* **Data Tables:** DataTables.net integration for managing large datasets.
+* **UI Components:** Material UI, Custom Bootstrap Theme
+* **Maps:** React Google Maps / Vector Maps for location features.
+* **Forms:** Form wizards and validation tools.
 
 ## 🚀 Getting Started
 
@@ -27,20 +28,18 @@ The **Super Admin Panel** is a restricted-access dashboard designed for platform
 
 1.  **Navigate to the directory:**
     ```bash
-    cd Althub-admin
+    cd Althub-Admin
     ```
 
 2.  **Install dependencies:**
     ```bash
     npm install
     ```
-    *Note: If you encounter legacy peer dependency issues, try `npm install --legacy-peer-deps`.*
 
 3.  **Start the Dashboard:**
     ```bash
     npm start
     ```
-    The admin panel usually runs on `http://localhost:3001` or `3002` (React will prompt to switch ports if 3000 is busy).
 
 ### 🧪 Running Tests
 

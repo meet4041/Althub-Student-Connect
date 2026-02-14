@@ -5,6 +5,7 @@ import User from "../models/userModel.js";
 import bcryptjs from "bcryptjs";
 import config from "../config/config.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import nodemailer from "nodemailer";
 import randomstring from "randomstring";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
@@ -58,10 +59,12 @@ const sendInvitationMail = async (name, email, tempPass) => {
     } catch (error) { console.error("Invitation Mail Error:", error.message); }
 }
 
-const sendAlumniInviteMail = async (instituteName, email, tempPass) => {
+const sendCsvInviteMail = async ({ instituteName, email, tempPass, role }) => {
     try {
         const baseUrl = (config.clientUrl || "http://localhost:3000").replace(/\/$/, "");
         const loginUrl = `${baseUrl}/login`;
+        const isAlumni = role === 'alumni';
+        const roleLabel = isAlumni ? 'Alumni' : 'Student';
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
@@ -71,10 +74,10 @@ const sendAlumniInviteMail = async (instituteName, email, tempPass) => {
         const mailoptions = {
             from: config.emailUser,
             to: email,
-            subject: `Your ${instituteName} Alumni Account is Ready`,
+            subject: `Your ${instituteName} ${roleLabel} Account is Ready`,
             html: `
                 <p>Hello,</p>
-                <p>Your alumni account for <b>${instituteName}</b> has been created.</p>
+                <p>Your ${roleLabel.toLowerCase()} account for <b>${instituteName}</b> has been created.</p>
                 <p><b>Email:</b> ${email}<br/>
                 <b>Temporary Password:</b> ${tempPass}</p>
                 <p>Please login here: <a href="${loginUrl}">${loginUrl}</a></p>
@@ -82,7 +85,7 @@ const sendAlumniInviteMail = async (instituteName, email, tempPass) => {
             `
         };
         await transporter.sendMail(mailoptions);
-    } catch (error) { console.error("Alumni Invite Mail Error:", error.message); }
+    } catch (error) { console.error("CSV Invite Mail Error:", error.message); }
 };
 
 const parseCsvEmails = (buffer) => {
@@ -179,8 +182,11 @@ const instituteLogin = async (req, res) => {
                 if (user.parent_institute_id) tokenPayload.parent_institute_id = user.parent_institute_id;
 
                 const token = jwt.sign(tokenPayload, config.secret_jwt, { expiresIn: '24h' });
-                res.cookie('institute_token', token, { httpOnly: true, secure: true, sameSite: 'none' });
-                res.status(200).send({ success: true, msg: "Login Successful", data: user, token });
+                const isProduction = process.env.NODE_ENV === 'production';
+                res.cookie('institute_token', token, { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', maxAge: 24 * 60 * 60 * 1000 });
+                const csrfToken = crypto.randomBytes(32).toString('hex');
+                res.cookie('csrf_token', csrfToken, { httpOnly: false, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', maxAge: 24 * 60 * 60 * 1000 });
+                res.status(200).send({ success: true, msg: "Login Successful", data: user });
             } else { res.status(401).send({ success: false, msg: "Invalid credentials" }); }
         } else { res.status(404).send({ success: false, msg: "Account not found" }); }
     } catch (error) { res.status(500).send({ success: false, msg: "Internal Server Error" }); }
@@ -235,7 +241,9 @@ const instituteUpdatePassword = async (req, res) => {
                 // Update using the identified Model
                 await Model.findByIdAndUpdate(institute_id, { $set: { password: hashedPassword, token: '' }, $inc: { tokenVersion: 1 } });
                 
-                res.clearCookie("institute_token", { httpOnly: true, secure: true, sameSite: "none" });
+                const isProduction = process.env.NODE_ENV === 'production';
+                res.clearCookie("institute_token", { httpOnly: true, secure: isProduction, sameSite: isProduction ? "None" : "Lax" });
+                res.clearCookie("csrf_token", { httpOnly: false, secure: isProduction, sameSite: isProduction ? "None" : "Lax" });
                 return res.status(200).send({ success: true, msg: "Password updated." });
             }
             return res.status(400).send({ success: false, msg: "Old password incorrect" });
@@ -255,9 +263,11 @@ const instituteForgetPassword = async (req, res) => {
         if (!instData) { instData = await PlacementCell.findOne({ email }); Model = PlacementCell; }
 
         if (instData) {
-            const randomString = randomstring.generate();
-            await Model.updateOne({ email }, { $set: { token: randomString } });
-            sendresetpasswordMail(instData.name, instData.email, randomString);
+            const resetToken = randomstring.generate();
+            const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+            const tokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+            await Model.updateOne({ email }, { $set: { token: hashedToken, tokenExpires } });
+            sendresetpasswordMail(instData.name, instData.email, resetToken);
             res.status(200).send({ success: true, msg: "Please check your email" });
         } else { res.status(404).send({ success: false, msg: "Email does not exist" }); }
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
@@ -266,21 +276,34 @@ const instituteForgetPassword = async (req, res) => {
 const instituteResetPassword = async (req, res) => {
     try {
         const token = req.query.token;
+        if (!token) return res.status(400).send({ success: false, msg: "Token missing" });
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
         // Check all tables for the token
-        let tokenData = await Institute.findOne({ token: token });
+        let tokenData = await Institute.findOne({ token: hashedToken, tokenExpires: { $gt: new Date() } });
         let Model = Institute;
 
-        if (!tokenData) { tokenData = await AlumniOffice.findOne({ token: token }); Model = AlumniOffice; }
-        if (!tokenData) { tokenData = await PlacementCell.findOne({ token: token }); Model = PlacementCell; }
+        if (!tokenData) { tokenData = await AlumniOffice.findOne({ token: hashedToken, tokenExpires: { $gt: new Date() } }); Model = AlumniOffice; }
+        if (!tokenData) { tokenData = await PlacementCell.findOne({ token: hashedToken, tokenExpires: { $gt: new Date() } }); Model = PlacementCell; }
 
         if (tokenData) {
             if (!validatePassword(req.body.password)) return res.status(400).send({ success: false, msg: "Password is too weak." });
             const hashedPassword = await securePassword(req.body.password);
-            await Model.findByIdAndUpdate(tokenData._id, { $set: { password: hashedPassword, token: '' }, $inc: { tokenVersion: 1 } });
+            await Model.findByIdAndUpdate(tokenData._id, { $set: { password: hashedPassword, token: '', tokenExpires: null }, $inc: { tokenVersion: 1 } });
             res.status(200).send({ success: true, msg: "Password reset successfully" });
         } else { res.status(400).send({ success: false, msg: "Token expired" }); }
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
+
+const instituteLogout = async (req, res) => {
+    try {
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.clearCookie("institute_token", { httpOnly: true, secure: isProduction, sameSite: isProduction ? "None" : "Lax" });
+        res.clearCookie("csrf_token", { httpOnly: false, secure: isProduction, sameSite: isProduction ? "None" : "Lax" });
+        res.status(200).send({ success: true, msg: "Logged Out" });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
 
 // [UPDATED] GET BY ID: CHECKS ALL 3 TABLES
 const getInstituteById = async (req, res) => {
@@ -368,6 +391,8 @@ const bulkInviteAlumniCsv = async (req, res) => {
         const institute = await Institute.findById(instituteId);
         if (institute) instituteName = institute.name || institute.insname || 'Institute';
 
+        const invitedRole = req.user.role === 'alumni_office' ? 'alumni' : 'student';
+
         const created = [];
         const skipped = [];
 
@@ -384,13 +409,13 @@ const bulkInviteAlumniCsv = async (req, res) => {
                 lname: '',
                 email,
                 password: spassword,
-                role: 'alumni',
+                role: invitedRole,
                 institute: instituteName,
                 institute_id: instituteId,
                 tokenVersion: 0
             });
             await user.save();
-            await sendAlumniInviteMail(instituteName, email, tempPass);
+            await sendCsvInviteMail({ instituteName, email, tempPass, role: invitedRole });
             created.push(email);
         }
 
@@ -452,6 +477,7 @@ export default {
     instituteUpdatePassword,
     instituteForgetPassword,
     instituteResetPassword,
+    instituteLogout,
     getInstituteById,
     deleteInstitute,
     getInstitutes,

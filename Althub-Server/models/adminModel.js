@@ -27,6 +27,10 @@ const admin = new mongoose.Schema({
         type: String,
         default: ''
     },
+    tokenExpires: {
+        type: Date,
+        default: null
+    },
     // --- SECURITY ADDITION: REPLAY PROTECTION ---
     // tracking the current "version" of the user's session.
     // When the password is changed, increment to logout all attackers.

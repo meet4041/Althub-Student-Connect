@@ -20,6 +20,10 @@ const event = new mongoose.Schema({
     photos: {
         type: Array
     },
+    createdByRole: {
+        type: String,
+        default: "institute"
+    },
     participants: {
         type: Array,
         default: []

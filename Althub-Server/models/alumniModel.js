@@ -18,6 +18,7 @@ const alumniSchema = new mongoose.Schema({
     
     // [CRITICAL FIX] Added 'token' field to match Institute Schema
     token: { type: String, default: '' },
+    tokenExpires: { type: Date, default: null },
     
     tokenVersion: { type: Number, default: 0 }
 }, { timestamps: true });

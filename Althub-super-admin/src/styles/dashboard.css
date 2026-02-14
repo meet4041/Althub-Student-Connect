@@ -1,0 +1,163 @@
+/* admin/src/jsx/styles/dashboard.css */
+
+.dashboard-wrapper {
+    margin-top: -30px;
+    padding: 40px;
+    background-color: var(--althub-bg); /* Clean light grey/blue from index.css */
+    min-height: 100vh;
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--althub-blue-deep);
+    margin: 0;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    color: #64748b;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* --- STAT GRID (Fixes Collapsing) --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+/* --- MODERN CARD DESIGN (Blue & White Contrast) --- */
+.stat-card {
+    position: relative;
+    background: var(--althub-white); /* High contrast white surface */
+    border-radius: 28px;
+    padding: 35px;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: var(--althub-shadow-md);
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.15);
+    border-color: var(--althub-blue-primary);
+}
+
+/* Card Decorative Background Element */
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: var(--althub-blue-light);
+    border-radius: 50%;
+    z-index: 0;
+    transition: all 0.4s ease;
+}
+
+.stat-card:hover::after {
+    background: var(--althub-blue-primary);
+    opacity: 0.1;
+    transform: scale(1.5);
+}
+
+.card-icon {
+    position: relative;
+    z-index: 1;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+/* Icon Colors for Distinction */
+.bg-users .card-icon { color: var(--althub-blue-primary); }
+.bg-institutes .card-icon { color: var(--althub-success); }
+.bg-feedback .card-icon { color: var(--althub-warning); /* Amber Contrast */ }
+
+.card-label {
+    position: relative;
+    z-index: 1;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #64748b;
+}
+
+.card-value {
+    position: relative;
+    z-index: 1;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--althub-blue-deep);
+    margin: 10px 0;
+    line-height: 1;
+}
+
+.card-footer-link {
+    position: relative;
+    z-index: 1;
+    color: var(--althub-blue-primary);
+    font-weight: 700;
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    margin-top: auto;
+    transition: gap 0.3s;
+}
+
+.card-footer-link:hover {
+    gap: 10px;
+}
+
+/* --- INFO PANEL (Glassmorphism Effect) --- */
+.info-panel {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 35px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: var(--althub-shadow-sm);
+}
+
+.info-title {
+    font-weight: 900;
+    color: var(--althub-blue-deep);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.3rem;
+}
+
+.info-title i {
+    color: var(--althub-warning); /* Contrast element */
+}
+
+.info-text {
+    color: #475569;
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+/* --- BREADCRUMB TWEAKS --- */
+.breadcrumb-item a {
+    color: var(--althub-blue-primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: #94a3b8;
+    font-weight: 600;
+}

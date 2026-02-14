@@ -1,136 +1,224 @@
-import React, { useEffect, useState, useCallback, Fragment } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axiosInstance from '../services/axios';
+/* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
+import axios from '../service/axios'; 
+import { ALTHUB_API_URL } from '../pages/baseURL';
+import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 
-// IMPORT NEW STYLES
-import '../styles/menu.css';
+// COMPANY STANDARD: Import external CSS
+import '../styles/menu.css'; 
 
 function Menu() {
    const navigate = useNavigate();
-   const location = useLocation();
-   const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
-
-   const [admin, setAdmin] = useState({
-      name: localStorage.getItem('AlmaPlus_admin_Name') || 'Admin',
-      profilepic: localStorage.getItem('AlmaPlus_admin_Pic') || ''
+   const location = useLocation(); 
+   const userRole = localStorage.getItem('userRole');
+   const [profileInfo, setProfileInfo] = useState({
+      name: 'DAU',
+      image: ''
    });
+
+   const isActive = (path) => location.pathname === path ? "active" : "";
+   const isOfficeActive = (path) => location.pathname.startsWith(path) ? "active" : "";
+   const isOfficeRoute = location.pathname.startsWith("/alumni-office") || location.pathname.startsWith("/placement-office");
+   const [officeDropdownOpen, setOfficeDropdownOpen] = useState(false);
+   const isAlumniOffice = userRole === 'alumni_office';
+   const isPlacementOffice = userRole === 'placement_cell';
+
+   useEffect(() => {
+      const id = localStorage.getItem("AlmaPlus_institute_Id");
+      if (!id) return;
+      getData(id);
+   }, []);
+
+   useEffect(() => {
+      if (isOfficeRoute) {
+         setOfficeDropdownOpen(true);
+      }
+   }, [location.pathname, isOfficeRoute]);
 
    const Logout = async () => {
       try {
-         await axiosInstance.get('/api/adminLogout');
+         await axios.get('/api/instituteLogout');
       } catch (err) {
          console.error("Logout error", err);
       } finally {
-         localStorage.clear();
-         navigate(`/`);
+         localStorage.removeItem('userDetails');
+         localStorage.removeItem('userRole');
+         localStorage.removeItem('AlmaPlus_institute_Id');
+         localStorage.removeItem('AlmaPlus_institute_Name');
+         localStorage.removeItem('althub_remembered_email');
+         localStorage.removeItem('althub_remember_me_status');
+         navigate('/login', { replace: true });
       }
    }
 
-   const getData = useCallback(() => {
-      if (!admin_Id) return;
-      axiosInstance.get(`/api/getAdminById/${admin_Id}`).then((response) => {
-         if (response.data.success === true && response.data.data?.[0]) {
-            const adminData = response.data.data[0];
-            setAdmin({
-               name: adminData.name,
-               profilepic: adminData.profilepic,
-            });
-            localStorage.setItem('AlmaPlus_admin_Name', adminData.name);
-            localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic);
-         }
-      }).catch(err => console.error(err));
-   }, [admin_Id]);
-
-   useEffect(() => {
-      if (!admin_Id) navigate(`/`);
-      else getData();
-   }, [getData, admin_Id, navigate]);
-
-   const isActive = (path) => location.pathname === path ? "active" : "";
+   const getData = (id) => {
+      if (id) {
+         axios.get(`/api/getInstituteById/${id}`)
+         .then((response) => {
+            if (response.data.success === true) {
+               setProfileInfo({
+                  name: response.data.data.name,
+                  image: response.data.data.image
+               })
+            }
+         })
+         .catch(err => console.error("Menu fetch error", err));
+      }
+   };
 
    return (
-      <Fragment>
-         {/* MODERN HEADER */}
-         <header className="admin-header">
-            <Link to="/dashboard" className="admin-logo-link">
-               {/* <img src='Logo1.png' className="admin-logo-img" alt="logo" /> */}
-               <span className="admin-brand-name">Althub Admin</span>
-            </Link>
-
-            <div className="dropdown">
-               <button
-                  className="user-dropdown-btn dropdown-toggle border-0"
-                  data-toggle="dropdown"
-                  aria-haspopup="true" 
-                  aria-expanded="false"
-               >
-                  <span className="user-name-label">{admin?.name}</span>
-                  <i className="fa fa-chevron-down small ml-2 text-muted"></i>
-               </button>
-
-               <div className="dropdown-menu dropdown-menu-right border-0 shadow-lg mt-2">
-                  <div className="dropdown-header text-uppercase small font-weight-bold">Account Settings</div>
-                  <Link to="/profile" className="dropdown-item">
-                     <i className="fa fa-user-edit mr-2 text-primary"></i> Edit Profile
-                  </Link>
-                  <div className="dropdown-divider"></div>
-                  <button onClick={Logout} className="dropdown-item text-danger border-0 bg-transparent w-100 text-left">
-                     <i className="fa fa-sign-out-alt mr-2"></i> Log Out
-                  </button>
-               </div>
+      <>
+         <div id="header" className="header navbar-default">
+            <div className="navbar-header">
+               <Link to="/dashboard" className="navbar-brand navbar-brand-link">
+                  <b>Althub</b>
+                  <span className="brand-badge">{profileInfo.name}</span>
+               </Link>
             </div>
-         </header>
-
-         {/* MODERN SIDEBAR */}
-         <aside className="admin-sidebar">
-            <div className="sidebar-profile">
-               <span className="profile-name">{admin.name}</span>
-               <span className="profile-role">Administrator</span>
-            </div>
-
-            <div className="nav-header-text">Main Navigation</div>
-
-            <ul className="admin-nav-list">
-               <li className="admin-nav-item">
-                  <Link to="/dashboard" className={`admin-nav-link ${isActive("/dashboard")}`}>
-                     <i className="fa fa-th-large"></i> <span>Dashboard</span>
-                  </Link>
-               </li>
-
-               <li className="admin-nav-item">
-                  <Link to="/institute" className={`admin-nav-link ${isActive("/institute")}`}>
-                     <i className="fa fa-university"></i> <span>All Institutes</span>
-                  </Link>
-               </li>
-
-               <li className="admin-nav-item">
-                  <Link to="/users" className={`admin-nav-link ${isActive("/users")}`}>
-                     <i className="fa fa-users"></i> <span>All Users</span>
-                  </Link>
-               </li>
-
-               {/* NEW: PLACEMENT CELL BUTTON */}
-               <li className="admin-nav-item">
-                  <Link to="/placement-cell" className={`admin-nav-link ${isActive("/placement-cell")}`}>
-                     <i className="fa fa-briefcase"></i> <span>All Placement Cells</span>
-                  </Link>
-               </li>
-
-               {/* NEW: ALUMNI OFFICE BUTTON */}
-               <li className="admin-nav-item">
-                  <Link to="/alumni-office" className={`admin-nav-link ${isActive("/alumni-office")}`}>
-                     <i className="fa fa-graduation-cap"></i> <span>All Alumni Offices</span>
-                  </Link>
-               </li>
-
-               <li className="admin-nav-item">
-                  <Link to="/feedback" className={`admin-nav-link ${isActive("/feedback")}`}>
-                     <i className="fa fa-comments"></i> <span>Feedback</span>
-                  </Link>
+            
+            <ul className="navbar-nav navbar-right navbar-right-group">
+               <li className="dropdown navbar-user">
+                  <a href="#" className="dropdown-toggle navbar-user-link" data-toggle="dropdown" onClick={(e) => e.preventDefault()}>
+                     <img 
+                        src={getImageUrl(profileInfo.image, FALLBACK_IMAGES.profile)} 
+                        alt="Profile"
+                        onError={getImageOnError(FALLBACK_IMAGES.profile)}
+                     />
+                     <span className="d-none d-md-inline">{profileInfo.name}</span> 
+                     <b className="caret navbar-caret"></b>
+                  </a>
+                  <div className="dropdown-menu dropdown-menu-right dropdown-menu-modern">
+                     <Link to="/profile" className="dropdown-item py-2">
+                        <i className="fa fa-user-circle mr-2 opacity-50"></i> Edit Profile
+                     </Link>
+                     <div className="dropdown-divider"></div>
+                     <a onClick={Logout} className="dropdown-item py-2 text-danger font-weight-bold" style={{ cursor: 'pointer' }}>
+                        <i className="fa fa-sign-out-alt mr-2"></i> Log Out
+                     </a>
+                  </div>
                </li>
             </ul>
-         </aside>
-      </Fragment>
+         </div>
+         
+         <div id="sidebar" className="sidebar">
+            <div className="sidebar-scroll" data-scrollbar="true" data-height="100%">
+               <ul className="nav">
+                  {isAlumniOffice ? (
+                     <>
+                        <li className={isActive("/alumni-members")}>
+                           <Link to="/alumni-members">
+                              <i className="fa fa-user-friends"></i>
+                              <span>Alumni Members</span>
+                           </Link>
+                        </li>
+                        <li className={isActive("/alumni-events")}>
+                           <Link to="/alumni-events">
+                              <i className="fa fa-calendar-alt"></i>
+                              <span>Alumni Events</span>
+                           </Link>
+                        </li>
+                        <li className={isActive("/alumni-posts")}>
+                           <Link to="/alumni-posts">
+                              <i className="fa fa-bullhorn"></i>
+                              <span>Alumni Posts</span>
+                           </Link>
+                        </li>
+                     </>
+                  ) : isPlacementOffice ? (
+                     <>
+                        <li className={isActive("/placement-events")}>
+                           <Link to="/placement-events">
+                              <i className="fa fa-calendar-alt"></i>
+                              <span>Placement Events</span>
+                           </Link>
+                        </li>
+                        <li className={isActive("/placement-posts")}>
+                           <Link to="/placement-posts">
+                              <i className="fa fa-bullhorn"></i>
+                              <span>Placement Posts</span>
+                           </Link>
+                        </li>
+                     </>
+                  ) : (
+                     <>
+                        <li className={isActive("/dashboard")}>
+                           <Link to="/dashboard">
+                              <i className="fa fa-columns"></i>
+                              <span>Dashboard</span>
+                           </Link>
+                        </li>
+                        
+                        <li className={isActive("/users")}>
+                           <Link to="/users">
+                              <i className="fa fa-user-friends"></i>
+                              <span>Manage Users</span>
+                           </Link>
+                        </li>
+                        
+                        <li className={isActive("/events")}>
+                           <Link to="/events">
+                              <i className="fa fa-calendar-alt"></i>
+                              <span>Events</span>
+                           </Link>
+                        </li>
+                        
+                        <li className={isActive("/posts")}>
+                           <Link to="/posts">
+                              <i className="fa fa-bullhorn"></i>
+                              <span>Post</span>
+                           </Link>
+                        </li>
+                        
+
+                        {/* --- NEW LEADERBOARD LINK --- */}
+                        <li className={isActive("/leaderboard")}>
+                           <Link to="/leaderboard">
+                              <i className="fa fa-trophy text-warning"></i>
+                              <span>Leaderboard</span>
+                           </Link>
+                        </li>
+
+                        {/* --- OFFICES DROPDOWN --- */}
+                        <li
+                           className={`nav-dropdown ${(isOfficeActive("/alumni-office") || isOfficeActive("/placement-office")) ? "active" : ""} ${officeDropdownOpen ? "open" : ""}`}
+                           onMouseEnter={() => setOfficeDropdownOpen(true)}
+                           onMouseLeave={() => setOfficeDropdownOpen(isOfficeRoute)}
+                        >
+                           <a href="#" onClick={(e) => { e.preventDefault(); setOfficeDropdownOpen(!officeDropdownOpen); }}>
+                              <i className="fa fa-building"></i>
+                              <span>Offices</span>
+                              <b className="caret navbar-caret"></b>
+                           </a>
+                           <ul className={`nav-dropdown-submenu ${officeDropdownOpen ? "open" : ""}`}>
+                              <li>
+                                 <Link to="/alumni-office" className={isOfficeActive("/alumni-office")} onClick={() => setOfficeDropdownOpen(false)}>
+                                    <i className="fa fa-graduation-cap"></i>
+                                    <span>Alumni Office</span>
+                                 </Link>
+                              </li>
+                              <li>
+                                 <Link to="/placement-office" className={isOfficeActive("/placement-office")} onClick={() => setOfficeDropdownOpen(false)}>
+                                    <i className="fa fa-briefcase"></i>
+                                    <span>Placement Office</span>
+                                 </Link>
+                              </li>
+                           </ul>
+                        </li>
+
+                        <li className={isActive("/feedback")}>
+                           <Link to="/feedback">
+                              <i className="fa fa-comment-alt"></i>
+                              <span>Student Feedback</span>
+                           </Link>
+                        </li>
+                     </>
+                  )}
+               </ul>
+            </div>
+         </div>
+         <div className="sidebar-bg"></div>
+      </>
    )
 }
 

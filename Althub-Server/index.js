@@ -4,6 +4,7 @@ dotenv.config();
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import crypto from "crypto";
 import compression from "compression";
 import http from "http";
 import helmet from "helmet";
@@ -38,6 +39,7 @@ const port = process.env.PORT || 5001;
 
 // --- SECURITY & SERVER CONFIGURATION ---
 app.set("trust proxy", 1); 
+app.disable("x-powered-by");
 
 // [FIX] HELMET: Whitelist your frontend ports
 app.use(helmet({
@@ -45,7 +47,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
       // CRITICAL: Allow connections to LOCALHOST PORTS so dropdown works
@@ -66,6 +68,10 @@ app.use(helmet({
     }
   }
 }));
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet.hsts({ maxAge: 15552000, includeSubDomains: true, preload: true }));
+}
 
 app.use(compression()); 
 app.use(express.json({ limit: '10mb' })); 
@@ -122,11 +128,53 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "X-CSRF-Token"]
 };
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// --- CSRF (Double Submit Cookie) ---
+const csrfCookieOptions = {
+  httpOnly: false,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+};
+
+const csrfAllowlist = new Set([
+  "/api/adminLogin",
+  "/api/instituteLogin",
+  "/api/userLogin",
+  "/api/instituteForgetPassword",
+  "/api/instituteResetPassword",
+  "/api/forgetpassword",
+  "/api/resetpassword",
+  "/api/userForgetPassword",
+  "/api/userResetPassword"
+]);
+
+const ensureCsrfCookie = (req, res, next) => {
+  if (!req.cookies?.csrf_token) {
+    const csrfToken = crypto.randomBytes(32).toString('hex');
+    res.cookie('csrf_token', csrfToken, csrfCookieOptions);
+  }
+  next();
+};
+
+const csrfProtect = (req, res, next) => {
+  const method = req.method.toUpperCase();
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") return next();
+  if (csrfAllowlist.has(req.path)) return next();
+
+  const cookieToken = req.cookies?.csrf_token;
+  const headerToken = req.headers["x-csrf-token"];
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return res.status(403).json({ success: false, msg: "CSRF token invalid or missing" });
+  }
+  next();
+};
+
+app.use("/api", ensureCsrfCookie, csrfProtect);
 
 // --- MOUNT ROUTES ---
 app.post("/api/adminLogin", loginLimiter);
