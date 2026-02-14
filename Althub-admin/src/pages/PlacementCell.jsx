@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../../services/axios';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import axiosInstance from '../services/axios';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 // USING THE PREMIUM THEME

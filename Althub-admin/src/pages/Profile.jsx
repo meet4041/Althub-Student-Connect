@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axiosInstance from '../../services/axios';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
+import axiosInstance from '../services/axios';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
 
 // IMPORT NEW STYLES
 import '../styles/profile.css';

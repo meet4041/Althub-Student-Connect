@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axiosInstance from '../../services/axios';
+import axiosInstance from '../services/axios';
 
 // IMPORT NEW STYLES
 import '../styles/menu.css';

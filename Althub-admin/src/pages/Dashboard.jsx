@@ -1,9 +1,9 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import Loader from '../layout/Loader.jsx';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
-import axiosInstance from '../../services/axios'; 
+import Loader from '../layouts/Loader.jsx';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
+import axiosInstance from '../services/axios'; 
 
 // IMPORT UPDATED BLUE THEME STYLES
 import '../styles/dashboard.css';

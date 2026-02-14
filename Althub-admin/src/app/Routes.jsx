@@ -1,17 +1,16 @@
 import { Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import Users from './pages/Users';
-import Institutes from './pages/Institute';
-import Feedback from './pages/FeedBack';
-import PlacementCell from './pages/PlacementCell';
-import AlumniOffice from './pages/AlumniOffice';
-// Security Guard Import
+import Login from '../pages/Login';
+import ForgotPassword from '../pages/ForgotPassword';
+import Dashboard from '../pages/Dashboard';
+import Profile from '../pages/Profile';
+import Users from '../pages/Users';
+import Institutes from '../pages/Institute';
+import Feedback from '../pages/FeedBack';
+import PlacementCell from '../pages/PlacementCell';
+import AlumniOffice from '../pages/AlumniOffice';
 import AuthGuard from '../components/AuthGuard';
 
-const Markup = () => {
+const AppRoutes = () => {
     return (
         <Routes>
             {/* Public Routes (No Guard) */}
@@ -66,4 +65,4 @@ const Markup = () => {
     )
 }
 
-export default Markup;
+export default AppRoutes;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../../services/axios';
-import Menu from '../layout/Menu.jsx';
-import Footer from '../layout/Footer.jsx';
-import { ALTHUB_API_URL } from '../baseURL';
+import axiosInstance from '../services/axios';
+import Menu from '../layouts/Menu.jsx';
+import Footer from '../layouts/Footer.jsx';
+import { ALTHUB_API_URL } from '../config/baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 // RE-USING PREMIUM THEME STYLES
