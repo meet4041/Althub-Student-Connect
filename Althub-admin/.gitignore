@@ -22,3 +22,5 @@ yarn-error.log*
 
 # Ignore public assets cache (optional, uncomment if needed)
 # public/assets/cache/ 
+.vercel
+.env*.local

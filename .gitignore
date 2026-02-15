@@ -135,3 +135,4 @@ ui-debug.log
 # !Althub-Server/public/*/.gitkeep
 
 .DS_Store
+.env*.local
