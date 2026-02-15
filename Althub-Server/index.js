@@ -142,15 +142,15 @@ const csrfCookieOptions = {
 };
 
 const csrfAllowlist = new Set([
-  "/api/adminLogin",
-  "/api/instituteLogin",
-  "/api/userLogin",
-  "/api/instituteForgetPassword",
-  "/api/instituteResetPassword",
-  "/api/forgetpassword",
-  "/api/resetpassword",
-  "/api/userForgetPassword",
-  "/api/userResetPassword"
+  "/adminLogin",
+  "/instituteLogin",
+  "/userLogin",
+  "/instituteForgetPassword",
+  "/instituteResetPassword",
+  "/forgetpassword",
+  "/resetpassword",
+  "/userForgetPassword",
+  "/userResetPassword"
 ]);
 
 const ensureCsrfCookie = (req, res, next) => {
