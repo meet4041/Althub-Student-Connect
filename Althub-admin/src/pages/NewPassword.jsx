@@ -103,8 +103,8 @@ function NewPassword() {
                 <div className="login login-v2">
                     <div className="login-header">
                         <div className="brand">
-                            <span className="logo"></span> <b>Plus One</b> Admin
-                            <small>Forgot Password for Plus One admin panel</small>
+                            <span className="logo"></span> <b>Althub</b> Admin
+                            <small>Forgot Password for Althub admin panel</small>
                         </div>
                         <div className="icon">
                             <i className="fa fa-lock"></i>

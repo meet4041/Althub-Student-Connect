@@ -95,7 +95,7 @@ const Login = () => {
                             <div className="glass-logo-box">
                                 <img src='Logo1.png' alt="Althub Logo" style={{ height: '60px', borderRadius: '8px' }} />
                             </div>
-                            <h1 className="title-text">Admin <br /> <span className="text-highlight">Control Center.</span></h1>
+                            <h1 className="title-text">Althub <br /> <span className="text-highlight">super admin.</span></h1>
                             <p className="subtitle-text">Centralized management for system oversight, user directories, and global configurations.</p>
                             <div className="feature-badges mt-5">
                                 <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure Access</span>
@@ -108,7 +108,7 @@ const Login = () => {
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="form-heading mb-5">
-                                <h2 className="font-weight-bold text-navy">Admin Login</h2>
+                                <h2 className="font-weight-bold text-navy">Super Admin Login</h2>
                                 <p className="text-muted">Enter your administrative credentials to continue</p>
                             </div>
                             <form onSubmit={submitHandler}>

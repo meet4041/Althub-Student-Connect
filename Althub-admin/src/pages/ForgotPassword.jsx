@@ -57,7 +57,7 @@ function ForgotPassword() {
                             <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '14px', display: 'inline-block', marginBottom: '25px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
                                 <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
                             </div>
-                            <h1 className="title-text">Althub <span className="text-highlight">Institute</span></h1>
+                            <h1 className="title-text">Althub <span className="text-highlight">Admin</span></h1>
                             <p className="subtitle-text">Empowering the next generation of educators with advanced analytics and seamless management.</p>
                             <div className="feature-badges mt-5">
                                 <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure SSL</span>

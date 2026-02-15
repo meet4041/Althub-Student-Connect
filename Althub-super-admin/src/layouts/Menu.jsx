@@ -54,7 +54,7 @@ function Menu() {
          <header className="admin-header">
             <Link to="/dashboard" className="admin-logo-link">
                {/* <img src='Logo1.png' className="admin-logo-img" alt="logo" /> */}
-               <span className="admin-brand-name">Althub Admin</span>
+               <span className="admin-brand-name">Althub super admin</span>
             </Link>
 
             <div className="dropdown">

@@ -111,7 +111,7 @@ const Register = () => {
                                 <img src='Logo1.jpeg' alt="logo" style={{ height: '65px', borderRadius: '8px' }} />
                             </div>
 
-                            <h1 className="title-text">Welcome <br /> to <span className="text-highlight">Althub</span></h1>
+                            <h1 className="title-text">Welcome <br /> to <span className="text-highlight">Althub Admin</span></h1>
 
                             <p className="subtitle-text">
                                 Create your institutional profile and start managing your campus, alumni, and placements today.

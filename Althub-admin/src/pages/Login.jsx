@@ -109,7 +109,7 @@ const Login = () => {
                                 <img src='Logo1.jpeg' alt="logo" style={{ height: '65px', borderRadius: '8px' }} />
                             </div>
                             
-                            <h1 className="title-text">Welcome <br /> to <span className="text-highlight">Althub.</span></h1>
+                            <h1 className="title-text">Welcome <br /> to <span className="text-highlight">Althub Admin.</span></h1>
                             
                             <p className="subtitle-text">
                                 The unified ecosystem for modern Institutions, Alumni Offices, and Placement Cells.
@@ -129,10 +129,10 @@ const Login = () => {
                         <div className="form-card-inner">
                             <div className="mobile-header d-lg-none text-center mb-4">
                                 <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
-                                <h3 className="font-weight-bold text-navy">Althub Portal</h3>
+                                <h3 className="font-weight-bold text-navy">Althub Admin</h3>
                             </div>
                             <div className="form-heading mb-5">
-                                <h2 className="font-weight-bold text-navy">Login to Althub</h2>
+                                <h2 className="font-weight-bold text-navy">Login to Althub Admin</h2>
                                 <p className="text-muted">Enter your departmental credentials to continue</p>
                             </div>
                             <form onSubmit={submitHandler}>
@@ -167,7 +167,7 @@ const Login = () => {
                                 </button>
                                 
                                 <div className="signup-redirect-wrapper">
-                                    <p className="signup-text">New to Althub?</p>
+                                    <p className="signup-text">New to Althub Admin?</p>
                                     <button 
                                         type="button" 
                                         className="btn-signup-link" 
