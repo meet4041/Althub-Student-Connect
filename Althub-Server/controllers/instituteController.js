@@ -186,7 +186,7 @@ const instituteLogin = async (req, res) => {
                 res.cookie('institute_token', token, { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', maxAge: 24 * 60 * 60 * 1000 });
                 const csrfToken = crypto.randomBytes(32).toString('hex');
                 res.cookie('csrf_token', csrfToken, { httpOnly: false, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', maxAge: 24 * 60 * 60 * 1000 });
-                res.status(200).send({ success: true, msg: "Login Successful", data: user });
+                res.status(200).send({ success: true, msg: "Login Successful", data: user, token });
             } else { res.status(401).send({ success: false, msg: "Invalid credentials" }); }
         } else { res.status(404).send({ success: false, msg: "Account not found" }); }
     } catch (error) { res.status(500).send({ success: false, msg: "Internal Server Error" }); }

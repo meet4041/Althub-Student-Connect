@@ -19,6 +19,7 @@ const secureLogout = async (navigate) => {
         localStorage.removeItem('userRole');
         localStorage.removeItem('AlmaPlus_institute_Id');
         localStorage.removeItem('AlmaPlus_institute_Name');
+        localStorage.removeItem('token');
         navigate('/login', { replace: true });
     }
 };

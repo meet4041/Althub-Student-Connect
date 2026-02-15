@@ -46,6 +46,7 @@ function Menu() {
          localStorage.removeItem('userRole');
          localStorage.removeItem('AlmaPlus_institute_Id');
          localStorage.removeItem('AlmaPlus_institute_Name');
+         localStorage.removeItem('token');
          localStorage.removeItem('althub_remembered_email');
          localStorage.removeItem('althub_remember_me_status');
          navigate('/login', { replace: true });

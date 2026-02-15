@@ -18,6 +18,10 @@ instance.interceptors.request.use(
         if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
         }
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
         return config;
     },
     function (error) {
@@ -37,6 +41,7 @@ instance.interceptors.response.use(
                 localStorage.removeItem('userRole');
                 localStorage.removeItem('AlmaPlus_institute_Id');
                 localStorage.removeItem('AlmaPlus_institute_Name');
+                localStorage.removeItem('token');
                 window.location.href = '/login';
             }
         }

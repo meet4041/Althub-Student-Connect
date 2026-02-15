@@ -38,6 +38,9 @@ const Login = () => {
 
                         localStorage.setItem('AlmaPlus_institute_Id', responseData._id);
                         localStorage.setItem('AlmaPlus_institute_Name', responseData.name);
+                        if (response.data.token) {
+                            localStorage.setItem('token', response.data.token);
+                        }
 
                         if (rememberMe) {
                             localStorage.setItem('althub_remembered_email', loginInfo.email);
