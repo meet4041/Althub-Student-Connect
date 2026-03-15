@@ -15,6 +15,7 @@ const AlumniOffice = () => {
     const [searchTerm, setSearchTerm] = useState('');
     
     const [deleteId, setDeleteId] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
     const [showDeletePrompt, setShowDeletePrompt] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
@@ -94,7 +95,7 @@ const AlumniOffice = () => {
                         <div className="row">
                             {displayData.length > 0 ? displayData.map((item) => (
                                 <div key={item._id} className="col-lg-4 col-md-6 mb-4">
-                                    <div className="inst-floating-card h-100">
+                                    <div className="inst-floating-card h-100" onClick={() => setSelectedItem(item)} style={{ cursor: 'pointer' }}>
                                         <div className="inst-card-body">
                                             <div className="d-flex justify-content-between">
                                                 <div className="inst-icon-glow">
@@ -102,31 +103,14 @@ const AlumniOffice = () => {
                                                 </div>
                                                 <button 
                                                     className="btn btn-light-danger btn-xs rounded-pill px-2" 
-                                                    onClick={() => {setDeleteId(item._id); setShowDeletePrompt(true);}}
+                                                    onClick={(e) => {e.stopPropagation(); setDeleteId(item._id); setShowDeletePrompt(true);}}
                                                 >
                                                     <i className="fa fa-trash-alt text-danger"></i>
                                                 </button>
                                             </div>
 
                                             <div className="mt-4">
-                                                <h5 className="inst-title mb-1">{item.name}</h5>
-                                                <p className="profile-email-sub mb-3">
-                                                    <i className="fa fa-envelope mr-2"></i>{item.email}
-                                                </p>
-                                                
-                                                <div className="inst-detail-grid">
-                                                    <div className="detail-point full-width">
-                                                        <label>Campus Hub</label>
-                                                        <span className="text-primary font-weight-bold">
-                                                            <i className="fa fa-university mr-2"></i>
-                                                            {item.institute || "Global Network"}
-                                                        </span>
-                                                    </div>
-                                                    <div className="detail-point">
-                                                        <label>Office Number</label>
-                                                        <span>{item.phone || "N/A"}</span>
-                                                    </div>
-                                                </div>
+                                                <h5 className="inst-title mb-0">{item.name}</h5>
                                             </div>
                                         </div>
                                     </div>
@@ -147,6 +131,46 @@ const AlumniOffice = () => {
                 <SweetAlert success show={showSuccessAlert} title="Purged" onConfirm={() => setShowSuccessAlert(false)}>
                     Record successfully removed.
                 </SweetAlert>
+
+                {selectedItem && (
+                    <div className="althub-modal-overlay" onClick={() => setSelectedItem(null)}>
+                        <div className="althub-modal-card" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-top-accent"></div>
+                            <button className="modal-close-btn" onClick={() => setSelectedItem(null)}>&times;</button>
+                            <div className="modal-content-inner">
+                                <div className="modal-profile-section">
+                                    <div>
+                                        <h2 className="modal-user-name">{selectedItem.name}</h2>
+                                        <span className="status-pill-modern pill-amber">
+                                            <i className="fa fa-graduation-cap mr-1"></i> Alumni Office
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="modal-details-grid mt-5">
+                                    <div className="detail-item">
+                                        <label>Email Address</label>
+                                        <p>{selectedItem.email || 'Not Provided'}</p>
+                                    </div>
+                                    <div className="detail-item">
+                                        <label>Contact Number</label>
+                                        <p>{selectedItem.phone || 'Not Provided'}</p>
+                                    </div>
+                                    <div className="detail-item full-width">
+                                        <label>Campus Hub</label>
+                                        <p>{selectedItem.institute || 'Global Network'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="modal-footer-actions mt-5">
+                                    <button className="btn btn-primary btn-block rounded-pill py-3 font-weight-bold shadow-lg" onClick={() => setSelectedItem(null)}>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 
                 <Footer />
             </div>

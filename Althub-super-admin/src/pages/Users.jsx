@@ -36,9 +36,10 @@ const Users = () => {
     const handleSelectInstitute = (inst) => {
         setLoading(true);
         setSelectedInst(inst);
-        axiosInstance.get(`/api/getUsersByInstName/${inst.name}`)
+        axiosInstance.get(`/api/getUsersByInstitute/${inst._id}`)
             .then(res => {
-                setUsers(res.data.data || []);
+                const data = res.data.data || [];
+                setUsers(data);
                 setLoading(false);
             }).catch((err) => {
                 console.error("Fetch Error:", err);
@@ -63,7 +64,7 @@ const Users = () => {
                             <h1 className="page-header mb-1">Ecosystem Directory</h1>
                             <p className="text-muted small font-weight-bold mb-0">
                                 {selectedInst ? (
-                                    <><span className="text-primary">{selectedInst.name}</span> • {users.length} Active Records</>
+                                    <><span className="text-primary">{selectedInst.name}</span> • {users.length} Members</>
                                 ) : 'Select an institution to access its secure member database'}
                             </p>
                         </div>
@@ -106,13 +107,13 @@ const Users = () => {
                             <div className="directory-search-bar">
                                 <div className="search-input-group-modern">
                                     <i className="fa fa-search"></i>
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        placeholder={`Search among ${users.length} members...`} 
-                                        value={searchTerm} 
-                                        onChange={(e) => setSearchTerm(e.target.value)} 
-                                    />
+                                        <input 
+                                            type="text" 
+                                            className="form-control" 
+                                            placeholder={`Search among ${users.length} members...`} 
+                                            value={searchTerm} 
+                                            onChange={(e) => setSearchTerm(e.target.value)} 
+                                        />
                                 </div>
                             </div>
                             <div className="table-responsive">
@@ -207,8 +208,27 @@ const Users = () => {
                                         </p>
                                     </div>
                                     <div className="detail-item full-width">
-                                        <label>Account ID</label>
-                                        <code className="text-muted">{selectedUser._id}</code>
+                                        <label>Skills</label>
+                                        <div className="skill-chip-row">
+                                            {(() => {
+                                                const raw = (selectedUser.skills || '').trim();
+                                                if (!raw) return <span className="text-muted">Not Provided</span>;
+                                                let list = [];
+                                                try {
+                                                    const parsed = JSON.parse(raw);
+                                                    if (Array.isArray(parsed)) list = parsed;
+                                                } catch {
+                                                    list = raw.split(',');
+                                                }
+                                                const cleaned = list
+                                                    .map(s => String(s).replace(/^\"|\"$/g, '').trim())
+                                                    .filter(Boolean);
+                                                if (cleaned.length === 0) return <span className="text-muted">Not Provided</span>;
+                                                return cleaned.map((skill, i) => (
+                                                    <span key={`${skill}-${i}`} className="skill-chip">{skill}</span>
+                                                ));
+                                            })()}
+                                        </div>
                                     </div>
                                 </div>
                                 

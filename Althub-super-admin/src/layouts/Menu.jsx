@@ -124,10 +124,11 @@ function Menu() {
                </li>
 
                <li className="admin-nav-item">
-                  <Link to="/feedback" className={`admin-nav-link ${isActive("/feedback")}`}>
-                     <i className="fa fa-comments"></i> <span>Feedback</span>
+                  <Link to="/connected" className={`admin-nav-link ${isActive("/connected")}`}>
+                     <i className="fa fa-project-diagram"></i> <span>Connected</span>
                   </Link>
                </li>
+
             </ul>
          </aside>
       </Fragment>

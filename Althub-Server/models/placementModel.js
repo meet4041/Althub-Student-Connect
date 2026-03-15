@@ -10,7 +10,7 @@ const placementSchema = new mongoose.Schema({
     // Link to the Main Institute
     parent_institute_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'institutetb1',
+        ref: 'InstituteTB1',
         required: true
     },
     

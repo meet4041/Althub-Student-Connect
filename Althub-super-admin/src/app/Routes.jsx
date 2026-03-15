@@ -1,13 +1,14 @@
 import { Routes, Route } from 'react-router-dom';
 import Login from '../pages/Login';
 import ForgotPassword from '../pages/ForgotPassword';
+import NewPassword from '../pages/NewPassword';
 import Dashboard from '../pages/Dashboard';
 import Profile from '../pages/Profile';
 import Users from '../pages/Users';
 import Institutes from '../pages/Institute';
-import Feedback from '../pages/FeedBack';
 import PlacementCell from '../pages/PlacementCell';
 import AlumniOffice from '../pages/AlumniOffice';
+import Connected from '../pages/Connected';
 import AuthGuard from '../components/AuthGuard';
 
 const AppRoutes = () => {
@@ -16,6 +17,7 @@ const AppRoutes = () => {
             {/* Public Routes (No Guard) */}
             <Route path='/' element={<Login />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
+            <Route path='/new-password' element={<NewPassword />} />
 
             {/* Protected Routes (Wrapped in AuthGuard) */}
             <Route path='/dashboard' element={
@@ -48,15 +50,15 @@ const AppRoutes = () => {
                 </AuthGuard>
             } />
 
-            <Route path='/institute' element={
+            <Route path='/connected' element={
                 <AuthGuard>
-                    <Institutes />
+                    <Connected />
                 </AuthGuard>
             } />
 
-            <Route path='/feedback' element={
+            <Route path='/institute' element={
                 <AuthGuard>
-                    <Feedback />
+                    <Institutes />
                 </AuthGuard>
             } />
 

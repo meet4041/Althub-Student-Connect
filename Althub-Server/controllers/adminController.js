@@ -2,12 +2,15 @@ import Admin from "../models/adminModel.js";
 import User from "../models/userModel.js";
 import Education from "../models/educationModel.js";
 import Institute from "../models/instituteModel.js";
+import PlacementCell from "../models/placementModel.js";
+import AlumniOffice from "../models/alumniModel.js";
 import config from "../config/config.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import randomstring from "randomstring";
 import bcryptjs from "bcryptjs";
+import mongoose from "mongoose";
 
 // --- UTILITIES ---
 
@@ -16,7 +19,7 @@ const validatePassword = (password) => {
     return regex.test(password);
 }
 
-const sendresetpasswordMail = async (name, email, token) => {
+const sendresetpasswordMail = async (name, email, token, baseUrl) => {
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -28,8 +31,8 @@ const sendresetpasswordMail = async (name, email, token) => {
             }
         });
 
-        // Use process.env.CLIENT_URL or fallback to localhost
-        const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
+        // Prefer the calling app's origin (e.g., super-admin) if provided
+        const clientURL = baseUrl || process.env.CLIENT_URL || "http://localhost:3000";
 
         const mailoptions = {
             from: config.emailUser,
@@ -374,7 +377,8 @@ export const forgetPassword = async (req, res) => {
             const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
             const tokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
             await Admin.updateOne({ email }, { $set: { token: hashedToken, tokenExpires } });
-            sendresetpasswordMail(adminData.name, adminData.email, resetToken);
+            const baseUrl = req.headers.origin || req.headers.referer?.split("/").slice(0, 3).join("/");
+            sendresetpasswordMail(adminData.name, adminData.email, resetToken, baseUrl);
             res.status(200).send({ success: true, msg: "Please check your email" });
         } else {
             res.status(404).send({ success: false, msg: "Email does not exist" });
@@ -463,8 +467,22 @@ export const deleteUser = async (req, res) => {
 // Fetch ALL Placement Cells
 export const getPlacementCells = async (req, res) => {
     try {
-        const data = await PlacementCell.find({}); // Unrestricted fetch
-        res.status(200).send({ success: true, count: data.length, data: data });
+        const data = await PlacementCell.find({
+            $or: [
+                { role: 'placement_cell' },
+                { role: { $exists: false } },
+                { role: null }
+            ]
+        })
+            .populate('parent_institute_id', 'name');
+        const mapped = data.map(item => {
+            const obj = item.toObject();
+            return {
+                ...obj,
+                institute: obj.institute || obj.parent_institute_id?.name || "N/A"
+            };
+        });
+        res.status(200).send({ success: true, count: mapped.length, data: mapped });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -473,8 +491,22 @@ export const getPlacementCells = async (req, res) => {
 // Fetch ALL Alumni Offices
 export const getAlumniOffices = async (req, res) => {
     try {
-        const data = await AlumniOffice.find({}); // Unrestricted fetch
-        res.status(200).send({ success: true, count: data.length, data: data });
+        const data = await AlumniOffice.find({
+            $or: [
+                { role: 'alumni_office' },
+                { role: { $exists: false } },
+                { role: null }
+            ]
+        })
+            .populate('parent_institute_id', 'name');
+        const mapped = data.map(item => {
+            const obj = item.toObject();
+            return {
+                ...obj,
+                institute: obj.institute || obj.parent_institute_id?.name || "N/A"
+            };
+        });
+        res.status(200).send({ success: true, count: mapped.length, data: mapped });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }

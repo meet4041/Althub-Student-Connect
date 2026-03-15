@@ -1,0 +1,136 @@
+.connected-wrapper {
+    padding-bottom: 40px;
+}
+
+.connected-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.connected-row {
+    display: grid;
+    grid-template-columns: 1.1fr 80px 1fr 80px 1fr;
+    align-items: center;
+    gap: 10px;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--althub-shadow-md);
+}
+
+.connected-node {
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-weight: 800;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.institute-node {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    color: #1e3a8a;
+}
+
+.alumni-node {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+.placement-node {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.node-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-bottom: 8px;
+    font-weight: 800;
+}
+
+.node-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 700;
+}
+
+.node-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    padding: 6px 10px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.node-empty {
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+.connect-arrow {
+    position: relative;
+    height: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.connect-arrow .arrow-line {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #cbd5f5, #93c5fd, #cbd5f5);
+    border-radius: 999px;
+    position: relative;
+    overflow: hidden;
+}
+
+.connect-arrow .arrow-line::after {
+    content: '';
+    position: absolute;
+    left: -30%;
+    top: 0;
+    width: 30%;
+    height: 100%;
+    background: rgba(59, 130, 246, 0.5);
+    animation: arrow-flow 1.8s linear infinite;
+}
+
+.connect-arrow .arrow-head {
+    position: absolute;
+    right: -2px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 10px solid #60a5fa;
+}
+
+.arrow-left .arrow-head {
+    right: -2px;
+}
+
+.arrow-right .arrow-head {
+    right: -2px;
+}
+
+@keyframes arrow-flow {
+    from { left: -30%; }
+    to { left: 110%; }
+}
+
+@media (max-width: 1200px) {
+    .connected-row {
+        grid-template-columns: 1fr;
+    }
+
+    .connect-arrow {
+        display: none;
+    }
+}

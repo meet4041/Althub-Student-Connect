@@ -12,7 +12,8 @@ function Dashboard() {
     const [counts, setCounts] = useState({
         users: 0,
         institutes: 0,
-        feedback: 0
+        alumniOffices: 0,
+        placementCells: 0
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,16 +31,18 @@ function Dashboard() {
                 if (element) element.classList.add("show");
 
                 // Fetch all data in parallel for maximum speed
-                const [uRes, iRes, fRes] = await Promise.all([
+                const [uRes, iRes, aRes, pRes] = await Promise.all([
                     axiosInstance.get(`/api/getUsers`),
                     axiosInstance.get(`/api/getInstitutes`),
-                    axiosInstance.get(`/api/getFeedback`)
+                    axiosInstance.get(`/api/getAlumniOffices`),
+                    axiosInstance.get(`/api/getPlacementCells`)
                 ]);
 
                 setCounts({
                     users: uRes?.data?.data?.length || 0,
                     institutes: iRes?.data?.data?.length || 0,
-                    feedback: fRes?.data?.data?.length || 0
+                    alumniOffices: aRes?.data?.data?.length || 0,
+                    placementCells: pRes?.data?.data?.length || 0
                 });
             } catch (err) {
                 console.error('Dashboard error:', err);
@@ -99,6 +102,26 @@ function Dashboard() {
                                     <div className="card-value">{counts.institutes.toLocaleString()}</div>
                                     <Link to="/institute" className="card-footer-link">
                                         Campus Governance <i className="fa fa-arrow-right ml-2"></i>
+                                    </Link>
+                                </div>
+
+                                {/* ALUMNI OFFICES CARD */}
+                                <div className="stat-card bg-alumni">
+                                    <i className="fa fa-graduation-cap card-icon"></i>
+                                    <div className="card-label">Alumni Offices</div>
+                                    <div className="card-value">{counts.alumniOffices.toLocaleString()}</div>
+                                    <Link to="/alumni-office" className="card-footer-link">
+                                        Alumni Network <i className="fa fa-arrow-right ml-2"></i>
+                                    </Link>
+                                </div>
+
+                                {/* PLACEMENT CELLS CARD */}
+                                <div className="stat-card bg-placement">
+                                    <i className="fa fa-briefcase card-icon"></i>
+                                    <div className="card-label">Placement Cells</div>
+                                    <div className="card-value">{counts.placementCells.toLocaleString()}</div>
+                                    <Link to="/placement-cell" className="card-footer-link">
+                                        Placement Governance <i className="fa fa-arrow-right ml-2"></i>
                                     </Link>
                                 </div>
 

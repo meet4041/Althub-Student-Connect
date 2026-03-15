@@ -12,7 +12,7 @@ The **Super Admin Panel** is a restricted-access dashboard designed for platform
 * **Dashboard Analytics:** Overview of total users, active institutes, and platform engagement.
 * **User Management:** Ability to view, verify, or ban user accounts (Students/Alumni).
 * **Institute Management:** Add, edit, or remove participating educational institutions.
-* **Content Moderation:** Monitor posts and feedback to ensure community guidelines.
+* **Content Moderation:** Monitor posts to ensure community guidelines.
 
 ## 🛠️ Tech Stack
 

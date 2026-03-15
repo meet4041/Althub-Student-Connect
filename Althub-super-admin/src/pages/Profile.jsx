@@ -35,14 +35,16 @@ const Profile = () => {
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
     const [disable2, setDisable2] = useState(false);
+    const [activeTab, setActiveTab] = useState('general');
 
     // FETCHING DATA FROM DATABASE
     const getData = useCallback(() => {
         if (!admin_Id) return;
         
         axiosInstance.get(`/api/getAdminById/${admin_Id}`).then((response) => {
-            if (response.data.success === true && response.data.data?.[0]) {
-                const data = response.data.data[0];
+            const raw = response.data?.data;
+            const data = Array.isArray(raw) ? raw[0] : raw;
+            if (response.data.success === true && data) {
                 // Mapping database values to the input state
                 setProfileInfo({
                     name: data.name || "",
@@ -195,7 +197,7 @@ const Profile = () => {
                 <div id="content" className="content profile-wrapper">
                     
                     {/* ENHANCED HEADER */}
-                    <div className="d-flex justify-content-between align-items-end mb-5">
+                    <div className="d-flex justify-content-between align-items-end mb-3">
                         <div>
                             <h1 className="page-header mb-1">Administrative Identity</h1>
                             <p className="text-muted small font-weight-bold mb-0">Securely manage your system profile and credentials</p>
@@ -207,140 +209,157 @@ const Profile = () => {
                     </div>
 
                     <div className="row">
-                        {/* GENERAL INFO PANEL */}
-                        <div className="col-xl-6 mb-4">
-                            <div className="profile-panel shadow-sm">
-                                <div className="profile-panel-header">
-                                    <h4 className="profile-panel-title font-weight-bold text-navy">General Information</h4>
-                                </div>
-                                <div className="profile-panel-body">
-                                    <form onSubmit={submitHandler}>
-                                        <div className="profile-avatar-row">
-                                            <div className="profile-avatar-preview">
-                                                <img
-                                                    src={profileInfo.profilepic ? `${ALTHUB_API_URL}${profileInfo.profilepic}` : 'assets/img/login-bg/profile1.png'}
-                                                    alt="Admin"
-                                                />
-                                            </div>
-                                            <div className="profile-avatar-actions">
-                                                <label className="profile-label">Profile Image</label>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageUpload}
-                                                    className="profile-file-input"
-                                                />
-                                                <span className="profile-hint">JPG, PNG, or GIF</span>
-                                            </div>
-                                        </div>
-                                        <div className="profile-form-group">
-                                            <label className="profile-label">Full Name</label>
-                                            <input 
-                                                type="text" 
-                                                className="profile-input" 
-                                                value={profileInfo.name} 
-                                                onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} 
-                                                placeholder="Enter full name"
-                                                required 
-                                            />
-                                        </div>
-                                        <div className="profile-form-group">
-                                            <label className="profile-label">Phone Number</label>
-                                            <input 
-                                                type="text" 
-                                                className="profile-input" 
-                                                value={profileInfo.phone} 
-                                                onChange={(e) => setProfileInfo({ ...profileInfo, phone: e.target.value })} 
-                                                placeholder="Enter contact number"
-                                            />
-                                        </div>
-                                        <div className="profile-form-group mb-4">
-                                            <label className="profile-label">Email Address</label>
-                                            <input 
-                                                type="email" 
-                                                className="profile-input" 
-                                                value={profileInfo.email} 
-                                                onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} 
-                                                placeholder="Enter email address"
-                                                required 
-                                            />
-                                        </div>
-                                        <button type="submit" className="btn-save-profile w-100 font-weight-bold" disabled={disable}>
-                                            {disable ? 'SYNCHRONIZING...' : 'UPDATE IDENTITY'}
-                                        </button>
-                                    </form>
-                                </div>
+                        <div className="col-xl-3 col-lg-4 mb-4">
+                            <div className="profile-stepper vertical">
+                                <button
+                                    type="button"
+                                    className={`profile-step-btn ${activeTab === 'general' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('general')}
+                                >
+                                    General Info
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`profile-step-btn ${activeTab === 'security' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('security')}
+                                >
+                                    Credential Security
+                                </button>
                             </div>
                         </div>
 
-                        {/* PASSWORD CHANGE PANEL */}
-                        <div className="col-xl-6 mb-4">
-                            <div className="profile-panel shadow-sm">
-                                <div className="profile-panel-header">
-                                    <h4 className="profile-panel-title font-weight-bold text-navy">Credential Security</h4>
+                        <div className="col-xl-9 col-lg-8 mb-4">
+                            {activeTab === 'general' ? (
+                                <div className="profile-panel shadow-sm">
+                                    <div className="profile-panel-header">
+                                        <h4 className="profile-panel-title font-weight-bold text-navy">General Information</h4>
+                                    </div>
+                                    <div className="profile-panel-body">
+                                        <form onSubmit={submitHandler}>
+                                            <div className="profile-avatar-row">
+                                                <div className="profile-avatar-preview">
+                                                    <img
+                                                        src={profileInfo.profilepic ? `${ALTHUB_API_URL}${profileInfo.profilepic}` : 'assets/img/login-bg/profile1.png'}
+                                                        alt="Admin"
+                                                    />
+                                                </div>
+                                                <div className="profile-avatar-actions">
+                                                    <label className="profile-label">Profile Image</label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleImageUpload}
+                                                        className="profile-file-input"
+                                                    />
+                                                    <span className="profile-hint">JPG, PNG, or GIF</span>
+                                                </div>
+                                            </div>
+                                            <div className="profile-form-group">
+                                                <label className="profile-label">Full Name</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="profile-input" 
+                                                    value={profileInfo.name} 
+                                                    onChange={(e) => setProfileInfo({ ...profileInfo, name: e.target.value })} 
+                                                    placeholder="Enter full name"
+                                                    required 
+                                                />
+                                            </div>
+                                            <div className="profile-form-group">
+                                                <label className="profile-label">Phone Number</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="profile-input" 
+                                                    value={profileInfo.phone} 
+                                                    onChange={(e) => setProfileInfo({ ...profileInfo, phone: e.target.value })} 
+                                                    placeholder="Enter contact number"
+                                                />
+                                            </div>
+                                            <div className="profile-form-group mb-4">
+                                                <label className="profile-label">Email Address</label>
+                                                <input 
+                                                    type="email" 
+                                                    className="profile-input" 
+                                                    value={profileInfo.email} 
+                                                    onChange={(e) => setProfileInfo({ ...profileInfo, email: e.target.value })} 
+                                                    placeholder="Enter email address"
+                                                    required 
+                                                />
+                                            </div>
+                                            <button type="submit" className="btn-save-profile w-100 font-weight-bold" disabled={disable}>
+                                                {disable ? 'SYNCHRONIZING...' : 'UPDATE IDENTITY'}
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <div className="profile-panel-body">
-                                    <form onSubmit={submitHandlerTwo}>
-                                        <div className="profile-form-group">
-                                            <label className="profile-label">Current Password</label>
-                                            <div className="password-input-container">
-                                                <input
-                                                    type={showOld ? "text" : "password"}
-                                                    className="profile-input"
-                                                    name="oldpassword"
-                                                    onChange={handleChange}
-                                                    value={changepass.oldpassword}
-                                                    placeholder="••••••••"
-                                                />
-                                                <button type="button" className="eye-toggle-btn" onClick={() => setShowOld(!showOld)}>
-                                                    <i className={`fa ${showOld ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                                                </button>
+                            ) : (
+                                <div className="profile-panel shadow-sm">
+                                    <div className="profile-panel-header">
+                                        <h4 className="profile-panel-title font-weight-bold text-navy">Credential Security</h4>
+                                    </div>
+                                    <div className="profile-panel-body">
+                                        <form onSubmit={submitHandlerTwo}>
+                                            <div className="profile-form-group">
+                                                <label className="profile-label">Current Password</label>
+                                                <div className="password-input-container">
+                                                    <input
+                                                        type={showOld ? "text" : "password"}
+                                                        className="profile-input"
+                                                        name="oldpassword"
+                                                        onChange={handleChange}
+                                                        value={changepass.oldpassword}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button type="button" className="eye-toggle-btn" onClick={() => setShowOld(!showOld)}>
+                                                        <i className={`fa ${showOld ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                    </button>
+                                                </div>
+                                                {errors.oldpassword_err && <span className="error-text text-danger small">{errors.oldpassword_err}</span>}
                                             </div>
-                                            {errors.oldpassword_err && <span className="error-text text-danger small">{errors.oldpassword_err}</span>}
-                                        </div>
 
-                                        <div className="profile-form-group">
-                                            <label className="profile-label">New Password</label>
-                                            <div className="password-input-container">
-                                                <input
-                                                    type={showNew ? "text" : "password"}
-                                                    className="profile-input"
-                                                    name="newpassword"
-                                                    onChange={handleChange}
-                                                    value={changepass.newpassword}
-                                                    placeholder="••••••••"
-                                                />
-                                                <button type="button" className="eye-toggle-btn" onClick={() => setShowNew(!showNew)}>
-                                                    <i className={`fa ${showNew ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                                                </button>
+                                            <div className="profile-form-group">
+                                                <label className="profile-label">New Password</label>
+                                                <div className="password-input-container">
+                                                    <input
+                                                        type={showNew ? "text" : "password"}
+                                                        className="profile-input"
+                                                        name="newpassword"
+                                                        onChange={handleChange}
+                                                        value={changepass.newpassword}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button type="button" className="eye-toggle-btn" onClick={() => setShowNew(!showNew)}>
+                                                        <i className={`fa ${showNew ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                    </button>
+                                                </div>
+                                                {errors.newpassword_err && <span className="error-text text-danger small">{errors.newpassword_err}</span>}
                                             </div>
-                                            {errors.newpassword_err && <span className="error-text text-danger small">{errors.newpassword_err}</span>}
-                                        </div>
 
-                                        <div className="profile-form-group mb-4">
-                                            <label className="profile-label">Confirm New Password</label>
-                                            <div className="password-input-container">
-                                                <input
-                                                    type={showConfirm ? "text" : "password"}
-                                                    className="profile-input"
-                                                    name="confirmpassword"
-                                                    onChange={handleChange}
-                                                    value={changepass.confirmpassword}
-                                                    placeholder="••••••••"
-                                                />
-                                                <button type="button" className="eye-toggle-btn" onClick={() => setShowConfirm(!showConfirm)}>
-                                                    <i className={`fa ${showConfirm ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                                                </button>
+                                            <div className="profile-form-group mb-4">
+                                                <label className="profile-label">Confirm New Password</label>
+                                                <div className="password-input-container">
+                                                    <input
+                                                        type={showConfirm ? "text" : "password"}
+                                                        className="profile-input"
+                                                        name="confirmpassword"
+                                                        onChange={handleChange}
+                                                        value={changepass.confirmpassword}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button type="button" className="eye-toggle-btn" onClick={() => setShowConfirm(!showConfirm)}>
+                                                        <i className={`fa ${showConfirm ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                    </button>
+                                                </div>
+                                                {errors.confirmpassword_err && <span className="error-text text-danger small">{errors.confirmpassword_err}</span>}
                                             </div>
-                                            {errors.confirmpassword_err && <span className="error-text text-danger small">{errors.confirmpassword_err}</span>}
-                                        </div>
 
-                                        <button type="submit" className="btn-update-password w-100 font-weight-bold" disabled={disable2}>
-                                            {disable2 ? 'PROCESSING...' : 'ROTATE CREDENTIALS'}
-                                        </button>
-                                    </form>
+                                            <button type="submit" className="btn-update-password w-100 font-weight-bold" disabled={disable2}>
+                                                {disable2 ? 'PROCESSING...' : 'ROTATE CREDENTIALS'}
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

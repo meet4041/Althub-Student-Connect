@@ -1,9 +1,58 @@
 /* admin/src/jsx/styles/profile.css */
 
 .profile-wrapper {
-    padding: 30px;
+    padding: 8px 24px 16px;
     background-color: #f8fafc;
     min-height: 100vh;
+}
+
+/* Tighten top spacing on profile page */
+.profile-wrapper .page-header {
+    margin-top: -70px;
+    margin-bottom: 0 !important;
+}
+
+.profile-wrapper .breadcrumb {
+    margin-top: -4px;
+}
+
+/* Step Tabs */
+.profile-stepper {
+    display: inline-flex;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 6px;
+    border-radius: 999px;
+    margin-bottom: 0;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.profile-stepper.vertical {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 16px;
+    padding: 10px;
+    gap: 8px;
+}
+
+.profile-step-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.profile-step-btn.active {
+    background: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 8px 16px rgba(29, 78, 216, 0.25);
 }
 
 /* Panel & Card Design */
@@ -12,12 +61,12 @@
     border-radius: 16px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
+    margin-bottom: 16px;
     overflow: hidden;
 }
 
 .profile-panel-header {
-    padding: 20px 25px;
+    padding: 16px 20px;
     background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
 }
@@ -30,7 +79,7 @@
 }
 
 .profile-panel-body {
-    padding: 25px;
+    padding: 18px;
 }
 
 /* Avatar Upload */
@@ -38,7 +87,7 @@
     display: flex;
     align-items: center;
     gap: 18px;
-    padding: 14px;
+    padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
     background: #f8fafc;
@@ -46,8 +95,8 @@
 }
 
 .profile-avatar-preview {
-    width: 86px;
-    height: 86px;
+    width: 72px;
+    height: 72px;
     border-radius: 16px;
     overflow: hidden;
     border: 2px solid #e2e8f0;
@@ -85,7 +134,7 @@
 
 /* Form Styling */
 .profile-form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .profile-label {

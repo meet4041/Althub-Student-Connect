@@ -62,7 +62,7 @@ admin_route.post('/updatepassword', requireAuth, requireRole('admin'), admin_con
 // Apply the limiter specifically to the forget password route
 admin_route.post('/forgetpassword', resetPasswordLimiter, admin_controller.forgetPassword);
 
-admin_route.get('/resetpassword', admin_controller.resetpassword);
+admin_route.post('/resetpassword', admin_controller.resetpassword);
 
 admin_route.post('/adminUpdate', requireAuth, requireRole('admin'), admin_controller.updateAdmin);
 
@@ -86,5 +86,7 @@ admin_route.get('/getUsersByInstitute/:instituteId', requireAuth, requireRole('a
 // Add to adminRoute.js
 admin_route.get('/getUsersByInstName/:instituteName', requireAuth, requireRole('admin'), admin_controller.getUsersByInstituteName);
 admin_route.get('/getAdminById/:_id', requireAuth, requireRole('admin'), admin_controller.getAdminById);
+admin_route.get('/getPlacementCells', requireAuth, requireRole('admin'), admin_controller.getPlacementCells);
+admin_route.get('/getAlumniOffices', requireAuth, requireRole('admin'), admin_controller.getAlumniOffices);
 
 export default admin_route;

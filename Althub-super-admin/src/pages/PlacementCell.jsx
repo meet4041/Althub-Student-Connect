@@ -15,6 +15,7 @@ const PlacementCell = () => {
     const [searchTerm, setSearchTerm] = useState('');
     
     const [deleteId, setDeleteId] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
     const [showDeletePrompt, setShowDeletePrompt] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
@@ -96,7 +97,7 @@ const PlacementCell = () => {
                         <div className="row">
                             {displayData.length > 0 ? displayData.map((item) => (
                                 <div key={item._id} className="col-lg-4 col-md-6 mb-4">
-                                    <div className="inst-floating-card h-100">
+                                    <div className="inst-floating-card h-100" onClick={() => setSelectedItem(item)} style={{ cursor: 'pointer' }}>
                                         <div className="inst-card-body">
                                             <div className="d-flex justify-content-between">
                                                 <div className="inst-icon-glow">
@@ -104,31 +105,14 @@ const PlacementCell = () => {
                                                 </div>
                                                 <button 
                                                     className="btn btn-light-danger btn-xs rounded-pill px-2" 
-                                                    onClick={() => {setDeleteId(item._id); setShowDeletePrompt(true);}}
+                                                    onClick={(e) => {e.stopPropagation(); setDeleteId(item._id); setShowDeletePrompt(true);}}
                                                 >
                                                     <i className="fa fa-trash-alt text-danger"></i>
                                                 </button>
                                             </div>
 
                                             <div className="mt-4">
-                                                <h5 className="inst-title mb-1">{item.name}</h5>
-                                                <p className="profile-email-sub mb-3">
-                                                    <i className="fa fa-envelope-open mr-2"></i>{item.email}
-                                                </p>
-                                                
-                                                <div className="inst-detail-grid">
-                                                    <div className="detail-point full-width">
-                                                        <label>Affiliated Institute</label>
-                                                        <span className="text-primary font-weight-bold">
-                                                            <i className="fa fa-university mr-2"></i>
-                                                            {item.institute || "N/A"}
-                                                        </span>
-                                                    </div>
-                                                    <div className="detail-point">
-                                                        <label>Direct Contact</label>
-                                                        <span>{item.phone || "N/A"}</span>
-                                                    </div>
-                                                </div>
+                                                <h5 className="inst-title mb-0">{item.name}</h5>
                                             </div>
                                         </div>
                                     </div>
@@ -152,6 +136,46 @@ const PlacementCell = () => {
                     <SweetAlert success title="Purged" onConfirm={() => setShowSuccessAlert(false)}>
                         Entry successfully removed.
                     </SweetAlert>
+                )}
+
+                {selectedItem && (
+                    <div className="althub-modal-overlay" onClick={() => setSelectedItem(null)}>
+                        <div className="althub-modal-card" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-top-accent"></div>
+                            <button className="modal-close-btn" onClick={() => setSelectedItem(null)}>&times;</button>
+                            <div className="modal-content-inner">
+                                <div className="modal-profile-section">
+                                    <div>
+                                        <h2 className="modal-user-name">{selectedItem.name}</h2>
+                                        <span className="status-pill-modern pill-blue">
+                                            <i className="fa fa-briefcase mr-1"></i> Placement Cell
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="modal-details-grid mt-5">
+                                    <div className="detail-item">
+                                        <label>Email Address</label>
+                                        <p>{selectedItem.email || 'Not Provided'}</p>
+                                    </div>
+                                    <div className="detail-item">
+                                        <label>Contact Number</label>
+                                        <p>{selectedItem.phone || 'Not Provided'}</p>
+                                    </div>
+                                    <div className="detail-item full-width">
+                                        <label>Affiliated Institute</label>
+                                        <p>{selectedItem.institute || 'N/A'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="modal-footer-actions mt-5">
+                                    <button className="btn btn-primary btn-block rounded-pill py-3 font-weight-bold shadow-lg" onClick={() => setSelectedItem(null)}>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 )}
                 
                 <Footer />

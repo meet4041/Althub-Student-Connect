@@ -29,6 +29,11 @@ const verifyUser = async (token) => {
         
         if (!user) return null;
 
+        // Admin model doesn't store a role; treat it as "admin" for authz checks.
+        if (!user.role && user.constructor?.modelName === "adminTB") {
+            user.role = "admin";
+        }
+
         // Token Version Check (Security Feature: invalidates old tokens on password change)
         const dbTokenVersion = user.tokenVersion || 0;
         const tokenPayloadVersion = decoded.version || 0;
