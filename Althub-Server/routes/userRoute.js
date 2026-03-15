@@ -1,6 +1,6 @@
 import express from "express";
 import { uploadSingle, uploadFromBuffer, connectToMongo } from '../db/conn.js';
-import user_controller from "../controllers/userController.js"; 
+import * as user_controller from "../controllers/userController.js"; 
 import { requireAuth } from "../middleware/authMiddleware.js";
 
 const user_route = express.Router();

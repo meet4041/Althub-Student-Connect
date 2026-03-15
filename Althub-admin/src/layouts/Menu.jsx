@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
 import axios from '../service/axios'; 
-import { ALTHUB_API_URL } from '../pages/baseURL';
+import { ALTHUB_API_URL } from '../config/baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'

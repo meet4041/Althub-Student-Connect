@@ -6,63 +6,31 @@ import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
 const addPost = async (req, res) => {
     try {
-        console.log('addPost req.files length:', req.files ? req.files.length : 0);
-        let photos = [];
-        // 1. If middleware set a single image (legacy)
-        if (req.body.image) {
-            photos = [req.body.image];
-        }
+        await connectToMongo();
 
-        // 2. If req.images already prepared by middleware
-        else if (req.images) {
-            photos = req.images;
-        }
-
-        // 3. If files were uploaded via uploadArray('photos'), process them
-        else if (req.files && req.files.length > 0) {
-            // Enforce maximum count and validate that uploader owns the userid
-            const MAX_FILES = 5;
-            if (req.files.length > MAX_FILES) return res.status(400).send({ success: false, msg: 'Too many files uploaded' });
-
-            // Security: Ensure the authenticated user matches the userid in the body
-            if (req.user && req.body.userid && req.user._id.toString() !== req.body.userid.toString()) {
-                return res.status(403).send({ success: false, msg: 'Unauthorized: userid mismatch' });
-            }
-
-            await connectToMongo();
+        // Handle Images
+        let photoIds = [];
+        if (req.files && req.files.length > 0) {
             for (const file of req.files) {
-                // Basic safety: ensure buffer exists
-                if (!file.buffer || !file.originalname) continue;
                 const filename = `post-${Date.now()}-${file.originalname}`;
                 const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
-                photos.push(`/api/images/${fileId}`);
+                photoIds.push(`/api/images/${fileId}`);
             }
-            console.log('addPost uploaded photos:', photos);
         }
 
-        // Limit description length
-        const description = typeof req.body.description === 'string' ? req.body.description.slice(0, 5000) : '';
-
-        const requesterId = req.user?._id?.toString();
-        if (requesterId && req.body.userid && requesterId !== req.body.userid.toString()) {
-            return res.status(403).send({ success: false, msg: 'Unauthorized: userid mismatch' });
-        }
-
-        const post = new Post({
-            userid: req.body.userid || requesterId,
-            fname: req.body.fname,
-            lname: req.body.lname,
-            companyname: req.body.companyname,
-            profilepic: req.body.profilepic,
-            description: description,
+        const newPost = new Post({
+            // FIX: Save 'senderid' from frontend into 'userid' field in DB
+            // This ensures getPostById finds it later.
+            userid: req.body.senderid, 
+            senderid: req.body.senderid, // Optional: Keep both if needed for notifications
+            
+            title: req.body.title || "Update",
+            description: req.body.description,
             date: req.body.date || new Date(),
-            photos: photos,
-            createdByRole: req.user?.role || "institute"
+            photos: photoIds
         });
 
-        // FIXED: Changed 'newPost.save()' to 'post.save()'
-        const savedPost = await post.save();
-        console.log('addPost saved:', savedPost);
+        const savedPost = await newPost.save();
 
         res.status(200).send({ success: true, msg: "Post Added Successfully", data: savedPost });
 
@@ -102,11 +70,6 @@ const editPost = async (req, res) => {
         const post = await Post.findById(id);
         if (!post) {
             return res.status(404).send({ success: false, msg: "Post not found" });
-        }
-        const ownerId = (post.userid || post.senderid || '').toString();
-        const requesterId = req.user?._id?.toString();
-        if (requesterId && ownerId && requesterId !== ownerId) {
-            return res.status(403).send({ success: false, msg: "Forbidden: cannot edit this post" });
         }
 
         let newPhotoUrls = [];
@@ -154,13 +117,6 @@ const getPosts = async (req, res) => {
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
-        const post = await Post.findById(id).lean();
-        if (!post) return res.status(404).send({ success: false, msg: "Post not found" });
-        const ownerId = (post.userid || post.senderid || '').toString();
-        const requesterId = req.user?._id?.toString();
-        if (requesterId && ownerId && requesterId !== ownerId) {
-            return res.status(403).send({ success: false, msg: "Forbidden: cannot delete this post" });
-        }
         await Post.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'Post Deleted successfully' });
     } catch (error) {

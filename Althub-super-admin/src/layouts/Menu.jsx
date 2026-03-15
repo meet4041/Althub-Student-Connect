@@ -11,7 +11,7 @@ function Menu() {
    const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
 
    const [admin, setAdmin] = useState({
-      name: localStorage.getItem('AlmaPlus_admin_Name') || 'Admin',
+      name: localStorage.getItem('AlmaPlus_admin_Name') || 'Super Admin',
       profilepic: localStorage.getItem('AlmaPlus_admin_Pic') || ''
    });
 

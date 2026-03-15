@@ -2,7 +2,7 @@
  * Image URL utilities for Althub Admin.
  * Handles image URLs for protected image routes and works with Vercel deployment.
  */
-import { ALTHUB_API_URL } from '../pages/baseURL';
+import { ALTHUB_API_URL } from '../config/baseURL';
 
 /** Default fallback images by context */
 export const FALLBACK_IMAGES = {

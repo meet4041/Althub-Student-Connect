@@ -6,11 +6,10 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import randomstring from "randomstring";
 import mongoose from "mongoose";
-import RefreshToken from "../models/refreshTokenModel.js";
+import crypto from "crypto";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
-
+import RefreshToken from "../models/refreshTokenModel.js";
 // --- SECURITY UTILITIES ---
-// return xss(text);
 const sanitizeInput = (text) => {
     if (typeof text !== 'string') return text;
     return text.replace(/<[^>]*>?/gm, '');
@@ -25,6 +24,10 @@ const createAccessToken = (user) => {
 
 const createRefreshToken = (user, jti) => {
     return jwt.sign({ _id: user._id, version: user.tokenVersion || 0, role: user.role || 'student', jti }, config.secret_refresh, { expiresIn: '7d' });
+}
+
+const createtoken = (user) => {
+    return jwt.sign({ _id: user._id, version: user.tokenVersion || 0, role: user.role || 'student' }, config.secret_jwt, { expiresIn: '7d' });
 }
 
 const securePassword = async (password) => {
@@ -211,14 +214,6 @@ export const userlogin = async (req, res) => {
                     path: '/api'
                 });
 
-                const csrfToken = crypto.randomBytes(32).toString('hex');
-                res.cookie('csrf_token', csrfToken, {
-                    httpOnly: false,
-                    secure: isProduction,
-                    sameSite: isProduction ? 'None' : 'Lax',
-                    maxAge: 24 * 60 * 60 * 1000
-                });
-
                 const userResult = {
                     _id: userData._id,
                     fname: userData.fname,
@@ -241,6 +236,53 @@ export const userlogin = async (req, res) => {
         }
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
+export const refreshToken = async (req, res) => {
+    try {
+        const token = req.cookies.refresh_token || req.body.refresh_token;
+        if (!token) {
+            return res.status(401).send({ success: false, msg: "Refresh token missing" });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, config.secret_refresh);
+        } catch (err) {
+            return res.status(401).send({ success: false, msg: "Invalid refresh token" });
+        }
+
+        const stored = await RefreshToken.findOne({ jti: decoded.jti, userid: decoded._id, revoked: false });
+        if (!stored) {
+            return res.status(401).send({ success: false, msg: "Refresh token revoked or not found" });
+        }
+        if (stored.expiresAt && stored.expiresAt.getTime() < Date.now()) {
+            return res.status(401).send({ success: false, msg: "Refresh token expired" });
+        }
+
+        const user = await User.findById(decoded._id).select("+tokenVersion");
+        if (!user) {
+            return res.status(401).send({ success: false, msg: "User not found" });
+        }
+        if ((user.tokenVersion || 0) !== (decoded.version || 0)) {
+            return res.status(401).send({ success: false, msg: "Token version mismatch" });
+        }
+
+        const accessToken = createAccessToken(user);
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        res.cookie("jwt_token", accessToken, {
+            httpOnly: true,
+            maxAge: 15 * 60 * 1000,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            path: '/'
+        });
+
+        return res.status(200).send({ success: true, accessToken });
+    } catch (error) {
+        return res.status(400).send({ success: false, msg: error.message });
     }
 }
 
@@ -447,56 +489,9 @@ export const searchUserById = async (req, res) => {
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
-const userLogout = async (req, res) => {
-    try {
-        res.clearCookie("jwt_token");
-        res.clearCookie("refresh_token", { path: '/api' });
-        res.status(200).send({ success: true, msg: "Logged Out" });
-    } catch (error) { res.status(400).send({ success: false }); }
-}
-
-const refreshToken = async (req, res) => {
-    try {
-        const rToken = req.cookies.refresh_token;
-        if (!rToken) return res.status(401).send({ success: false, msg: 'No refresh token' });
-        let decoded;
-        try { decoded = jwt.verify(rToken, config.secret_refresh); } catch (err) { return res.status(401).send({ success: false, msg: 'Invalid refresh token' }); }
-
-        // Verify tokenVersion and jti in DB
-        const CurrentUserModel = User;
-        const userData = await CurrentUserModel.findById(decoded._id).select('+tokenVersion');
-        if (!userData) return res.status(401).send({ success: false, msg: 'User not found' });
-        if ((userData.tokenVersion || 0) !== (decoded.version || 0)) return res.status(401).send({ success: false, msg: 'Token revoked' });
-
-        const jti = decoded.jti;
-        if (!jti) return res.status(401).send({ success: false, msg: 'Invalid refresh token' });
-
-        const tokenRecord = await RefreshToken.findOne({ jti, userid: decoded._id.toString() });
-        if (!tokenRecord || tokenRecord.revoked) return res.status(401).send({ success: false, msg: 'Refresh token revoked' });
-
-        // Rotate: revoke old record and create new one
-        tokenRecord.revoked = true;
-        await tokenRecord.save();
-
-        const newJti = crypto.randomUUID();
-        const newAccess = createAccessToken(userData);
-        const newRefresh = createRefreshToken(userData, newJti);
-
-        try {
-            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            await RefreshToken.create({ userid: userData._id.toString(), jti: newJti, expiresAt });
-        } catch (err) {
-            console.error('RefreshToken rotate failed', err.message);
-        }
-
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie('jwt_token', newAccess, { httpOnly: true, maxAge: 15 * 60 * 1000, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/' });
-        res.cookie('refresh_token', newRefresh, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/api' });
-
-        return res.status(200).send({ success: true, msg: 'Token refreshed' });
-    } catch (error) {
-        return res.status(500).send({ success: false, msg: error.message });
-    }
+export const userLogout = async (req, res) => {
+    try { res.clearCookie("jwt_token"); res.status(200).send({ success: true, msg: "Logged Out" }); }
+    catch (error) { res.status(400).send({ success: false }); }
 }
 
 export const getUsers = async (req, res) => {
@@ -581,16 +576,17 @@ export const getUsersOfInstitute = async (req, res) => {
 
 export const getAlumniByCourseSpec = async (req, res) => {
     try {
-        const currentInstituteId = req.user._id;
-        const course = (req.query.course || "").trim();
-        const specialization = (req.query.specialization || "").trim();
+        const course = sanitizeInput(req.query.course || req.body.course);
+        const specialization = sanitizeInput(req.query.specialization || req.body.specialization);
 
-        if (!course) {
-            return res.status(400).send({ success: false, msg: "course is required" });
+        if (!course && !specialization) {
+            return res.status(400).send({ success: false, msg: "Course or specialization is required" });
         }
 
+        const courseRegex = createFlexibleRegex(course);
+        const specRegex = createFlexibleRegex(specialization);
+
         const data = await User.aggregate([
-            { $match: { institute_id: new mongoose.Types.ObjectId(currentInstituteId) } },
             {
                 $lookup: {
                     from: Education.collection.name,
@@ -604,46 +600,23 @@ export const getAlumniByCourseSpec = async (req, res) => {
             }
         ]);
 
-        const normalizedCourse = course.toLowerCase();
-        const normalizedSpec = specialization.toLowerCase();
-
-        const filtered = data.map((user) => {
-            const matchingEdu = (user.educationList || []).filter((edu) => {
-                const eduCourse = (edu.course || "").toLowerCase();
-                const eduSpec = (edu.specialization || "").toLowerCase();
-                const courseMatch = eduCourse === normalizedCourse;
-                const specMatch = normalizedSpec ? eduSpec === normalizedSpec : true;
-                return courseMatch && specMatch;
+        const filtered = data.filter(user => {
+            if (!user.educationList || user.educationList.length === 0) return false;
+            const matching = user.educationList.filter(edu => {
+                const courseOk = courseRegex ? courseRegex.test(edu.course || "") : true;
+                const specOk = specRegex ? specRegex.test(edu.specialization || "") : true;
+                return courseOk && specOk;
             });
+            if (matching.length === 0) return false;
+            return checkAlumniStatus(matching);
+        });
 
-            return { ...user, educationList: matchingEdu };
-        }).filter((user) => user.educationList.length > 0);
-
-        const finalData = filtered.map(user => {
-            const type = determineUserStatus(user.educationList);
-            if (type !== "Alumni") return null;
-            const sortedEdu = user.educationList.sort((a, b) => {
-                const dateA = new Date(a.enddate || "1900-01-01");
-                const dateB = new Date(b.enddate || "1900-01-01");
-                return dateB - dateA;
-            });
-            const latest = sortedEdu[0] || {};
-            return {
-                ...user,
-                type,
-                course: latest.course || "",
-                specialization: latest.specialization || "",
-                eduStart: latest.joindate || "",
-                eduEnd: latest.enddate || ""
-            };
-        }).filter(Boolean);
-
-        res.status(200).send({ success: true, data: finalData });
+        res.status(200).send({ success: true, data: filtered });
     } catch (error) {
-        console.error("getAlumniByCourseSpec error:", error);
+        console.error(error);
         res.status(400).send({ success: false, msg: error.message });
     }
-};
+}
 
 export const followUser = async (req, res) => {
     if (req.body.userId !== req.params.id) {
@@ -718,11 +691,3 @@ export const getRandomUsers = async (req, res) => {
         res.status(200).send({ success: true, data: user_data });
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
 }
-
-export default {
-    registerUser, userlogin, updatePassword, forgetPassword, resetpassword,
-    userProfileEdit, searchUser, userLogout, uploadUserImage, getUsers,
-    followUser, unfollowUser, searchUserById, deleteUser, getUsersOfInstitute,
-    getTopUsers, updateProfilePic, deleteProfilePic, getRandomUsers, refreshToken,
-    getAlumniByCourseSpec
-};

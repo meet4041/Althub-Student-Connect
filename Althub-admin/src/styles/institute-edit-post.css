@@ -1,0 +1,65 @@
+.institute-edit-post {
+    background: #f8fafc;
+}
+
+.institute-edit-post .add-post-container {
+    padding: 8px 22px 24px;
+}
+
+.institute-edit-post .post-form-card {
+    max-width: 1000px;
+    margin: 0 auto;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.institute-edit-post .post-body-scroll {
+    padding: 16px 18px;
+}
+
+.institute-edit-post .form-control-saas {
+    min-height: 140px;
+    height: 140px;
+    font-size: 14px;
+    line-height: 1.5;
+    background: #f8fafc;
+}
+
+.institute-edit-post .post-upload-zone {
+    min-height: 140px;
+    padding: 14px;
+    border-radius: 12px;
+}
+
+.institute-edit-post .post-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+}
+
+.institute-edit-post .post-preview-img {
+    border-radius: 10px;
+}
+
+.institute-edit-post .edit-event-save-btn {
+    padding: 10px 24px;
+}
+
+.institute-edit-post .edit-event-note {
+    border-left: 3px solid #2563eb;
+}
+
+@media (max-width: 767px) {
+    .institute-edit-post .post-form-card {
+        border-radius: 12px;
+    }
+
+    .institute-edit-post .form-control-saas {
+        min-height: 120px;
+        height: 120px;
+    }
+
+    .institute-edit-post .post-upload-zone {
+        min-height: 120px;
+    }
+}

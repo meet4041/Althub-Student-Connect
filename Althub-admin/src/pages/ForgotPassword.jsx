@@ -3,7 +3,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
-import { ALTHUB_API_URL } from './baseURL';
+import { ALTHUB_API_URL } from '../config/baseURL';
 import axiosInstance from '../service/axios';
 
 // COMPANY STANDARD: Import external CSS files
