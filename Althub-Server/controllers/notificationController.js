@@ -51,7 +51,7 @@ const getnotifications = async (req, res) => {
 
         res.status(200).send({ success: true, data: notifications });
     } catch (error) {
-        console.log("Error in getnotifications controller", error);
+        console.error("Error in getnotifications controller", error);
         res.status(500).send({ success: false, error: "Internal Server Error" });
     }
 };

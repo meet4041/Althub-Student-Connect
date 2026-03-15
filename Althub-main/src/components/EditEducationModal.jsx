@@ -90,7 +90,12 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
             getEducation();
             ex._id ? setModalType("Edit") : closeModal();
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+            if (import.meta.env.DEV) {
+              console.error(error);
+            }
+            toast.error(error.response?.data?.msg || "Failed to save education");
+        });
   };
 
   const handleDelete = () => {

@@ -145,7 +145,7 @@ const likeUnlikePost = async (req, res) => {
                     await notification.save();
                 }
             } catch (notifyErr) {
-                console.log("Notification error (non-fatal):", notifyErr.message);
+                console.warn("Notification error (non-fatal):", notifyErr.message);
             }
 
             res.status(200).send({ msg: "Like" });

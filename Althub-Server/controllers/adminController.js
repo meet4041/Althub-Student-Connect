@@ -42,7 +42,7 @@ const sendresetpasswordMail = async (name, email, token, baseUrl) => {
         }
         await transporter.sendMail(mailoptions);
     } catch (error) {
-        console.log("Mail Error:", error.message);
+        console.error("Mail Error:", error.message);
     }
 }
 

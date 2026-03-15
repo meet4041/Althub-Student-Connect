@@ -11,10 +11,9 @@ const addCourse = async (req, res) => {
 
         const course_data = await course.save();
         res.status(200).send({ success: true, data: course_data });
-
-        console.log(course);
     }
     catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
     }
 }
 

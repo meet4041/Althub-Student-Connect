@@ -9,6 +9,11 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
   const [user, setUser] = useState({});
   const myid = localStorage.getItem("Althub_Id");
   const nav = useNavigate(); 
+  const logError = (error) => {
+    if (import.meta.env.DEV) {
+      console.error(error);
+    }
+  };
 
   const getUser1 = useCallback(() => {
     if (userid && userid !== "") {
@@ -22,7 +27,7 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
           }
         })
         .catch((error) => {
-          console.log(error);
+          logError(error);
         });
     }
   }, [userid]);
@@ -41,7 +46,7 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
           getUser();
         })
         .catch((error) => {
-          console.log(error);
+          logError(error);
         });
     }
   };

@@ -36,7 +36,11 @@ const AddPost = () => {
             axiosInstance.get(`${ALTHUB_API_URL}/api/getInstituteById/${id}`, {
             }).then(res => {
                 if (res.data.success) setInstitute_Data(res.data.data);
-            }).catch(err => console.log("Profile fetch error", err));
+            }).catch(err => {
+                if (import.meta.env.DEV) {
+                    console.error("Profile fetch error", err);
+                }
+            });
         }
     }, []);
 

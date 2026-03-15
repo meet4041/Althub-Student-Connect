@@ -110,7 +110,6 @@ const [uploading, setUploading] = useState(false);
     };
 
     const url = ex._id ? `${WEB_URL}/api/editExperience` : `${WEB_URL}/api/addExperience`;
-    console.log('Submitting experience payload:', payload, 'to', url);
     axios.post(url, payload)
       .then((res) => {
         if (res.data && res.data.success) {
@@ -118,12 +117,16 @@ const [uploading, setUploading] = useState(false);
           getExperience();
           ex._id ? setModalType("Edit") : closeModal();
         } else {
-          console.error('Save failed response:', res.data);
+          if (import.meta.env.DEV) {
+            console.error('Save failed response:', res.data);
+          }
           toast.error(res.data?.msg || 'Save failed');
         }
       })
       .catch((err) => {
-        console.error('Save error:', err);
+        if (import.meta.env.DEV) {
+          console.error('Save error:', err);
+        }
         toast.error(err.response?.data?.msg || 'Save failed');
       });
   };

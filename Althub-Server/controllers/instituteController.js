@@ -198,14 +198,6 @@ const getInstitutes = async (req, res) => {
         // 1. Find ALL documents in the collection
         // 2. We REMOVED .select() to ensure the 'name' field is not filtered out
         const data = await Institute.find({}).lean();
-            
-        // Debugging: Print to your VS Code terminal to prove names are found
-        console.log("------------------------------------------");
-        console.log(`[DEBUG] Institutes Found: ${data.length}`);
-        if (data.length > 0) {
-            console.log(`[DEBUG] First Institute Name: '${data[0].name}'`); // Should print "DAU"
-        }
-        console.log("------------------------------------------");
         
         res.status(200).send({ success: true, data });
     } catch (error) { 
