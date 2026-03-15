@@ -69,7 +69,7 @@ institute_route.get('/getInstituteById/:_id', requireAuth, requireRole('institut
 institute_route.get('/getAlumniOfficeByInstitute/:instituteId', requireAuth, requireRole('institute', 'alumni_office'), institute_controller.getAlumniOfficeByInstitute);
 institute_route.get('/getPlacementCellByInstitute/:instituteId', requireAuth, requireRole('institute', 'placement_cell'), institute_controller.getPlacementCellByInstitute);
 institute_route.post('/inviteUser', requireAuth, requireRole('institute'), institute_controller.inviteUser);
-institute_route.post('/bulkInviteAlumniCsv', requireAuth, requireRole('institute', 'alumni_office'), uploadLimiter, csvUpload.single('file'), institute_controller.bulkInviteAlumniCsv);
+institute_route.post('/bulkInviteAlumniCsv', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), uploadLimiter, csvUpload.single('file'), institute_controller.bulkInviteAlumniCsv);
 
 // --- IMAGE UPLOAD (Protected) ---
 institute_route.post('/uploadInstituteImage', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), uploadLimiter, upload.single('image'), institute_controller.uploadInstituteImage);

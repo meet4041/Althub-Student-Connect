@@ -36,6 +36,23 @@ const AlumniMembers = () => {
             .catch(() => setCourses([]));
     }, [instituteId]);
 
+    useEffect(() => {
+        if (!instituteId) return;
+        setLoading(true);
+        axiosInstance.get(`/api/getUsersOfInstitute/${instituteId}`)
+            .then((res) => {
+                if (res.data?.success) {
+                    const allUsers = res.data.data || [];
+                    const alumniOnly = allUsers.filter(u => u.type === 'Alumni');
+                    setAlumniList(alumniOnly);
+                } else {
+                    setAlumniList([]);
+                }
+            })
+            .catch(() => setAlumniList([]))
+            .finally(() => setLoading(false));
+    }, [instituteId]);
+
     const selectCourse = async (course) => {
         setSelectedCourseId(course._id || course.id);
         setLoading(true);
@@ -43,6 +60,7 @@ const AlumniMembers = () => {
             const params = new URLSearchParams();
             params.append('course', course.name || course.course || '');
             if (course.stream) params.append('specialization', course.stream);
+            if (instituteId) params.append('instituteId', instituteId);
             const res = await axiosInstance.get(`/api/getAlumniByCourseSpec?${params.toString()}`);
             setAlumniList(res.data?.data || []);
         } catch (err) {
@@ -155,7 +173,7 @@ const AlumniMembers = () => {
                 </div>
 
                 {selectedUser && (
-                    <div className="modal-backdrop-custom">
+                    <div className="modal fade show modal-backdrop-custom">
                         <div className="modal-dialog modal-dialog-centered user-modal-wide">
                             <div className="modal-content modal-content-premium">
                                 <div className="modal-body p-0">

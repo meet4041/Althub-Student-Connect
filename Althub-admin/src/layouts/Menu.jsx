@@ -58,9 +58,10 @@ function Menu() {
          axios.get(`/api/getInstituteById/${id}`)
          .then((response) => {
             if (response.data.success === true) {
+               const fetched = response.data.data || {};
                setProfileInfo({
-                  name: response.data.data.name,
-                  image: response.data.data.image
+                  name: fetched.institutename || fetched.name || profileInfo.name,
+                  image: fetched.profilepic || fetched.image || ''
                })
             }
          })

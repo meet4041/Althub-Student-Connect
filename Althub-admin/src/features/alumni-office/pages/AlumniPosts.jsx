@@ -38,7 +38,7 @@ const AlumniPosts = () => {
                     setPosts(response.data.data || []);
                 }
             }).catch(() => setPosts([]));
-    }, [institute_Id, token]);
+    }, [institute_Id]);
 
     useEffect(() => { if (institute_Id) getPostsData(); }, [institute_Id, getPostsData]);
     useEffect(() => { setDisplayPosts(posts); }, [posts]);

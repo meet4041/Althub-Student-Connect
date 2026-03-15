@@ -43,7 +43,7 @@ const AlumniEvents = () => {
                 }
             }).catch(() => setEvents([]));
         }
-    }, [institute_Id, token]);
+    }, [institute_Id]);
 
     useEffect(() => {
         if (institute_Id) getEventsData();

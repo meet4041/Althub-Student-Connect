@@ -1,10 +1,14 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate, Link, useParams } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ALTHUB_API_URL } from "../config/baseURL";
 import axiosInstance from '../service/axios';
+
+// COMPANY STANDARD: Import external CSS files
+import '../styles/login.css';    // Shared split-screen layout
+import '../styles/password.css'; // Page-specific styles
 
 function NewPassword() {
     const queryParameters = new URLSearchParams(window.location.search)
@@ -75,89 +79,88 @@ function NewPassword() {
         setChangePass(newPass);
     };
 
-    useEffect(() => {
-        document.getElementById("page-loader").style.display = "none";
-        var element = document.getElementById("page-container");
-        element.classList.add("show");
-    }, []);
-
     return (
         <>
-            <ToastContainer />
-            <div id="page-loader" className="fade show">
-                <span className="spinner"></span>
-            </div>
+            <ToastContainer theme="colored" position="top-right" />
 
-            <div className="login-cover">
-                <div
-                    className="login-cover-image"
-                    style={{
-                        backgroundImage: "url(assets/img/login-bg/login-bg-17.jpg)",
-                    }}
-                    data-id="login-cover-image"
-                ></div>
-                <div className="login-cover-bg"></div>
-            </div>
+            <div className="auth-main-wrapper">
+                <div className="auth-split-container">
 
-            <div id="page-container" className="fade">
-                <div className="login login-v2">
-                    <div className="login-header">
-                        <div className="brand">
-                            <span className="logo"></span> <b>Althub</b> Admin
-                            <small>Forgot Password for Althub admin panel</small>
-                        </div>
-                        <div className="icon">
-                            <i className="fa fa-lock"></i>
+                    {/* LEFT SIDE: BRAND VISUALS */}
+                    <div className="auth-visual-side d-none d-lg-flex">
+                        <div className="mesh-overlay"></div>
+                        <div className="visual-inner">
+                            <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '14px', display: 'inline-block', marginBottom: '25px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '70px', borderRadius: '6px' }} />
+                            </div>
+                            <h1 className="title-text">Althub <span className="text-highlight">Admin</span></h1>
+                            <p className="subtitle-text">Create a strong new password to keep your account secure.</p>
+                            <div className="feature-badges mt-5">
+                                <span className="badge-pill-custom"><i className="fa fa-shield-alt mr-2"></i> Secure Reset</span>
+                                <span className="badge-pill-custom"><i className="fa fa-lock mr-2"></i> Encrypted</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="login-content">
-                        <form onSubmit={submitHandler}>
-                            <fieldset>
-                                <div className="row">
-                                    <div className="col-md-12 form-group">
-                                        <label htmlFor="exampleInputNewPass">New Password:</label>
+                    {/* RIGHT SIDE: RESET FORM */}
+                    <div className="auth-form-side">
+                        <div className="form-card-inner">
+                            {/* Mobile Logo View */}
+                            <div className="mobile-header d-lg-none text-center mb-4">
+                                <img src='Logo1.jpeg' alt="logo" style={{ height: '55px', borderRadius: '8px', marginBottom: '10px' }} />
+                                <h3 className="font-weight-bold text-navy">Althub Admin</h3>
+                            </div>
+
+                            <div className="form-heading mb-4">
+                                <h2 className="font-weight-bold text-navy">Set New Password</h2>
+                                <p className="text-muted">Enter and confirm your new password</p>
+                            </div>
+
+                            <form onSubmit={submitHandler}>
+                                <div className="modern-form-group">
+                                    <label className="label-modern">New Password</label>
+                                    <div className={`input-wrapper-modern ${errors.new_password_err ? 'error-border' : ''}`}>
+                                        <i className="fa fa-lock icon-left"></i>
                                         <input
                                             type="password"
-                                            className="form-control"
-                                            id="exampleInputNewPass"
-                                            placeholder="Enter new password here.."
+                                            placeholder="Enter new password"
                                             name="password"
                                             onChange={handleChange}
                                             value={changepass.password}
                                         />
-                                        <div className="text-danger">{errors.new_password_err}</div>
                                     </div>
+                                    {errors.new_password_err && <div className="error-msg-modern">{errors.new_password_err}</div>}
                                 </div>
-                                <div className="row">
-                                    <div className="col-md-12 form-group">
-                                        <label htmlFor="exampleInputConfirmPass">
-                                            Confirm Password:
-                                        </label>
+
+                                <div className="modern-form-group">
+                                    <label className="label-modern">Confirm Password</label>
+                                    <div className={`input-wrapper-modern ${errors.confirm_password_err ? 'error-border' : ''}`}>
+                                        <i className="fa fa-lock icon-left"></i>
                                         <input
                                             type="password"
-                                            className="form-control"
-                                            id="exampleInputConfirmPass"
-                                            placeholder="Enter confirm password here.."
+                                            placeholder="Re-enter password"
                                             name="confirm_password"
                                             onChange={handleChange}
                                             value={changepass.confirm_password}
                                         />
-                                        <div className="text-danger">
-                                            {errors.confirm_password_err}
-                                        </div>
                                     </div>
+                                    {errors.confirm_password_err && <div className="error-msg-modern">{errors.confirm_password_err}</div>}
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    className="btn btn-success btn-block btn-lg"
-                                    disabled={disable}
-                                >
-                                    {disable ? "Processing..." : "Submit"}
+                                <button type="submit" className="btn-modern-submit" disabled={disable}>
+                                    {disable ? "PROCESSING..." : "UPDATE PASSWORD"}
                                 </button>
-                            </fieldset>
-                        </form>
+
+                                <div className="text-center mt-3">
+                                    <p className="text-muted">
+                                        Remember credentials?
+                                        <Link to="/" className="back-to-login-link ml-1">
+                                            Back to Login
+                                        </Link>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ const placementSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
     phone: { type: String },
+    image: { type: String },
 
     // Link to the Main Institute
     parent_institute_id: {

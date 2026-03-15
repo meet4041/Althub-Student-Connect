@@ -526,7 +526,18 @@ export const getTopUsers = async (req, res) => {
 
 export const getUsersOfInstitute = async (req, res) => {
     try {
+        const instituteParam = req.params.institute;
+        const matchStage = {};
+        if (instituteParam) {
+            if (mongoose.Types.ObjectId.isValid(instituteParam)) {
+                matchStage.institute_id = new mongoose.Types.ObjectId(instituteParam);
+            } else {
+                matchStage.institute = instituteParam;
+            }
+        }
+
         const data = await User.aggregate([
+            ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
             {
                 $lookup: {
                     from: Education.collection.name, 
@@ -578,6 +589,7 @@ export const getAlumniByCourseSpec = async (req, res) => {
     try {
         const course = sanitizeInput(req.query.course || req.body.course);
         const specialization = sanitizeInput(req.query.specialization || req.body.specialization);
+        const instituteParam = sanitizeInput(req.query.instituteId || req.body.instituteId || "");
 
         if (!course && !specialization) {
             return res.status(400).send({ success: false, msg: "Course or specialization is required" });
@@ -586,7 +598,17 @@ export const getAlumniByCourseSpec = async (req, res) => {
         const courseRegex = createFlexibleRegex(course);
         const specRegex = createFlexibleRegex(specialization);
 
+        const matchStage = {};
+        if (instituteParam) {
+            if (mongoose.Types.ObjectId.isValid(instituteParam)) {
+                matchStage.institute_id = new mongoose.Types.ObjectId(instituteParam);
+            } else {
+                matchStage.institute = instituteParam;
+            }
+        }
+
         const data = await User.aggregate([
+            ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
             {
                 $lookup: {
                     from: Education.collection.name,

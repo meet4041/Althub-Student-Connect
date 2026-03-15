@@ -28,6 +28,7 @@ function Dashboard() {
     const isAlumniOffice = userRole === 'alumni_office';
     const isPlacementOffice = userRole === 'placement_cell';
     const isInstitute = !isAlumniOffice && !isPlacementOffice;
+    const csvTitle = isAlumniOffice ? 'Upload Alumni CSV' : 'Upload Student CSV';
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -144,7 +145,7 @@ function Dashboard() {
                         </div>
                     </div>
 
-                    {(isAlumniOffice || isInstitute) && (
+                    {(isAlumniOffice || isInstitute || isPlacementOffice) && (
                         <div className="dashboard-csv-bar">
                             <div className="dashboard-csv-text">
                                 Bulk invite to students via email (CSV)
@@ -302,7 +303,7 @@ function Dashboard() {
                 <div className="csv-modal-backdrop" onClick={() => setShowCsvModal(false)}>
                     <div className="csv-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="csv-modal-header">
-                            <h4 className="csv-modal-title">Upload Alumni CSV</h4>
+                            <h4 className="csv-modal-title">{csvTitle}</h4>
                             <button className="csv-modal-close" onClick={() => setShowCsvModal(false)} aria-label="Close">&times;</button>
                         </div>
                         <form onSubmit={handleCsvUpload} className="csv-modal-body">
