@@ -17,10 +17,10 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Company routes
-notification_route.post('/deleteNotification', notification_controller.deleteNotification);
-notification_route.post('/addNotification', notification_controller.addNotification);
-notification_route.post('/getnotifications', notification_controller.getnotifications);
-notification_route.post('/uploadNotificationSenderImage', upload.single('senderimage'), async (req, res) => {
+notification_route.post('/deleteNotification', requireAuth, notification_controller.deleteNotification);
+notification_route.post('/addNotification', requireAuth, notification_controller.addNotification);
+notification_route.post('/getnotifications', requireAuth, notification_controller.getnotifications);
+notification_route.post('/uploadNotificationSenderImage', requireAuth, upload.single('senderimage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
         const id = await gridfs.uploadFromBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);

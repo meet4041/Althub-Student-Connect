@@ -25,14 +25,24 @@ const admin = new mongoose.Schema({
     },
     token: {
         type: String,
-        default: ''
+        default: '',
+        select: false
     },
+<<<<<<< HEAD
+=======
+    tokenExpires: {
+        type: Date,
+        default: null,
+        select: false
+    },
+>>>>>>> c94aaa1 (althub main v2)
     // --- SECURITY ADDITION: REPLAY PROTECTION ---
     // tracking the current "version" of the user's session.
     // When the password is changed, increment to logout all attackers.
     tokenVersion: {
         type: Number,
-        default: 0
+        default: 0,
+        select: false
     }
 }, { timestamps: true }); // Tracks when the account was created/updated
 

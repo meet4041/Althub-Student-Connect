@@ -12,7 +12,6 @@ import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,14 +35,54 @@ import images_route from "./routes/imagesRoute.js";
 
 const app = express();
 const port = process.env.PORT || 5001;
+const isProduction = process.env.NODE_ENV === "production";
+
+const parseCsvEnv = (value) =>
+  (value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+const configuredOrigins = parseCsvEnv(process.env.ALLOWED_ORIGINS);
+const clientOriginFallbacks = parseCsvEnv(process.env.CLIENT_ORIGIN);
+const allowedOriginsFromEnv = Array.from(new Set([
+  ...configuredOrigins,
+  ...clientOriginFallbacks
+]));
+const additionalConnectSrc = parseCsvEnv(process.env.CSP_CONNECT_SRC);
+const defaultDevOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:5173",
+];
+const allowedOrigins = isProduction
+  ? allowedOriginsFromEnv
+  : Array.from(new Set([...allowedOriginsFromEnv, ...defaultDevOrigins]));
+const connectSrcOrigins = Array.from(new Set([
+  "'self'",
+  ...allowedOrigins,
+  ...allowedOrigins
+    .filter((origin) => origin.startsWith("https://"))
+    .map((origin) => origin.replace(/^https:\/\//, "wss://")),
+  ...allowedOrigins
+    .filter((origin) => origin.startsWith("http://"))
+    .map((origin) => origin.replace(/^http:\/\//, "ws://")),
+  ...additionalConnectSrc
+]));
 
 // --- SECURITY & SERVER CONFIGURATION ---
 // Required for Render/Vercel to handle secure cookies correctly behind proxies
 app.set("trust proxy", 1); 
 
+<<<<<<< HEAD
 // 1. HELMET: Allow Cross-Origin Images
 // This specific policy allows modern browsers (Chrome/Safari) to render 
 // images from this server even if the frontend is on a different port.
+=======
+>>>>>>> c94aaa1 (althub main v2)
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
@@ -51,8 +90,13 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
+<<<<<<< HEAD
       imgSrc: ["'self'", 'data:', 'blob:'],
       connectSrc: ["'self'"],
+=======
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      connectSrc: connectSrcOrigins,
+>>>>>>> c94aaa1 (althub main v2)
       fontSrc: ["'self'", 'https:', 'data:'],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
@@ -61,13 +105,19 @@ app.use(helmet({
   }
 }));
 
+<<<<<<< HEAD
+=======
+if (isProduction && !process.env.DISABLE_HSTS) {
+  app.use(helmet.hsts({ maxAge: 15552000, includeSubDomains: true, preload: true }));
+}
+
+>>>>>>> c94aaa1 (althub main v2)
 app.use(compression()); 
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); 
 app.use(cookieParser());
 // 3. SANITIZERS: Protect against NoSQL injection and XSS
 app.use(mongoSanitize());
-app.use(xss());
 
 // --- BRUTE FORCE PROTECTION ---
 const loginLimiter = rateLimit({
@@ -93,6 +143,7 @@ const apiLimiter = rateLimit({
 // Apply global limiter to all /api routes
 app.use('/api', apiLimiter);
 
+<<<<<<< HEAD
 // --- SMART CORS CONFIGURATION ---
 const allowedOrigins = [
   'http://localhost:3000',
@@ -114,6 +165,15 @@ const corsOptions = {
     }
 
     console.log("BLOCKED BY CORS -> Origin tried:", origin);
+=======
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.log("CORS Blocked Origin:", origin);
+>>>>>>> c94aaa1 (althub main v2)
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -124,10 +184,60 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+<<<<<<< HEAD
 // --- PROTECTING LOGIN ROUTES ---
 app.use("/api/adminLogin", loginLimiter);
 app.use("/api/instituteLogin", loginLimiter);
 app.use("/api/userLogin", loginLimiter); 
+=======
+// --- CSRF (Double Submit Cookie) ---
+const csrfCookieOptions = {
+  httpOnly: false,
+  secure: isProduction,
+  sameSite: isProduction ? 'None' : 'Lax',
+  path: '/'
+};
+
+const csrfAllowlist = new Set([
+  "/adminLogin",
+  "/instituteLogin",
+  "/userLogin",
+  "/instituteForgetPassword",
+  "/instituteResetPassword",
+  "/forgetpassword",
+  "/resetpassword",
+  "/userForgetPassword",
+  "/userResetPassword"
+]);
+
+const ensureCsrfCookie = (req, res, next) => {
+  if (!req.cookies?.csrf_token) {
+    const csrfToken = crypto.randomBytes(32).toString('hex');
+    res.cookie('csrf_token', csrfToken, csrfCookieOptions);
+  }
+  next();
+};
+
+const csrfProtect = (req, res, next) => {
+  const method = req.method.toUpperCase();
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") return next();
+  if (csrfAllowlist.has(req.path)) return next();
+
+  const cookieToken = req.cookies?.csrf_token;
+  const headerToken = req.headers["x-csrf-token"];
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return res.status(403).json({ success: false, msg: "CSRF token invalid or missing" });
+  }
+  next();
+};
+
+app.use("/api", ensureCsrfCookie, csrfProtect);
+
+// --- MOUNT ROUTES ---
+app.post("/api/adminLogin", loginLimiter);
+app.post("/api/instituteLogin", loginLimiter);
+app.post("/api/userLogin", loginLimiter); 
+>>>>>>> c94aaa1 (althub main v2)
 
 // --- ROUTE MOUNTING ---
 app.use("/api", user_route);

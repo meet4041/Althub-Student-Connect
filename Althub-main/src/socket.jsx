@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-import { WEB_URL } from "./baseURL"; // Ensure this points to your server URL (http://localhost:5001)
+import { WEB_URL } from "./baseURL";
 
 // Initialize socket only once
 export const socket = io(WEB_URL, {

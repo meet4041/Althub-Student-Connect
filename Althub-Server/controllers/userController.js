@@ -31,6 +31,14 @@ const securePassword = async (password) => {
     try { return await bcryptjs.hash(password, 10); } catch (error) { throw new Error(error.message); }
 }
 
+const getClientUrl = () => {
+    const clientUrl = process.env.CLIENT_URL || config.clientUrl;
+    if (!clientUrl) {
+        throw new Error("CLIENT_URL is not configured");
+    }
+    return clientUrl.replace(/\/$/, "");
+};
+
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -43,8 +51,7 @@ const sendresetpasswordMail = async (name, email, token) => {
             },
         });
         
-        // Use environment variable for URL in production instead of hardcoded localhost
-        const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
+        const clientURL = getClientUrl();
         
         const mailoptions = {
             from: `"Althub Support" <${config.emailUser}>`,
@@ -223,13 +230,14 @@ export const userlogin = async (req, res) => {
                 res.status(200).send({
                     success: true,
                     msg: "Login Successful",
-                    data: userResult
+                    data: userResult,
+                    token: accessToken
                 });
             } else {
-                res.status(400).send({ success: false, msg: "Invalid Credentials" });
+                res.status(401).send({ success: false, msg: "Invalid credentials" });
             }
         } else {
-            res.status(400).send({ success: false, msg: "User not found. Please Register." });
+            res.status(401).send({ success: false, msg: "Invalid credentials" });
         }
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -280,21 +288,32 @@ export const forgetPassword = async (req, res) => {
         const email = sanitizeInput(req.body.email);
         const userData = await User.findOne({ email: email });
         if (userData) {
-            const randomString = randomstring.generate();
-            await User.updateOne({ email: email }, { $set: { token: randomString } });
-            await sendresetpasswordMail(userData.fname, userData.email, randomString);
-            res.status(200).send({ success: true, msg: "Check inbox to reset password" });
-        } else { res.status(200).send({ success: false, msg: "Email does not exist!" }); }
-    } catch (error) { res.status(500).send({ success: false, msg: "Failed to send email." }); }
+            const resetToken = randomstring.generate();
+            const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+            const tokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+            await User.updateOne({ email: email }, { $set: { token: hashedToken, tokenExpires } });
+            await sendresetpasswordMail(userData.fname, userData.email, resetToken);
+        }
+        res.status(200).send({ success: true, msg: "If an account exists, please check your email." });
+    } catch (error) { res.status(500).send({ success: false, msg: "Failed to process password reset request." }); }
 }
 
 export const resetpassword = async (req, res) => {
     try {
         const token = req.query.token;
-        const tokenData = await User.findOne({ token: token });
+        if (!token) return res.status(400).send({ success: false, msg: "Token missing" });
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const tokenData = await User.findOne({ token: hashedToken, tokenExpires: { $gt: new Date() } });
         if (tokenData) {
+            if (!req.body.password || req.body.password.length < 8) {
+                return res.status(400).send({ success: false, msg: "Password is too weak." });
+            }
             const newpassword = await securePassword(req.body.password);
-            const userData = await User.findByIdAndUpdate({ _id: tokenData._id }, { $set: { password: newpassword, token: '' } }, { new: true });
+            const userData = await User.findByIdAndUpdate(
+                { _id: tokenData._id },
+                { $set: { password: newpassword, token: '', tokenExpires: null }, $inc: { tokenVersion: 1 } },
+                { new: true }
+            );
             res.status(200).send({ success: true, msg: "Password reset successful", data: userData });
         } else { res.status(200).send({ success: false, msg: "Invalid or expired link" }); }
     } catch (error) { res.status(400).send({ success: false, msg: error.message }); }
@@ -337,10 +356,18 @@ export const deleteUser = async (req, res) => {
         const loggedInUser = req.user;
         const loggedInUserId = loggedInUser._id.toString();
 
-        const isSelfDelete = userIdToDelete === loggedInUserId;
-        const isInstituteOrAdmin = loggedInUser.name || loggedInUser.role === 'admin';
+        const user = await User.findById(userIdToDelete);
+        if (!user) return res.status(404).send({ success: false, msg: "User not found" });
 
-        if (!isSelfDelete && !isInstituteOrAdmin) {
+        const isSelfDelete = userIdToDelete === loggedInUserId;
+        
+        // If Institute, they can only delete if the user belongs to them
+        if (loggedInUser.name && !isSelfDelete) {
+            const instituteId = loggedInUserId;
+            if (user.institute_id.toString() !== instituteId) {
+                return res.status(403).send({ success: false, msg: "Security Alert: You can only delete students from your own institution!" });
+            }
+        } else if (!isSelfDelete && loggedInUser.role !== 'admin') {
             return res.status(403).send({ success: false, msg: "Security Alert: Unauthorized deletion attempt!" });
         }
 
@@ -388,8 +415,11 @@ export const searchUser = async (req, res) => {
         if (search) {
             matchStage.$text = { $search: search };
         }
-        if (location) {
-            const locRegex = new RegExp(location, "i");
+        const locFilter = location ? sanitizeInput(location) : null;
+        const skillFilter = skill ? sanitizeInput(skill) : null;
+
+        if (locFilter) {
+            const locRegex = new RegExp(locFilter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i");
             const locQuery = { $or: [{ city: { $regex: locRegex } }, { state: { $regex: locRegex } }] };
             if (matchStage.$text) { 
                 matchStage.$and = [ locQuery ]; 
@@ -397,7 +427,10 @@ export const searchUser = async (req, res) => {
                 Object.assign(matchStage, locQuery);
             }
         }
-        if (skill) matchStage.skills = { $regex: new RegExp(skill, "i") };
+        if (skillFilter) {
+            const skillRegex = new RegExp(skillFilter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i");
+            matchStage.skills = { $regex: skillRegex };
+        }
         if (Object.keys(matchStage).length > 0) pipeline.push({ $match: matchStage });
         pipeline.push({ $limit: 50 });
         pipeline.push({
@@ -434,11 +467,16 @@ export const searchUserById = async (req, res) => {
     try {
         const id = req.params._id;
         if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send({ success: false });
-        const user = await User.find({ _id: id }).lean();
-        return res.status(200).send({ success: true, data: user });
+        
+        // SECURITY: Explicitly select ONLY non-sensitive fields to prevent password/token leak
+        const user = await User.findById(id).select("fname lname profilepic city state gender dob nation phone email github portfolioweb about languages skills followers followings role institute institute_id isOnline lastSeen").lean();
+        
+        if (!user) return res.status(404).send({ success: false, msg: "User not found" });
+        return res.status(200).send({ success: true, data: [user] });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 }
 
+<<<<<<< HEAD
 const userLogout = async (req, res) => {
     try {
         res.clearCookie("jwt_token");
@@ -489,6 +527,32 @@ const refreshToken = async (req, res) => {
     } catch (error) {
         return res.status(500).send({ success: false, msg: error.message });
     }
+=======
+export const userLogout = async (req, res) => {
+    try {
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.clearCookie("jwt_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            path: '/'
+        });
+        res.clearCookie("refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            path: '/api'
+        });
+        res.clearCookie("csrf_token", {
+            httpOnly: false,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            path: '/'
+        });
+        res.status(200).send({ success: true, msg: "Logged Out" });
+    }
+    catch (error) { res.status(400).send({ success: false }); }
+>>>>>>> c94aaa1 (althub main v2)
 }
 
 export const getUsers = async (req, res) => {
@@ -534,7 +598,8 @@ export const getUsersOfInstitute = async (req, res) => {
                     ],
                     as: "educationList"
                 }
-            }
+            },
+            { $project: { password: 0, token: 0, tokenVersion: 0 } }
         ]);
 
         const finalData = data.map(user => {
@@ -571,13 +636,76 @@ export const getUsersOfInstitute = async (req, res) => {
     }
 }
 
+<<<<<<< HEAD
+=======
+export const getAlumniByCourseSpec = async (req, res) => {
+    try {
+        const course = sanitizeInput(req.query.course || req.body.course);
+        const specialization = sanitizeInput(req.query.specialization || req.body.specialization);
+        const instituteParam = sanitizeInput(req.query.instituteId || req.body.instituteId || "");
+
+        if (!course && !specialization) {
+            return res.status(400).send({ success: false, msg: "Course or specialization is required" });
+        }
+
+        const courseRegex = createFlexibleRegex(course);
+        const specRegex = createFlexibleRegex(specialization);
+
+        const matchStage = {};
+        if (instituteParam) {
+            if (mongoose.Types.ObjectId.isValid(instituteParam)) {
+                matchStage.institute_id = new mongoose.Types.ObjectId(instituteParam);
+            } else {
+                matchStage.institute = instituteParam;
+            }
+        }
+
+        const data = await User.aggregate([
+            ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
+            {
+                $lookup: {
+                    from: Education.collection.name,
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        { $project: { course: 1, specialization: 1, joindate: 1, enddate: 1 } }
+                    ],
+                    as: "educationList"
+                }
+            },
+            { $project: { password: 0, token: 0, tokenVersion: 0 } }
+        ]);
+
+        const filtered = data.filter(user => {
+            if (!user.educationList || user.educationList.length === 0) return false;
+            const matching = user.educationList.filter(edu => {
+                const courseOk = courseRegex ? courseRegex.test(edu.course || "") : true;
+                const specOk = specRegex ? specRegex.test(edu.specialization || "") : true;
+                return courseOk && specOk;
+            });
+            if (matching.length === 0) return false;
+            return checkAlumniStatus(matching);
+        });
+
+        res.status(200).send({ success: true, data: filtered });
+    } catch (error) {
+        console.error(error);
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
+>>>>>>> c94aaa1 (althub main v2)
 export const followUser = async (req, res) => {
-    if (req.body.userId !== req.params.id) {
+    const currentUserId = req.user?._id?.toString();
+    if (currentUserId !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
-            const currentUser = await User.findById(req.body.userId);
-            if (!user.followers.includes(req.body.userId)) {
-                await user.updateOne({ $push: { followers: req.body.userId } });
+            const currentUser = await User.findById(currentUserId);
+            if (!user || !currentUser) {
+                return res.status(404).json("user not found");
+            }
+            if (!user.followers.includes(currentUserId)) {
+                await user.updateOne({ $push: { followers: currentUserId } });
                 await currentUser.updateOne({ $push: { followings: req.params.id } });
                 res.status(200).json("followed");
             } else { res.status(403).json("already follow"); }
@@ -586,12 +714,16 @@ export const followUser = async (req, res) => {
 };
 
 export const unfollowUser = async (req, res) => {
-    if (req.body.userId !== req.params.id) {
+    const currentUserId = req.user?._id?.toString();
+    if (currentUserId !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
-            const currentUser = await User.findById(req.body.userId);
-            if (user.followers.includes(req.body.userId)) {
-                await user.updateOne({ $pull: { followers: req.body.userId } });
+            const currentUser = await User.findById(currentUserId);
+            if (!user || !currentUser) {
+                return res.status(404).json("user not found");
+            }
+            if (user.followers.includes(currentUserId)) {
+                await user.updateOne({ $pull: { followers: currentUserId } });
                 await currentUser.updateOne({ $pull: { followings: req.params.id } });
                 res.status(200).json("unfollowed");
             } else { res.status(403).json("dont follow user"); }
@@ -608,25 +740,21 @@ export const updateProfilePic = async (req, res) => {
             fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
         } else { fileId = req.body.fileId; }
         if (!fileId) return res.status(400).send({ success: false, msg: "No file provided" });
-        const updatedUser = await User.findByIdAndUpdate(
-            req.body.userid,
-            { $set: { profilepic: `/api/images/${fileId}` } },
-            { new: true }
-        );
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, { $set: { profilepic: `/api/images/${fileId}` } }, { new: true });
         res.status(200).send({ success: true, msg: "Profile updated", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };
 
 export const deleteProfilePic = async (req, res) => {
     try {
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, { $set: { profilepic: "" } }, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, { $set: { profilepic: "" } }, { new: true });
         res.status(200).send({ success: true, msg: "Profile removed", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
 };
 
 export const getRandomUsers = async (req, res) => {
     try {
-        const currentUserId = req.body.userid;
+        const currentUserId = req.user?._id?.toString();
         let excludedIds = [];
         if (currentUserId && mongoose.Types.ObjectId.isValid(currentUserId)) {
             const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);

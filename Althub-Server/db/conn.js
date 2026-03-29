@@ -91,9 +91,15 @@ export async function uploadFromBuffer(buffer, filename, contentType) {
   const bucket = getGridFSBucket();
   return new Promise((resolve, reject) => {
     const uploadStream = bucket.openUploadStream(filename, { contentType });
-    uploadStream.end(buffer);
-    uploadStream.on('finish', (file) => resolve(file._id.toString()));
+    uploadStream.on('finish', () => {
+      if (!uploadStream.id) {
+        reject(new Error('GridFS upload completed without a file id'));
+        return;
+      }
+      resolve(uploadStream.id.toString());
+    });
     uploadStream.on('error', (err) => reject(err));
+    uploadStream.end(buffer);
   });
 }
 
@@ -109,6 +115,7 @@ export function streamToResponse(id, res, options = {}) {
   const bucket = getGridFSBucket();
   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send('Invalid ID');
 
+<<<<<<< HEAD
   const _id = typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id;
   
   const downloadStream = bucket.openDownloadStream(_id, options);
@@ -121,3 +128,20 @@ export function streamToResponse(id, res, options = {}) {
   
   downloadStream.pipe(res);
 }
+=======
+    const _id = typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id;
+    const downloadStream = bucket.openDownloadStream(_id, options);
+    
+    downloadStream.on('error', (err) => {
+      if (!res.headersSent) {
+        res.status(404).send({ success: false, msg: 'File not found' });
+      }
+    });
+    
+    downloadStream.pipe(res);
+  } catch (err) {
+    console.error("Stream Error:", err);
+    res.status(500).send("Internal Server Error");
+  }
+}
+>>>>>>> c94aaa1 (althub main v2)

@@ -14,7 +14,19 @@ const validatePassword = (password) => {
     return regex.test(password);
 }
 
+<<<<<<< HEAD
 const sendresetpasswordMail = async (name, email, token) => {
+=======
+const getClientUrl = (baseUrl) => {
+    const clientUrl = baseUrl || process.env.CLIENT_URL || config.clientUrl;
+    if (!clientUrl) {
+        throw new Error("CLIENT_URL is not configured");
+    }
+    return clientUrl.replace(/\/$/, "");
+};
+
+const sendresetpasswordMail = async (name, email, token, baseUrl) => {
+>>>>>>> c94aaa1 (althub main v2)
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -26,8 +38,12 @@ const sendresetpasswordMail = async (name, email, token) => {
             }
         });
 
+<<<<<<< HEAD
         // Use process.env.CLIENT_URL or fallback to localhost
         const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
+=======
+        const clientURL = getClientUrl(baseUrl);
+>>>>>>> c94aaa1 (althub main v2)
 
         const mailoptions = {
             from: config.emailUser,
@@ -37,7 +53,122 @@ const sendresetpasswordMail = async (name, email, token) => {
         }
         await transporter.sendMail(mailoptions);
     } catch (error) {
+<<<<<<< HEAD
         console.log("Mail Error:", error.message);
+=======
+        console.error("Mail Error:", error.message);
+    }
+}
+
+export const getAllAlumniOffices = async (req, res) => {
+    try {
+        // Fetch institutes that have the role 'Alumni'
+        const data = await Institute.find({ role: 'Alumni' }).populate('parent_id', 'name');
+        res.status(200).send({ success: true, data: data });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
+
+export const getAllPlacementCells = async (req, res) => {
+    try {
+        // Fetch institutes that have the role 'Placement'
+        const data = await Institute.find({ role: 'Placement' }).populate('parent_id', 'name');
+        res.status(200).send({ success: true, data: data });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+};
+
+// Add this to adminController.js
+export const getUsersByInstitute = async (req, res) => {
+    try {
+        const { instituteId } = req.params;
+
+        // 1. Fetch users belonging to this specific ID
+        const data = await User.aggregate([
+            {
+                $match: { institute_id: new mongoose.Types.ObjectId(instituteId) }
+            },
+            {
+                $lookup: {
+                    from: Education.collection.name,
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        { $project: { course: 1, joindate: 1, enddate: 1 } }
+                    ],
+                    as: "educationList"
+                }
+            },
+            { $project: { password: 0, token: 0, tokenVersion: 0 } }
+        ]);
+
+        // 2. Format the data for the frontend (Calculates Student vs Alumni status)
+        const finalData = data.map(user => {
+            const type = determineUserStatus(user.educationList); // Re-uses your existing utility
+            let eduStart = "-";
+            let eduEnd = "-";
+
+            if (user.educationList && user.educationList.length > 0) {
+                const sortedEdu = user.educationList.sort((a, b) => new Date(b.enddate) - new Date(a.enddate));
+                const latest = sortedEdu[0];
+                if (latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                if (latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+            }
+
+            return { ...user, type, eduStart, eduEnd };
+        });
+
+        res.status(200).send({ success: true, data: finalData });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+    }
+}
+
+// Add to adminController.js
+export const getUsersByInstituteName = async (req, res) => {
+    try {
+        const { instituteName } = req.params; // This will be "DAU", etc.
+
+        const data = await User.aggregate([
+            {
+                // Matches the string value in the 'institute' field
+                $match: { institute: instituteName } 
+            },
+            {
+                $lookup: {
+                    from: Education.collection.name,
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$userid", { $toString: "$$userId" }] } } },
+                        { $project: { course: 1, joindate: 1, enddate: 1 } }
+                    ],
+                    as: "educationList"
+                }
+            },
+            { $project: { password: 0, token: 0, tokenVersion: 0 } }
+        ]);
+
+        const finalData = data.map(user => {
+            const type = determineUserStatus(user.educationList);
+            let eduStart = "-";
+            let eduEnd = "-";
+            
+            if (user.educationList && user.educationList.length > 0) {
+                const sortedEdu = user.educationList.sort((a, b) => new Date(b.enddate) - new Date(a.enddate));
+                const latest = sortedEdu[0];
+                if(latest.joindate) eduStart = new Date(latest.joindate).toISOString().split('T')[0];
+                if(latest.enddate) eduEnd = new Date(latest.enddate).toISOString().split('T')[0];
+            }
+            
+            return { ...user, type, eduStart, eduEnd };
+        });
+
+        res.status(200).send({ success: true, data: finalData });
+    } catch (error) {
+        res.status(400).send({ success: false, msg: error.message });
+>>>>>>> c94aaa1 (althub main v2)
     }
 }
 
@@ -93,7 +224,11 @@ const determineUserStatus = (educations) => {
 export const registerAdmin = async (req, res) => {
     try {
         const { lname, email, phone, password, admin_secret_key } = req.body;
-        const MASTER_KEY = process.env.ADMIN_REGISTRATION_SECRET || "Althub_Default_Secret_2024";
+        const MASTER_KEY = process.env.ADMIN_REGISTRATION_SECRET;
+
+        if (!MASTER_KEY) {
+            return res.status(500).send({ success: false, msg: "Admin registration is not configured." });
+        }
 
         if (admin_secret_key !== MASTER_KEY) {
             return res.status(403).send({ success: false, msg: "Registration Failed: Invalid Secret Master Key" });
@@ -184,7 +319,8 @@ export const getUsers = async (req, res) => {
                     ],
                     as: "educationList"
                 }
-            }
+            },
+            { $project: { password: 0, token: 0, tokenVersion: 0 } }
         ]);
 
         const finalData = data.map(user => {
@@ -217,7 +353,8 @@ export const getUsers = async (req, res) => {
 
 export const updatePassword = async (req, res) => {
     try {
-        const { admin_id, oldpassword, newpassword } = req.body;
+        const { oldpassword, newpassword } = req.body;
+        const admin_id = req.user._id; // SECURITY: Use authenticated user's ID
         const data = await Admin.findById(admin_id).select("+password");
         
         if (data) {
@@ -252,13 +389,23 @@ export const forgetPassword = async (req, res) => {
         const { email } = req.body;
         const adminData = await Admin.findOne({ email });
         if (adminData) {
+<<<<<<< HEAD
             const randomString = randomstring.generate();
             await Admin.updateOne({ email }, { $set: { token: randomString } });
             sendresetpasswordMail(adminData.name, adminData.email, randomString);
             res.status(200).send({ success: true, msg: "Please check your email" });
         } else {
             res.status(404).send({ success: false, msg: "Email does not exist" });
+=======
+            const resetToken = randomstring.generate();
+            const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+            const tokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+            await Admin.updateOne({ email }, { $set: { token: hashedToken, tokenExpires } });
+            const baseUrl = req.headers.origin || req.headers.referer?.split("/").slice(0, 3).join("/");
+            sendresetpasswordMail(adminData.name, adminData.email, resetToken, baseUrl);
+>>>>>>> c94aaa1 (althub main v2)
         }
+        res.status(200).send({ success: true, msg: "If an account exists, please check your email." });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -288,7 +435,7 @@ export const resetpassword = async (req, res) => {
 
 export const updateAdmin = async (req, res) => {
     try {
-        const { id } = req.body;
+        const id = req.user._id; // SECURITY: Use authenticated user's ID
         if (!req.body || Object.keys(req.body).length === 0) {
             return res.status(400).send({ success: false, msg: "No data provided" });
         }
@@ -319,7 +466,7 @@ export const adminLogout = async (req, res) => {
 
 export const getAdminById = async (req, res) => {
     try {
-        const admin = await Admin.findById(req.params._id).select("-password");
+        const admin = await Admin.findById(req.user._id).select("-password");
         res.status(200).send({ success: true, data: admin });
     } catch (error) {
         res.status(500).send({ success: false, msg: error.message });

@@ -11,7 +11,7 @@ const user = new mongoose.Schema({
     profilepic: { type: String, default: "" },
     phone: { type: String },
     email: { type: String },
-    password: { type: String },
+    password: { type: String, select: false },
     languages: { type: String },
     github: { type: String },
     portfolioweb: { type: String },
@@ -24,7 +24,8 @@ const user = new mongoose.Schema({
     isOnline: { type: Boolean, default: false },
     socketId: { type: String, default: "" },
     lastSeen: { type: Date, default: Date.now },
-    token: { type: String, default: '' },
+    token: { type: String, default: '', select: false },
+    tokenExpires: { type: Date, default: null, select: false },
     tokenVersion: { type: Number, default: 0, select: false }
 });
 

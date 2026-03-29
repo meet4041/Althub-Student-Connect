@@ -1,8 +1,73 @@
 import Post from "../models/postModel.js";
 import User from "../models/userModel.js";
 import Institute from "../models/instituteModel.js";
+import AlumniOffice from "../models/alumniModel.js";
+import PlacementCell from "../models/placementModel.js";
+import Admin from "../models/adminModel.js";
 import Notification from "../models/notificationModel.js";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
+
+const getActorDisplayFields = (actor, body = {}) => {
+    const role = actor?.role || body.createdByRole || "student";
+    const actorName = actor?.name || "";
+    const actorFirstName = actor?.fname || "";
+    const actorLastName = actor?.lname || "";
+    const displayName = actorName || [actorFirstName, actorLastName].filter(Boolean).join(" ").trim();
+    const profileImage = actor?.profilepic || actor?.image || body.profilepic || "";
+
+    if (role === "student") {
+        return {
+            fname: actorFirstName || body.fname || "",
+            lname: actorLastName || body.lname || "",
+            companyname: body.companyname || "",
+            profilepic: profileImage,
+            createdByRole: role
+        };
+    }
+
+    return {
+        fname: displayName || body.fname || role,
+        lname: "",
+        companyname: displayName || body.companyname || "",
+        profilepic: profileImage,
+        createdByRole: role
+    };
+};
+
+const findActorById = async (id) => {
+    if (!id) return null;
+
+    let actor = await User.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await Institute.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await AlumniOffice.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await PlacementCell.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await Admin.findById(id).lean();
+    return actor;
+};
+
+const enrichPostActor = async (post) => {
+    const actorId = (post.userid || post.senderid || "").toString();
+    const actor = await findActorById(actorId);
+    if (!actor) return post;
+
+    const actorFields = getActorDisplayFields(actor, post);
+    return {
+        ...post,
+        fname: actorFields.fname || post.fname,
+        lname: actorFields.lname ?? post.lname,
+        companyname: actorFields.companyname || post.companyname,
+        profilepic: actorFields.profilepic || post.profilepic,
+        createdByRole: actorFields.createdByRole || post.createdByRole
+    };
+};
 
 const addPost = async (req, res) => {
     try {
@@ -24,6 +89,7 @@ const addPost = async (req, res) => {
             }
         }
 
+<<<<<<< HEAD
         // Limit description length
         const description = typeof req.body.description === 'string' ? req.body.description.slice(0, 5000) : '';
 
@@ -36,10 +102,23 @@ const addPost = async (req, res) => {
             lname: req.body.lname,
             companyname: req.body.companyname,
             profilepic: req.body.profilepic,
+=======
+        const ownerId = req.user?._id?.toString() || req.body.userid || req.body.senderid;
+        const actorFields = getActorDisplayFields(req.user, req.body);
+
+        const newPost = new Post({
+            userid: ownerId,
+            senderid: ownerId,
+            fname: actorFields.fname,
+            lname: actorFields.lname,
+            profilepic: actorFields.profilepic,
+            companyname: actorFields.companyname,
+>>>>>>> c94aaa1 (althub main v2)
             title: req.body.title || "Update",
             description: description,
             date: req.body.date || new Date(),
-            photos: photoIds
+            photos: photoIds,
+            createdByRole: actorFields.createdByRole
         });
 
         const savedPost = await newPost.save();
@@ -65,8 +144,9 @@ const getPostById = async (req, res) => {
                 { senderid: id }
             ] 
         }).sort({ date: -1 }).lean();
+        const enrichedPosts = await Promise.all(post_data.map(enrichPostActor));
         
-        res.status(200).send({ success: true, data: post_data });
+        res.status(200).send({ success: true, data: enrichedPosts });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -82,6 +162,13 @@ const editPost = async (req, res) => {
         const post = await Post.findById(id);
         if (!post) {
             return res.status(404).send({ success: false, msg: "Post not found" });
+        }
+
+        // SECURITY: Only the post owner can edit
+        const requesterId = req.user?._id?.toString();
+        const postOwnerId = (post.userid || post.senderid || '').toString();
+        if (requesterId && postOwnerId && requesterId !== postOwnerId) {
+            return res.status(403).send({ success: false, msg: "Forbidden: You can only edit your own posts." });
         }
 
         let newPhotoUrls = [];
@@ -120,7 +207,8 @@ const editPost = async (req, res) => {
 const getPosts = async (req, res) => {
     try {
         const post_data = await Post.find({}).sort({ date: -1 }).limit(20).lean();
-        res.status(200).send({ success: true, data: post_data });
+        const enrichedPosts = await Promise.all(post_data.map(enrichPostActor));
+        res.status(200).send({ success: true, data: enrichedPosts });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }
@@ -129,6 +217,18 @@ const getPosts = async (req, res) => {
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).send({ success: false, msg: "Post not found" });
+        }
+
+        // SECURITY: Only the post owner can delete
+        const requesterId = req.user?._id?.toString();
+        const postOwnerId = (post.userid || post.senderid || '').toString();
+        if (requesterId && postOwnerId && requesterId !== postOwnerId) {
+            return res.status(403).send({ success: false, msg: "Forbidden: You can only delete your own posts." });
+        }
+
         await Post.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'Post Deleted successfully' });
     } catch (error) {

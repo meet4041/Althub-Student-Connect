@@ -6,6 +6,13 @@ import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 
 // ... [Keep your other functions like addEvents, getEvents, deleteEvent exactly as they were] ...
 
+const getActorBranding = (actor) => {
+    const displayName = actor?.name || [actor?.fname, actor?.lname].filter(Boolean).join(" ").trim() || "Admin";
+    const image = actor?.profilepic || actor?.image || "";
+
+    return { displayName, image };
+};
+
 const addEvents = async (req, res) => {
     try {
         await connectToMongo();
@@ -28,14 +35,14 @@ const addEvents = async (req, res) => {
         const event_data = await event.save();
         
         // Notifications Logic
-        const institute = await Institute.findById(req.body.organizerid);
+        const { displayName, image } = getActorBranding(req.user);
         const users = await User.find({});
         const notifications = users.map(user => ({
             userid: user._id,
-            senderid: req.body.organizerid,
-            image: institute ? institute.profilepic : '',
+            senderid: requesterId,
+            image,
             title: "New Event",
-            msg: `New Event: ${req.body.title} has been added by ${institute ? institute.insname : 'Institute'}.`,
+            msg: `New Event: ${req.body.title} has been added by ${displayName}.`,
             date: new Date()
         }));
         await Notification.insertMany(notifications);
@@ -131,7 +138,8 @@ const editEvent = async (req, res) => {
 const searchEvent = async (req, res) => {
     try {
         var search = req.body.search;
-        var event_data = await Event.find({ "title": { $regex: ".*" + search + ".*" } });
+        var escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var event_data = await Event.find({ "title": { $regex: ".*" + escapedSearch + ".*", $options: "i" } });
         if (event_data.length > 0) {
             res.status(200).send({ success: true, msg: "Event Details", data: event_data });
         }

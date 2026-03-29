@@ -3,6 +3,7 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { socket } from "./socket";
 import axios from "axios"; 
+import { WEB_URL } from "./baseURL";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -37,8 +38,19 @@ function App() {
 
   useEffect(() => {
     // --- AXIOS INTERCEPTORS ---
+    const readCookie = (name) => {
+        const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+        return match ? decodeURIComponent(match[2]) : null;
+    };
+
     const reqInterceptor = axios.interceptors.request.use(
-      (config) => config,
+      (config) => {
+          const csrfToken = readCookie('csrf_token');
+          if (csrfToken) {
+              config.headers['X-CSRF-Token'] = csrfToken;
+          }
+          return config;
+      },
       (error) => Promise.reject(error)
     );
 
@@ -46,20 +58,28 @@ function App() {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+
+        // If 401 Unauthorized and not already retrying
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            // Avoid infinite loops if refreshToken itself fails
+            if (originalRequest.url.includes("/api/refreshToken")) {
+                handleSecurityLogout();
+                return Promise.reject(error);
+            }
+
             originalRequest._retry = true;
             try {
-                await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/refreshToken`, {}, { withCredentials: true });
-                return axios(originalRequest);
+                const res = await axios.post(`${WEB_URL}/api/refreshToken`, {}, { withCredentials: true });
+                if (res.data.success) {
+                    return axios(originalRequest);
+                }
             } catch (refreshErr) {
+                console.error("Session refresh failed:", refreshErr.message);
                 handleSecurityLogout();
                 return Promise.reject(refreshErr);
             }
         }
 
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            handleSecurityLogout();
-        }
         return Promise.reject(error);
       }
     );
@@ -67,10 +87,14 @@ function App() {
     // --- CENTRALIZED LOGOUT LOGIC ---
     const handleSecurityLogout = () => {
       console.warn("Security Event: Logging out");
-      // Token is stored as HttpOnly cookie; do not keep a client-side copy
       localStorage.removeItem("Althub_Id");
       if (socket.connected) socket.disconnect();
-      nav("/login");
+      
+      const currentPath = window.location.pathname;
+      const publicPaths = ['/login', '/register', '/forget-password', '/new-password', '/'];
+      if (!publicPaths.includes(currentPath)) {
+          nav("/login");
+      }
     };
 
     // --- SOCKET CONNECTION & SECURITY LISTENERS ---

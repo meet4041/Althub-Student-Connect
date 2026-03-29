@@ -14,7 +14,7 @@ const AuthGuard = () => {
             return;
         }
 
-        // Validate session with server using cookies (HttpOnly jwt_token)
+        // Validate session with server using cookies/header (HttpOnly jwt_token)
         axios.get(`${WEB_URL}/api/searchUserById/${userId}`, { withCredentials: true })
             .then((res) => {
                 if (res.data && res.data.data && res.data.data.length) setStatus('ok');

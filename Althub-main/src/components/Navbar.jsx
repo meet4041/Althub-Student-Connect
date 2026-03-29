@@ -40,15 +40,30 @@ export default function Navbar({ socket }) {
   const getUser = useCallback(() => {
     const id = localStorage.getItem("Althub_Id");
     if (!id) { setUser({}); return; }
-    axios.get(`${WEB_URL}/api/searchUserById/${id}`).then((res) => {
+    axios.get(`${WEB_URL}/api/searchUserById/${id}`, { withCredentials: true }).then((res) => {
       if (res.data?.data) setUser(res.data.data[0]);
     }).catch(console.error);
   }, []);
 
+<<<<<<< HEAD
   const handleLogout = () => {
     localStorage.clear();
     setUser({});
     nav("/");
+=======
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${WEB_URL}/api/userLogout`, { withCredentials: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("Althub_Id");
+      setUser({});
+      if (socket?.connected) socket.disconnect();
+      nav("/");
+      setMobileOpen(false);
+    }
+>>>>>>> c94aaa1 (althub main v2)
   };
 
   // --- Effects ---

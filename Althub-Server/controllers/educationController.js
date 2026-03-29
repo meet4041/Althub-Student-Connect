@@ -1,4 +1,8 @@
 import Education from "../models/educationModel.js";
+import Institute from "../models/instituteModel.js";
+
+const normalizeInstituteName = (value = "") =>
+    value.toString().trim().replace(/\s+/g, " ").toLowerCase();
 
 const addEducation = async (req, res) => {
     try {
@@ -18,8 +22,23 @@ const addEducation = async (req, res) => {
 
 const getEducation = async (req, res) => {
     try {
-        const education_data = await Education.find({ userid: req.body.userid });
-        res.status(200).send({ success: true, data: education_data });
+        const education_data = await Education.find({ userid: req.body.userid }).lean();
+
+        const instituteMap = new Map();
+        const needsBackfill = education_data.some((item) => !item.collagelogo && item.institutename);
+        if (needsBackfill) {
+            const institutes = await Institute.find({}).select("name image").lean();
+            institutes.forEach((institute) => {
+                instituteMap.set(normalizeInstituteName(institute.name), institute.image || "");
+            });
+        }
+
+        const enrichedEducation = education_data.map((item) => ({
+            ...item,
+            collagelogo: item.collagelogo || instituteMap.get(normalizeInstituteName(item.institutename)) || ""
+        }));
+
+        res.status(200).send({ success: true, data: enrichedEducation });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
     }

@@ -98,7 +98,14 @@ export default function Home({ socket }) {
   const handleFileChange = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
+<<<<<<< HEAD
       if (files[0].size > 20 * 1024 * 1024) { toast.error("File too large"); return; }
+=======
+      if (files.length > 5) return toast.error("You can upload up to 5 files");
+      if (Array.from(files).some(file => file.size > 20 * 1024 * 1024)) {
+        return toast.error("Each file must be 20MB or smaller");
+      }
+>>>>>>> c94aaa1 (althub main v2)
       setFileList(files);
     }
   };
@@ -106,6 +113,7 @@ export default function Home({ socket }) {
   const addPost = async () => {
     if ((!description.trim()) && (!fileList)) { toast.error("Empty post!"); return; }
     setUploading(true);
+<<<<<<< HEAD
     var body = new FormData();
     body.append("userid", userid);
     body.append("description", description);
@@ -121,6 +129,34 @@ export default function Home({ socket }) {
       toast.success("Posted!"); setFileList(null); setDescription(""); setUploading(false);
       axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
     }).catch(() => { toast.error("Failed"); setUploading(false); });
+=======
+    try {
+      const body = new FormData();
+      body.append("userid", userid);
+      body.append("description", description);
+      body.append("date", new Date().toISOString());
+      body.append("fname", user.fname);
+      body.append("lname", user.lname);
+      body.append("profilepic", user.profilepic || "");
+
+      if (fileList) {
+        const compressed = await Promise.all(Array.from(fileList).map((file) => compressImage(file)));
+        compressed.forEach((file) => body.append("photos", file, file.name));
+      }
+
+      await axios.post(`${WEB_URL}/api/addPost`, body, { withCredentials: true });
+      toast.success("Posted!");
+      setFileList(null);
+      setDescription("");
+
+      const res = await axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true });
+      setPost(res.data.data);
+    } catch (error) {
+      toast.error(error.response?.data?.msg || error.response?.data?.message || "Failed to upload post");
+    } finally {
+      setUploading(false);
+    }
+>>>>>>> c94aaa1 (althub main v2)
   };
 
   const handleLike = (elem) => {
@@ -132,6 +168,11 @@ export default function Home({ socket }) {
 
   const now = new Date();
   const upcomingEvents = events.filter(e => new Date(e.date) > now).slice(0, 3);
+  const getPostDisplayName = (postItem) => {
+    const fullName = [postItem.fname, postItem.lname].filter(Boolean).join(" ").trim();
+    return fullName || postItem.companyname || "Admin";
+  };
+  const getPostProfileImage = (postItem) => postItem.profilepic || postItem.image || "";
 
   return (
     <div className="home-wrapper">
@@ -184,6 +225,7 @@ export default function Home({ socket }) {
               </Alert>
             )}
 
+<<<<<<< HEAD
             {/* Create Post */}
             <div className="create-post-card">
               <div className="cp-input-area">
@@ -197,6 +239,33 @@ export default function Home({ socket }) {
                   onChange={(e) => setDescription(e.target.value)}
                   className="cp-textfield"
                 />
+=======
+            <div className="cp-actions">
+              <label className="media-btn">
+                <ImageIcon size={18} /> Photo / Video
+                <input type="file" hidden multiple accept="image/*,video/*" onChange={handleFileChange} />
+              </label>
+              <button onClick={addPost} disabled={uploading} className="post-btn">
+                {uploading ? "Posting..." : "Post"}
+              </button>
+            </div>
+          </div>
+
+          {/* Posts Feed */}
+          {post.map((elem) => (
+            <div key={elem._id} className="post-card">
+              <div className="post-header">
+                <img
+                  src={getPostProfileImage(elem) ? `${WEB_URL}${getPostProfileImage(elem)}` : "images/profile1.png"}
+                  className="w-10 h-10 rounded-full object-cover cursor-pointer border border-slate-100"
+                  onClick={() => nav(elem.userid === userid ? "/view-profile" : "/view-search-profile", { state: { id: elem.userid } })}
+                  alt=""
+                />
+                <div className="post-info">
+                  <h4 className="post-name">{getPostDisplayName(elem)}</h4>
+                  <span className="post-date">{new Date(elem.date).toLocaleString()}</span>
+                </div>
+>>>>>>> c94aaa1 (althub main v2)
               </div>
               
               {fileList && (

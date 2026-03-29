@@ -36,6 +36,11 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
     axios.get(`${WEB_URL}/api/getInstitutes`).then((res) => setUniversity(res.data.data));
   }, [education, modal]);
 
+  const getImageSrc = (path) => {
+    if (!path) return "";
+    return path.startsWith("http") ? path : `${WEB_URL}${path}`;
+  };
+
   const handleChange = (e) => {
     setEx({ ...ex, [e.target.name]: e.target.value });
     setErrors({ ...errors, [`${e.target.name}_err`]: "" });
@@ -161,11 +166,11 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
                         getOptionLabel={(option) => option.name || ""}
                         value={university.find(u => u.name === ex.institutename) || null}
                         onChange={(event, newValue) => {
-                            if (newValue) setEx({ ...ex, institutename: newValue.name, collagelogo: newValue.image });
+                            if (newValue) setEx({ ...ex, institutename: newValue.name, collagelogo: newValue.image || "" });
                         }}
                         renderOption={(props, option) => (
                             <li {...props}>
-                                <img src={`${WEB_URL}${option.image}`} alt="" style={{ width: 30, marginRight: 10 }} />
+                                <img src={getImageSrc(option.image)} alt="" style={{ width: 30, marginRight: 10 }} />
                                 {option.name}
                             </li>
                         )}

@@ -5,6 +5,9 @@ const post = new mongoose.Schema({
         type: String,
         // required: true
     },
+    senderid: {
+        type: String,
+    },
     fname: {
         type: String,
     },

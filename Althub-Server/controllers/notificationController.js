@@ -1,4 +1,47 @@
 import Notification from "../models/notificationModel.js";
+import User from "../models/userModel.js";
+import Institute from "../models/instituteModel.js";
+import AlumniOffice from "../models/alumniModel.js";
+import PlacementCell from "../models/placementModel.js";
+import Admin from "../models/adminModel.js";
+
+const findNotificationActor = async (id) => {
+    if (!id) return null;
+
+    let actor = await User.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await Institute.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await AlumniOffice.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await PlacementCell.findById(id).lean();
+    if (actor) return actor;
+
+    actor = await Admin.findById(id).lean();
+    return actor;
+};
+
+const enrichNotification = async (notification) => {
+    const actor = await findNotificationActor(notification.senderid);
+    if (!actor) return notification;
+
+    const actorImage = actor.profilepic || actor.image || notification.image || "";
+    const actorName = actor.name || [actor.fname, actor.lname].filter(Boolean).join(" ").trim() || "Admin";
+    let msg = notification.msg;
+
+    if (notification.title === "New Event" && typeof msg === "string") {
+        msg = msg.replace(/(has been added by ).+(\.)$/, `$1${actorName}$2`);
+    }
+
+    return {
+        ...notification.toObject(),
+        image: actorImage,
+        msg
+    };
+};
 
 // 1. Upload Image
 const uploadNotificationSenderImage = async (req, res) => {
@@ -22,7 +65,7 @@ const addNotification = async (req, res) => {
     try {
         const notification = new Notification({
             userid: req.body.userid,       // The Receiver's ID
-            senderId: req.body.senderId,   // <--- ADDED: Sender ID for profile redirect
+            senderid: req.user?._id?.toString() || req.body.senderid || req.body.senderId,
             msg: req.body.msg,
             image: req.body.image,
             title: req.body.title,
@@ -38,7 +81,7 @@ const addNotification = async (req, res) => {
 // 3. Get Notifications (Renamed to lowercase 'getnotifications' to fix the crash)
 const getnotifications = async (req, res) => {
     try {
-        const { userid } = req.body;
+        const userid = req.user?._id?.toString();
 
         if (!userid) {
             return res.status(400).send({ success: false, msg: "User ID is required" });
@@ -48,8 +91,9 @@ const getnotifications = async (req, res) => {
             // Sort by Date Descending (-1) so newest is top.
             // secondary sort by _id Descending (-1) for strict LIFO (Last In First Out)
             .sort({ date: -1, _id: -1 });
+        const enrichedNotifications = await Promise.all(notifications.map(enrichNotification));
 
-        res.status(200).send({ success: true, data: notifications });
+        res.status(200).send({ success: true, data: enrichedNotifications });
     } catch (error) {
         console.log("Error in getnotifications controller", error);
         res.status(500).send({ success: false, error: "Internal Server Error" });
@@ -63,7 +107,15 @@ const deleteNotification = async (req, res) => {
         if (!notificationId) {
             return res.status(400).send({ success: false, msg: "Notification ID is required" });
         }
-        
+
+        const notification = await Notification.findById(notificationId);
+        if (!notification) {
+            return res.status(404).send({ success: false, msg: "Notification not found" });
+        }
+        if ((notification.userid || "").toString() !== req.user?._id?.toString()) {
+            return res.status(403).send({ success: false, msg: "Forbidden" });
+        }
+
         await Notification.findByIdAndDelete(notificationId);
         
         res.status(200).send({ success: true, msg: "Notification deleted successfully" });

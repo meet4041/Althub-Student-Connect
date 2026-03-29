@@ -4,7 +4,15 @@ import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
+<<<<<<< HEAD
 import "../styles/ViewProfile.css"; // <--- Import CSS
+=======
+import { 
+  MapPin, Globe, Edit3, MoreHorizontal, Plus, Lock, Trash2, 
+  Briefcase, GraduationCap, Award, ChevronRight, UserCheck, Github
+} from "lucide-react"; 
+import "../styles/ViewProfile.css"; 
+>>>>>>> c94aaa1 (althub main v2)
 
 // MUI Components
 import {
@@ -46,20 +54,54 @@ export default function ViewProfile() {
     const [followerTab, setFollowerTab] = useState("Follower");
     const userID = localStorage.getItem("Althub_Id");
 
+<<<<<<< HEAD
     const openMenu = (event) => setAnchorEl(event.currentTarget);
     const closeMenu = () => setAnchorEl(null);
+=======
+    const parseListField = useCallback((value) => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === "string") {
+            try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.warn("Failed to parse profile list field:", error);
+                return [];
+            }
+        }
+        return [];
+    }, []);
+
+    // --- Click Outside Listener ---
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuOpen]);
+>>>>>>> c94aaa1 (althub main v2)
 
     // --- Data Fetching ---
     const getUser = useCallback(() => {
+        if (!userID) return;
         axios.get(`${WEB_URL}/api/searchUserById/${userID}`, { withCredentials: true }).then((res) => {
-            if (res.data?.data) {
+            if (res.data?.data?.length) {
                 const u = res.data.data[0];
                 setUser(u);
-                u.languages && setLanguage(JSON.parse(u.languages));
-                u.skills && setSkills(JSON.parse(u.skills));
+                setLanguage(parseListField(u.languages));
+                setSkills(parseListField(u.skills));
             }
+        }).catch((error) => {
+            console.error("Failed to load profile:", error);
+            toast.error("Could not load your profile.");
         });
-    }, [userID]);
+    }, [userID, parseListField]);
 
     const getEducation = useCallback(() => {
         axios.post(`${WEB_URL}/api/getEducation`, { userid: userID }, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
@@ -104,6 +146,11 @@ export default function ViewProfile() {
     const formatDate = (date) => {
         if (!date) return "Present";
         return new Date(date).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    };
+
+    const getImageSrc = (path, fallback) => {
+        if (!path) return fallback;
+        return path.startsWith("http") ? path : `${WEB_URL}${path}`;
     };
 
     return (
@@ -220,6 +267,7 @@ export default function ViewProfile() {
                             </CardContent>
                         </Card>
 
+<<<<<<< HEAD
                         {/* Education Section */}
                         <Card className="vp-section-card">
                             <CardContent>
@@ -245,6 +293,26 @@ export default function ViewProfile() {
                                 )) : <Typography variant="body2" color="text.disabled">No education added.</Typography>}
                             </CardContent>
                         </Card>
+=======
+                    {/* Education Section */}
+                    <div className="vp-section">
+                        <div className="section-header">
+                            <h3 className="section-title"><GraduationCap size={22} className="text-teal-600" /> Education</h3>
+                            <button onClick={() => { setModalType("Add"); setShowEditEdu(true); }} className="section-add-btn"><Plus size={20} /></button>
+                        </div>
+                        {education.length > 0 ? education.map(edu => (
+                            <div key={edu._id} className="timeline-item">
+                                <img src={getImageSrc(edu.collagelogo, "images/Institute-Test.png")} alt="" className="timeline-logo" />
+                                <div className="timeline-content">
+                                    <button className="item-edit-btn" onClick={() => { setModalType("Edit"); setShowEditEdu(true); }}><Edit3 size={14} /></button>
+                                    <h4 className="timeline-role">{edu.institutename}</h4>
+                                    <p className="timeline-company">{edu.course}</p>
+                                    <span className="timeline-date">{formatDate(edu.joindate)} - {formatDate(edu.enddate)}</span>
+                                </div>
+                            </div>
+                        )) : <p className="text-sm text-slate-400 italic py-4">No education added yet. Click + to add.</p>}
+                    </div>
+>>>>>>> c94aaa1 (althub main v2)
 
                     </Grid>
 

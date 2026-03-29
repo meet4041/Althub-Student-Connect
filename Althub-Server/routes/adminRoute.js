@@ -1,5 +1,4 @@
 import express from "express";
-import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
 
@@ -14,10 +13,6 @@ import * as admin_controller from "../controllers/adminController.js";
 
 // Initialize Router
 const admin_route = express.Router();
-
-admin_route.use(cookieParser());
-admin_route.use(express.json());
-admin_route.use(express.urlencoded({ extended: true }));
 // Static files shouldn't usually be served from a route file, but keeping your logic:
 // (It's better to move this to index.js if possible)
 // admin_route.use(express.static('public'));

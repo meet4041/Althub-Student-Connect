@@ -30,6 +30,21 @@ export default function ViewSearchProfile({ socket }) {
   const [followerTab, setFollowerTab] = useState("Follower");
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
 
+  const parseListField = useCallback((value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn("Failed to parse profile list field:", error);
+        return [];
+      }
+    }
+    return [];
+  }, []);
+
   useEffect(() => { if (location.state && location.state.id) setUserID(location.state.id); }, [location.state]);
 
   const getUser = useCallback((signal) => {
@@ -37,12 +52,12 @@ export default function ViewSearchProfile({ socket }) {
       axios.get(`${WEB_URL}/api/searchUserById/${userID}`, { signal }).then((res) => {
         if (res.data.data) {
           setUser(res.data.data[0]);
-          res.data.data[0].skills && setSkills(JSON.parse(res.data.data[0].skills));
-          res.data.data[0].languages && setLanguage(JSON.parse(res.data.data[0].languages));
+          setSkills(parseListField(res.data.data[0].skills));
+          setLanguage(parseListField(res.data.data[0].languages));
         }
       });
     }
-  }, [userID]);
+  }, [userID, parseListField]);
 
   const getSelf = useCallback((signal) => {
     if (userID) axios.get(`${WEB_URL}/api/searchUserById/${myID}`, { signal }).then((res) => { if (res.data.data) setSelf(res.data.data[0]); });
@@ -88,6 +103,19 @@ export default function ViewSearchProfile({ socket }) {
     return new Date() > new Date(maxYear, 4, 15);
   }, [education]);
 
+<<<<<<< HEAD
+=======
+  const formatDate = (date) => {
+      if (!date) return "Present";
+      return new Date(date).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  };
+
+  const getImageSrc = (path, fallback) => {
+    if (!path) return fallback;
+    return path.startsWith("http") ? path : `${WEB_URL}${path}`;
+  };
+
+>>>>>>> c94aaa1 (althub main v2)
   useEffect(() => {
     const controller = new AbortController();
     if (userID) { getSelf(controller.signal); getUser(controller.signal); getEducation(controller.signal); getExperience(controller.signal); }
@@ -164,6 +192,7 @@ export default function ViewSearchProfile({ socket }) {
             <Paper className="profile-section-paper">
                 <Typography variant="h6" className="section-title">Education</Typography>
                 {education.length > 0 ? education.map(edu => (
+<<<<<<< HEAD
                     <Box key={edu._id} className="education-item">
                         <Avatar variant="rounded" src={`${WEB_URL}${edu.collagelogo}`} sx={{ width: 56, height: 56 }} />
                         <Box>
@@ -174,6 +203,18 @@ export default function ViewSearchProfile({ socket }) {
                 )) : <Typography color="text.secondary">No education listed.</Typography>}
             </Paper>
           </Grid>
+=======
+                    <div key={edu._id} className="timeline-item">
+                        <img src={getImageSrc(edu.collagelogo, "images/Institute-Test.png")} alt="" className="timeline-logo" />
+                        <div className="timeline-content">
+                            <h4 className="timeline-role">{edu.institutename}</h4>
+                            <p className="timeline-company">{edu.course}</p>
+                            <span className="timeline-date">{formatDate(edu.joindate)} - {formatDate(edu.enddate)}</span>
+                        </div>
+                    </div>
+                )) : <p className="text-sm text-slate-400 italic py-4">No education added.</p>}
+            </div>
+>>>>>>> c94aaa1 (althub main v2)
 
           {/* Sidebar */}
           <Grid item xs={12} md={4}>

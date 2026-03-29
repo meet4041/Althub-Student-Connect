@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../baseURL";
 import ProtectedImage from "../ProtectedImage";
 import { toast } from "react-toastify";
+<<<<<<< HEAD
 import "../styles/Notification.css"; // <--- Import CSS
 
 // MUI Imports
@@ -16,6 +17,13 @@ import {
 import {
   ArrowBack, AccessTime, DeleteOutline, NotificationsOff, NotificationsActive
 } from "@mui/icons-material";
+=======
+import { 
+  ArrowLeft, Clock, Trash2, Bell, BellOff, Loader2, 
+  Heart, UserPlus, Calendar, MessageSquare
+} from "lucide-react"; 
+import "../styles/Notification.css"; 
+>>>>>>> c94aaa1 (althub main v2)
 
 export default function Notification() {
   const [notifications, setNotifications] = useState([]);
@@ -35,13 +43,23 @@ export default function Notification() {
       .catch(() => setLoading(false));
   };
 
+<<<<<<< HEAD
   const handleDelete = (id) => {
     if(!window.confirm("Delete this notification?")) return;
+=======
+  const deleteNotification = (id) => {
+    if (!id) return;
+
+>>>>>>> c94aaa1 (althub main v2)
     axios.post(`${WEB_URL}/api/deleteNotification`, { notificationId: id })
       .then((res) => {
         if (res.data.success) {
           setNotifications(prev => prev.filter(item => item._id !== id));
+<<<<<<< HEAD
           toast.success("Removed");
+=======
+          toast.success("Notification removed");
+>>>>>>> c94aaa1 (althub main v2)
         }
       });
   };
@@ -95,6 +113,7 @@ export default function Notification() {
           ) : notifications.length > 0 ? (
             <List disablePadding>
               {notifications.map((elem, index) => (
+<<<<<<< HEAD
                 <React.Fragment key={elem._id || index}>
                   <ListItem className="notif-list-item" alignItems="flex-start">
                     <ListItemAvatar onClick={() => handleProfileRedirect(elem.senderId)} sx={{ cursor: 'pointer' }}>
@@ -122,6 +141,43 @@ export default function Notification() {
                     </Box>
                   </ListItem>
                 </React.Fragment>
+=======
+                <li key={elem._id || index} className="notif-item group">
+                  
+                  {/* Avatar */}
+                  <div className="notif-avatar-box" onClick={() => handleProfileRedirect(elem.senderid || elem.senderId)}>
+                    <div className="notif-avatar overflow-hidden">
+                       <ProtectedImage 
+                         imgSrc={elem.image} 
+                         defaultImage="images/profile1.png" 
+                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                       />
+                    </div>
+                    {getNotificationIcon(elem.title)}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="notif-content">
+                    <p className="notif-main-text">{elem.title}</p>
+                    <p className="notif-sub-text">{elem.msg}</p>
+                  </div>
+
+                  {/* Meta */}
+                  <div className="notif-meta">
+                    <span className="notif-time">
+                      <Clock size={14} /> {formatTime(elem.date)}
+                    </span>
+                    <button 
+                        onClick={() => deleteNotification(elem._id)}
+                        className="delete-btn"
+                        title="Delete"
+                    >
+                        <Trash2 size={20} />
+                    </button>
+                  </div>
+
+                </li>
+>>>>>>> c94aaa1 (althub main v2)
               ))}
             </List>
           ) : (
@@ -131,9 +187,15 @@ export default function Notification() {
                 <Typography variant="body2" color="textSecondary">We'll let you know when something happens.</Typography>
             </div>
           )}
+<<<<<<< HEAD
         </Paper>
 
       </Container>
+=======
+        </div>
+
+      </div>
+>>>>>>> c94aaa1 (althub main v2)
     </div>
   );
 }
