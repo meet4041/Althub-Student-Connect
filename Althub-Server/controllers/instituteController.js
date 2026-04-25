@@ -104,15 +104,25 @@ const sendCsvInviteMail = async ({ instituteName, email, tempPass, role }) => {
 };
 
 const parseCsvEmails = (buffer) => {
-    const content = buffer.toString('utf-8');
+    const content = buffer.toString('utf-8').replace(/^\uFEFF/, '');
     const lines = content.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     if (lines.length === 0) return [];
     const emails = [];
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const firstCol = line.split(',')[0]?.trim();
+        const firstCol = line
+            .split(',')[0]
+            ?.trim()
+            .replace(/^"(.*)"$/, '$1')
+            .replace(/^'(.*)'$/, '$1')
+            .trim()
+            .toLowerCase();
+
         if (!firstCol) continue;
         if (i === 0 && /email/i.test(firstCol)) continue;
+        if (!emailRegex.test(firstCol)) continue;
         emails.push(firstCol);
     }
     return Array.from(new Set(emails));

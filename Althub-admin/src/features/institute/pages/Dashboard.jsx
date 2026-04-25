@@ -76,8 +76,8 @@ function Dashboard() {
             const res = await axiosInstance.post('/api/bulkInviteAlumniCsv', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            const { createdCount, skippedCount } = res.data?.data || {};
-            toast.success(`Created: ${createdCount || 0}, Skipped: ${skippedCount || 0}`);
+            const { createdCount, skippedCount, failedCount } = res.data?.data || {};
+            toast.success(`Created: ${createdCount || 0}, Skipped: ${skippedCount || 0}, Failed: ${failedCount || 0}`);
             setShowCsvModal(false);
             setCsvFile(null);
         } catch (err) {
