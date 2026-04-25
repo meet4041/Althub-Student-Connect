@@ -113,16 +113,28 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'https://althub-admin.vercel.app',
+  'https://althub-connect.vercel.app',
   'https://althub-student-connect.vercel.app',
+  'https://althub-super-admin.vercel.app',
   'https://althub-institute.vercel.app'
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+
+    let hostname = "";
+    try {
+      hostname = new URL(origin).hostname;
+    } catch (error) {
+      console.log("Invalid CORS Origin:", origin);
+      return callback(new Error('Not allowed by CORS'));
+    }
+
+    if (allowedOrigins.includes(origin) || hostname.endsWith('.vercel.app')) {
       return callback(null, true);
-    } 
+    }
     console.log("CORS Blocked Origin:", origin);
     callback(new Error('Not allowed by CORS'));
   },
