@@ -8,6 +8,11 @@ const addPost = async (req, res) => {
     try {
         await connectToMongo();
 
+        const ownerId = req.body.userid || req.body.senderid;
+        if (!ownerId) {
+            return res.status(400).send({ success: false, msg: "userid is required" });
+        }
+
         // Handle Images
         let photoIds = [];
         if (req.files && req.files.length > 0) {
@@ -19,10 +24,8 @@ const addPost = async (req, res) => {
         }
 
         const newPost = new Post({
-            // FIX: Save 'senderid' from frontend into 'userid' field in DB
-            // This ensures getPostById finds it later.
-            userid: req.body.senderid, 
-            senderid: req.body.senderid, // Optional: Keep both if needed for notifications
+            userid: ownerId,
+            senderid: ownerId,
             
             title: req.body.title || "Update",
             description: req.body.description,
