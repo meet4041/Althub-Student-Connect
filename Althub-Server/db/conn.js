@@ -96,8 +96,9 @@ export async function uploadFromBuffer(buffer, filename, contentType) {
   const bucket = getGridFSBucket();
   return new Promise((resolve, reject) => {
     const uploadStream = bucket.openUploadStream(filename, { contentType });
+    const fileId = uploadStream.id;
     uploadStream.end(buffer);
-    uploadStream.on('finish', (file) => resolve(file._id.toString()));
+    uploadStream.on('finish', () => resolve(fileId.toString()));
     uploadStream.on('error', (err) => reject(err));
   });
 }
