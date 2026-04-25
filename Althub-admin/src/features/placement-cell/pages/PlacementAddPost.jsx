@@ -103,7 +103,7 @@ const PlacementAddPost = () => {
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-saas">Post Media</label>
                                             <div className="post-upload-zone">
-                                                <input type='file' multiple className="d-none" id="alumniAddPostFile" onChange={imgChange} />
+                                                <input type='file' multiple accept="image/*" className="d-none" id="alumniAddPostFile" onChange={imgChange} />
                                                 <label htmlFor="alumniAddPostFile" className="cursor-pointer mb-0">
                                                     <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
                                                     <p className="mb-0 font-weight-bold text-dark">Add photos</p>

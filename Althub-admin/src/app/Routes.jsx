@@ -29,7 +29,6 @@ import AlumniPosts from '../features/alumni-office/pages/AlumniPosts.jsx';
 import AlumniAddPost from '../features/alumni-office/pages/AlumniAddPost.jsx';
 import AlumniEditPost from '../features/alumni-office/pages/AlumniEditPost.jsx';
 import PlacementEvents from '../features/placement-cell/pages/PlacementEvents.jsx';
-import PlacementAddCourse from '../features/placement-cell/pages/PlacementAddCourse.jsx';
 import PlacementAddEvent from '../features/placement-cell/pages/PlacementAddEvent.jsx';
 import PlacementEditEvent from '../features/placement-cell/pages/PlacementEditEvent.jsx';
 import PlacementPosts from '../features/placement-cell/pages/PlacementPosts.jsx';
@@ -81,7 +80,6 @@ const Markup = () => {
             <Route path='/alumni-add-post' element={<ProtectedRoute><AlumniAddPost /></ProtectedRoute>} />
             <Route path='/alumni-edit-post' element={<ProtectedRoute><AlumniEditPost /></ProtectedRoute>} />
             <Route path='/placement-events' element={<ProtectedRoute><PlacementEvents /></ProtectedRoute>} />
-            <Route path='/placement-add-course' element={<ProtectedRoute><PlacementAddCourse /></ProtectedRoute>} />
             <Route path='/placement-add-event' element={<ProtectedRoute><PlacementAddEvent /></ProtectedRoute>} />
             <Route path='/placement-edit-event' element={<ProtectedRoute><PlacementEditEvent /></ProtectedRoute>} />
             <Route path='/placement-posts' element={<ProtectedRoute><PlacementPosts /></ProtectedRoute>} />

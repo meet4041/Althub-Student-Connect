@@ -24,26 +24,26 @@ const PlacementEditEvent = () => {
     });
     const location = useLocation();
 
-    const geteventData = () => {
-        if (location.state && location.state.data) {
-            const state = location.state.data;
-            setData({
-                id: state._id,
-                title: state.title,
-                description: state.description,
-                date: state.date,
-                venue: state.venue,
-            });
-        }
-    };
-
     useEffect(() => {
         const loader = document.getElementById('page-loader');
         if (loader) loader.style.display = 'none';
         const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
-        geteventData();
-    }, []);
+        if (!(location.state && location.state.data)) {
+            toast.error("Event data not found. Please open edit from the events list.");
+            navigate('/placement-events', { replace: true });
+            return;
+        }
+
+        const state = location.state.data;
+        setData({
+            id: state._id || "",
+            title: state.title || "",
+            description: state.description || "",
+            date: state.date || "",
+            venue: state.venue || "",
+        });
+    }, [location.state, navigate]);
 
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
@@ -51,7 +51,10 @@ const PlacementEditEvent = () => {
 
     const [fileList, setFileList] = useState(null);
     const files = fileList ? [...fileList] : [];
-    const imgChange = (e) => { setFileList(e.target.files); };
+    const imgChange = (e) => {
+        const selectedFiles = Array.from(e.target.files || []);
+        setFileList(selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i)));
+    };
 
     const submitHandler = (e) => {
         e.preventDefault();
@@ -97,9 +100,12 @@ const PlacementEditEvent = () => {
         return Object.keys(errs).length === 0;
     };
 
-    const getFormattedDate = (dateString) => {
+    const getFormattedDateTime = (dateString) => {
         if (!dateString) return "";
-        return dateString.split('T')[0];
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return "";
+        const pad = (value) => String(value).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     };
 
     return (
@@ -133,8 +139,8 @@ const PlacementEditEvent = () => {
 
                                             <div className="row">
                                                 <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Scheduled Date</label>
-                                                    <input type='date' className="form-control form-control-modern" name="date" value={getFormattedDate(data.date)} onChange={handleChange} />
+                                                    <label className="form-label-modern">Scheduled Date & Time</label>
+                                                    <input type='datetime-local' className="form-control form-control-modern" name="date" value={getFormattedDateTime(data.date)} onChange={handleChange} />
                                                     {errors.date_err && <small className="text-danger font-weight-bold">{errors.date_err}</small>}
                                                 </div>
                                                 <div className="col-6 form-group mb-4">
@@ -154,7 +160,7 @@ const PlacementEditEvent = () => {
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-modern">Media & Photos Update</label>
                                             <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="editImgUploadPlacement" onChange={imgChange} />
+                                                <input type='file' multiple accept="image/*" className="d-none" id="editImgUploadPlacement" onChange={imgChange} />
                                                 <label htmlFor="editImgUploadPlacement" className="text-center cursor-pointer mb-0">
                                                     <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
                                                     <p className="mb-0 font-weight-bold">Click to replace or add photos</p>

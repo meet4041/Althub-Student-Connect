@@ -112,23 +112,26 @@ const PlacementAddEvent = () => {
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Date & Time</label>
                                                     <input type='datetime-local' className="form-control form-control-modern" name="date" value={data.date} onChange={handleChange} />
+                                                    {errors.date_err && <small className="text-danger">{errors.date_err}</small>}
                                                 </div>
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Venue</label>
                                                     <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} />
+                                                    {errors.venue_err && <small className="text-danger">{errors.venue_err}</small>}
                                                 </div>
                                             </div>
 
                                             <div className="form-group mb-0">
                                                 <label className="form-label-modern">Full Description</label>
                                                 <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} />
+                                                {errors.description_err && <small className="text-danger">{errors.description_err}</small>}
                                             </div>
                                         </div>
 
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-modern">Event Media</label>
                                             <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="addImgUploadPlacement" onChange={imgChange} />
+                                                <input type='file' multiple accept="image/*" className="d-none" id="addImgUploadPlacement" onChange={imgChange} />
                                                 <label htmlFor="addImgUploadPlacement" className="text-center cursor-pointer mb-0">
                                                     <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
                                                     <h6 className="font-weight-bold">Click to upload photos</h6>

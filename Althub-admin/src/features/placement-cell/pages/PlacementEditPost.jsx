@@ -2,6 +2,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import { ALTHUB_API_URL } from '../../../config/baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../../../utils/imageUtils';
 import axiosInstance from '../../../service/axios';
 
@@ -33,24 +34,25 @@ const PlacementEditPost = () => {
         if (location.state && location.state.post) {
             const post = location.state.post;
             setData({
-                id: post._id,
+                id: post._id || "",
                 description: post.description || "",
             });
             if (post.photos && post.photos.length > 0) {
                 setExistingPhotos(post.photos);
             }
         } else {
-            toast.error("No post data found. Redirecting...");
-            setTimeout(() => navigate('/placement-posts'), 2000);
+            toast.error("Post data not found. Please open edit from the posts list.");
+            navigate('/placement-posts', { replace: true });
         }
-    }, [location, navigate]);
+    }, [location.state, navigate]);
 
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
 
     const imgChange = (e) => {
-        setNewFiles([...e.target.files]);
+        const selectedFiles = Array.from(e.target.files || []);
+        setNewFiles(selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i)));
     };
 
     const submitHandler = async (e) => {
@@ -72,7 +74,11 @@ const PlacementEditPost = () => {
         }
 
         try {
-            await axiosInstance.post('/api/editPost', formData);
+            await axiosInstance.post(`${ALTHUB_API_URL}/api/editPost`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             toast.success("Post Updated Successfully");
             setTimeout(() => navigate('/placement-posts'), 1200);
         } catch (error) {
