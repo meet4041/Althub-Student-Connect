@@ -30,6 +30,75 @@ const normalizeInstituteRole = (role) => {
     return normalized;
 }
 
+const buildInviteEmailTemplate = ({ title, intro, email, tempPass, loginUrl, roleLabel, instituteName }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${title}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:Arial,sans-serif;color:#0f172a;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f7fb;padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;">
+                    <tr>
+                        <td style="padding:32px 32px 20px;background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 100%);">
+                            <div style="font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:#bfdbfe;font-weight:700;">Althub</div>
+                            <h1 style="margin:12px 0 0;font-size:28px;line-height:1.25;color:#ffffff;font-weight:800;">${title}</h1>
+                            <p style="margin:12px 0 0;font-size:15px;line-height:1.7;color:#dbeafe;">${intro}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:28px 32px 8px;">
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px 22px;">
+                                <div style="font-size:13px;color:#64748b;margin-bottom:8px;">Institution</div>
+                                <div style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:18px;">${instituteName}</div>
+                                <div style="font-size:13px;color:#64748b;margin-bottom:8px;">Account email</div>
+                                <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:18px;">${email}</div>
+                                <div style="font-size:13px;color:#64748b;margin-bottom:8px;">Temporary password</div>
+                                <div style="font-size:22px;line-height:1.2;font-weight:800;color:#1d4ed8;letter-spacing:0.8px;">${tempPass}</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:20px 32px 0;">
+                            <p style="margin:0 0 18px;font-size:15px;line-height:1.8;color:#334155;">
+                                Use the button below to sign in to your ${roleLabel.toLowerCase()} account and complete your first login.
+                            </p>
+                            <table role="presentation" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td style="border-radius:12px;background:#1d4ed8;">
+                                        <a href="${loginUrl}" style="display:inline-block;padding:14px 24px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">Open Althub</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin:18px 0 0;font-size:13px;line-height:1.7;color:#64748b;">
+                                If the button does not open, use this link:
+                                <a href="${loginUrl}" style="color:#1d4ed8;text-decoration:none;">${loginUrl}</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:24px 32px 32px;">
+                            <div style="border-top:1px solid #e2e8f0;padding-top:20px;font-size:14px;line-height:1.8;color:#475569;">
+                                <strong style="color:#0f172a;">Recommended next steps</strong><br />
+                                1. Sign in using the credentials above.<br />
+                                2. Change your password immediately after login.<br />
+                                3. Complete your profile before using the platform.
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <p style="margin:16px 0 0;font-size:12px;line-height:1.6;color:#94a3b8;">This is an automated Althub email. Please do not reply to this message.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const baseUrl = (config.clientUrl || "http://localhost:3000").replace(/\/$/, "");
@@ -52,6 +121,8 @@ const sendresetpasswordMail = async (name, email, token) => {
 
 const sendInvitationMail = async (name, email, tempPass) => {
     try {
+        const baseUrl = (config.clientUrl || "http://localhost:3000").replace(/\/$/, "");
+        const loginUrl = `${baseUrl}/login`;
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
@@ -59,15 +130,23 @@ const sendInvitationMail = async (name, email, tempPass) => {
             auth: { user: config.emailUser, pass: config.emailPassword }
         });
         const mailoptions = {
-            from: config.emailUser,
+            from: `"Althub Team" <${config.emailUser}>`,
             to: email,
             subject: 'You are invited to connect Althub+',
-            html: `<p>Hello ${name}, You are invited to connect with Althub. Your temporary password is: <b>${tempPass}</b></p><p>Please <a href="http://localhost:3000/login">Login here</a>.</p>`
+            html: buildInviteEmailTemplate({
+                title: 'Your Althub Account Is Ready',
+                intro: `Hello ${name || 'there'}, your access to Althub has been created successfully.`,
+                email,
+                tempPass,
+                loginUrl,
+                roleLabel: 'Member',
+                instituteName: 'Althub'
+            })
         }
         return await transporter.sendMail(mailoptions);
     } catch (error) {
         console.error("Invitation Mail Error:", error);
-        throw new Error("Failed to send invitation email");
+        throw new Error(error?.message || "Failed to send invitation email");
     }
 }
 
@@ -84,22 +163,23 @@ const sendCsvInviteMail = async ({ instituteName, email, tempPass, role }) => {
             auth: { user: config.emailUser, pass: config.emailPassword }
         });
         const mailoptions = {
-            from: config.emailUser,
+            from: `"Althub Team" <${config.emailUser}>`,
             to: email,
             subject: `Your ${instituteName} ${roleLabel} Account is Ready`,
-            html: `
-                <p>Hello,</p>
-                <p>Your ${roleLabel.toLowerCase()} account for <b>${instituteName}</b> has been created.</p>
-                <p><b>Email:</b> ${email}<br/>
-                <b>Temporary Password:</b> ${tempPass}</p>
-                <p>Please login here: <a href="${loginUrl}">${loginUrl}</a></p>
-                <p>After logging in, please change your password.</p>
-            `
+            html: buildInviteEmailTemplate({
+                title: `Your ${instituteName} ${roleLabel} Account Is Ready`,
+                intro: `Your ${roleLabel.toLowerCase()} access for ${instituteName} has been provisioned. Your temporary credentials are below.`,
+                email,
+                tempPass,
+                loginUrl,
+                roleLabel,
+                instituteName
+            })
         };
         return await transporter.sendMail(mailoptions);
     } catch (error) {
         console.error("CSV Invite Mail Error:", error);
-        throw new Error(`Failed to send invite email to ${email}`);
+        throw new Error(error?.message || `Failed to send invite email to ${email}`);
     }
 };
 
@@ -454,7 +534,10 @@ const bulkInviteAlumniCsv = async (req, res) => {
                 if (user?._id) {
                     await User.findByIdAndDelete(user._id);
                 }
-                failed.push(email);
+                failed.push({
+                    email,
+                    reason: mailError?.message || 'Unknown email delivery error'
+                });
                 console.error(`Bulk invite failed for ${email}:`, mailError.message);
             }
         }
