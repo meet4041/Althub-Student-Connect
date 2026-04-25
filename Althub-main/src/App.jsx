@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useLayoutEffect, Suspense, lazy } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom"; 
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom"; 
 import { ToastContainer } from "react-toastify";
 import { socket } from "./socket";
 import axios from "axios"; 
@@ -110,7 +110,8 @@ function App() {
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/forget-password" element={<ForgetPassword />} />
+          <Route path="/forgot-password" element={<ForgetPassword />} />
+          <Route path="/forget-password" element={<Navigate to="/forgot-password" replace />} />
           <Route path="/new-password" element={<NewPassword />} />
 
           <Route element={<AuthGuard />}>
@@ -124,6 +125,7 @@ function App() {
               <Route path="/notification" element={<Notification />} />
               <Route path="/my-posts" element={<MyPosts />} />
           </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </>

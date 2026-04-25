@@ -39,7 +39,7 @@ export default function Navbar({ socket }) {
   useEffect(() => {
     getUser();
 
-    const hiddenRoutes = ["/register", "/login", "/", "/forget-password", "/new-password"];
+    const hiddenRoutes = ["/register", "/login", "/", "/forgot-password", "/forget-password", "/new-password"];
     setShowNavbar(!hiddenRoutes.includes(pathname));
 
     if ("Notification" in window && Notification.permission !== "granted") {

@@ -165,6 +165,7 @@ const csrfProtect = (req, res, next) => {
   const method = req.method.toUpperCase();
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") return next();
   if (csrfAllowlist.has(req.path)) return next();
+  if (req.headers.authorization?.startsWith("Bearer ")) return next();
 
   const cookieToken = req.cookies?.csrf_token;
   const headerToken = req.headers["x-csrf-token"];

@@ -6,6 +6,15 @@ import PlacementCell from "../models/placementModel.js";
 import Admin from "../models/adminModel.js";
 import User from "../models/userModel.js";
 
+const normalizeRole = (role) => {
+    if (!role) return role;
+
+    const normalized = String(role).trim().toLowerCase();
+    if (normalized === "alumni") return "alumni_office";
+    if (normalized === "placement") return "placement_cell";
+    return normalized;
+};
+
 // --- HELPER FUNCTION: Verify Token & Find User in ANY Table ---
 const verifyUser = async (token) => {
     if (!token) return null;
@@ -33,6 +42,8 @@ const verifyUser = async (token) => {
         if (!user.role && user.constructor?.modelName === "adminTB") {
             user.role = "admin";
         }
+
+        user.role = normalizeRole(user.role);
 
         // Token Version Check (Security Feature: invalidates old tokens on password change)
         const dbTokenVersion = user.tokenVersion || 0;
@@ -79,10 +90,15 @@ export const requireAuth = async (req, res, next) => {
 // Usage: requireRole('admin') or requireRole('institute', 'alumni_office')
 export const requireRole = (...allowedRoles) => {
     return (req, res, next) => {
-        if (!req.user || !req.user.role) {
+        const userRole = normalizeRole(req.user?.role);
+        const normalizedAllowedRoles = allowedRoles.map(normalizeRole);
+
+        if (!req.user || !userRole) {
             return res.status(401).json({ success: false, msg: "Access Denied. No role found." });
         }
-        if (!allowedRoles.includes(req.user.role)) {
+        req.user.role = userRole;
+
+        if (!normalizedAllowedRoles.includes(userRole)) {
             return res.status(403).json({ success: false, msg: "Forbidden. Insufficient role." });
         }
         next();

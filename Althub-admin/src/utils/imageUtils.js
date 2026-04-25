@@ -25,7 +25,11 @@ export function getImageUrl(path, fallback = FALLBACK_IMAGES.profile) {
     // Normalize: ensure leading slash for API paths
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
     const baseUrl = ALTHUB_API_URL.replace(/\/$/, '');
-    const fullUrl = `${baseUrl}${cleanPath}`;
+    const token = localStorage.getItem('token');
+    const isProtectedImage = cleanPath.startsWith('/api/images/');
+    const fullUrl = isProtectedImage && token
+        ? `${baseUrl}${cleanPath}?token=${encodeURIComponent(token)}`
+        : `${baseUrl}${cleanPath}`;
     return fullUrl;
 }
 

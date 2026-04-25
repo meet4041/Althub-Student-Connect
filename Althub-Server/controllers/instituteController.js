@@ -21,6 +21,15 @@ const securePassword = async (password) => {
     catch (error) { console.error("Hashing Error:", error.message); }
 }
 
+const normalizeInstituteRole = (role) => {
+    if (!role) return role;
+
+    const normalized = String(role).trim().toLowerCase();
+    if (normalized === 'alumni') return 'alumni_office';
+    if (normalized === 'placement') return 'placement_cell';
+    return normalized;
+}
+
 const sendresetpasswordMail = async (name, email, token) => {
     try {
         const baseUrl = (config.clientUrl || "http://localhost:3000").replace(/\/$/, "");
@@ -174,9 +183,10 @@ const instituteLogin = async (req, res) => {
         if (user) {
             const isMatch = await bcryptjs.compare(password, user.password);
             if (isMatch) {
+                const normalizedRole = normalizeInstituteRole(user.role);
                 const tokenPayload = { 
                     _id: user._id, 
-                    role: user.role, 
+                    role: normalizedRole, 
                     version: user.tokenVersion 
                 };
                 if (user.parent_institute_id) tokenPayload.parent_institute_id = user.parent_institute_id;
@@ -186,7 +196,9 @@ const instituteLogin = async (req, res) => {
                 res.cookie('institute_token', token, { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', maxAge: 24 * 60 * 60 * 1000 });
                 const csrfToken = crypto.randomBytes(32).toString('hex');
                 res.cookie('csrf_token', csrfToken, { httpOnly: false, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', maxAge: 24 * 60 * 60 * 1000 });
-                res.status(200).send({ success: true, msg: "Login Successful", data: user, token });
+                const userData = user.toObject ? user.toObject() : user;
+                userData.role = normalizedRole;
+                res.status(200).send({ success: true, msg: "Login Successful", data: userData, token });
             } else { res.status(401).send({ success: false, msg: "Invalid credentials" }); }
         } else { res.status(404).send({ success: false, msg: "Account not found" }); }
     } catch (error) { res.status(500).send({ success: false, msg: "Internal Server Error" }); }

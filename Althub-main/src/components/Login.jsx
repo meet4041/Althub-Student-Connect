@@ -122,7 +122,7 @@ export default function Login() {
                 <label className="text-sm font-medium text-slate-700">Password</label>
                 <button
                   type="button"
-                  onClick={() => nav("/forget-password")}
+                  onClick={() => nav("/forgot-password")}
                   className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors"
                 >
                   Forgot password?

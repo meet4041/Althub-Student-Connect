@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import axiosInstance from '../services/axios';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
-import { ALTHUB_API_URL } from '../config/baseURL';
+import { getProtectedImageUrl } from '../config/baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 // RE-USING PREMIUM THEME STYLES
@@ -106,7 +106,7 @@ const Institutes = () => {
                                             <div className="d-flex justify-content-between">
                                                 <div className="profile-squircle" style={{ width: '65px', height: '65px' }}>
                                                     <img 
-                                                        src={inst.image ? `${ALTHUB_API_URL}${inst.image}` : 'assets/img/login-bg/profile1.png'} 
+                                                        src={getProtectedImageUrl(inst.image)} 
                                                         alt='Campus Logo'
                                                         className="w-100 h-100 object-fit-cover rounded"
                                                     />

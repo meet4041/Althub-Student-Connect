@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/Login';
 import ForgotPassword from '../pages/ForgotPassword';
 import NewPassword from '../pages/NewPassword';
@@ -16,6 +16,7 @@ const AppRoutes = () => {
         <Routes>
             {/* Public Routes (No Guard) */}
             <Route path='/' element={<Login />} />
+            <Route path='/login' element={<Navigate to='/' replace />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
             <Route path='/new-password' element={<NewPassword />} />
 
@@ -62,6 +63,7 @@ const AppRoutes = () => {
                 </AuthGuard>
             } />
 
+            <Route path='*' element={<Navigate to='/' replace />} />
             {/* <Route path='/add-Institute' element={<AddInstitute/>}/> */}
         </Routes>
     )

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../services/axios';
-import { ALTHUB_API_URL } from '../config/baseURL';
+import { getProtectedImageUrl } from '../config/baseURL';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 
@@ -239,7 +239,7 @@ const Profile = () => {
                                             <div className="profile-avatar-row">
                                                 <div className="profile-avatar-preview">
                                                     <img
-                                                        src={profileInfo.profilepic ? `${ALTHUB_API_URL}${profileInfo.profilepic}` : 'assets/img/login-bg/profile1.png'}
+                                                        src={getProtectedImageUrl(profileInfo.profilepic)}
                                                         alt="Admin"
                                                     />
                                                 </div>
