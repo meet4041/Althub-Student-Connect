@@ -157,6 +157,8 @@ const csrfAllowlist = new Set([
   "/adminLogin",
   "/instituteLogin",
   "/userLogin",
+  "/registerInstitute",
+  "/register",
   "/instituteForgetPassword",
   "/instituteResetPassword",
   "/forgetpassword",
