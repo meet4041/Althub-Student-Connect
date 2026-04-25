@@ -37,13 +37,13 @@ const Login = () => {
                         localStorage.setItem('userRole', responseData.role); 
 
                         localStorage.setItem('AlmaPlus_institute_Id', responseData._id);
-                        localStorage.setItem('AlmaPlus_institute_Name', responseData.name);
+                        localStorage.setItem('AlmaPlus_institute_Name', responseData.name || responseData.institutename || '');
                         if (response.data.token) {
                             localStorage.setItem('token', response.data.token);
                         }
 
                         if (rememberMe) {
-                            localStorage.setItem('althub_remembered_email', loginInfo.email);
+                            localStorage.setItem('althub_remembered_email', loginInfo.email.trim().toLowerCase());
                             localStorage.setItem('althub_remember_me_status', 'true');
                         } else {
                             localStorage.removeItem('althub_remembered_email');

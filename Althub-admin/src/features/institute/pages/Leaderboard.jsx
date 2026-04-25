@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../../../service/axios';
 import { ALTHUB_API_URL } from '../../../config/baseURL';
 import Loader from '../../../layouts/Loader.jsx';
@@ -9,8 +10,6 @@ import Footer from '../../../layouts/Footer.jsx';
 const Leaderboard = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const themeColor = '#2563EB';
-
     useEffect(() => {
         // --- MANDATORY THEME INITIALIZATION ---
         // This ensures the page opens in "one-go" without a refresh
@@ -49,32 +48,26 @@ const Leaderboard = () => {
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
-                <div id="content" className="content" style={{ 
-                    backgroundColor: '#F1F5F9', 
-                    minHeight: '100vh',
-                    marginLeft: '240px', // Standard Sidebar Width
-                    paddingTop: '65px',  // Standard Header Height
-                    transition: 'all 0.3s'
-                }}>
-                    <div style={{ padding: '10px', marginTop:'-25px' }}>
+                <div id="content" className="content feedback-content-wrapper">
+                    <div className="leaderboard-container">
                         {/* Header Section */}
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
-                                        <li className="breadcrumb-item"><a href="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</a></li>
-                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Leaderboard</li>
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
+                                        <li className="breadcrumb-item"><Link to="/dashboard">Home</Link></li>
+                                        <li className="breadcrumb-item active">Leaderboard</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>
+                                <h1 className="page-header mb-0 institute-page-title">
                                     Excellence Leaderboard
                                 </h1>
-                                <p className="text-muted small">Top members ranked by feedback volume and average ratings</p>
+                                <p className="text-muted small institute-page-subtitle">Top members ranked by feedback volume and average ratings.</p>
                             </div>
                         </div>
                         
                         {/* Leaderboard Table Card */}
-                        <div className="card border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <div className="card border-0 shadow-sm institute-page-card" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                             <div className="card-body p-0 bg-white">
                                 <div className="table-responsive">
                                     <table className="table table-hover mb-0">

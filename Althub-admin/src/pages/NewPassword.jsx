@@ -49,6 +49,10 @@ function NewPassword() {
 
     const submitHandler = (e) => {
         e.preventDefault();
+        if (!token) {
+            toast.error("Reset token is missing or invalid.");
+            return;
+        }
         if (validate()) {
             setDisable(true);
             const myurl = `${ALTHUB_API_URL}/api/instituteResetPassword?token=${token}`;
@@ -63,12 +67,12 @@ function NewPassword() {
                     setDisable(false);
                     toast.success(response.data.msg);
                     setTimeout(() => {
-                        navigate('/');
+                        navigate('/login');
                     }, 2000);
                 }
             }).catch((error) => {
                 setDisable(false);
-                toast.error(error.response.data.msg);
+                toast.error(error.response?.data?.msg || "Password reset failed");
             })
         }
     };
@@ -154,7 +158,7 @@ function NewPassword() {
                                 <div className="text-center mt-3">
                                     <p className="text-muted">
                                         Remember credentials?
-                                        <Link to="/" className="back-to-login-link ml-1">
+                                        <Link to="/login" className="back-to-login-link ml-1">
                                             Back to Login
                                         </Link>
                                     </p>

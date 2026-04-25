@@ -36,7 +36,9 @@ const EditEvent = () => {
                 date: state.date,
                 venue: state.venue,
             });
+            return true;
         }
+        return false;
     }
 
     useEffect(() => {
@@ -44,8 +46,11 @@ const EditEvent = () => {
         if (loader) loader.style.display = 'none';
         const element = document.getElementById("page-container");
         if (element) element.classList.add("show");
-        geteventData();
-    }, []);
+        if (!geteventData()) {
+            toast.error("No event selected. Redirecting...");
+            navigate('/events', { replace: true });
+        }
+    }, [navigate]);
 
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
@@ -53,10 +58,22 @@ const EditEvent = () => {
 
     const [fileList, setFileList] = useState(null);
     const files = fileList ? [...fileList] : [];
-    const imgChange = (e) => { setFileList(e.target.files); }
+    const imgChange = (e) => {
+        const selectedFiles = Array.from(e.target.files || []);
+        const validFiles = selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+        setFileList(validFiles);
+        if (validFiles.length !== selectedFiles.length) {
+            toast.error("Only JPG, PNG, GIF, and WEBP files are allowed.");
+        }
+    }
 
     const submitHandler = (e) => {
         e.preventDefault();
+        if (!data.id) {
+            toast.error("Event data is missing.");
+            navigate('/events', { replace: true });
+            return;
+        }
         if (validate()) {
             setDisable(true);
             const body = new FormData();
@@ -101,7 +118,10 @@ const EditEvent = () => {
 
     const getFormattedDate = (dateString) => {
         if (!dateString) return "";
-        return dateString.split('T')[0];
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return "";
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
     }
 
     return (
@@ -139,7 +159,7 @@ const EditEvent = () => {
                                             <div className="row">
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Scheduled Date</label>
-                                                    <input type='date' className="form-control form-control-modern" name="date" value={getFormattedDate(data.date)} onChange={handleChange} />
+                                                    <input type='datetime-local' className="form-control form-control-modern" name="date" value={getFormattedDate(data.date)} onChange={handleChange} />
                                                     {errors.date_err && <small className="text-danger font-weight-bold">{errors.date_err}</small>}
                                                 </div>
                                                 <div className="col-6 form-group mb-4">
@@ -160,7 +180,7 @@ const EditEvent = () => {
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-modern">Media & Photos Update</label>
                                             <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="editImgUpload" onChange={imgChange} />
+                                                <input type='file' multiple accept="image/jpeg,image/png,image/gif,image/webp" className="d-none" id="editImgUpload" onChange={imgChange} />
                                                 <label htmlFor="editImgUpload" className="text-center cursor-pointer mb-0">
                                                     <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
                                                     <p className="mb-0 font-weight-bold">Click to replace or add photos</p>

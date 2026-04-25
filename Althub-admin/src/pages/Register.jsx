@@ -164,7 +164,7 @@ const Register = () => {
                                                 </option>
                                                 {institutesList.map((inst) => (
                                                     <option key={inst._id} value={inst._id}>
-                                                        {inst.name}
+                                                        {inst.name || inst.institutename}
                                                     </option>
                                                 ))}
                                             </select>

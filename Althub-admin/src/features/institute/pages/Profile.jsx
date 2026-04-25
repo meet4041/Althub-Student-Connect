@@ -36,6 +36,15 @@ const Profile = () => {
     const [disable, setDisable] = useState(false);
     const [disable2, setDisable2] = useState(false);
 
+    const clearInstituteSession = () => {
+        localStorage.removeItem('userDetails');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('AlmaPlus_institute_Id');
+        localStorage.removeItem('AlmaPlus_institute_Name');
+        localStorage.removeItem('token');
+        localStorage.removeItem('althub_remembered_email');
+        localStorage.removeItem('althub_remember_me_status');
+    };
 
     const getData = (id) => {
         if (!id) return;
@@ -122,10 +131,18 @@ const Profile = () => {
                 institute_id: institute_Id,
                 oldpassword: changepass.oldpassword,
                 newpassword: changepass.newpassword
-            }).then((response) => {
+            }).then(async (response) => {
                 if (response.data.success) {
                     toast.success('Password Updated. Redirecting...');
-                    setTimeout(() => { localStorage.clear(); navigate('/'); }, 2000);
+                    try {
+                        await axiosInstance.get('/api/instituteLogout');
+                    } catch (error) {
+                        console.error('Logout after password update failed:', error);
+                    }
+                    setTimeout(() => {
+                        clearInstituteSession();
+                        navigate('/login', { replace: true });
+                    }, 2000);
                 } else {
                     setDisable2(false);
                     toast.error(response.data.msg || 'Update Failed');

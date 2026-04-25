@@ -31,8 +31,12 @@ const Events = () => {
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
         const id = localStorage.getItem("AlmaPlus_institute_Id");
+        if (!id) {
+            navigate('/login', { replace: true });
+            return;
+        }
         setInstitute_Id(id);
-    }, []);
+    }, [navigate]);
 
     const getEventsData = useCallback(() => {
         if (institute_Id) {
@@ -77,9 +81,18 @@ const Events = () => {
     const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
     const currentEvents = displayEvents.slice(indexOfFirstEvent, indexOfLastEvent);
     const pageNumbers = Array.from({ length: Math.ceil(displayEvents.length / eventsPerPage) }, (_, i) => i + 1);
+    const hasEvents = displayEvents.length > 0;
+    const showingFrom = hasEvents ? indexOfFirstEvent + 1 : 0;
+    const showingTo = hasEvents ? Math.min(indexOfLastEvent, displayEvents.length) : 0;
     const upcomingCount = events.filter(e => isUpcoming(e.date)).length;
 
-    const paginate = (num) => setCurrentPage(num);
+    const paginate = (num) => {
+        if (!pageNumbers.length) {
+            setCurrentPage(1);
+            return;
+        }
+        setCurrentPage(Math.min(Math.max(num, 1), pageNumbers.length));
+    };
 
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
@@ -122,19 +135,20 @@ const Events = () => {
                 <div id="content" className="content events-content-wrapper">
                     <div className="events-container">
                         {/* Header */}
-                        <div className="events-header">
-                            <div>
+                        <div className="events-header institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1">
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
                                     <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
                                         <li className="breadcrumb-item active">Events</li>
                                     </ol>
                                 </nav>
-                                <h1 className="events-title">
+                                <h1 className="events-title institute-page-title">
                                     Events Management
                                 </h1>
+                                <p className="events-subtitle institute-page-subtitle">Create, review, and manage institute events with a consistent control layout.</p>
                             </div>
-                            <Link to="/add-event" className="btn-events-create">
+                            <Link to="/add-event" className="btn-events-create institute-page-actions">
                                 <i className="fa fa-plus-circle mr-2"></i> Create Event
                             </Link>
                         </div>
@@ -193,7 +207,7 @@ const Events = () => {
                         </div>
 
                         {/* Content Area */}
-                        <div className="events-content-card">
+                        <div className="events-content-card institute-page-card">
                         <div className="events-content-area">
                             {viewMode === 'grid' ? (
                                 <div className="events-grid">
@@ -278,7 +292,7 @@ const Events = () => {
                         {displayEvents.length > 0 && (
                             <div className="events-pagination">
                                 <p className="events-pagination-info">
-                                    Showing {indexOfFirstEvent + 1}–{Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length}
+                                    Showing {showingFrom}–{showingTo} of {displayEvents.length}
                                 </p>
                                 <div className="events-pagination-controls">
                                     <select
@@ -300,7 +314,7 @@ const Events = () => {
                                             >{num}</button>
                                         ))}
                                         {pageNumbers.length > 5 && <span className="events-page-dots">…</span>}
-                                        <button className="events-page-btn" disabled={currentPage === pageNumbers.length} onClick={() => paginate(currentPage + 1)}>
+                                        <button className="events-page-btn" disabled={currentPage === pageNumbers.length || !pageNumbers.length} onClick={() => paginate(currentPage + 1)}>
                                             <i className="fa fa-chevron-right"></i>
                                         </button>
                                     </nav>

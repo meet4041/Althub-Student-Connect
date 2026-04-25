@@ -53,11 +53,21 @@ const EditPost = () => {
     };
 
     const imgChange = (e) => {
-        setNewFiles([...e.target.files]);
+        const selectedFiles = Array.from(e.target.files || []);
+        const validFiles = selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+        setNewFiles(validFiles);
+        if (validFiles.length !== selectedFiles.length) {
+            toast.error("Only JPG, PNG, GIF, and WEBP files are allowed.");
+        }
     };
 
     const submitHandler = async (e) => {
         e.preventDefault();
+        if (!data.id) {
+            toast.error("Post data is missing.");
+            navigate('/posts', { replace: true });
+            return;
+        }
         if (!data.description) {
             toast.error("Description is required");
             return;
@@ -157,7 +167,7 @@ const EditPost = () => {
                                             <div className="post-upload-zone">
                                                 <input 
                                                     type='file' multiple className="d-none" id="editPostFile" 
-                                                    accept="image/*" onChange={imgChange} 
+                                                    accept="image/jpeg,image/png,image/gif,image/webp" onChange={imgChange} 
                                                 />
                                                 <label htmlFor="editPostFile" className="cursor-pointer mb-0">
                                                     <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>

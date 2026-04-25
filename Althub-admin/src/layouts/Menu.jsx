@@ -154,7 +154,7 @@ function Menu() {
                         <li className={isActive("/users")}>
                            <Link to="/users">
                               <i className="fa fa-user-friends"></i>
-                              <span>Manage Users</span>
+                              <span>Manage Students</span>
                            </Link>
                         </li>
                         

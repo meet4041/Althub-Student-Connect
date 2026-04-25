@@ -1,0 +1,524 @@
+/* Shared institute-section page chrome */
+
+:root {
+    --institute-page-bg: #f1f5f9;
+    --institute-page-offset-x: 260px;
+    --institute-page-top-gap: 32px;
+    --institute-page-side-gap: 24px;
+    --institute-page-bottom-gap: 32px;
+    --institute-section-gap: 24px;
+    --institute-header-gap: 16px;
+    --institute-page-title-size: 24px;
+    --institute-page-title-color: #1e293b;
+    --institute-page-subtitle-color: #64748b;
+    --institute-page-card-radius: 16px;
+    --institute-page-card-border: #e2e8f0;
+    --institute-primary: #2563eb;
+    --institute-primary-dark: #1d4ed8;
+    --institute-soft-bg: #f8fafc;
+    --institute-soft-border: #e2e8f0;
+    --institute-soft-text: #64748b;
+    --institute-id-bg: #eaf2ff;
+    --institute-id-text: #315ea8;
+    --institute-toolbar-gap: 16px;
+    --institute-btn-height: 42px;
+    --institute-btn-radius: 10px;
+}
+
+.dashboard-content,
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper {
+    background: var(--institute-page-bg) !important;
+    margin-left: var(--institute-page-offset-x) !important;
+    margin-top: 0 !important;
+    padding-top: var(--institute-page-top-gap) !important;
+    transition: margin-left 0.3s ease;
+}
+
+.dashboard-content {
+    padding-left: var(--institute-page-side-gap) !important;
+    padding-right: var(--institute-page-side-gap) !important;
+    padding-bottom: var(--institute-page-bottom-gap) !important;
+}
+
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.events-container,
+.directory-container,
+.feedback-container,
+.posts-container,
+.profile-main-container,
+.edit-event-container,
+.leaderboard-container {
+    padding-top: 0 !important;
+    padding-left: var(--institute-page-side-gap) !important;
+    padding-right: var(--institute-page-side-gap) !important;
+    padding-bottom: var(--institute-page-bottom-gap) !important;
+    margin: 0 !important;
+}
+
+.profile-main-container {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+}
+
+.events-container,
+.directory-container,
+.feedback-container,
+.posts-container,
+.profile-main-container,
+.edit-event-container,
+.leaderboard-container {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.posts-content-wrapper,
+.feedback-content-wrapper {
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+.posts-container,
+.feedback-container {
+    min-height: calc(100vh - 65px) !important;
+    height: auto !important;
+}
+
+.posts-scroll-area,
+.feedback-scroll-area {
+    flex: initial !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.institute-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--institute-header-gap);
+    margin-top: 0 !important;
+    margin-bottom: var(--institute-section-gap) !important;
+}
+
+.institute-page-header-copy {
+    min-width: 0;
+}
+
+.institute-page-header-copy .breadcrumb,
+.institute-page-breadcrumb {
+    background: transparent !important;
+    padding: 0 !important;
+    margin-bottom: 6px !important;
+}
+
+.institute-page-breadcrumb .breadcrumb-item a {
+    color: var(--institute-primary) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+.institute-page-breadcrumb .breadcrumb-item a:hover {
+    text-decoration: underline !important;
+}
+
+.institute-page-breadcrumb .breadcrumb-item.active {
+    color: var(--institute-page-subtitle-color) !important;
+}
+
+.institute-page-title {
+    color: var(--institute-page-title-color) !important;
+    font-size: var(--institute-page-title-size) !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.4px !important;
+    margin: 0 !important;
+}
+
+.institute-page-subtitle {
+    color: var(--institute-page-subtitle-color) !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    margin: 8px 0 0 !important;
+}
+
+.institute-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 0 !important;
+}
+
+.institute-page-card,
+.feedback-main-card,
+.post-main-card,
+.directory-card,
+.events-content-card {
+    margin-top: 0 !important;
+}
+
+.institute-page-toolbar {
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.institute-page-footer {
+    border-top: 1px solid #edf2f7 !important;
+}
+
+.institute-page-count {
+    white-space: nowrap;
+}
+
+.dashboard-content > .d-sm-flex.align-items-center.justify-content-between.mb-4.mt-2,
+.directory-container > .d-flex.align-items-center.justify-content-between.mb-4,
+.posts-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.feedback-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.edit-event-container > .d-flex.align-items-center.justify-content-between.mb-3,
+.profile-main-container > .mb-4,
+.leaderboard-container > .d-sm-flex.align-items-center.justify-content-between.mb-4 {
+    margin-top: 0 !important;
+    margin-bottom: 24px !important;
+}
+
+.dashboard-content .breadcrumb,
+.events-header .breadcrumb,
+.directory-container .breadcrumb,
+.posts-container .breadcrumb,
+.feedback-container .breadcrumb {
+    background: transparent !important;
+    padding: 0 !important;
+    margin-bottom: 6px !important;
+}
+
+.dashboard-header-h1,
+.events-title,
+.users-header,
+.posts-header,
+.feedback-container .page-header,
+.profile-main-container .page-header,
+.edit-event-title {
+    color: var(--institute-page-title-color) !important;
+    font-size: var(--institute-page-title-size) !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.4px !important;
+    margin-bottom: 0 !important;
+}
+
+.dashboard-content .text-muted.small,
+.events-header .text-muted.small,
+.feedback-container .text-muted.small,
+.profile-main-container .text-muted.small,
+.edit-event-container .text-muted.small,
+.posts-container .text-muted.small {
+    color: var(--institute-page-subtitle-color);
+}
+
+.settings-layout-box,
+.event-form-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card {
+    border-radius: var(--institute-page-card-radius) !important;
+    border: 1px solid var(--institute-page-card-border) !important;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04) !important;
+    overflow: hidden;
+}
+
+.dashboard-csv-bar,
+.events-stats-strip,
+.events-toolbar,
+.toolbar-container,
+.posts-toolbar,
+.feedback-container .card-body > .p-4.d-flex,
+.feedback-container .card-body > .p-4.d-flex.flex-wrap {
+    margin-bottom: 0;
+}
+
+.dashboard-csv-bar {
+    margin-bottom: var(--institute-section-gap) !important;
+}
+
+.events-toolbar,
+.toolbar-container,
+.posts-toolbar,
+.feedback-container .card-body > .p-4.d-flex,
+.feedback-container .card-body > .p-4.d-flex.flex-wrap,
+.dashboard-csv-bar {
+    gap: var(--institute-toolbar-gap) !important;
+}
+
+.institute-badge {
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 999px !important;
+    padding: 10px 16px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2px;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18) !important;
+}
+
+.btn-events-create,
+.posts-create-btn,
+.dashboard-csv-btn,
+.edit-event-save-btn,
+.institute-edit-post .edit-event-save-btn,
+.post-footer-actions .btn-primary,
+.form-footer-sticky .btn-primary {
+    height: var(--institute-btn-height);
+    border-radius: var(--institute-btn-radius) !important;
+    background: linear-gradient(135deg, var(--institute-primary) 0%, var(--institute-primary-dark) 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-events-create:hover,
+.posts-create-btn:hover,
+.dashboard-csv-btn:hover,
+.edit-event-save-btn:hover,
+.institute-edit-post .edit-event-save-btn:hover,
+.post-footer-actions .btn-primary:hover,
+.form-footer-sticky .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(37, 99, 235, 0.26) !important;
+    color: #ffffff !important;
+}
+
+.btn-events-create:disabled,
+.posts-create-btn:disabled,
+.dashboard-csv-btn:disabled,
+.edit-event-save-btn:disabled,
+.institute-edit-post .edit-event-save-btn:disabled,
+.post-footer-actions .btn-primary:disabled,
+.form-footer-sticky .btn-primary:disabled {
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none !important;
+}
+
+.edit-event-back-btn,
+.post-form-card .btn-light,
+.edit-event-container .btn-light {
+    height: var(--institute-btn-height);
+    border-radius: var(--institute-btn-radius) !important;
+    border: 1px solid var(--institute-soft-border) !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.feedback-id-badge,
+.post-id-badge,
+.id-badge-soft,
+.events-table-num,
+.users-content-wrapper .badge.bg-light,
+.feedback-container .badge.bg-light {
+    background: var(--institute-id-bg) !important;
+    color: var(--institute-id-text) !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    padding: 5px 10px !important;
+    border: 1px solid rgba(37, 99, 235, 0.08);
+}
+
+.events-stat-card,
+.dashboard-csv-bar,
+.toolbar-container,
+.posts-toolbar,
+.feedback-container .card-body > .p-4.d-flex,
+.feedback-container .card-body > .p-4.d-flex.flex-wrap {
+    border-radius: 14px !important;
+}
+
+.events-filter-tabs,
+.events-view-toggle,
+.alumni-filter-btn,
+.posts-rows-select,
+.rows-select-modern,
+.events-rows-select {
+    border-radius: 10px !important;
+}
+
+.events-filter-tab,
+.events-view-btn,
+.alumni-filter-btn,
+.pagination-btn,
+.posts-page-btn,
+.events-page-btn,
+.feedback-container .page-link {
+    min-height: 38px;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+}
+
+.pagination-btn,
+.posts-page-btn,
+.events-page-btn,
+.feedback-container .page-link {
+    background: var(--institute-soft-bg) !important;
+    border: 1px solid var(--institute-soft-border) !important;
+    color: var(--institute-primary) !important;
+    box-shadow: none !important;
+}
+
+.pagination-btn-active,
+.posts-page-btn.active,
+.events-page-btn.active,
+.feedback-container .page-item.active .page-link {
+    background: var(--institute-primary) !important;
+    border-color: var(--institute-primary) !important;
+    color: #ffffff !important;
+}
+
+.search-input-modern,
+.posts-search-input,
+.events-search-input,
+.feedback-container input.form-control.border-0.bg-light,
+.search-pill-container .form-control,
+.posts-search-group .form-control {
+    height: 42px !important;
+    border: 1px solid var(--institute-soft-border) !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-shadow: none !important;
+}
+
+.input-group-text.bg-light,
+.posts-search-icon,
+.search-input-icon {
+    background: #ffffff !important;
+    border: 1px solid var(--institute-soft-border) !important;
+    color: #94a3b8 !important;
+}
+
+.search-pill-container,
+.posts-search-group,
+.feedback-container .input-group {
+    max-width: 420px !important;
+}
+
+.table-footer,
+.posts-table-footer,
+.feedback-container .card-body > .p-4.bg-white,
+.events-pagination,
+.form-footer-sticky,
+.post-footer-actions {
+    border-top: 1px solid #edf2f7 !important;
+}
+
+.table-user-row:hover,
+.post-row:hover,
+.feedback-row:hover,
+.events-table tbody tr:hover {
+    background: #f8fbff !important;
+}
+
+.user-avatar-img,
+.post-media-preview,
+.events-table-thumb {
+    border-radius: 12px !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+}
+
+.settings-nav-link {
+    min-height: 46px;
+    border-radius: 0 12px 12px 0;
+    margin-right: 10px;
+}
+
+.settings-nav-link.active {
+    box-shadow: inset 4px 0 0 var(--institute-primary);
+}
+
+.settings-detail-content,
+.form-body-scroll,
+.post-body-scroll,
+.events-content-area,
+.feedback-scroll-area,
+.posts-scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+@media (max-width: 991px) {
+    .dashboard-csv-bar,
+    .events-toolbar,
+    .toolbar-container,
+    .posts-toolbar,
+    .feedback-container .card-body > .p-4.d-flex,
+    .feedback-container .card-body > .p-4.d-flex.flex-wrap {
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .dashboard-content,
+    .events-content-wrapper,
+    .users-content-wrapper,
+    .feedback-content-wrapper,
+    .posts-content-wrapper,
+    .profile-content-wrapper,
+    .edit-event-wrapper {
+        margin-left: 0 !important;
+        padding-top: 20px !important;
+    }
+
+    .dashboard-content {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    .events-container,
+    .directory-container,
+    .feedback-container,
+    .posts-container,
+    .profile-main-container,
+    .edit-event-container,
+    .leaderboard-container {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 24px !important;
+    }
+
+    .dashboard-content > .d-sm-flex.align-items-center.justify-content-between.mb-4.mt-2,
+    .directory-container > .d-flex.align-items-center.justify-content-between.mb-4,
+    .posts-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+    .feedback-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+    .edit-event-container > .d-flex.align-items-center.justify-content-between.mb-3,
+    .profile-main-container > .mb-4,
+    .leaderboard-container > .d-sm-flex.align-items-center.justify-content-between.mb-4 {
+        margin-bottom: 20px !important;
+    }
+
+    .search-pill-container,
+    .posts-search-group,
+    .feedback-container .input-group {
+        max-width: 100% !important;
+    }
+
+    .institute-page-actions {
+        width: 100%;
+    }
+}

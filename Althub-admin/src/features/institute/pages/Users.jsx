@@ -13,6 +13,7 @@ import axiosInstance from '../../../service/axios';
 import '../../../styles/users.css';
 
 const Users = () => {
+    const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState(null);
     const [users, setUsers] = useState([]);
     const [displayUsers, setDisplayUsers] = useState([]);
@@ -36,23 +37,36 @@ const Users = () => {
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
 
+        const id = localStorage.getItem("AlmaPlus_institute_Id");
         const name = localStorage.getItem("AlmaPlus_institute_Name");
+        setInstitute_Id(id);
         setInstitute_Name(name);
     }, []);
 
     useEffect(() => {
-        if (institute_Name) getUsersData();
-    }, [institute_Name]);
+        if (institute_Id || institute_Name) getUsersData();
+    }, [institute_Id, institute_Name]);
 
     const getUsersData = () => {
         setIsTableLoading(true);
+        const instituteKey = institute_Id || institute_Name;
+        if (!instituteKey) {
+            setUsers([]);
+            setDisplayUsers([]);
+            setIsTableLoading(false);
+            return;
+        }
         axiosInstance({
             method: "get",
-            url: `${ALTHUB_API_URL}/api/getUsersOfInstitute/${institute_Name}`,
+            url: `${ALTHUB_API_URL}/api/getUsersOfInstitute/${instituteKey}`,
         }).then((response) => {
             setUsers(response.data.success ? response.data.data : []);
             setIsTableLoading(false);
-        }).catch(() => setIsTableLoading(false));
+        }).catch(() => {
+            setUsers([]);
+            setDisplayUsers([]);
+            setIsTableLoading(false);
+        });
     };
 
     // Updated Filtering Logic to handle Alumni Toggle
@@ -104,6 +118,9 @@ const Users = () => {
     const indexOfFirstUser = indexOfLastUser - usersPerPage;
     const currentUsers = displayUsers.slice(indexOfFirstUser, indexOfLastUser);
     const pageNumbers = Array.from({ length: Math.ceil(displayUsers.length / usersPerPage) }, (_, i) => i + 1);
+    const hasUsers = displayUsers.length > 0;
+    const showingFrom = hasUsers ? indexOfFirstUser + 1 : 0;
+    const showingTo = hasUsers ? Math.min(indexOfLastUser, displayUsers.length) : 0;
 
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
@@ -159,19 +176,20 @@ const Users = () => {
                 <Menu />
                 <div id="content" className="content users-content-wrapper">
                     <div className="directory-container">
-                        <div className="d-flex align-items-center justify-content-between mb-4">
-                            <div>
+                        <div className="d-flex align-items-center justify-content-between mb-4 institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1 users-breadcrumb">
+                                    <ol className="breadcrumb mb-1 users-breadcrumb institute-page-breadcrumb">
                                         <li className="breadcrumb-item"><Link to="/dashboard" className="users-breadcrumb-link">Home</Link></li>
                                         <li className="breadcrumb-item active">Member Directory</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header users-header">Member Directory</h1>
+                                <h1 className="page-header users-header institute-page-title">Member Directory</h1>
+                                <p className="institute-page-subtitle">Browse all students and alumni with the same structure used across institute tools.</p>
                             </div>
                             
                             {/* ALUMNI FILTER BUTTON */}
-                            <div className="d-flex align-items-center">
+                            <div className="d-flex align-items-center institute-page-actions">
                                 <button 
                                     className={`btn shadow-sm d-flex align-items-center alumni-filter-btn ${filterType === 'Alumni' ? 'btn-primary' : 'btn-white'}`}
                                     onClick={() => setFilterType(filterType === 'Alumni' ? 'all' : 'Alumni')}
@@ -187,7 +205,7 @@ const Users = () => {
 
                         <div className="card border-0 shadow-sm directory-card">
                             <div className="card-body p-0 bg-white">
-                                <div className="p-4 d-flex flex-wrap align-items-center justify-content-between toolbar-container">
+                                <div className="p-4 d-flex flex-wrap align-items-center justify-content-between toolbar-container institute-page-toolbar">
                                     <div className="input-group search-pill-container">
                                         <div className="input-group-prepend">
                                             <span className="input-group-text bg-light border-0 search-input-icon"><i className="fa fa-search text-muted"></i></span>
@@ -238,20 +256,20 @@ const Users = () => {
                                     </table>
                                 </div>
 
-                                <div className="p-4 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center table-footer">
-                                    <p className="text-muted small mb-3 mb-md-0 font-weight-bold">Showing {indexOfFirstUser + 1} - {Math.min(indexOfLastUser, displayUsers.length)} of {displayUsers.length} total members</p>
+                                <div className="p-4 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center table-footer institute-page-footer">
+                                    <p className="text-muted small mb-3 mb-md-0 font-weight-bold institute-page-count">Showing {showingFrom} - {showingTo} of {displayUsers.length} total members</p>
                                     <nav>
                                         <ul className="pagination mb-0">
                                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link border-0 bg-light mr-2 pagination-btn" onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }}><i className="fa fa-chevron-left"></i></button>
+                                                <button className="page-link border-0 bg-light mr-2 pagination-btn" disabled={currentPage === 1} onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.max(1, prev - 1)); }}><i className="fa fa-chevron-left"></i></button>
                                             </li>
                                             {pageNumbers.map(num => (
                                                 <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
                                                     <button className={`page-link border-0 mx-1 shadow-none pagination-btn ${currentPage === num ? 'pagination-btn-active' : ''}`} onClick={(e) => { e.stopPropagation(); setCurrentPage(num); }}>{num}</button>
                                                 </li>
                                             ))}
-                                            <li className={`page-item ${currentPage === pageNumbers.length ? 'disabled' : ''}`}>
-                                                <button className="page-link border-0 bg-light ml-2 pagination-btn" onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }}><i className="fa fa-chevron-right"></i></button>
+                                            <li className={`page-item ${currentPage === pageNumbers.length || !pageNumbers.length ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light ml-2 pagination-btn" disabled={currentPage === pageNumbers.length || !pageNumbers.length} onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.min(pageNumbers.length, prev + 1)); }}><i className="fa fa-chevron-right"></i></button>
                                             </li>
                                         </ul>
                                     </nav>

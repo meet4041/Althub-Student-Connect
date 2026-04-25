@@ -29,6 +29,10 @@ const AddPost = () => {
         if (element) element.classList.add("show");
         
         const id = localStorage.getItem("AlmaPlus_institute_Id");
+        if (!id) {
+            navigate('/login', { replace: true });
+            return;
+        }
         setInstitute_Id(id);
 
         // Fetch Institute details to ensure post has Name and Profile Pic
@@ -42,17 +46,30 @@ const AddPost = () => {
                 }
             });
         }
-    }, []);
+    }, [navigate]);
 
     const handleChange = (e) => setData({ ...data, [e.target.name]: e.target.value });
     
     const imgChange = (e) => {
         const selected = Array.from(e.target.files);
-        setFileList(selected.filter(f => f.name.match(/\.(jpg|jpeg|png|gif)$/i)));
+        const validFiles = selected.filter(f => f.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+        setFileList(validFiles);
+        if (validFiles.length !== selected.length) {
+            toast.error("Only JPG, PNG, GIF, and WEBP files are allowed.");
+        }
     };
 
     const submitHandler = (e) => {
         e.preventDefault();
+        if (!institute_Id) {
+            toast.error("Session expired. Please log in again.");
+            navigate('/login', { replace: true });
+            return;
+        }
+        if (!institute_Data) {
+            toast.error("Institute profile is still loading. Please try again.");
+            return;
+        }
         if (!data.description) {
             setErrors({ desc: "Content description is required" });
             return;
@@ -133,7 +150,7 @@ const AddPost = () => {
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-saas">Media Attachments</label>
                                             <div className="post-upload-zone">
-                                                <input type='file' multiple className="d-none" id="postImgUp" onChange={imgChange} />
+                                                <input type='file' multiple accept="image/jpeg,image/png,image/gif,image/webp" className="d-none" id="postImgUp" onChange={imgChange} />
                                                 <label htmlFor="postImgUp" className="cursor-pointer">
                                                     <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
                                                     <h6 className="font-weight-bold text-dark">Add photos to your post</h6>

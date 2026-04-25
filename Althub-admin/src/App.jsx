@@ -1,6 +1,7 @@
 import Markup from './app/Routes.jsx';
 import React from "react";
 import './App.css';
+import './styles/institute-layout.css';
 
 import { BrowserRouter } from 'react-router-dom';
 

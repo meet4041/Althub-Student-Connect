@@ -10,25 +10,23 @@ import '../../../styles/feedback.css';
 import '../../../styles/dashboard.css';
 
 const PlacementOffice = () => {
+    const themeColor = '#2563EB';
     const [placementStaff, setPlacementStaff] = useState([]);
     const [displayStaff, setDisplayStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
-    const themeColor = '#2563EB';
     const navigate = useNavigate();
 
     const fetchData = () => {
         setLoading(true);
         const id = localStorage.getItem("AlmaPlus_institute_Id");
         if (!id) {
-            navigate('/login');
+            navigate('/login', { replace: true });
             return;
         }
-        setInstitute_Id(id);
         setInstitute_Name(localStorage.getItem("AlmaPlus_institute_Name") || '');
 
         axiosInstance.get(`/api/getPlacementCellByInstitute/${id}`)
@@ -38,7 +36,11 @@ const PlacementOffice = () => {
                 }
                 setLoading(false);
             })
-            .catch(() => setLoading(false));
+            .catch(() => {
+                setPlacementStaff([]);
+                setDisplayStaff([]);
+                setLoading(false);
+            });
     };
 
     useEffect(() => {
@@ -63,6 +65,9 @@ const PlacementOffice = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = displayStaff.slice(indexOfFirstItem, indexOfLastItem);
     const pageNumbers = Array.from({ length: Math.ceil(displayStaff.length / itemsPerPage) }, (_, i) => i + 1);
+    const hasStaff = displayStaff.length > 0;
+    const showingFrom = hasStaff ? indexOfFirstItem + 1 : 0;
+    const showingTo = hasStaff ? Math.min(indexOfLastItem, displayStaff.length) : 0;
 
     return (
         <Fragment>
@@ -71,22 +76,19 @@ const PlacementOffice = () => {
                 <Menu />
                 <div id="content" className="content feedback-content-wrapper">
                     <div className="feedback-container">
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
-                                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
-                                        <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Offices</Link></li>
-                                        <li className="breadcrumb-item active" style={{ color: '#64748B' }}>Placement Office</li>
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
+                                        <li className="breadcrumb-item"><Link to="/dashboard">Home</Link></li>
+                                        <li className="breadcrumb-item"><Link to="/dashboard">Offices</Link></li>
+                                        <li className="breadcrumb-item active">Placement Office</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>
-                                    <i className="fa fa-briefcase mr-2" style={{ color: themeColor }}></i>
-                                    Placement Office
-                                </h1>
-                                <p className="text-muted small mt-1 mb-0">Manage and view placement cell staff linked to {institute_Name}</p>
+                                <h1 className="page-header mb-0 institute-page-title">Placement Office</h1>
+                                <p className="text-muted small mt-1 mb-0 institute-page-subtitle">Manage and view placement cell staff linked to {institute_Name}.</p>
                             </div>
-                            <span className="badge institute-badge text-white mt-3 mt-sm-0">
+                            <span className="badge institute-badge text-white institute-page-actions">
                                 <i className="fa fa-university mr-2"></i> {institute_Name}
                             </span>
                         </div>
@@ -94,14 +96,14 @@ const PlacementOffice = () => {
                         <div className="feedback-scroll-area">
                             <div className="card feedback-main-card">
                                 <div className="card-body p-0 bg-white">
-                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between institute-page-toolbar">
                                         <div className="input-group" style={{ maxWidth: '400px' }}>
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-light border-0" style={{ borderRadius: '8px 0 0 8px' }}><i className="fa fa-search text-muted"></i></span>
                                             </div>
                                             <input type="text" className="form-control border-0 bg-light" style={{ borderRadius: '0 8px 8px 0', fontSize: '14px', height: '42px' }} placeholder="Search by name, email, or phone..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                         </div>
-                                        <span className="badge bg-light text-dark font-weight-bold">{displayStaff.length} staff</span>
+                                        <span className="badge bg-light text-dark font-weight-bold institute-page-count">{displayStaff.length} staff</span>
                                     </div>
 
                                     <div className="table-responsive">
@@ -148,8 +150,8 @@ const PlacementOffice = () => {
                                     </div>
 
                                     {displayStaff.length > 0 && (
-                                        <div className="p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
-                                            <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, displayStaff.length)} of {displayStaff.length}</p>
+                                        <div className="p-4 bg-white d-flex justify-content-between align-items-center institute-page-footer">
+                                            <p className="text-muted small mb-0 font-weight-bold institute-page-count">Showing {showingFrom} - {showingTo} of {displayStaff.length}</p>
                                             <nav>
                                                 <ul className="pagination mb-0">
                                                     {pageNumbers.map(num => (

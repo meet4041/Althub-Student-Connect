@@ -29,6 +29,9 @@ function Dashboard() {
     const isPlacementOffice = userRole === 'placement_cell';
     const isInstitute = !isAlumniOffice && !isPlacementOffice;
     const csvTitle = isAlumniOffice ? 'Upload Alumni CSV' : 'Upload Student CSV';
+    const csvDescription = isAlumniOffice
+        ? 'Bulk invite alumni via email (CSV)'
+        : 'Bulk invite students via email (CSV)';
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -56,10 +59,10 @@ function Dashboard() {
     }, [navigate]);
     
     useEffect(() => {
-        if (institute_Id && institute_Name) {
+        if (institute_Id) {
             fetchAllStats();
         }
-    }, [institute_Id, institute_Name]);
+    }, [institute_Id]);
 
     const handleCsvUpload = async (e) => {
         e.preventDefault();
@@ -92,15 +95,21 @@ function Dashboard() {
 
     const getTotalUser = async () => {
         try {
-            const response = await axiosInstance.get(`/api/getUsersOfInstitute/${institute_Name}`);
-            setUsers(response.data.success ? response.data.data.length : 0);
+            const response = await axiosInstance.get(`/api/getUsersOfInstitute/${institute_Id}`);
             if (response.data.success) {
-                const alumniCount = (response.data.data || []).filter(u => u.type === 'Alumni').length;
+                const allUsers = response.data.data || [];
+                const studentCount = allUsers.filter(u => u.type === 'Student').length;
+                const alumniCount = allUsers.filter(u => u.type === 'Alumni').length;
+                setUsers(studentCount);
                 setAlumniMembers(alumniCount);
             } else {
+                setUsers(0);
                 setAlumniMembers(0);
             }
-        } catch (err) { setUsers(0); }
+        } catch (err) {
+            setUsers(0);
+            setAlumniMembers(0);
+        }
     };
 
     const getTotalEvents = async () => {
@@ -126,19 +135,26 @@ function Dashboard() {
                 <div id="content" className="content dashboard-content">
                     
                     {/* Header Section */}
-                    <div className="d-sm-flex align-items-center justify-content-between mb-4 mt-2">
-                        <div>
-                            <ol className="breadcrumb mb-1 dashboard-breadcrumb">
+                    <div className="d-sm-flex align-items-center justify-content-between mb-4 mt-2 institute-page-header">
+                        <div className="institute-page-header-copy">
+                            <ol className="breadcrumb mb-1 dashboard-breadcrumb institute-page-breadcrumb">
                                 <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
                                 <li className="breadcrumb-item active">
                                     {isAlumniOffice ? 'Alumni Office' : isPlacementOffice ? 'Placement Cell' : 'Overview'}
                                 </li>
                             </ol>
-                            <h1 className="dashboard-header-h1">
+                            <h1 className="dashboard-header-h1 institute-page-title">
                                 {isAlumniOffice ? 'Alumni Office Summary' : isPlacementOffice ? 'Placement Cell Summary' : 'Dashboard Summary'}
                             </h1>
+                            <p className="institute-page-subtitle">
+                                {isAlumniOffice
+                                    ? 'Quick insight into alumni activity, communication, and member growth.'
+                                    : isPlacementOffice
+                                        ? 'Track placement communication and activity from one unified overview.'
+                                        : 'Monitor members, events, and posts from one consistent workspace.'}
+                            </p>
                         </div>
-                        <div className="mt-2 mt-sm-0">
+                        <div className="mt-2 mt-sm-0 institute-page-actions">
                             <span className="badge institute-badge text-white">
                                 <i className="fa fa-university mr-2"></i> {institute_Name}
                             </span>
@@ -148,7 +164,7 @@ function Dashboard() {
                     {(isAlumniOffice || isInstitute || isPlacementOffice) && (
                         <div className="dashboard-csv-bar">
                             <div className="dashboard-csv-text">
-                                Bulk invite to students via email (CSV)
+                                {csvDescription}
                             </div>
                             <button className="btn dashboard-csv-btn" onClick={() => setShowCsvModal(true)}>
                                 <i className="fa fa-file-upload mr-2"></i> Upload CSV
@@ -156,8 +172,6 @@ function Dashboard() {
                         </div>
                     )}
 
-                    <hr className="mb-4 opacity-50" />
-                    
                     {loading ? (
                         <div className="text-center p-5 mt-5">
                             <div className="spinner-border" style={{color: themeColors.primary}} role="status"></div>
@@ -238,11 +252,11 @@ function Dashboard() {
                                         <div className="widget widget-stats shadow-sm stat-card-modern">
                                             <div className="stats-icon text-white-50"><i className="fa fa-users"></i></div>
                                             <div className="stats-info">
-                                                <h4 className="font-weight-bold text-white">INSTITUTE USERS</h4>
+                                                <h4 className="font-weight-bold text-white">TOTAL STUDENTS</h4>
                                                 <p className="text-white">{users === null ? '...' : users.toLocaleString()}</p>
                                             </div>
                                             <div className="stats-link">
-                                                <Link to="/users" className="text-white-50">Manage Users <i className="fa fa-arrow-right ml-2"></i></Link>
+                                                <Link to="/users" className="text-white-50">View Students <i className="fa fa-arrow-right ml-2"></i></Link>
                                             </div>
                                         </div>
                                     </div>

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/alt-text, no-unused-vars */
 import React, { useState, useEffect, Fragment, useCallback } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Loader from '../../../layouts/Loader.jsx'
 import Menu from '../../../layouts/Menu.jsx';
 import Footer from '../../../layouts/Footer.jsx';
@@ -14,6 +14,7 @@ import '../../../styles/posts.css';
 
 const Posts = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
+    const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [displayPosts, setDisplayPosts] = useState([]);
     const rows = [10, 20, 30];
@@ -30,8 +31,12 @@ const Posts = () => {
         if (element) element.classList.add("show");
 
         const id = localStorage.getItem("AlmaPlus_institute_Id");
+        if (!id) {
+            navigate('/login', { replace: true });
+            return;
+        }
         setInstitute_Id(id);
-    }, []);
+    }, [navigate]);
 
     // Wrapped in useCallback to prevent re-renders and added Authorization header
     const getPostsData = useCallback(() => {
@@ -55,10 +60,13 @@ const Posts = () => {
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPost = displayPosts.slice(indexOfFirstPost, indexOfLastPost);
     const pageNumbers = Array.from({ length: Math.ceil(displayPosts.length / postsPerPage) }, (_, i) => i + 1);
+    const hasPosts = displayPosts.length > 0;
+    const showingFrom = hasPosts ? indexOfFirstPost + 1 : 0;
+    const showingTo = hasPosts ? Math.min(indexOfLastPost, displayPosts.length) : 0;
 
     const handleSearch = (e) => {
         let search = e.target.value.toLowerCase();
-        setDisplayPosts(posts.filter(el => el.description.toLowerCase().includes(search)));
+        setDisplayPosts(posts.filter(el => (el.description || '').toLowerCase().includes(search)));
         setCurrentPage(1);
     };
 
@@ -95,17 +103,18 @@ const Posts = () => {
                 <Menu />
                 <div id="content" className="content posts-content-wrapper">
                     <div className="posts-container">
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1 posts-breadcrumb">
+                                    <ol className="breadcrumb mb-1 posts-breadcrumb institute-page-breadcrumb">
                                         <li className="breadcrumb-item"><Link to="/dashboard" className="posts-breadcrumb-link">Home</Link></li>
                                         <li className="breadcrumb-item active">Posts Feed</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header posts-header mb-0">Feed Management</h1>
+                                <h1 className="page-header posts-header mb-0 institute-page-title">Feed Management</h1>
+                                <p className="institute-page-subtitle">Review published content, keep media tidy, and manage feed activity in one place.</p>
                             </div>
-                            <Link to="/add-post" className="btn btn-primary shadow-sm posts-create-btn">
+                            <Link to="/add-post" className="btn btn-primary shadow-sm posts-create-btn institute-page-actions">
                                 <i className="fa fa-plus-circle mr-2"></i> Create New Post
                             </Link>
                         </div>
@@ -113,7 +122,7 @@ const Posts = () => {
                         <div className="posts-scroll-area">
                             <div className="card post-main-card">
                                 <div className="card-body p-0 bg-white">
-                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between posts-toolbar">
+                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between posts-toolbar institute-page-toolbar">
                                         <div className="input-group posts-search-group">
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-light border-0 posts-search-icon"><i className="fa fa-search text-muted"></i></span>
@@ -170,8 +179,8 @@ const Posts = () => {
                                         </table>
                                     </div>
 
-                                    <div className="p-4 bg-white d-flex justify-content-between align-items-center posts-table-footer">
-                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstPost + 1} - {Math.min(indexOfLastPost, displayPosts.length)} of {displayPosts.length}</p>
+                                    <div className="p-4 bg-white d-flex justify-content-between align-items-center posts-table-footer institute-page-footer">
+                                        <p className="text-muted small mb-0 font-weight-bold institute-page-count">Showing {showingFrom} - {showingTo} of {displayPosts.length}</p>
                                         <nav>
                                             <ul className="pagination mb-0">
                                                 {pageNumbers.map(num => (

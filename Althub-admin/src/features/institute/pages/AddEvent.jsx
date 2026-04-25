@@ -20,8 +20,13 @@ const AddEvent = () => {
         const element = document.getElementById("page-container");
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
-        setInstitute_Id(localStorage.getItem("AlmaPlus_institute_Id"));
-    }, []);
+        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        if (!id) {
+            navigate('/login', { replace: true });
+            return;
+        }
+        setInstitute_Id(id);
+    }, [navigate]);
 
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
@@ -36,13 +41,22 @@ const AddEvent = () => {
 
     const imgChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
-        setFileList(selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i)));
+        const validFiles = selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+        setFileList(validFiles);
+        if (validFiles.length !== selectedFiles.length) {
+            toast.error("Only JPG, PNG, GIF, and WEBP files are allowed.");
+        }
     };
 
     const handleChange = (e) => setData({ ...data, [e.target.name]: e.target.value });
 
     const submitHandler = (e) => {
         e.preventDefault();
+        if (!institute_Id) {
+            toast.error("Session expired. Please log in again.");
+            navigate('/login', { replace: true });
+            return;
+        }
         if (validate() && institute_Id) {
             setDisable(true);
             const body = new FormData();
@@ -117,23 +131,26 @@ const AddEvent = () => {
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Date & Time</label>
                                                     <input type='datetime-local' className="form-control form-control-modern" name="date" value={data.date} onChange={handleChange} />
+                                                    {errors.date_err && <small className="text-danger">{errors.date_err}</small>}
                                                 </div>
                                                 <div className="col-6 form-group mb-4">
                                                     <label className="form-label-modern">Venue</label>
                                                     <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} />
+                                                    {errors.venue_err && <small className="text-danger">{errors.venue_err}</small>}
                                                 </div>
                                             </div>
 
                                             <div className="form-group mb-0">
                                                 <label className="form-label-modern">Full Description</label>
                                                 <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} />
+                                                {errors.description_err && <small className="text-danger">{errors.description_err}</small>}
                                             </div>
                                         </div>
 
                                         <div className="col-md-7 pl-md-4">
                                             <label className="form-label-modern">Event Media</label>
                                             <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="addImgUpload" onChange={imgChange} />
+                                                <input type='file' multiple accept="image/jpeg,image/png,image/gif,image/webp" className="d-none" id="addImgUpload" onChange={imgChange} />
                                                 <label htmlFor="addImgUpload" className="text-center cursor-pointer mb-0">
                                                     <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
                                                     <h6 className="font-weight-bold">Click to upload photos</h6>

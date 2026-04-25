@@ -68,6 +68,9 @@ const Feedback = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = displayFeedbacks.slice(indexOfFirstItem, indexOfLastItem);
     const pageNumbers = Array.from({ length: Math.ceil(displayFeedbacks.length / itemsPerPage) }, (_, i) => i + 1);
+    const hasFeedback = displayFeedbacks.length > 0;
+    const showingFrom = hasFeedback ? indexOfFirstItem + 1 : 0;
+    const showingTo = hasFeedback ? Math.min(indexOfLastItem, displayFeedbacks.length) : 0;
 
     return (
         <Fragment>
@@ -77,15 +80,16 @@ const Feedback = () => {
                 <div id="content" className="content feedback-content-wrapper">
                     <div className="feedback-container">
                         
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
+                        <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1" style={{ background: 'transparent', padding: 0 }}>
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
                                         <li className="breadcrumb-item"><Link to="/dashboard" style={{ color: themeColor, fontWeight: '500' }}>Home</Link></li>
                                         <li className="breadcrumb-item active" style={{ color: '#64748B' }}>User Feedback</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header mb-0" style={{ color: '#1E293B', fontWeight: '800', fontSize: '24px' }}>Feedback Management</h1>
+                                <h1 className="page-header mb-0 institute-page-title">Feedback Management</h1>
+                                <p className="institute-page-subtitle">Track reviews, sentiment, and member feedback with the same spacing and table rhythm.</p>
                             </div>
                         </div>
 
@@ -93,7 +97,7 @@ const Feedback = () => {
                             <div className="card feedback-main-card">
                                 <div className="card-body p-0 bg-white">
                                     
-                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between" style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                    <div className="p-4 d-flex flex-wrap align-items-center justify-content-between institute-page-toolbar">
                                         <div className="input-group" style={{ maxWidth: '400px' }}>
                                             <div className="input-group-prepend">
                                                 <span className="input-group-text bg-light border-0" style={{ borderRadius: '8px 0 0 8px' }}><i className="fa fa-search text-muted"></i></span>
@@ -162,8 +166,8 @@ const Feedback = () => {
                                         </table>
                                     </div>
 
-                                    <div className="p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderTop: '1px solid #F1F5F9' }}>
-                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, displayFeedbacks.length)}</p>
+                                    <div className="p-4 bg-white d-flex justify-content-between align-items-center institute-page-footer">
+                                        <p className="text-muted small mb-0 font-weight-bold institute-page-count">Showing {showingFrom} - {showingTo}</p>
                                         <nav>
                                             <ul className="pagination mb-0">
                                                 {pageNumbers.map(num => (

@@ -31,15 +31,15 @@ function ForgotPassword() {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axiosInstance.post(`${ALTHUB_API_URL}/api/instituteForgetPassword`, { email })
+            axiosInstance.post(`${ALTHUB_API_URL}/api/instituteForgetPassword`, { email: email.trim().toLowerCase() })
                 .then((response) => {
                     if (response.data.success) {
                         toast.success(response.data.msg || "Reset link sent!");
-                        setTimeout(() => navigate('/'), 2000);
+                        setTimeout(() => navigate('/login'), 2000);
                     }
                 }).catch((error) => {
                     setDisable(false);
-                    toast.error(error.response?.data?.message || "Something went wrong");
+                    toast.error(error.response?.data?.msg || "Something went wrong");
                 })
         }
     }
@@ -102,7 +102,7 @@ function ForgotPassword() {
                                 <div className="text-center mt-3">
                                     <p className="text-muted">
                                         Remember credentials? 
-                                        <Link to="/" className="back-to-login-link ml-1">
+                                        <Link to="/login" className="back-to-login-link ml-1">
                                             Back to Login
                                         </Link>
                                     </p>
