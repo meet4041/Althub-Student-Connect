@@ -95,12 +95,19 @@ function Dashboard() {
 
     const getTotalUser = async () => {
         try {
-            const response = await axiosInstance.get(`/api/getUsersOfInstitute/${institute_Id}`);
+            const instituteKey = institute_Id || institute_Name;
+            if (!instituteKey) {
+                setUsers(0);
+                setAlumniMembers(0);
+                return;
+            }
+
+            const response = await axiosInstance.get(`/api/getUsersOfInstitute/${instituteKey}`);
             if (response.data.success) {
                 const allUsers = response.data.data || [];
-                const studentCount = allUsers.filter(u => u.type === 'Student').length;
+                const totalMembers = allUsers.length;
                 const alumniCount = allUsers.filter(u => u.type === 'Alumni').length;
-                setUsers(studentCount);
+                setUsers(totalMembers);
                 setAlumniMembers(alumniCount);
             } else {
                 setUsers(0);
@@ -252,11 +259,11 @@ function Dashboard() {
                                         <div className="widget widget-stats shadow-sm stat-card-modern">
                                             <div className="stats-icon text-white-50"><i className="fa fa-users"></i></div>
                                             <div className="stats-info">
-                                                <h4 className="font-weight-bold text-white">TOTAL STUDENTS</h4>
+                                                <h4 className="font-weight-bold text-white">TOTAL MEMBERS</h4>
                                                 <p className="text-white">{users === null ? '...' : users.toLocaleString()}</p>
                                             </div>
                                             <div className="stats-link">
-                                                <Link to="/users" className="text-white-50">View Students <i className="fa fa-arrow-right ml-2"></i></Link>
+                                                <Link to="/users" className="text-white-50">View Members <i className="fa fa-arrow-right ml-2"></i></Link>
                                             </div>
                                         </div>
                                     </div>
