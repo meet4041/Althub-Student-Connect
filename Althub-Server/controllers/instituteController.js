@@ -495,7 +495,10 @@ const bulkInviteAlumniCsv = async (req, res) => {
 
         let instituteId = req.user._id;
         let instituteName = '';
-        if (req.user.role === 'alumni_office' && req.user.parent_institute_id) {
+        if (
+            (req.user.role === 'alumni_office' || req.user.role === 'placement_cell') &&
+            req.user.parent_institute_id
+        ) {
             instituteId = req.user.parent_institute_id;
         }
         const institute = await Institute.findById(instituteId);
