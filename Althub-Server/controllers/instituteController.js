@@ -315,7 +315,17 @@ const getInstituteById = async (req, res) => {
 const updateInstitute = async (req, res) => {
     try {
         const { id, name, address, phone, email, website, image, active } = req.body;
-        const updateFields = { name, address, phone, email, website, image, active };
+        const updateFields = { address, phone, email, website, active };
+
+        if (typeof name !== 'undefined') {
+            updateFields.name = name;
+            updateFields.institutename = name;
+        }
+
+        if (typeof image !== 'undefined') {
+            updateFields.image = image;
+            updateFields.profilepic = image;
+        }
 
         let updated = await Institute.findByIdAndUpdate(id, { $set: updateFields }, { new: true }).select("-password");
         if (!updated) updated = await AlumniOffice.findByIdAndUpdate(id, { $set: updateFields }, { new: true }).select("-password");

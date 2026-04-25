@@ -71,6 +71,11 @@ const editPost = async (req, res) => {
         if (!post) {
             return res.status(404).send({ success: false, msg: "Post not found" });
         }
+        const ownerId = (post.userid || post.senderid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            return res.status(403).send({ success: false, msg: 'Forbidden: cannot edit this post' });
+        }
 
         let newPhotoUrls = [];
         if (req.files && req.files.length > 0) {
@@ -117,6 +122,15 @@ const getPosts = async (req, res) => {
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
+        const post = await Post.findById(id).lean();
+        if (!post) {
+            return res.status(404).send({ success: false, msg: 'Post not found' });
+        }
+        const ownerId = (post.userid || post.senderid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            return res.status(403).send({ success: false, msg: 'Forbidden: cannot delete this post' });
+        }
         await Post.deleteOne({ _id: id });
         res.status(200).send({ success: true, msg: 'Post Deleted successfully' });
     } catch (error) {

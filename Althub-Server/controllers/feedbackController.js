@@ -74,7 +74,10 @@ const getFeedback = async (req, res) => {
 const deleteFeedback = async (req, res) => {
     try {
         const id = req.params.id;
-        await Feedback.deleteOne({ _id: id });
+        const deleted = await Feedback.deleteOne({ _id: id });
+        if (!deleted.deletedCount) {
+            return res.status(404).send({ success: false, msg: 'Feedback not found' });
+        }
         res.status(200).send({ success: true, msg: 'Feedback Deleted successfully' });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
