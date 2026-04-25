@@ -7,6 +7,8 @@ import Footer from '../../../layouts/Footer.jsx';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../../../utils/imageUtils';
 
 import '../../../styles/alumni-pages.css';
+import '../../../styles/events.css';
+import '../../../styles/institute-layout.css';
 import '../../../styles/users.css';
 
 const AlumniMembers = () => {
@@ -70,51 +72,85 @@ const AlumniMembers = () => {
         }
     };
 
+    const clearCourseFilter = async () => {
+        if (!instituteId) return;
+        setSelectedCourseId(null);
+        setLoading(true);
+        try {
+            const res = await axiosInstance.get(`/api/getUsersOfInstitute/${instituteId}`);
+            if (res.data?.success) {
+                const allUsers = res.data.data || [];
+                setAlumniList(allUsers.filter((u) => u.type === 'Alumni'));
+            } else {
+                setAlumniList([]);
+            }
+        } catch (err) {
+            setAlumniList([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Fragment>
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content alumni-content-wrapper">
-                    <div className="alumni-container">
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
+                    <div className="events-container">
+                        <div className="events-header institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1 alumni-breadcrumb">
-                                        <li className="breadcrumb-item"><Link to="/alumni-members" className="alumni-breadcrumb-link">Home</Link></li>
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
+                                        <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
                                         <li className="breadcrumb-item active">Alumni Members</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header alumni-header mb-0">Alumni Members</h1>
+                                <h1 className="events-title institute-page-title">Alumni Members</h1>
+                                <p className="events-subtitle institute-page-subtitle">Browse alumni by course and specialization with the same layout rhythm as events and posts.</p>
                             </div>
-                            <Link to="/alumni-add-course" className="btn btn-primary alumni-add-btn">
+                            <Link to="/alumni-add-course" className="btn btn-primary alumni-add-btn institute-page-actions">
                                 <i className="fa fa-plus-circle mr-2"></i> Add Course
                             </Link>
                         </div>
 
-                        <div className="alumni-course-grid">
-                            {courses.length === 0 && (
-                                <div className="alumni-empty-card">
-                                    <h3>No courses added</h3>
-                                    <p>Add a course and specialization to view alumni.</p>
+                        <div className="alumni-card institute-page-card">
+                            <div className="alumni-toolbar">
+                                <div className="alumni-toolbar-copy">
+                                    <h3 className="alumni-card-title mb-1">Courses</h3>
+                                    <p className="alumni-card-text mb-0">Select a course to filter the alumni list.</p>
                                 </div>
-                            )}
-                            {courses.map((c) => (
-                                <button
-                                    key={c._id || c.id}
-                                    className={`alumni-course-card ${selectedCourseId === (c._id || c.id) ? 'active' : ''}`}
-                                    onClick={() => selectCourse(c)}
-                                >
-                                    <span className="alumni-course-title">{c.name || c.course}</span>
-                                    <span className="alumni-course-subtitle">{c.stream || c.specialization || 'General'}</span>
-                                </button>
-                            ))}
-                        </div>
+                                {selectedCourseId && (
+                                    <button type="button" className="btn btn-light btn-sm font-weight-bold shadow-sm" onClick={clearCourseFilter}>
+                                        Clear Filter
+                                    </button>
+                                )}
+                            </div>
 
-                        <div className="alumni-card">
+                            <div className="alumni-course-grid alumni-course-grid-inside">
+                                {courses.length === 0 && (
+                                    <div className="alumni-empty-card">
+                                        <h3>No courses added</h3>
+                                        <p>Add a course and specialization to view alumni.</p>
+                                    </div>
+                                )}
+                                {courses.map((c) => (
+                                    <button
+                                        key={c._id || c.id}
+                                        className={`alumni-course-card ${selectedCourseId === (c._id || c.id) ? 'active' : ''}`}
+                                        onClick={() => selectCourse(c)}
+                                    >
+                                        <span className="alumni-course-title">{c.name || c.course}</span>
+                                        <span className="alumni-course-subtitle">{c.stream || c.specialization || 'General'}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="alumni-section-divider"></div>
+
                             <div className="alumni-card-header">
                                 <h3 className="alumni-card-title mb-0">Alumni List</h3>
-                                {selectedCourseId && <span className="alumni-card-pill">Course Selected</span>}
+                                {selectedCourseId && <span className="alumni-card-pill">Filtered View</span>}
                             </div>
 
                             {loading ? (

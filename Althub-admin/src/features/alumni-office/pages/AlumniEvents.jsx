@@ -9,7 +9,9 @@ import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../../../utils/im
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axiosInstance from '../../../service/axios';
 
+import '../../../styles/alumni-pages.css';
 import '../../../styles/events.css';
+import '../../../styles/institute-layout.css';
 
 const AlumniEvents = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
@@ -72,9 +74,18 @@ const AlumniEvents = () => {
     const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
     const currentEvents = displayEvents.slice(indexOfFirstEvent, indexOfLastEvent);
     const pageNumbers = Array.from({ length: Math.ceil(displayEvents.length / eventsPerPage) }, (_, i) => i + 1);
+    const hasEvents = displayEvents.length > 0;
+    const showingFrom = hasEvents ? indexOfFirstEvent + 1 : 0;
+    const showingTo = hasEvents ? Math.min(indexOfLastEvent, displayEvents.length) : 0;
     const upcomingCount = events.filter(e => isUpcoming(e.date)).length;
 
-    const paginate = (num) => setCurrentPage(num);
+    const paginate = (num) => {
+        if (!pageNumbers.length) {
+            setCurrentPage(1);
+            return;
+        }
+        setCurrentPage(Math.min(Math.max(num, 1), pageNumbers.length));
+    };
 
     const [deleteId, setDeleteId] = useState('');
     const [alert, setAlert] = useState(false);
@@ -116,19 +127,18 @@ const AlumniEvents = () => {
                 <Menu />
                 <div id="content" className="content events-content-wrapper">
                     <div className="events-container">
-                        <div className="events-header">
-                            <div>
+                        <div className="events-header institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1">
-                                        <li className="breadcrumb-item"><Link to="/alumni-members">Home</Link></li>
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
+                                        <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
                                         <li className="breadcrumb-item active">Alumni Events</li>
                                     </ol>
                                 </nav>
-                                <h1 className="events-title">
-                                    Alumni Events
-                                </h1>
+                                <h1 className="events-title institute-page-title">Alumni Events</h1>
+                                <p className="events-subtitle institute-page-subtitle">Create, review, and manage alumni events with the same control layout used in the institute section.</p>
                             </div>
-                            <Link to="/alumni-add-event" className="btn-events-create">
+                            <Link to="/alumni-add-event" className="btn-events-create institute-page-actions">
                                 <i className="fa fa-plus-circle mr-2"></i> Create Event
                             </Link>
                         </div>
@@ -184,7 +194,7 @@ const AlumniEvents = () => {
                             </div>
                         </div>
 
-                        <div className="events-content-card">
+                        <div className="events-content-card institute-page-card">
                             <div className="events-content-area">
                                 {viewMode === 'grid' ? (
                                     <div className="events-grid">
@@ -268,7 +278,7 @@ const AlumniEvents = () => {
                             {displayEvents.length > 0 && (
                                 <div className="events-pagination">
                                     <p className="events-pagination-info">
-                                        Showing {indexOfFirstEvent + 1}–{Math.min(indexOfLastEvent, displayEvents.length)} of {displayEvents.length}
+                                        Showing {showingFrom}–{showingTo} of {displayEvents.length}
                                     </p>
                                     <div className="events-pagination-controls">
                                         <select
@@ -290,7 +300,7 @@ const AlumniEvents = () => {
                                                 >{num}</button>
                                             ))}
                                             {pageNumbers.length > 5 && <span className="events-page-dots">…</span>}
-                                            <button className="events-page-btn" disabled={currentPage === pageNumbers.length} onClick={() => paginate(currentPage + 1)}>
+                                            <button className="events-page-btn" disabled={currentPage === pageNumbers.length || !pageNumbers.length} onClick={() => paginate(currentPage + 1)}>
                                                 <i className="fa fa-chevron-right"></i>
                                             </button>
                                         </nav>

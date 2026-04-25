@@ -2,24 +2,23 @@
 
 .edit-event-wrapper {
     background-color: #F8FAFC !important; /* Slightly lighter for premium feel */
-    height: 100vh; /* Lock height to viewport */
+    min-height: 100vh;
     margin-left: 260px !important;
     padding-top: 35px !important;
     margin-top: 0 !important;
-    overflow: hidden; /* Prevent page scroll */
     transition: margin-left 0.3s ease;
 }
 
 .edit-event-container {
     margin-top: 0;
-    padding: 0 24px 30px;
-    height: calc(100vh - 90px); 
+    padding: 0 0 30px;
     display: flex;
     flex-direction: column;
 }
 
 .event-form-card {
-    flex: 1; /* Card grows to fill container */
+    flex: 1;
+    min-height: 560px;
     display: flex;
     flex-direction: column;
     border-radius: 16px !important;

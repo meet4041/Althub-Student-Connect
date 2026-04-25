@@ -28,10 +28,13 @@ function Dashboard() {
     const isAlumniOffice = userRole === 'alumni_office';
     const isPlacementOffice = userRole === 'placement_cell';
     const isInstitute = !isAlumniOffice && !isPlacementOffice;
-    const csvTitle = isAlumniOffice ? 'Upload Alumni CSV' : 'Upload Student CSV';
-    const csvDescription = isAlumniOffice
-        ? 'Bulk invite alumni via email (CSV)'
-        : 'Bulk invite students via email (CSV)';
+    const csvAudienceLabel = isAlumniOffice ? 'Alumni' : 'Students';
+    const csvTitle = `Upload ${csvAudienceLabel} CSV`;
+    const csvDescription = `Bulk invite ${csvAudienceLabel.toLowerCase()} via email (CSV)`;
+    const csvHelperText = isAlumniOffice
+        ? 'CSV should contain alumni emails in the first column (optional header: email).'
+        : 'CSV should contain student emails in the first column (optional header: email).';
+    const csvSubmitLabel = `Upload & Invite ${csvAudienceLabel}`;
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -328,7 +331,7 @@ function Dashboard() {
                             <button className="csv-modal-close" onClick={() => setShowCsvModal(false)} aria-label="Close">&times;</button>
                         </div>
                         <form onSubmit={handleCsvUpload} className="csv-modal-body">
-                            <p className="text-muted small mb-3">CSV should contain emails in the first column (optional header: email).</p>
+                            <p className="text-muted small mb-3">{csvHelperText}</p>
                             <input
                                 type="file"
                                 accept=".csv,text/csv"
@@ -337,7 +340,7 @@ function Dashboard() {
                             />
                             <div className="csv-modal-actions">
                                 <button type="button" className="btn btn-light" onClick={() => setShowCsvModal(false)}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">Upload & Create</button>
+                                <button type="submit" className="btn btn-primary">{csvSubmitLabel}</button>
                             </div>
                         </form>
                     </div>

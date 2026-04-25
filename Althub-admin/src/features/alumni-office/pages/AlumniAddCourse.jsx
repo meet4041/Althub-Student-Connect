@@ -1,9 +1,11 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../service/axios';
+import { toast, ToastContainer } from 'react-toastify';
 import Loader from '../../../layouts/Loader.jsx';
 import Menu from '../../../layouts/Menu.jsx';
 import Footer from '../../../layouts/Footer.jsx';
+import AlumniPageShell from '../components/AlumniPageShell.jsx';
 
 import '../../../styles/alumni-pages.css';
 import '../../../styles/add-post.css';
@@ -14,6 +16,7 @@ const AlumniAddCourse = () => {
     const [stream, setStream] = useState('');
     const [duration, setDuration] = useState('');
     const [disable, setDisable] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const loader = document.getElementById('page-loader');
@@ -24,43 +27,56 @@ const AlumniAddCourse = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
-        if (!name.trim()) return;
+        const trimmedName = name.trim();
+        const trimmedStream = stream.trim();
+        const durationValue = duration ? Number(duration) : undefined;
+        const nextErrors = {};
+
+        if (!trimmedName) nextErrors.name = "Course name is required";
+        if (duration && (!Number.isFinite(durationValue) || durationValue < 0)) nextErrors.duration = "Duration must be 0 or more";
+
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length > 0) return;
+
         const instituteid = localStorage.getItem("AlmaPlus_institute_Id");
+        if (!instituteid) {
+            toast.error("Institute not found. Please log in again.");
+            return;
+        }
+
         setDisable(true);
         try {
             await axiosInstance.post('/api/addCourse', {
                 instituteid,
-                name: name.trim(),
-                stream: stream.trim(),
-                duration: duration ? Number(duration) : undefined
+                name: trimmedName,
+                stream: trimmedStream,
+                duration: durationValue
             });
+            toast.success("Course added successfully");
             navigate('/alumni-members');
         } catch (err) {
             setDisable(false);
+            toast.error(err.response?.data?.msg || "Failed to add course");
         }
     };
 
     return (
         <Fragment>
+            <ToastContainer theme="colored" />
             <Loader />
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content alumni-content-wrapper">
-                    <div className="alumni-container">
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
-                                <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1 alumni-breadcrumb">
-                                        <li className="breadcrumb-item"><Link to="/alumni-members" className="alumni-breadcrumb-link">Home</Link></li>
-                                        <li className="breadcrumb-item active">Add Course</li>
-                                    </ol>
-                                </nav>
-                                <h1 className="page-header alumni-header mb-0">Add Course</h1>
-                            </div>
+                    <AlumniPageShell
+                        title="Add Course"
+                        breadcrumb="Add Course"
+                        subtitle="Create a course and specialization for alumni grouping."
+                        action={(
                             <Link to="/alumni-members" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back
                             </Link>
-                        </div>
+                        )}
+                    >
 
                         <div className="post-form-card">
                             <form onSubmit={submitHandler} className="d-flex flex-column h-100">
@@ -72,10 +88,14 @@ const AlumniAddCourse = () => {
                                                 <input
                                                     className="form-control form-control-saas"
                                                     value={name}
-                                                    onChange={(e) => setName(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setName(e.target.value);
+                                                        setErrors((prev) => ({ ...prev, name: '' }));
+                                                    }}
                                                     placeholder="e.g. MSCIT"
                                                     required
                                                 />
+                                                {errors.name && <small className="text-danger">{errors.name}</small>}
                                             </div>
                                         </div>
                                         <div className="col-md-6">
@@ -96,10 +116,14 @@ const AlumniAddCourse = () => {
                                                     type="number"
                                                     className="form-control form-control-saas"
                                                     value={duration}
-                                                    onChange={(e) => setDuration(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setDuration(e.target.value);
+                                                        setErrors((prev) => ({ ...prev, duration: '' }));
+                                                    }}
                                                     placeholder="e.g. 2"
                                                     min="0"
                                                 />
+                                                {errors.duration && <small className="text-danger">{errors.duration}</small>}
                                             </div>
                                         </div>
                                     </div>
@@ -112,7 +136,7 @@ const AlumniAddCourse = () => {
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </AlumniPageShell>
                 </div>
                 <Footer />
             </div>

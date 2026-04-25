@@ -8,7 +8,9 @@ import axiosInstance from '../../../service/axios';
 import Loader from '../../../layouts/Loader.jsx';
 import Menu from '../../../layouts/Menu.jsx';
 import Footer from '../../../layouts/Footer.jsx';
+import AlumniPageShell from '../components/AlumniPageShell.jsx';
 
+import '../../../styles/alumni-pages.css';
 import '../../../styles/edit-event.css';
 
 const AlumniEditEvent = () => {
@@ -34,6 +36,9 @@ const AlumniEditEvent = () => {
                 date: state.date,
                 venue: state.venue,
             });
+        } else {
+            toast.error("No event data found. Redirecting...");
+            setTimeout(() => navigate('/alumni-events'), 1200);
         }
     };
 
@@ -49,9 +54,12 @@ const AlumniEditEvent = () => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
 
-    const [fileList, setFileList] = useState(null);
-    const files = fileList ? [...fileList] : [];
-    const imgChange = (e) => { setFileList(e.target.files); };
+    const [fileList, setFileList] = useState([]);
+    const files = fileList;
+    const imgChange = (e) => {
+        const selectedFiles = Array.from(e.target.files || []);
+        setFileList(selectedFiles.filter(file => file.type.startsWith('image/')));
+    };
 
     const submitHandler = (e) => {
         e.preventDefault();
@@ -97,9 +105,13 @@ const AlumniEditEvent = () => {
         return Object.keys(errs).length === 0;
     };
 
-    const getFormattedDate = (dateString) => {
+    const getFormattedDateTime = (dateString) => {
         if (!dateString) return "";
-        return dateString.split('T')[0];
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return "";
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60000);
+        return localDate.toISOString().slice(0, 16);
     };
 
     return (
@@ -109,82 +121,82 @@ const AlumniEditEvent = () => {
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content edit-event-wrapper">
-                    <div className="edit-event-container">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <h1 className="page-header edit-event-title mb-0">Edit Alumni Event</h1>
-                                <p className="text-muted small mb-0">Modify the fields below to update your event listing</p>
-                            </div>
+                    <AlumniPageShell
+                        title="Edit Alumni Event"
+                        breadcrumb="Edit Alumni Event"
+                        subtitle="Modify the fields below to update your event listing."
+                        action={(
                             <Link to="/alumni-events" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back to Events
                             </Link>
-                        </div>
-
-                        <div className="event-form-card">
-                            <form onSubmit={submitHandler} className="d-flex flex-column h-100">
-                                <div className="form-body-scroll">
-                                    <div className="row h-100">
-                                        <div className="col-md-5 border-right pr-md-4">
-                                            <div className="form-group mb-4">
-                                                <label className="form-label-modern">Event Title</label>
-                                                <input type="text" className="form-control form-control-modern" name="title" value={data.title} onChange={handleChange} placeholder="Enter Title" />
-                                                {errors.name_err && <small className="text-danger font-weight-bold">{errors.name_err}</small>}
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Scheduled Date</label>
-                                                    <input type='date' className="form-control form-control-modern" name="date" value={getFormattedDate(data.date)} onChange={handleChange} />
-                                                    {errors.date_err && <small className="text-danger font-weight-bold">{errors.date_err}</small>}
+                        )}
+                    >
+                        <div className="edit-event-container">
+                            <div className="event-form-card">
+                                <form onSubmit={submitHandler} className="d-flex flex-column h-100">
+                                    <div className="form-body-scroll">
+                                        <div className="row h-100">
+                                            <div className="col-md-5 border-right pr-md-4">
+                                                <div className="form-group mb-4">
+                                                    <label className="form-label-modern">Event Title</label>
+                                                    <input type="text" className="form-control form-control-modern" name="title" value={data.title} onChange={handleChange} placeholder="Enter Title" />
+                                                    {errors.name_err && <small className="text-danger font-weight-bold">{errors.name_err}</small>}
                                                 </div>
-                                                <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Venue</label>
-                                                    <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} placeholder="e.g. Hall A" />
-                                                    {errors.venue_err && <small className="text-danger font-weight-bold">{errors.venue_err}</small>}
-                                                </div>
-                                            </div>
 
-                                            <div className="form-group mb-0">
-                                                <label className="form-label-modern">Full Description</label>
-                                                <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} style={{ resize: 'none' }} placeholder="Provide event details..." />
-                                                {errors.description_err && <small className="text-danger font-weight-bold">{errors.description_err}</small>}
-                                            </div>
-                                        </div>
-
-                                        <div className="col-md-7 pl-md-4">
-                                            <label className="form-label-modern">Media & Photos Update</label>
-                                            <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="editImgUploadAlumni" onChange={imgChange} />
-                                                <label htmlFor="editImgUploadAlumni" className="text-center cursor-pointer mb-0">
-                                                    <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
-                                                    <p className="mb-0 font-weight-bold">Click to replace or add photos</p>
-                                                    <small className="text-muted">Maximum file size: 10MB (JPG, PNG)</small>
-                                                </label>
-
-                                                {files.length > 0 && (
-                                                    <div className="preview-grid">
-                                                        {files.map((elem, index) => (
-                                                            <img key={index} src={window.URL.createObjectURL(elem)} className="preview-thumbnail" alt="preview" />
-                                                        ))}
+                                                <div className="row">
+                                                    <div className="col-6 form-group mb-4">
+                                                        <label className="form-label-modern">Scheduled Date & Time</label>
+                                                        <input type='datetime-local' className="form-control form-control-modern" name="date" value={getFormattedDateTime(data.date)} onChange={handleChange} />
+                                                        {errors.date_err && <small className="text-danger font-weight-bold">{errors.date_err}</small>}
                                                     </div>
-                                                )}
+                                                    <div className="col-6 form-group mb-4">
+                                                        <label className="form-label-modern">Venue</label>
+                                                        <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} placeholder="e.g. Hall A" />
+                                                        {errors.venue_err && <small className="text-danger font-weight-bold">{errors.venue_err}</small>}
+                                                    </div>
+                                                </div>
+
+                                                <div className="form-group mb-0">
+                                                    <label className="form-label-modern">Full Description</label>
+                                                    <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} style={{ resize: 'none' }} placeholder="Provide event details..." />
+                                                    {errors.description_err && <small className="text-danger font-weight-bold">{errors.description_err}</small>}
+                                                </div>
                                             </div>
-                                            <div className="mt-3 p-3 bg-light rounded edit-event-note">
-                                                <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Note: Uploading new images will override previous ones for this event.</small>
+
+                                            <div className="col-md-7 pl-md-4">
+                                                <label className="form-label-modern">Media & Photos Update</label>
+                                                <div className="upload-drop-zone">
+                                                    <input type='file' multiple accept="image/*" className="d-none" id="editImgUploadAlumni" onChange={imgChange} />
+                                                    <label htmlFor="editImgUploadAlumni" className="text-center cursor-pointer mb-0">
+                                                        <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
+                                                        <p className="mb-0 font-weight-bold">Click to replace or add photos</p>
+                                                        <small className="text-muted">Maximum file size: 10MB (JPG, PNG)</small>
+                                                    </label>
+
+                                                    {files.length > 0 && (
+                                                        <div className="preview-grid">
+                                                            {files.map((elem, index) => (
+                                                                <img key={index} src={window.URL.createObjectURL(elem)} className="preview-thumbnail" alt="preview" />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="mt-3 p-3 bg-light rounded edit-event-note">
+                                                    <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Note: Uploading new images will override previous ones for this event.</small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="form-footer-sticky">
-                                    <Link to="/alumni-events" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
-                                    <button type="submit" className="btn btn-primary px-5 shadow-sm edit-event-save-btn" disabled={disable}>
-                                        {disable ? 'Saving Changes...' : 'Update Event Listing'}
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="form-footer-sticky">
+                                        <Link to="/alumni-events" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
+                                        <button type="submit" className="btn btn-primary px-5 shadow-sm edit-event-save-btn" disabled={disable}>
+                                            {disable ? 'Saving Changes...' : 'Update Event Listing'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
+                    </AlumniPageShell>
                 </div>
                 <Footer />
             </div>

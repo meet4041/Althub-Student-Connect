@@ -8,7 +8,9 @@ import axiosInstance from '../../../service/axios';
 import Loader from '../../../layouts/Loader.jsx';
 import Menu from '../../../layouts/Menu.jsx';
 import Footer from '../../../layouts/Footer.jsx';
+import AlumniPageShell from '../components/AlumniPageShell.jsx';
 
+import '../../../styles/alumni-pages.css';
 import '../../../styles/add-post.css';
 
 const AlumniEditPost = () => {
@@ -50,7 +52,8 @@ const AlumniEditPost = () => {
     };
 
     const imgChange = (e) => {
-        setNewFiles([...e.target.files]);
+        const selectedFiles = Array.from(e.target.files || []);
+        setNewFiles(selectedFiles.filter(file => file.type.startsWith('image/')));
     };
 
     const submitHandler = async (e) => {
@@ -89,100 +92,101 @@ const AlumniEditPost = () => {
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content add-post-wrapper">
-                    <div className="add-post-container">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <h1 className="page-header edit-event-title mb-0">Edit Alumni Post</h1>
-                                <p className="text-muted small mb-0">Modify content or add new media to your post</p>
-                            </div>
+                    <AlumniPageShell
+                        title="Edit Alumni Post"
+                        breadcrumb="Edit Alumni Post"
+                        subtitle="Modify content or add new media to your post."
+                        action={(
                             <Link to="/alumni-posts" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back
                             </Link>
-                        </div>
-
-                        <div className="post-form-card">
-                            <form onSubmit={submitHandler} className="d-flex flex-column h-100">
-                                <div className="post-body-scroll">
-                                    <div className="row h-100">
-                                        <div className="col-md-5 border-right pr-md-4">
-                                            <div className="form-group h-100 d-flex flex-column">
-                                                <label className="form-label-saas">Post Description</label>
-                                                <textarea 
-                                                    className="form-control form-control-saas flex-grow-1" 
-                                                    rows="10" 
-                                                    name="description" 
-                                                    value={data.description} 
-                                                    onChange={handleChange} 
-                                                    style={{ resize: 'none', minHeight: '300px' }}
-                                                    required
-                                                />
-                                                <div className="mt-3 p-3 bg-light rounded edit-event-note">
-                                                    <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Note: Editing this post will update it for all users in the feed instantly.</small>
+                        )}
+                    >
+                        <div className="add-post-container">
+                            <div className="post-form-card">
+                                <form onSubmit={submitHandler} className="d-flex flex-column h-100">
+                                    <div className="post-body-scroll">
+                                        <div className="row h-100">
+                                            <div className="col-md-5 border-right pr-md-4">
+                                                <div className="form-group h-100 d-flex flex-column">
+                                                    <label className="form-label-saas">Post Description</label>
+                                                    <textarea 
+                                                        className="form-control form-control-saas flex-grow-1" 
+                                                        rows="10" 
+                                                        name="description" 
+                                                        value={data.description} 
+                                                        onChange={handleChange} 
+                                                        style={{ resize: 'none', minHeight: '300px' }}
+                                                        required
+                                                    />
+                                                    <div className="mt-3 p-3 bg-light rounded edit-event-note">
+                                                        <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Note: Editing this post will update it for all users in the feed instantly.</small>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="col-md-7 pl-md-4">
-                                            <label className="form-label-saas">Manage Media</label>
-                                            
-                                            {existingPhotos.length > 0 && (
-                                                <div className="mb-4 p-3 bg-light rounded border">
-                                                    <small className="text-muted font-weight-bold d-block mb-2">Current Post Photos:</small>
-                                                    <div className="post-preview-grid">
-                                                        {existingPhotos.map((photoUrl, index) => (
-                                                            <img 
-                                                                key={index} 
-                                                                src={getImageUrl(photoUrl, FALLBACK_IMAGES.post)} 
-                                                                className="post-preview-img"
-                                                                alt="existing"
-                                                                onError={getImageOnError(FALLBACK_IMAGES.post)}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            <div className="post-upload-zone">
-                                                <input 
-                                                    type='file' multiple className="d-none" id="alumniEditPostFile" 
-                                                    accept="image/*" onChange={imgChange} 
-                                                />
-                                                <label htmlFor="alumniEditPostFile" className="cursor-pointer mb-0">
-                                                    <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
-                                                    <p className="mb-0 font-weight-bold text-dark">Add more photos</p>
-                                                    <small className="text-muted">Files will append to the current list</small>
-                                                </label>
-
-                                                {newFiles.length > 0 && (
-                                                    <div className="post-preview-grid">
-                                                        {newFiles.map((file, i) => (
-                                                            <img 
-                                                                key={i} 
-                                                                src={URL.createObjectURL(file)} 
-                                                                className="post-preview-img" 
-                                                                alt="preview" 
-                                                            />
-                                                        ))}
+                                            <div className="col-md-7 pl-md-4">
+                                                <label className="form-label-saas">Manage Media</label>
+                                                
+                                                {existingPhotos.length > 0 && (
+                                                    <div className="mb-4 p-3 bg-light rounded border">
+                                                        <small className="text-muted font-weight-bold d-block mb-2">Current Post Photos:</small>
+                                                        <div className="post-preview-grid">
+                                                            {existingPhotos.map((photoUrl, index) => (
+                                                                <img 
+                                                                    key={index} 
+                                                                    src={getImageUrl(photoUrl, FALLBACK_IMAGES.post)} 
+                                                                    className="post-preview-img"
+                                                                    alt="existing"
+                                                                    onError={getImageOnError(FALLBACK_IMAGES.post)}
+                                                                />
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 )}
+
+                                                <div className="post-upload-zone">
+                                                    <input 
+                                                        type='file' multiple className="d-none" id="alumniEditPostFile" 
+                                                        accept="image/*" onChange={imgChange} 
+                                                    />
+                                                    <label htmlFor="alumniEditPostFile" className="cursor-pointer mb-0">
+                                                        <i className="fa fa-cloud-upload-alt fa-2x text-primary mb-2 opacity-50"></i>
+                                                        <p className="mb-0 font-weight-bold text-dark">Add more photos</p>
+                                                        <small className="text-muted">Files will append to the current list</small>
+                                                    </label>
+
+                                                    {newFiles.length > 0 && (
+                                                        <div className="post-preview-grid">
+                                                            {newFiles.map((file, i) => (
+                                                                <img 
+                                                                    key={i} 
+                                                                    src={URL.createObjectURL(file)} 
+                                                                    className="post-preview-img" 
+                                                                    alt="preview" 
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="post-footer-actions">
-                                    <Link to="/alumni-posts" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
-                                    <button 
-                                        type="submit" 
-                                        className="btn btn-primary px-5 shadow-sm edit-event-save-btn" 
-                                        disabled={disable} 
-                                    >
-                                        {disable ? 'Updating Feed...' : 'Save & Update Post'}
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="post-footer-actions">
+                                        <Link to="/alumni-posts" className="btn btn-link text-muted mr-3 font-weight-bold">Discard Changes</Link>
+                                        <button 
+                                            type="submit" 
+                                            className="btn btn-primary px-5 shadow-sm edit-event-save-btn" 
+                                            disabled={disable} 
+                                        >
+                                            {disable ? 'Updating Feed...' : 'Save & Update Post'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
+                    </AlumniPageShell>
                 </div>
                 <Footer />
             </div>

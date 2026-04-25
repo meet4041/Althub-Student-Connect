@@ -9,7 +9,10 @@ import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../../../utils/im
 import axiosInstance from '../../../service/axios';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
+import '../../../styles/alumni-pages.css';
+import '../../../styles/events.css';
 import '../../../styles/posts.css';
+import '../../../styles/institute-layout.css';
 
 const AlumniPosts = () => {
     const [institute_Id, setInstitute_Id] = useState(null);
@@ -47,6 +50,10 @@ const AlumniPosts = () => {
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPost = displayPosts.slice(indexOfFirstPost, indexOfLastPost);
     const pageNumbers = Array.from({ length: Math.ceil(displayPosts.length / postsPerPage) }, (_, i) => i + 1);
+    const hasPosts = displayPosts.length > 0;
+    const showingFrom = hasPosts ? indexOfFirstPost + 1 : 0;
+    const showingTo = hasPosts ? Math.min(indexOfLastPost, displayPosts.length) : 0;
+    const withMediaCount = posts.filter((post) => post.photos?.length).length;
 
     const handleSearch = (e) => {
         let search = e.target.value.toLowerCase();
@@ -85,24 +92,35 @@ const AlumniPosts = () => {
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content posts-content-wrapper">
-                    <div className="posts-container">
-                        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-                            <div>
+                    <div className="events-container">
+                        <div className="events-header institute-page-header">
+                            <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
-                                    <ol className="breadcrumb mb-1 posts-breadcrumb">
-                                        <li className="breadcrumb-item"><Link to="/alumni-posts" className="posts-breadcrumb-link">Home</Link></li>
+                                    <ol className="breadcrumb mb-1 institute-page-breadcrumb">
+                                        <li className="breadcrumb-item"><Link to="/dashboard" className="dashboard-breadcrumb-link">Home</Link></li>
                                         <li className="breadcrumb-item active">Alumni Posts</li>
                                     </ol>
                                 </nav>
-                                <h1 className="page-header posts-header mb-0">Alumni Posts</h1>
+                                <h1 className="events-title institute-page-title">Alumni Posts</h1>
+                                <p className="events-subtitle institute-page-subtitle">Create, review, and manage alumni posts with the same layout rhythm as events.</p>
                             </div>
-                            <Link to="/alumni-add-post" className="btn btn-primary shadow-sm posts-create-btn">
+                            <Link to="/alumni-add-post" className="btn btn-primary shadow-sm posts-create-btn institute-page-actions">
                                 <i className="fa fa-plus-circle mr-2"></i> Create New Post
                             </Link>
                         </div>
+                        <div className="events-stats-strip">
+                            <div className="events-stat-card">
+                                <span className="events-stat-value">{posts.length}</span>
+                                <span className="events-stat-label">Total Posts</span>
+                            </div>
+                            <div className="events-stat-card events-stat-accent">
+                                <span className="events-stat-value">{withMediaCount}</span>
+                                <span className="events-stat-label">With Media</span>
+                            </div>
+                        </div>
 
                         <div className="posts-scroll-area">
-                            <div className="card post-main-card">
+                            <div className="card post-main-card institute-page-card">
                                 <div className="card-body p-0 bg-white">
                                     <div className="p-4 d-flex flex-wrap align-items-center justify-content-between posts-toolbar">
                                         <div className="input-group posts-search-group">
@@ -135,7 +153,9 @@ const AlumniPosts = () => {
                                                     <tr key={elem._id || index} className="post-row">
                                                         <td className="pl-4 align-middle"><span className="post-id-badge">{(indexOfFirstPost + index + 1).toString().padStart(2, '0')}</span></td>
                                                         <td className="align-middle">
-                                                            <img src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.post)} className="post-media-preview" alt="post" onError={getImageOnError(FALLBACK_IMAGES.post)} />
+                                                            <div className="post-media-frame">
+                                                                <img src={getImageUrl(elem.photos?.[0], FALLBACK_IMAGES.post)} className="post-media-preview" alt="post" onError={getImageOnError(FALLBACK_IMAGES.post)} />
+                                                            </div>
                                                         </td>
                                                         <td className="align-middle">
                                                             <div className="post-desc-clamp">{elem.description}</div>
@@ -160,7 +180,7 @@ const AlumniPosts = () => {
                                     </div>
 
                                     <div className="p-4 bg-white d-flex justify-content-between align-items-center posts-table-footer">
-                                        <p className="text-muted small mb-0 font-weight-bold">Showing {indexOfFirstPost + 1} - {Math.min(indexOfLastPost, displayPosts.length)} of {displayPosts.length}</p>
+                                        <p className="text-muted small mb-0 font-weight-bold">Showing {showingFrom} - {showingTo} of {displayPosts.length}</p>
                                         <nav>
                                             <ul className="pagination mb-0">
                                                 {pageNumbers.map(num => (

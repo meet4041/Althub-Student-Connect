@@ -5,8 +5,8 @@
     min-height: 100vh;
     margin-left: 260px !important;
     padding-top: 35px !important;
-    padding-left: 24px;
-    padding-right: 24px;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     padding-bottom: 30px;
     transition: margin-left 0.3s ease;
 }
@@ -14,6 +14,26 @@
 .alumni-container {
     max-width: 1400px;
     margin: 0 auto;
+}
+
+.alumni-shell-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.alumni-shell-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alumni-shell-action {
+    display: flex;
+    align-items: center;
 }
 
 .alumni-breadcrumb {
@@ -35,14 +55,33 @@
     color: #1E293B;
     font-weight: 800;
     font-size: 24px;
+    letter-spacing: -0.5px;
+}
+
+.alumni-shell-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    max-width: 720px;
 }
 
 .alumni-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
-    padding: 24px;
+    padding: 0;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.alumni-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px;
+}
+
+.alumni-toolbar-copy {
+    min-width: 0;
 }
 
 .alumni-card-header {
@@ -65,8 +104,10 @@
     border-radius: 10px;
     background-color: #2563EB;
     border: none;
-    padding: 10px 18px;
+    min-height: 48px;
+    padding: 10px 22px;
     font-weight: 700;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
 }
 
 .alumni-course-grid {
@@ -74,6 +115,11 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
     margin-bottom: 18px;
+}
+
+.alumni-course-grid-inside {
+    padding: 0 24px 24px;
+    margin-bottom: 0;
 }
 
 .alumni-course-card {
@@ -128,9 +174,19 @@
     color: #64748b;
 }
 
+.alumni-section-divider {
+    height: 1px;
+    background: #f1f5f9;
+}
+
+.alumni-card-header {
+    padding: 24px 24px 16px;
+    margin-bottom: 0;
+}
+
 @media (max-width: 767px) {
     .alumni-content-wrapper {
         margin-left: 0 !important;
-        padding: 35px 1rem 2rem 1rem;
+        padding: 35px 0 2rem 0 !important;
     }
 }

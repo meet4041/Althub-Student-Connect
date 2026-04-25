@@ -7,7 +7,9 @@ import axiosInstance from '../../../service/axios';
 import Loader from '../../../layouts/Loader.jsx';
 import Menu from '../../../layouts/Menu.jsx';
 import Footer from '../../../layouts/Footer.jsx';
+import AlumniPageShell from '../components/AlumniPageShell.jsx';
 
+import '../../../styles/alumni-pages.css';
 import '../../../styles/edit-event.css';
 
 const AlumniAddEvent = () => {
@@ -35,7 +37,7 @@ const AlumniAddEvent = () => {
 
     const imgChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
-        setFileList(selectedFiles.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i)));
+        setFileList(selectedFiles.filter(file => file.type.startsWith('image/')));
     };
 
     const handleChange = (e) => setData({ ...data, [e.target.name]: e.target.value });
@@ -86,73 +88,77 @@ const AlumniAddEvent = () => {
             <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
                 <Menu />
                 <div id="content" className="content edit-event-wrapper">
-                    <div className="edit-event-container">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <h1 className="page-header edit-event-title mb-0">Create Alumni Event</h1>
-                                <p className="text-muted small mb-0">Fill in the details to publish a new alumni event</p>
-                            </div>
+                    <AlumniPageShell
+                        title="Create Alumni Event"
+                        breadcrumb="Create Alumni Event"
+                        subtitle="Fill in the details to publish a new alumni event."
+                        action={(
                             <Link to="/alumni-events" className="btn btn-light btn-sm font-weight-bold shadow-sm edit-event-back-btn">
                                 <i className="fa fa-arrow-left mr-1"></i> Back
                             </Link>
-                        </div>
-
-                        <div className="event-form-card">
-                            <form onSubmit={submitHandler} className="d-flex flex-column h-100">
-                                <div className="form-body-scroll">
-                                    <div className="row">
-                                        <div className="col-md-5 border-right pr-md-4">
-                                            <div className="form-group mb-4">
-                                                <label className="form-label-modern">Event Title</label>
-                                                <input type="text" className="form-control form-control-modern" name="title" value={data.title} onChange={handleChange} />
-                                                {errors.name_err && <small className="text-danger">{errors.name_err}</small>}
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Date & Time</label>
-                                                    <input type='datetime-local' className="form-control form-control-modern" name="date" value={data.date} onChange={handleChange} />
+                        )}
+                    >
+                        <div className="edit-event-container">
+                            <div className="event-form-card">
+                                <form onSubmit={submitHandler} className="d-flex flex-column h-100">
+                                    <div className="form-body-scroll">
+                                        <div className="row">
+                                            <div className="col-md-5 border-right pr-md-4">
+                                                <div className="form-group mb-4">
+                                                    <label className="form-label-modern">Event Title</label>
+                                                    <input type="text" className="form-control form-control-modern" name="title" value={data.title} onChange={handleChange} />
+                                                    {errors.name_err && <small className="text-danger">{errors.name_err}</small>}
                                                 </div>
-                                                <div className="col-6 form-group mb-4">
-                                                    <label className="form-label-modern">Venue</label>
-                                                    <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} />
+
+                                                <div className="row">
+                                                    <div className="col-6 form-group mb-4">
+                                                        <label className="form-label-modern">Date & Time</label>
+                                                        <input type='datetime-local' className="form-control form-control-modern" name="date" value={data.date} onChange={handleChange} />
+                                                        {errors.date_err && <small className="text-danger">{errors.date_err}</small>}
+                                                    </div>
+                                                    <div className="col-6 form-group mb-4">
+                                                        <label className="form-label-modern">Venue</label>
+                                                        <input type="text" className="form-control form-control-modern" name="venue" value={data.venue} onChange={handleChange} />
+                                                        {errors.venue_err && <small className="text-danger">{errors.venue_err}</small>}
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="form-group mb-0">
-                                                <label className="form-label-modern">Full Description</label>
-                                                <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} />
-                                            </div>
-                                        </div>
-
-                                        <div className="col-md-7 pl-md-4">
-                                            <label className="form-label-modern">Event Media</label>
-                                            <div className="upload-drop-zone">
-                                                <input type='file' multiple className="d-none" id="addImgUploadAlumni" onChange={imgChange} />
-                                                <label htmlFor="addImgUploadAlumni" className="text-center cursor-pointer mb-0">
-                                                    <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
-                                                    <h6 className="font-weight-bold">Click to upload photos</h6>
-                                                </label>
-                                                <div className="preview-grid">
-                                                    {fileList.map((elem, index) => (
-                                                        <img key={index} src={window.URL.createObjectURL(elem)} className="preview-thumbnail" alt="preview" />
-                                                    ))}
+                                                <div className="form-group mb-0">
+                                                    <label className="form-label-modern">Full Description</label>
+                                                    <textarea className="form-control form-control-modern" rows="7" name="description" value={data.description} onChange={handleChange} />
+                                                    {errors.description_err && <small className="text-danger">{errors.description_err}</small>}
                                                 </div>
                                             </div>
-                                            <div className="mt-3 p-3 bg-light rounded edit-event-note">
-                                                <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Tip: Upload high-quality images for better visibility.</small>
+
+                                            <div className="col-md-7 pl-md-4">
+                                                <label className="form-label-modern">Event Media</label>
+                                                <div className="upload-drop-zone">
+                                                    <input type='file' multiple accept="image/*" className="d-none" id="addImgUploadAlumni" onChange={imgChange} />
+                                                    <label htmlFor="addImgUploadAlumni" className="text-center cursor-pointer mb-0">
+                                                        <div className="mb-3"><i className="fa fa-images fa-3x text-primary opacity-25"></i></div>
+                                                        <h6 className="font-weight-bold">Click to upload photos</h6>
+                                                    </label>
+                                                    <div className="preview-grid">
+                                                        {fileList.map((elem, index) => (
+                                                            <img key={index} src={window.URL.createObjectURL(elem)} className="preview-thumbnail" alt="preview" />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="mt-3 p-3 bg-light rounded edit-event-note">
+                                                    <small className="text-muted"><i className="fa fa-info-circle mr-2"></i> Tip: Upload high-quality images for better visibility.</small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="form-footer-sticky">
-                                    <button type="submit" className="btn btn-primary px-5 edit-event-save-btn" disabled={disable}>
-                                        {disable ? 'Publishing...' : 'Publish Event Now'}
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="form-footer-sticky">
+                                        <button type="submit" className="btn btn-primary px-5 edit-event-save-btn" disabled={disable}>
+                                            {disable ? 'Publishing...' : 'Publish Event Now'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
+                    </AlumniPageShell>
                 </div>
                 <Footer />
             </div>

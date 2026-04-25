@@ -2,23 +2,22 @@
 
 .add-post-wrapper {
     background-color: #F8FAFC !important;
-    height: 100vh;
+    min-height: 100vh;
     margin-left: 260px !important; /* Locks to your Sidebar width */
     padding-top: 35px !important;  /* Locks to your Header height */
     margin-top: 0 !important;
-    overflow: hidden; /* Disables page-level scroll */
     transition: margin-left 0.3s ease;
 }
 
 .add-post-container {
-    height: calc(100vh - 65px);
-    padding: 0 24px 30px;
+    padding: 0 0 30px;
     display: flex;
     flex-direction: column;
 }
 
 .post-form-card {
     flex: 1;
+    min-height: 520px;
     display: flex;
     flex-direction: column;
     border-radius: 16px !important;

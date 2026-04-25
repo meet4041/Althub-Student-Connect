@@ -18,6 +18,7 @@ function Menu() {
    });
 
    const isActive = (path) => location.pathname === path ? "active" : "";
+   const isSectionActive = (paths) => paths.some((path) => location.pathname.startsWith(path)) ? "active" : "";
    const isOfficeActive = (path) => location.pathname.startsWith(path) ? "active" : "";
    const isOfficeRoute = location.pathname.startsWith("/alumni-office") || location.pathname.startsWith("/placement-office");
    const [officeDropdownOpen, setOfficeDropdownOpen] = useState(false);
@@ -108,19 +109,19 @@ function Menu() {
                <ul className="nav">
                   {isAlumniOffice ? (
                      <>
-                        <li className={isActive("/alumni-members")}>
+                        <li className={isSectionActive(["/alumni-members", "/alumni-add-course"])}>
                            <Link to="/alumni-members">
                               <i className="fa fa-user-friends"></i>
                               <span>Alumni Members</span>
                            </Link>
                         </li>
-                        <li className={isActive("/alumni-events")}>
+                        <li className={isSectionActive(["/alumni-events", "/alumni-add-event", "/alumni-edit-event"])}>
                            <Link to="/alumni-events">
                               <i className="fa fa-calendar-alt"></i>
                               <span>Alumni Events</span>
                            </Link>
                         </li>
-                        <li className={isActive("/alumni-posts")}>
+                        <li className={isSectionActive(["/alumni-posts", "/alumni-add-post", "/alumni-edit-post"])}>
                            <Link to="/alumni-posts">
                               <i className="fa fa-bullhorn"></i>
                               <span>Alumni Posts</span>
@@ -129,13 +130,13 @@ function Menu() {
                      </>
                   ) : isPlacementOffice ? (
                      <>
-                        <li className={isActive("/placement-events")}>
+                        <li className={isSectionActive(["/placement-events", "/placement-add-event", "/placement-edit-event"])}>
                            <Link to="/placement-events">
                               <i className="fa fa-calendar-alt"></i>
                               <span>Placement Events</span>
                            </Link>
                         </li>
-                        <li className={isActive("/placement-posts")}>
+                        <li className={isSectionActive(["/placement-posts", "/placement-add-post", "/placement-edit-post"])}>
                            <Link to="/placement-posts">
                               <i className="fa fa-bullhorn"></i>
                               <span>Placement Posts</span>
