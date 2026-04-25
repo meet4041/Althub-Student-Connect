@@ -64,8 +64,11 @@ const sendInvitationMail = async (name, email, tempPass) => {
             subject: 'You are invited to connect Althub+',
             html: `<p>Hello ${name}, You are invited to connect with Althub. Your temporary password is: <b>${tempPass}</b></p><p>Please <a href="http://localhost:3000/login">Login here</a>.</p>`
         }
-        await transporter.sendMail(mailoptions);
-    } catch (error) { console.error("Invitation Mail Error:", error.message); }
+        return await transporter.sendMail(mailoptions);
+    } catch (error) {
+        console.error("Invitation Mail Error:", error);
+        throw new Error("Failed to send invitation email");
+    }
 }
 
 const sendCsvInviteMail = async ({ instituteName, email, tempPass, role }) => {
@@ -93,8 +96,11 @@ const sendCsvInviteMail = async ({ instituteName, email, tempPass, role }) => {
                 <p>After logging in, please change your password.</p>
             `
         };
-        await transporter.sendMail(mailoptions);
-    } catch (error) { console.error("CSV Invite Mail Error:", error.message); }
+        return await transporter.sendMail(mailoptions);
+    } catch (error) {
+        console.error("CSV Invite Mail Error:", error);
+        throw new Error(`Failed to send invite email to ${email}`);
+    }
 };
 
 const parseCsvEmails = (buffer) => {
@@ -409,6 +415,7 @@ const bulkInviteAlumniCsv = async (req, res) => {
 
         const created = [];
         const skipped = [];
+        const failed = [];
 
         for (const email of emails) {
             const exists = await User.findOne({ email });
@@ -418,24 +425,40 @@ const bulkInviteAlumniCsv = async (req, res) => {
             }
             const tempPass = randomstring.generate({ length: 10, charset: 'alphanumeric' });
             const spassword = await securePassword(tempPass);
-            const user = new User({
-                fname: '',
-                lname: '',
-                email,
-                password: spassword,
-                role: invitedRole,
-                institute: instituteName,
-                institute_id: instituteId,
-                tokenVersion: 0
-            });
-            await user.save();
-            await sendCsvInviteMail({ instituteName, email, tempPass, role: invitedRole });
-            created.push(email);
+            let user = null;
+            try {
+                user = new User({
+                    fname: '',
+                    lname: '',
+                    email,
+                    password: spassword,
+                    role: invitedRole,
+                    institute: instituteName,
+                    institute_id: instituteId,
+                    tokenVersion: 0
+                });
+                await user.save();
+                await sendCsvInviteMail({ instituteName, email, tempPass, role: invitedRole });
+                created.push(email);
+            } catch (mailError) {
+                if (user?._id) {
+                    await User.findByIdAndDelete(user._id);
+                }
+                failed.push(email);
+                console.error(`Bulk invite failed for ${email}:`, mailError.message);
+            }
         }
 
         return res.status(200).send({
             success: true,
-            data: { createdCount: created.length, skippedCount: skipped.length, created, skipped }
+            data: {
+                createdCount: created.length,
+                skippedCount: skipped.length,
+                failedCount: failed.length,
+                created,
+                skipped,
+                failed
+            }
         });
     } catch (error) {
         return res.status(500).send({ success: false, msg: error.message });
