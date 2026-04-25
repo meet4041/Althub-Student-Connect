@@ -2,6 +2,35 @@ import Feedback from "../models/feedbackModel.js";
 import User from "../models/userModel.js";
 import Education from "../models/educationModel.js";
 
+const getInstituteScopeId = (user) => {
+    if (!user) return null;
+    if (user.role === "institute") return String(user._id);
+    if ((user.role === "alumni_office" || user.role === "placement_cell") && user.parent_institute_id) {
+        return String(user.parent_institute_id);
+    }
+    if (user.institute_id) return String(user.institute_id);
+    return null;
+};
+
+const getScopedFeedbackMatch = async (user) => {
+    if (user?.role === "admin") return {};
+
+    const instituteId = getInstituteScopeId(user);
+    if (!instituteId) return null;
+
+    const scopedUsers = await User.find({ institute_id: instituteId }).select("_id").lean();
+    const userIds = scopedUsers.map(({ _id }) => _id);
+    const userIdStrings = userIds.map((id) => String(id));
+
+    return {
+        $or: [
+            { institute_id: instituteId },
+            { selected_user_id: { $in: userIds } },
+            { userid: { $in: userIdStrings } }
+        ]
+    };
+};
+
 /**
  * Adds a new feedback record.
  * Logic: Fetches the sender's name and the target user's name (including their latest degree).
@@ -14,10 +43,13 @@ const addFeedback = async (req, res) => {
 
         // 2. Fetch the TARGET (Who the feedback is about)
         let targetName = "General"; // Default if no user selected
+        let target = null;
+        let instituteId = sender?.institute_id ? String(sender.institute_id) : null;
         
         if (req.body.selected_user_id) {
-            const target = await User.findById(req.body.selected_user_id);
+            target = await User.findById(req.body.selected_user_id);
             if (target) {
+                instituteId = target.institute_id ? String(target.institute_id) : instituteId;
                 // 3. Logic to fetch degree (latest education)
                 const educations = await Education.find({ userid: req.body.selected_user_id });
                 
@@ -42,7 +74,9 @@ const addFeedback = async (req, res) => {
 
         const feedback = new Feedback({
             userid: req.body.userid,
+            institute_id: instituteId,
             name: senderName,           // Saved: Sender's Full Name
+            selected_user_id: target?._id || undefined,
             selected_user: targetName,  // Saved: "Target Name (Degree)"
             message: req.body.message,
             rate: req.body.rate
@@ -61,7 +95,11 @@ const addFeedback = async (req, res) => {
  */
 const getFeedback = async (req, res) => {
     try {
-        const feedback_data = await Feedback.find({});
+        const match = await getScopedFeedbackMatch(req.user);
+        if (match === null) {
+            return res.status(403).send({ success: false, msg: "Institute scope not found." });
+        }
+        const feedback_data = await Feedback.find(match).sort({ _id: -1 });
         res.status(200).send({ success: true, data: feedback_data });
     } catch (error) {
         res.status(400).send({ success: false, msg: error.message });
@@ -74,7 +112,11 @@ const getFeedback = async (req, res) => {
 const deleteFeedback = async (req, res) => {
     try {
         const id = req.params.id;
-        const deleted = await Feedback.deleteOne({ _id: id });
+        const match = await getScopedFeedbackMatch(req.user);
+        if (match === null) {
+            return res.status(403).send({ success: false, msg: "Institute scope not found." });
+        }
+        const deleted = await Feedback.deleteOne({ _id: id, ...match });
         if (!deleted.deletedCount) {
             return res.status(404).send({ success: false, msg: 'Feedback not found' });
         }
@@ -90,7 +132,12 @@ const deleteFeedback = async (req, res) => {
  */
 const getLeaderboard = async (req, res) => {
     try {
+        const match = await getScopedFeedbackMatch(req.user);
+        if (match === null) {
+            return res.status(403).json({ success: false, msg: "Institute scope not found." });
+        }
         const leaderboard = await Feedback.aggregate([
+            ...(Object.keys(match).length ? [{ $match: match }] : []),
             {
                 // Group by the user who received the feedback
                 $group: {

@@ -496,7 +496,19 @@ export const userLogout = async (req, res) => {
 
 export const getUsers = async (req, res) => {
     try {
+        const matchStage = {};
+        if (req.user?.role !== "admin") {
+            if (req.user?.role === "institute") {
+                matchStage.institute_id = req.user._id;
+            } else if ((req.user?.role === "alumni_office" || req.user?.role === "placement_cell") && req.user?.parent_institute_id) {
+                matchStage.institute_id = req.user.parent_institute_id;
+            } else if (req.user?.institute_id) {
+                matchStage.institute_id = req.user.institute_id;
+            }
+        }
+
         const user_data = await User.aggregate([
+            ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
             {
                 $lookup: {
                     from: Education.collection.name,
