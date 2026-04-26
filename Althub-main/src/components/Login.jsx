@@ -71,7 +71,7 @@ export default function Login() {
         <div className="visual-blob bg-brand-300 top-0 left-0 w-96 h-96"></div>
         <div className="visual-blob bg-secondary-300 bottom-0 right-0 w-96 h-96 animation-delay-2000"></div>
 
-        <div className="visual-content">
+        <div className="login-visual-content">
           <img
             src="images/register-animate.svg"
             alt="Welcome Illustration"
@@ -84,33 +84,36 @@ export default function Login() {
 
       {/* --- RIGHT SIDE (Form) --- */}
       <div className="login-form-side">
+        <div className="form-side-glow form-side-glow-top"></div>
+        <div className="form-side-glow form-side-glow-bottom"></div>
 
-        <button onClick={() => nav("/")} className="back-home-btn">
+        <button onClick={() => nav("/")} className="login-back-home-btn">
           <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">Back to Home</span>
         </button>
 
-        <div className="form-container">
+        <div className="login-form-container">
 
-          <div className="form-header">
-            <div className="inline-flex justify-center mb-6">
-              <img src="images/Logo1.jpeg" alt="Logo" className="h-16 rounded-2xl shadow-sm" />
+          <div className="login-form-header">
+            <div className="login-brand-badge">
+              <img src="images/Logo1.jpeg" alt="Logo" className="login-brand-logo" />
             </div>
-            <h1 className="form-title">Sign in to your account</h1>
-            <p className="form-subtitle">Enter your details below to continue</p>
+            <span className="login-form-kicker">Welcome back</span>
+            <h1 className="login-form-title">Sign in to your account</h1>
+            <p className="login-form-subtitle">Enter your details below to continue</p>
           </div>
 
-          <form className="input-group" onSubmit={handleLogin}>
+          <form className="login-input-group" onSubmit={handleLogin}>
 
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700 ml-1">Email Address</label>
-              <div className="input-wrapper">
-                <Mail className="input-icon" />
+              <div className="login-input-wrapper">
+                <Mail className="login-input-icon" />
                 <input
                   type="email"
                   name="email"
                   placeholder="name@example.com"
-                  className="custom-input"
+                  className="login-custom-input"
                   value={user.email}
                   onChange={handleChange}
                 />
@@ -128,13 +131,13 @@ export default function Login() {
                   Forgot password?
                 </button>
               </div>
-              <div className="input-wrapper">
-                <Lock className="input-icon" />
+              <div className="login-input-wrapper">
+                <Lock className="login-input-icon" />
                 <input
                   type={showPassword ? "text" : "password"} // Dynamic Type
                   name="password"
                   placeholder="••••••••"
-                  className="custom-input pr-12" // Added extra right padding for the eye icon
+                  className="login-custom-input pr-12" // Added extra right padding for the eye icon
                   value={user.password}
                   onChange={handleChange}
                 />
@@ -149,7 +152,17 @@ export default function Login() {
               </div>
             </div>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="login-submit-btn"
+              disabled={loading}
+              style={{
+                backgroundColor: loading ? "#5ea79f" : "#4f9d94",
+                color: "#ffffff",
+                border: "none",
+                opacity: loading ? 0.7 : 1,
+              }}
+            >
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -164,7 +177,7 @@ export default function Login() {
 
           <div className="text-center text-sm text-slate-500">
             Don't have an account?{' '}
-            <button onClick={() => nav("/register")} className="auth-link">
+            <button onClick={() => nav("/register")} className="login-auth-link">
               Sign up
             </button>
           </div>

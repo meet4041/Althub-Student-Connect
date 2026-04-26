@@ -27,13 +27,13 @@ export default function Main() {
                     <div className="nav-inner">
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
                             {/* Ensure you have a logo that fits, or use this text fallback */}
-                            <img src="images/Logo1.jpeg" alt="AltHub" className="h-12 w-100 rounded-lg shadow-sm" />
+                            <img src="images/Logo1.jpeg" alt="AltHub" className="h-12 w-100" />
                             {/* <span className="nav-logo-text">AltHub</span> */}
                         </div>
 
                         <div className="flex items-center gap-4">
                             <button className="btn-nav-login" onClick={() => nav('/login')}>
-                                Log in
+                                Sign In
                             </button>
                             <button className="btn-primary" onClick={() => nav('/register')}>
                                 Get Started
@@ -51,7 +51,7 @@ export default function Main() {
                     <div className="z-10">
                         <div className="hero-badge">
                             <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-                            Connecting DAU
+                            Connecting Students
                         </div>
 
                         <h1 className="hero-title">

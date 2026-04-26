@@ -17,70 +17,103 @@
     @apply absolute rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob;
   }
 
-  .visual-content {
+  .login-visual-content {
     @apply relative z-10 max-w-lg text-center space-y-6;
   }
 
   /* --- Right Side (Form) --- */
   .login-form-side {
-    @apply flex-1 flex flex-col items-center justify-center p-6 sm:p-12 lg:p-24 bg-white relative;
+    @apply flex-1 flex flex-col items-center justify-center overflow-hidden p-6 sm:p-12 lg:p-20 bg-[linear-gradient(180deg,#ffffff_0%,#f8fffd_100%)] relative;
   }
 
-  /* CHANGED: Positioning for the Back Button on the white side */
-  .back-home-btn {
-    @apply absolute top-6 left-6 inline-flex items-center gap-2 p-2 
-    text-slate-500 hover:text-brand-600 hover:bg-slate-50 
-    rounded-lg transition-all duration-200 cursor-pointer;
+  .form-side-glow {
+    @apply absolute rounded-full blur-3xl pointer-events-none;
   }
 
-  .form-container {
-    @apply w-full max-w-md space-y-8;
+  .form-side-glow-top {
+    @apply top-12 right-12 h-48 w-48 bg-brand-100/60;
   }
 
-  .form-header {
-    @apply text-center space-y-2;
+  .form-side-glow-bottom {
+    @apply bottom-12 left-12 h-56 w-56;
+    background-color: rgba(191, 219, 254, 0.5);
   }
 
-  .form-title {
-    @apply text-3xl font-bold tracking-tight text-slate-900;
+  .login-back-home-btn {
+    @apply absolute top-6 left-6 z-20 inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/80 px-3 py-2 text-slate-500 shadow-sm backdrop-blur transition-all duration-200 cursor-pointer hover:border-brand-200 hover:text-brand-600 hover:bg-white;
   }
 
-  .form-subtitle {
-    @apply text-slate-500;
+  .login-form-container {
+    @apply relative z-10 w-full max-w-lg space-y-8 px-8 py-10 sm:px-10;
+  }
+
+  .login-form-header {
+    @apply text-center space-y-3;
+  }
+
+  .login-brand-badge {
+    @apply mb-2 flex w-full items-center justify-center;
+  }
+
+  .login-brand-badge img {
+    @apply shadow-none;
+  }
+
+  .login-brand-logo {
+    @apply h-16 rounded-none;
+  }
+
+  .login-form-kicker {
+    @apply block text-sm font-semibold uppercase tracking-[0.28em] text-brand-600;
+  }
+
+  .login-form-title {
+    @apply text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl;
+  }
+
+  .login-form-subtitle {
+    @apply mx-auto max-w-sm text-base leading-7 text-slate-500;
   }
 
   /* --- Inputs & Buttons --- */
-  .input-group {
-    @apply space-y-5;
+  .login-input-group {
+    @apply space-y-6;
   }
 
-  .input-wrapper {
+  .login-input-wrapper {
     @apply relative;
   }
 
-  .input-icon {
+  .login-input-icon {
     @apply absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 transition-colors duration-200;
   }
 
-  .custom-input {
-    @apply w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400
+  .login-custom-input {
+    @apply w-full pl-12 pr-4 py-4 bg-slate-50/90 border border-slate-200 rounded-2xl outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400
     focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
   }
 
-  .input-wrapper:focus-within .input-icon {
+  .login-input-wrapper:focus-within .login-input-icon {
     @apply text-brand-500;
   }
 
-  .submit-btn {
-    @apply w-full py-3.5 px-6 flex items-center justify-center gap-2 
+  .login-submit-btn {
+    @apply mt-2 w-full py-4 px-6 flex items-center justify-center gap-2 
     bg-brand-600 hover:bg-brand-700 
-    text-white font-bold text-lg rounded-xl 
-    shadow-md hover:shadow-lg transition-all duration-200 
+    text-white font-bold text-lg rounded-2xl 
+    shadow-[0_16px_35px_rgba(13,148,136,0.28)] hover:shadow-[0_20px_40px_rgba(13,148,136,0.34)] transition-all duration-200 
     hover:-translate-y-0.5 active:scale-95 
     disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none;
+    background-color: #0d9488;
+    color: #ffffff;
+    border: none;
   }
 
-  .auth-link {
+  .login-submit-btn:hover {
+    background-color: #0f766e;
+  }
+
+  .login-auth-link {
     @apply font-semibold text-brand-600 hover:text-brand-700 hover:underline transition-colors;
   }
 }
