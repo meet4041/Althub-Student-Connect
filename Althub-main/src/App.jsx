@@ -30,6 +30,11 @@ function App() {
   const [isAuthReady, setIsAuthReady] = useState(false); 
   const nav = useNavigate(); 
 
+  const getCookieValue = (name) => {
+    const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+    return match ? decodeURIComponent(match[2]) : null;
+  };
+
   useLayoutEffect(() => {
     setIsAuthReady(true); 
   }, []);
@@ -37,7 +42,14 @@ function App() {
   useEffect(() => {
     // --- AXIOS INTERCEPTORS ---
     const reqInterceptor = axios.interceptors.request.use(
-      (config) => config,
+      (config) => {
+        const csrfToken = getCookieValue("csrf_token");
+        config.headers = config.headers || {};
+        if (csrfToken) {
+          config.headers["X-CSRF-Token"] = csrfToken;
+        }
+        return config;
+      },
       (error) => Promise.reject(error)
     );
 
@@ -56,7 +68,14 @@ function App() {
             }
         }
 
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        const errorMsg = error.response?.data?.msg || "";
+        const authFailure =
+          error.response?.status === 401 ||
+          (error.response?.status === 403 &&
+            /token|auth|access denied|user not found|forbidden/i.test(errorMsg) &&
+            errorMsg !== "CSRF token invalid or missing");
+
+        if (authFailure) {
             handleSecurityLogout();
         }
         return Promise.reject(error);
