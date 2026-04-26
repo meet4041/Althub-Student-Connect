@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadSingle, uploadFromBuffer, connectToMongo } from '../db/conn.js';
+import { uploadSingle } from '../db/conn.js';
 import * as user_controller from "../controllers/userController.js"; 
 import { requireAuth } from "../middleware/authMiddleware.js";
 
@@ -21,18 +21,8 @@ user_route.put('/deleteProfilePic/:id', requireAuth, user_controller.deleteProfi
 user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);
 user_route.put('/updateProfilePic', requireAuth, uploadSingle('image'), user_controller.updateProfilePic);
 
-// Image Uploads
-user_route.post('/uploadUserImage', requireAuth, uploadSingle('profilepic'), async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).send({ success: false, msg: 'No file provided' });
-        await connectToMongo();
-        const filename = `user-${Date.now()}-${req.file.originalname}`;
-        const fileId = await uploadFromBuffer(req.file.buffer, filename, req.file.mimetype);
-        return res.status(200).send({ success: true, data: { url: `/api/images/${fileId}` } });
-    } catch (err) {
-        return res.status(500).send({ success: false, msg: err.message });
-    }
-});
+// Public during signup, also usable after auth.
+user_route.post('/uploadUserImage', uploadSingle('profilepic'), user_controller.uploadUserImage);
 
 // User Data & Search
 user_route.get('/getUsers', requireAuth, user_controller.getUsers);

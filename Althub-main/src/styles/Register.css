@@ -23,24 +23,40 @@
 
   /* --- Form Side (Right) --- */
   .register-form-side {
-    @apply flex-1 w-full flex flex-col items-center justify-center px-4 py-8 lg:px-16 lg:py-12 bg-white relative;
+    @apply flex-1 w-full flex flex-col items-center justify-start px-4 pt-16 pb-5 lg:px-14 lg:pt-7 lg:pb-5 bg-[linear-gradient(180deg,#ffffff_0%,#fbfffe_100%)] relative overflow-hidden;
   }
 
   .back-home-btn {
-    @apply absolute top-6 left-6 inline-flex items-center gap-2 p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-50 rounded-lg transition-all duration-200 cursor-pointer z-20;
+    @apply absolute top-4 left-4 inline-flex items-center gap-2 p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-50 rounded-lg transition-all duration-200 cursor-pointer z-20;
   }
 
   .form-container {
-    @apply w-full max-w-2xl mt-8;
+    @apply w-full max-w-2xl mt-3 px-4 py-4 sm:px-6;
+  }
+
+  .register-header {
+    @apply text-center mb-5;
+  }
+
+  .register-kicker {
+    @apply inline-flex rounded-full bg-brand-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-brand-700;
   }
 
   .form-title {
-    @apply text-3xl font-bold text-slate-900 mb-2;
+    @apply text-3xl font-bold text-slate-900 mb-1;
+  }
+
+  .register-subtitle {
+    @apply text-slate-500 text-[15px];
+  }
+
+  .register-step-shell {
+    @apply px-2 py-3;
   }
 
   /* --- Custom Stepper --- */
   .stepper-container {
-    @apply flex items-center justify-between relative mb-10 w-full px-2;
+    @apply flex items-center justify-between relative w-full px-2;
   }
 
   .stepper-line-bg {
@@ -52,7 +68,7 @@
   }
 
   .step-item {
-    @apply flex flex-col items-center gap-2 bg-white px-2 cursor-default;
+    @apply flex flex-col items-center gap-1.5 bg-transparent px-1.5 cursor-default;
   }
 
   .step-circle {
@@ -60,7 +76,7 @@
   }
 
   .step-active {
-    @apply border-brand-500 bg-brand-500 text-white shadow-lg shadow-brand-500/30 scale-110;
+    @apply border-brand-500 bg-brand-500 text-white shadow-lg shadow-brand-500/25 scale-110;
   }
 
   .step-completed {
@@ -72,12 +88,16 @@
   }
 
   .step-label {
-    @apply text-xs font-semibold uppercase tracking-wider transition-colors duration-300 hidden sm:block;
+    @apply text-xs font-semibold uppercase tracking-wide transition-colors duration-300 hidden sm:block;
+  }
+
+  .register-form-stage {
+    @apply min-h-[265px] mt-4;
   }
 
   /* --- Inputs --- */
   .input-group {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-5;
+    @apply grid grid-cols-1 md:grid-cols-2 gap-[18px];
   }
 
   .full-width {
@@ -85,7 +105,7 @@
   }
 
   .input-label {
-    @apply block text-sm font-medium text-slate-700 ml-1 mb-1.5;
+    @apply block text-sm font-medium text-slate-700 ml-1 mb-1;
   }
 
   .input-wrapper {
@@ -97,7 +117,7 @@
   }
 
   .custom-input {
-    @apply w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400 text-sm font-medium
+    @apply w-full pl-11 pr-4 py-[13px] bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400 text-sm font-medium
     focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
   }
 
@@ -107,7 +127,7 @@
 
   /* --- Tag Input (Skills/Languages) --- */
   .tag-container {
-    @apply flex flex-wrap gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/10 transition-all min-h-[52px];
+    @apply flex flex-wrap gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/10 transition-all min-h-[48px];
   }
 
   .tag-pill {
@@ -124,7 +144,7 @@
   }
 
   .radio-label {
-    @apply flex items-center gap-3 px-5 py-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-all w-full;
+    @apply flex items-center gap-3 px-4 py-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-all w-full;
   }
 
   .radio-label.selected {
@@ -145,7 +165,7 @@
 
   /* --- Buttons --- */
   .btn-nav {
-    @apply px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center gap-2;
+    @apply px-5 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center gap-2;
   }
 
   .btn-next {
@@ -159,6 +179,14 @@
   /* --- Image Upload --- */
   .upload-area {
     @apply flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-2xl p-8 transition-all hover:border-brand-400 hover:bg-brand-50/30 cursor-pointer group;
+  }
+
+  .register-actions {
+    @apply flex justify-between mt-5 pt-4 border-t border-slate-100;
+  }
+
+  .register-footer {
+    @apply text-center mt-5 text-sm text-slate-500;
   }
 }
 

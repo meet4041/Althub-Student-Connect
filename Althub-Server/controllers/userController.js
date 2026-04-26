@@ -140,6 +140,8 @@ export const registerUser = async (req, res) => {
         const fname = sanitizeInput(req.body.fname);
         const lname = sanitizeInput(req.body.lname);
         const email = sanitizeInput(req.body.email);
+        const institute = sanitizeInput(req.body.institute);
+        const institute_id = req.body.institute_id;
 
         const userData = await User.findOne({ email: email });
 
@@ -147,10 +149,30 @@ export const registerUser = async (req, res) => {
             return res.status(400).send({ success: false, msg: "User already exists" });
         }
 
+        if (!institute_id) {
+            return res.status(400).send({ success: false, msg: "Please select an institute" });
+        }
+
         const spassword = await securePassword(req.body.password);
         const user = new User({
-            fname, lname, email,
-            password: spassword, role: req.body.role,
+            fname,
+            lname,
+            gender: sanitizeInput(req.body.gender),
+            dob: req.body.dob || null,
+            city: sanitizeInput(req.body.city),
+            state: sanitizeInput(req.body.state),
+            nation: sanitizeInput(req.body.country),
+            profilepic: req.body.profilepic || "",
+            phone: sanitizeInput(req.body.phone),
+            email,
+            password: spassword,
+            languages: req.body.languages || "",
+            github: sanitizeInput(req.body.github),
+            portfolioweb: sanitizeInput(req.body.portfolioweb),
+            skills: req.body.skills || "",
+            role: req.body.role || "student",
+            institute,
+            institute_id,
             tokenVersion: 0
         });
 

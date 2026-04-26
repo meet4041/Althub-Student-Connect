@@ -39,20 +39,19 @@ export default function Register() {
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
+  const [profilePreview, setProfilePreview] = useState("");
 
   // Password Visibility States
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Tag Inputs
-  const [langInput, setLangInput] = useState("");
-  const [languages, setLanguages] = useState([]);
   const [skillInput, setSkillInput] = useState("");
   const [skills, setSkills] = useState([]);
 
   const [user, setUser] = useState({
     fname: "", lname: "", gender: "", country: "", dob: "", city: "", state: "", profilepic: "",
-    phone: "", email: "", password: "", cpassword: "", github: "", portfolioweb: "", role: "student", institute: "",
+    phone: "", email: "", password: "", cpassword: "", github: "", portfolioweb: "", role: "student", institute: "", institute_id: "",
   });
 
   const steps = ['Personal', 'Social', 'Details', 'Photo', 'Account'];
@@ -61,6 +60,12 @@ export default function Register() {
     if (localStorage.getItem("Althub_Id")) nav('/home');
     axios.get(`${WEB_URL}/api/getInstitutes`).then((res) => setUniversity(res.data.data));
   }, [nav]);
+
+  useEffect(() => {
+    return () => {
+      if (profilePreview) URL.revokeObjectURL(profilePreview);
+    };
+  }, [profilePreview]);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -71,22 +76,16 @@ export default function Register() {
   const handleTagKeyDown = (e, type) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const val = type === 'lang' ? langInput.trim() : skillInput.trim();
+      const val = skillInput.trim();
       if (!val) return;
 
-      if (type === 'lang') {
-        if (!languages.includes(val)) setLanguages([...languages, val]);
-        setLangInput("");
-      } else {
-        if (!skills.includes(val)) setSkills([...skills, val]);
-        setSkillInput("");
-      }
+      if (!skills.includes(val)) setSkills([...skills, val]);
+      setSkillInput("");
     }
   };
 
   const removeTag = (tag, type) => {
-    if (type === 'lang') setLanguages(languages.filter(t => t !== tag));
-    else setSkills(skills.filter(t => t !== tag));
+    if (type === 'skill') setSkills(skills.filter(t => t !== tag));
   };
 
   const handleImgChange = async (e) => {
@@ -94,6 +93,8 @@ export default function Register() {
     const file = e.target.files[0];
     if (file.size > 3 * 1024 * 1024) return toast.error("Max size 3MB");
 
+    if (profilePreview) URL.revokeObjectURL(profilePreview);
+    setProfilePreview(URL.createObjectURL(file));
     setUploading(true);
     const compressed = await compressImage(file);
     const formData = new FormData();
@@ -125,8 +126,6 @@ export default function Register() {
     }
     if (step === 2) {
       if (!user.institute) errs.institute_err = "Required";
-      if (!languages.length) errs.languages_err = "Add 1 language";
-      if (!skills.length) errs.skills_err = "Add 1 skill";
       if (!user.city) errs.city_err = "Required";
       if (!user.country) errs.country_err = "Required";
     }
@@ -144,7 +143,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateStep(4)) {
-      const body = { ...user, languages: JSON.stringify(languages), skills: JSON.stringify(skills) };
+      const body = { ...user, skills: JSON.stringify(skills) };
       try {
         await axios.post(`${WEB_URL}/api/register`, body, { withCredentials: true });
         toast.success("Welcome aboard!");
@@ -188,21 +187,25 @@ export default function Register() {
             <label className="input-label">Institute</label>
             <div className="input-wrapper">
               <School className="input-icon" />
-              <select name="institute" value={user.institute} onChange={handleChange} className="custom-input appearance-none bg-white">
+              <select
+                name="institute"
+                value={user.institute}
+                onChange={(e) => {
+                  const selected = university.find((u) => u.name === e.target.value);
+                  setUser((prev) => ({
+                    ...prev,
+                    institute: e.target.value,
+                    institute_id: selected?._id || "",
+                  }));
+                  setErrors((prev) => ({ ...prev, institute_err: "" }));
+                }}
+                className="custom-input appearance-none bg-white"
+              >
                 <option value="">Select Institute</option>
                 {university.map(u => <option key={u._id} value={u.name}>{u.name}</option>)}
               </select>
             </div>
             <span className="text-red-500 text-xs">{errors.institute_err}</span>
-          </div>
-
-          <div>
-            <label className="input-label">Languages (Type & Enter)</label>
-            <div className="tag-container">
-              {languages.map(l => <span key={l} className="tag-pill">{l} <X size={14} className="cursor-pointer hover:text-red-600" onClick={() => removeTag(l, 'lang')} /></span>)}
-              <input value={langInput} onChange={e => setLangInput(e.target.value)} onKeyDown={e => handleTagKeyDown(e, 'lang')} className="tag-input" placeholder="Add..." />
-            </div>
-            <span className="text-red-500 text-xs">{errors.languages_err}</span>
           </div>
 
           <div>
@@ -224,8 +227,8 @@ export default function Register() {
       case 3: return (
         <div className="flex flex-col items-center justify-center py-10 animate-fade-in-up">
           <div className="relative">
-            {user.profilepic ? (
-              <img src={`${WEB_URL}${user.profilepic}`} alt="Preview" className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-xl" />
+            {profilePreview ? (
+              <img src={profilePreview} alt="Preview" className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-xl" />
             ) : (
               <div className="w-40 h-40 rounded-full bg-slate-100 flex items-center justify-center border-4 border-dashed border-slate-300">
                 <User className="w-16 h-16 text-slate-300" />
@@ -313,12 +316,16 @@ export default function Register() {
         </button>
 
         <div className="form-container">
-          <div className="text-center mb-8">
-            <h1 className="form-title">Create Account</h1>
-            <p className="text-slate-500">Step {activeStep + 1} of {steps.length}: {steps[activeStep]}</p>
+          <div className="register-header">
+            <span className="register-kicker">Create your profile</span>
+            <h1 className="form-title">Join Althub</h1>
+            <p className="register-subtitle">
+              Step {activeStep + 1} of {steps.length}: {steps[activeStep]}
+            </p>
           </div>
 
           {/* Custom Stepper */}
+          <div className="register-step-shell">
           <div className="stepper-container">
             <div className="stepper-line-bg"></div>
             <div className="stepper-line-fill" style={{ width: `${(activeStep / (steps.length - 1)) * 100}%` }}></div>
@@ -331,14 +338,15 @@ export default function Register() {
               </div>
             ))}
           </div>
+          </div>
 
           {/* Form Content */}
-          <form className="min-h-[300px]">
+          <form className="register-form-stage">
             {renderStep()}
           </form>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-10 pt-6 border-t border-slate-100">
+          <div className="register-actions">
             <button onClick={() => setActiveStep(p => p - 1)} disabled={activeStep === 0} className="btn-nav btn-prev">
               Back
             </button>
@@ -354,8 +362,8 @@ export default function Register() {
             )}
           </div>
 
-          <div className="text-center mt-8 text-sm text-slate-500">
-            Already have an account? <span onClick={() => nav("/login")} className="text-brand-600 font-bold cursor-pointer hover:underline">Log in</span>
+          <div className="register-footer">
+            Already have an account? <span onClick={() => nav("/login")} className="text-brand-600 font-bold cursor-pointer hover:underline">Sign In</span>
           </div>
         </div>
       </div>
