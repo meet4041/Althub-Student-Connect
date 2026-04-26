@@ -284,7 +284,8 @@ export const adminLogin = async (req, res) => {
         return res.status(200).send({
             success: true,
             msg: "Login Successful",
-            data: { ...data }
+            data: { ...data, role: "admin" },
+            token
         });
 
     } catch (error) {

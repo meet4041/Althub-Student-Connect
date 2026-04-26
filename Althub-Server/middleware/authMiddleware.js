@@ -65,9 +65,9 @@ export const requireAuth = async (req, res, next) => {
         const normalizedHeaderToken = headerToken && headerToken !== "null" && headerToken !== "undefined" ? headerToken : null;
         const token =
             normalizedHeaderToken ||
-            req.cookies.institute_token ||
+            req.cookies.jwt_token ||
             req.cookies.admin_token ||
-            req.cookies.jwt_token;
+            req.cookies.institute_token;
 
         if (!token) {
             return res.status(401).json({ success: false, msg: "Access Denied. No token provided." });
@@ -111,9 +111,9 @@ export const requireImageAuth = async (req, res, next) => {
     try {
         const token = 
             req.query.token || // <--- ALLOWED HERE ONLY
-            req.cookies.institute_token || 
-            req.cookies.admin_token || 
             req.cookies.jwt_token ||
+            req.cookies.admin_token || 
+            req.cookies.institute_token || 
             (req.headers["authorization"] && req.headers["authorization"].split(" ")[1]);
 
         const user = await verifyUser(token);

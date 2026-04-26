@@ -64,7 +64,7 @@ institute_route.get('/instituteLogout', requireAuth, requireRole('institute', 'a
 // ==============================
 institute_route.post('/instituteUpdatePassword', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.instituteUpdatePassword);
 institute_route.post('/instituteUpdate', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.updateInstitute);
-institute_route.delete('/deleteInstitute/:id', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.deleteInstitute);
+institute_route.delete('/deleteInstitute/:id', requireAuth, requireRole('admin', 'institute', 'alumni_office', 'placement_cell'), institute_controller.deleteInstitute);
 institute_route.get('/getInstituteById/:_id', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.getInstituteById);
 institute_route.get('/getAlumniOfficeByInstitute/:instituteId', requireAuth, requireRole('institute', 'alumni_office'), institute_controller.getAlumniOfficeByInstitute);
 institute_route.get('/getPlacementCellByInstitute/:instituteId', requireAuth, requireRole('institute', 'placement_cell'), institute_controller.getPlacementCellByInstitute);

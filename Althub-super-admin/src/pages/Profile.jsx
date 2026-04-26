@@ -13,6 +13,14 @@ import '../styles/profile.css';
 const Profile = () => {
     const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
     const navigate = useNavigate();
+    const clearAdminSession = () => {
+        localStorage.removeItem('userDetails');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('AlmaPlus_admin_Id');
+        localStorage.removeItem('AlmaPlus_admin_Name');
+        localStorage.removeItem('AlmaPlus_admin_Pic');
+        localStorage.removeItem('token');
+    };
 
     const [changepass, setChangePass] = useState({
         admin_id: admin_Id || '',
@@ -39,7 +47,10 @@ const Profile = () => {
 
     // FETCHING DATA FROM DATABASE
     const getData = useCallback(() => {
-        if (!admin_Id) return;
+        if (!admin_Id) {
+            navigate('/login', { replace: true });
+            return;
+        }
         
         axiosInstance.get(`/api/getAdminById/${admin_Id}`).then((response) => {
             const raw = response.data?.data;
@@ -59,7 +70,7 @@ const Profile = () => {
             console.error("Profile Fetch Error:", err);
             toast.error("Failed to load profile data");
         });
-    }, [admin_Id]);
+    }, [admin_Id, navigate]);
 
     useEffect(() => {
         // KILL INFINITE LOADER IMMEDIATELY
@@ -105,8 +116,8 @@ const Profile = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
-            toast.error("Invalid file type. Use JPG, PNG, or GIF.");
+        if (!file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            toast.error("Invalid file type. Use JPG, PNG, GIF, or WEBP.");
             return;
         }
 
@@ -127,7 +138,12 @@ const Profile = () => {
     };
 
     const handleChange = (e) => {
-        setChangePass({ ...changepass, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setChangePass({ ...changepass, [name]: value });
+        const errorKey = `${name}_err`;
+        if (errors[errorKey]) {
+            setErrors((prev) => ({ ...prev, [errorKey]: null }));
+        }
     }
 
     const submitHandlerTwo = (e) => {
@@ -142,8 +158,8 @@ const Profile = () => {
                 if (response.data.success === true) {
                     toast.success('Password Updated. Logging out...');
                     setTimeout(() => {
-                        localStorage.clear();
-                        navigate('/');
+                        clearAdminSession();
+                        navigate('/login', { replace: true });
                     }, 2000);
                 } else {
                     setDisable2(false);
@@ -251,7 +267,7 @@ const Profile = () => {
                                                         onChange={handleImageUpload}
                                                         className="profile-file-input"
                                                     />
-                                                    <span className="profile-hint">JPG, PNG, or GIF</span>
+                                                    <span className="profile-hint">JPG, PNG, GIF, or WEBP</span>
                                                 </div>
                                             </div>
                                             <div className="profile-form-group">

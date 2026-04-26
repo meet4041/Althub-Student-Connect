@@ -1,9 +1,8 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import axiosInstance from '../services/axios';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
-import { ALTHUB_API_URL } from '../config/baseURL';
+import { getProtectedImageUrl } from '../config/baseURL';
 
 import '../styles/users.css';
 
@@ -36,6 +35,7 @@ const Users = () => {
     const handleSelectInstitute = (inst) => {
         setLoading(true);
         setSelectedInst(inst);
+        setSearchTerm('');
         axiosInstance.get(`/api/getUsersByInstitute/${inst._id}`)
             .then(res => {
                 const data = res.data.data || [];
@@ -50,7 +50,7 @@ const Users = () => {
 
     const filteredUsers = users.filter(u => 
         `${u.fname} ${u.lname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -69,7 +69,12 @@ const Users = () => {
                             </p>
                         </div>
                         {selectedInst && (
-                            <button className="btn btn-white shadow-sm rounded-pill px-4 btn-sm font-weight-bold" onClick={() => setSelectedInst(null)}>
+                            <button className="btn btn-white shadow-sm rounded-pill px-4 btn-sm font-weight-bold" onClick={() => {
+                                setSelectedInst(null);
+                                setUsers([]);
+                                setSearchTerm('');
+                                setSelectedUser(null);
+                            }}>
                                 <i className="fa fa-exchange-alt mr-2 text-primary"></i> Change Campus
                             </button>
                         )}
@@ -132,7 +137,7 @@ const Users = () => {
                                                 <td>
                                                     <div className="profile-identity">
                                                         <span className="index-number">{index + 1}</span>
-                                                        <img src={user.profilepic ? `${ALTHUB_API_URL}${user.profilepic}` : 'assets/img/profile1.png'} className="profile-squircle" alt="pfp" />
+                                                        <img src={getProtectedImageUrl(user.profilepic)} className="profile-squircle" alt="pfp" />
                                                         <div>
                                                             <div className="profile-name-main">{user.fname} {user.lname}</div>
                                                             <div className="profile-email-sub">{user.email}</div>
@@ -179,7 +184,7 @@ const Users = () => {
                             
                             <div className="modal-content-inner">
                                 <div className="modal-profile-section">
-                                    <img src={selectedUser.profilepic ? `${ALTHUB_API_URL}${selectedUser.profilepic}` : 'assets/img/profile1.png'} className="modal-squircle-lg" alt="profile" />
+                                    <img src={getProtectedImageUrl(selectedUser.profilepic)} className="modal-squircle-lg" alt="profile" />
                                     <div className="ml-4">
                                         <h2 className="modal-user-name">{selectedUser.fname} {selectedUser.lname}</h2>
                                         <span className={`status-pill-modern ${selectedUser.type === 'Student' ? 'pill-blue' : 'pill-amber'}`}>

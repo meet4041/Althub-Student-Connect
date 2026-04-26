@@ -9,11 +9,24 @@ function Menu() {
    const navigate = useNavigate();
    const location = useLocation();
    const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
+   const normalizeAdminName = (name) => {
+      if (!name || name === 'Althub Admin') return 'Althub Super Admin';
+      return name;
+   };
 
    const [admin, setAdmin] = useState({
-      name: localStorage.getItem('AlmaPlus_admin_Name') || 'Super Admin',
+      name: normalizeAdminName(localStorage.getItem('AlmaPlus_admin_Name')),
       profilepic: localStorage.getItem('AlmaPlus_admin_Pic') || ''
    });
+
+   const clearAdminSession = () => {
+      localStorage.removeItem('userDetails');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('AlmaPlus_admin_Id');
+      localStorage.removeItem('AlmaPlus_admin_Name');
+      localStorage.removeItem('AlmaPlus_admin_Pic');
+      localStorage.removeItem('token');
+   };
 
    const Logout = async () => {
       try {
@@ -21,28 +34,31 @@ function Menu() {
       } catch (err) {
          console.error("Logout error", err);
       } finally {
-         localStorage.clear();
-         navigate(`/`);
+         clearAdminSession();
+         navigate('/login', { replace: true });
       }
    }
 
    const getData = useCallback(() => {
       if (!admin_Id) return;
       axiosInstance.get(`/api/getAdminById/${admin_Id}`).then((response) => {
-         if (response.data.success === true && response.data.data?.[0]) {
-            const adminData = response.data.data[0];
+         const raw = response.data?.data;
+         const adminData = Array.isArray(raw) ? raw[0] : raw;
+
+         if (response.data.success === true && adminData) {
+            const adminName = normalizeAdminName(adminData.name);
             setAdmin({
-               name: adminData.name,
-               profilepic: adminData.profilepic,
+               name: adminName,
+               profilepic: adminData.profilepic || '',
             });
-            localStorage.setItem('AlmaPlus_admin_Name', adminData.name);
-            localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic);
+            localStorage.setItem('AlmaPlus_admin_Name', adminName);
+            localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic || '');
          }
       }).catch(err => console.error(err));
    }, [admin_Id]);
 
    useEffect(() => {
-      if (!admin_Id) navigate(`/`);
+      if (!admin_Id) navigate('/login', { replace: true });
       else getData();
    }, [getData, admin_Id, navigate]);
 

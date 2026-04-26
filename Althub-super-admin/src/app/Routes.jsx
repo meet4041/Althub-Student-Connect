@@ -14,9 +14,8 @@ import AuthGuard from '../components/AuthGuard';
 const AppRoutes = () => {
     return (
         <Routes>
-            {/* Public Routes (No Guard) */}
             <Route path='/' element={<Login />} />
-            <Route path='/login' element={<Navigate to='/' replace />} />
+            <Route path='/login' element={<Login />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
             <Route path='/new-password' element={<NewPassword />} />
 
@@ -63,8 +62,7 @@ const AppRoutes = () => {
                 </AuthGuard>
             } />
 
-            <Route path='*' element={<Navigate to='/' replace />} />
-            {/* <Route path='/add-Institute' element={<AddInstitute/>}/> */}
+            <Route path='*' element={<Navigate to='/login' replace />} />
         </Routes>
     )
 }

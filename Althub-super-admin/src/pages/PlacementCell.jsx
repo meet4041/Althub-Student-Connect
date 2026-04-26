@@ -1,5 +1,4 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import axiosInstance from '../services/axios';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
@@ -56,7 +55,7 @@ const PlacementCell = () => {
     }, [searchTerm, data]);
 
     const executeDelete = () => {
-        axiosInstance.delete(`/api/deletePlacementCell/${deleteId}`)
+        axiosInstance.delete(`/api/deleteInstitute/${deleteId}`)
             .then(() => {
                 setShowDeletePrompt(false);
                 setShowSuccessAlert(true);

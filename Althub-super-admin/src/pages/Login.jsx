@@ -24,30 +24,34 @@ const Login = () => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            
-            // Optimization: Use a standard object if your backend is configured for JSON, 
-            // otherwise keep URLSearchParams for compatibility.
-            const bodyFormData = new URLSearchParams();
-            bodyFormData.append('email', loginInfo.email);
-            bodyFormData.append('password', loginInfo.password);
 
-            axiosInstance.post('/api/adminLogin', bodyFormData)
+            axiosInstance.post('/api/adminLogin', {
+                email: loginInfo.email.trim().toLowerCase(),
+                password: loginInfo.password
+            })
                 .then((response) => {
                     if (response.data.success === true) {
                         toast.success('Access Granted!');
                         const adminData = response.data.data;
-                        const serverToken = response.data.token; 
+                        const token = response.data.token;
 
-                        // Consolidate Storage Keys
+                        localStorage.setItem('userDetails', JSON.stringify(adminData));
+                        localStorage.setItem('userRole', adminData.role || 'admin');
                         localStorage.setItem('AlmaPlus_admin_Id', adminData._id);
                         localStorage.setItem('AlmaPlus_admin_Name', adminData.name || 'Admin');
+                        localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic || '');
+                        if (token) {
+                            localStorage.setItem('token', token);
+                        }
 
                         if (check) {
                             localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Enabled');
-                            localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email);
+                            localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email.trim().toLowerCase());
+                        } else {
+                            localStorage.removeItem('AlmaPlus_Admin_Remember_Me');
+                            localStorage.removeItem('AlmaPlus_Admin_Email');
                         }
                         
-                        // Use { replace: true } to prevent the user from going back to login via the back button
                         setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
                     } else {
                         setDisable(false);
@@ -69,12 +73,11 @@ const Login = () => {
     }
 
     useEffect(() => {
-        // Prevent logged-in admins from seeing the login page
-        if (localStorage.getItem("AlmaPlus_admin_Id")) {
+        if (localStorage.getItem('token') && localStorage.getItem('userDetails')) {
             navigate('/dashboard', { replace: true });
+            return;
         }
 
-        // Auto-fill remembered email
         const savedEmail = localStorage.getItem('AlmaPlus_Admin_Email');
         if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled' && savedEmail) {
             setCheck(true);

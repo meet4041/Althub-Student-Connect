@@ -24,6 +24,28 @@ axiosInstance.interceptors.request.use(
     }
 );
 
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            const currentPath = window.location.pathname;
+            const publicPaths = ['/', '/login', '/forgot-password', '/new-password'];
+
+            if (!publicPaths.includes(currentPath)) {
+                localStorage.removeItem('userDetails');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('AlmaPlus_admin_Id');
+                localStorage.removeItem('AlmaPlus_admin_Name');
+                localStorage.removeItem('AlmaPlus_admin_Pic');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 // NEW FUNCTION: Fetch image with auth token and return a Blob URL
 export const fetchSecureImage = async (imagePath) => {
     if (!imagePath) return null;
