@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { WEB_URL } from '../baseURL';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,15 @@ function NewPassword() {
     confirm: ""
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+
+  useEffect(() => {
+    if (!token) {
+      toast.error("Invalid or missing reset token.");
+      nav('/forgot-password');
+    }
+  }, [token, nav]);
 
   const validate = () => {
     let input = password;
@@ -36,7 +44,13 @@ function NewPassword() {
   };
 
   const handleResetPassword = () => {
+    if (!token) {
+      toast.error("Invalid or missing reset token.");
+      return;
+    }
+
     if (validate()) {
+      setLoading(true);
       axios({
         url: `${WEB_URL}/api/userResetPassword?token=${token}`,
         data: {
@@ -48,7 +62,9 @@ function NewPassword() {
         nav('/login');
       }).catch((error) => {
         console.error(error);
-        toast.error("Failed to reset password.");
+        toast.error(error.response?.data?.msg || "Failed to reset password.");
+      }).finally(() => {
+        setLoading(false);
       });
     }
   };
@@ -109,8 +125,8 @@ function NewPassword() {
             {errors.confirm_password_err && <span className="error-msg">{errors.confirm_password_err}</span>}
           </div>
 
-          <button className="reset-btn" onClick={handleResetPassword}>
-            Reset Password
+          <button className="reset-btn" onClick={handleResetPassword} disabled={loading}>
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
         </div>
 

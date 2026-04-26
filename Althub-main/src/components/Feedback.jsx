@@ -40,19 +40,19 @@ export default function Feedback() {
     }, [location.state]);
 
     const handleFeedBack = () => {
-        const userID = localStorage.getItem("Althub_Id");
+        const trimmedFeedback = feedback.trim();
         
         if (!selectedUser) {
             toast.error("Please select a user to review!");
             return;
         }
-        if (!feedback && rate === 0) {
+        if (!trimmedFeedback && rate === 0) {
             toast.error("Please provide a rating or message!");
             return;
         }
 
         const htmlPattern = /<(.|\n)*?>/g;
-        if (htmlPattern.test(feedback)) {
+        if (htmlPattern.test(trimmedFeedback)) {
             toast.error("HTML tags/scripts are not allowed in feedback!");
             return;
         }
@@ -64,9 +64,8 @@ export default function Feedback() {
             method: 'post',
             withCredentials: true,
             data: {
-                userid: userID,
                 selected_user_id: selectedUser.id,
-                message: feedback,
+                message: trimmedFeedback,
                 rate: rate
             }
         }).then((Response) => {

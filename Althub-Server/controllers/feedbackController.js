@@ -37,8 +37,12 @@ const getScopedFeedbackMatch = async (user) => {
  */
 const addFeedback = async (req, res) => {
     try {
-        // 1. Fetch the SENDER (Who is giving the feedback)
-        const sender = await User.findById(req.body.userid);
+        // 1. Use the authenticated sender
+        const sender = req.user;
+        if (!sender?._id) {
+            return res.status(401).send({ success: false, msg: "Unauthorized" });
+        }
+
         const senderName = sender ? `${sender.fname} ${sender.lname}` : "Anonymous";
 
         // 2. Fetch the TARGET (Who the feedback is about)
@@ -73,7 +77,7 @@ const addFeedback = async (req, res) => {
         }
 
         const feedback = new Feedback({
-            userid: req.body.userid,
+            userid: String(sender._id),
             institute_id: instituteId,
             name: senderName,           // Saved: Sender's Full Name
             selected_user_id: target?._id || undefined,

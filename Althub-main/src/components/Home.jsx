@@ -31,9 +31,16 @@ export default function Home({ socket }) {
 
   // CHANGED: Initialized as empty array to store real data
   const [suggestions, setSuggestions] = useState([]);
+  const [filePreviews, setFilePreviews] = useState([]);
 
   const userid = localStorage.getItem("Althub_Id");
   const emptyEducationList = useMemo(() => [], []);
+
+  useEffect(() => {
+    return () => {
+      filePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [filePreviews]);
 
   // Image Compression
   const compressImage = async (file) => {
@@ -116,7 +123,9 @@ export default function Home({ socket }) {
     const files = e.target.files;
     if (files && files.length > 0) {
       if (files[0].size > 20 * 1024 * 1024) return toast.error("File too large");
+      filePreviews.forEach((url) => URL.revokeObjectURL(url));
       setFileList(files);
+      setFilePreviews(Array.from(files).map((file) => URL.createObjectURL(file)));
     }
   };
 
@@ -136,7 +145,12 @@ export default function Home({ socket }) {
     }
     axios.post(`${WEB_URL}/api/addPost`, body, { headers: { "Content-type": "multipart/form-data" }, withCredentials: true })
       .then(() => {
-        toast.success("Posted!"); setFileList(null); setDescription(""); setUploading(false);
+        toast.success("Posted!");
+        filePreviews.forEach((url) => URL.revokeObjectURL(url));
+        setFilePreviews([]);
+        setFileList(null);
+        setDescription("");
+        setUploading(false);
         axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
       })
       .catch(() => { toast.error("Failed"); setUploading(false); });
@@ -163,7 +177,7 @@ export default function Home({ socket }) {
           <div className="profile-mini-card">
             <div className="profile-bg"></div>
             <div className="profile-avatar-wrapper">
-              <img src={user.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} className="profile-avatar" alt="Profile" />
+              <ProtectedImage imgSrc={user.profilepic} defaultImage="images/profile1.png" className="profile-avatar" />
             </div>
             <h3 className="profile-name">{user.fname} {user.lname}</h3>
             <p className="profile-role">{user.designation || "Student"}</p>
@@ -210,7 +224,7 @@ export default function Home({ socket }) {
           {/* Create Post */}
           <div className="create-post-card">
             <div className="cp-top">
-              <img src={user.profilepic ? `${WEB_URL}${user.profilepic}` : "images/profile1.png"} className="cp-avatar" alt="" />
+              <ProtectedImage imgSrc={user.profilepic} defaultImage="images/profile1.png" className="cp-avatar" />
               <input
                 type="text"
                 placeholder={`What's on your mind, ${user.fname}?`}
@@ -224,8 +238,8 @@ export default function Home({ socket }) {
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {Array.from(fileList).map((file, i) => (
                   isVideo(file)
-                    ? <video key={i} src={URL.createObjectURL(file)} className="w-full h-24 object-cover rounded-lg" />
-                    : <img key={i} src={URL.createObjectURL(file)} alt="" className="w-full h-24 object-cover rounded-lg" />
+                    ? <video key={i} src={filePreviews[i]} className="w-full h-24 object-cover rounded-lg" />
+                    : <img key={i} src={filePreviews[i]} alt="" className="w-full h-24 object-cover rounded-lg" />
                 ))}
               </div>
             )}
@@ -245,11 +259,11 @@ export default function Home({ socket }) {
           {post.map((elem) => (
             <div key={elem._id} className="post-card">
               <div className="post-header">
-                <img
-                  src={elem.profilepic ? `${WEB_URL}${elem.profilepic}` : "images/profile1.png"}
+                <ProtectedImage
+                  imgSrc={elem.profilepic}
+                  defaultImage="images/profile1.png"
                   className="w-10 h-10 rounded-full object-cover cursor-pointer border border-slate-100"
                   onClick={() => nav(elem.userid === userid ? "/view-profile" : "/view-search-profile", { state: { id: elem.userid } })}
-                  alt=""
                 />
                 <div className="post-info">
                   <h4 className="post-name">{elem.fname} {elem.lname}</h4>
@@ -298,12 +312,12 @@ export default function Home({ socket }) {
               suggestions.map((person) => (
                 <div key={person._id} className="suggestion-item">
                   <div className="suggestion-info">
-                    <img
-                      src={person.profilepic ? `${WEB_URL}${person.profilepic}` : "images/profile1.png"}
-                      className="suggestion-avatar cursor-pointer"
-                      alt={person.fname}
-                      onClick={() => nav("/view-search-profile", { state: { id: person._id } })}
-                    />
+                      <ProtectedImage
+                        imgSrc={person.profilepic}
+                        defaultImage="images/profile1.png"
+                        className="suggestion-avatar cursor-pointer"
+                        onClick={() => nav("/view-search-profile", { state: { id: person._id } })}
+                      />
                     <div className="suggestion-text">
                       <h4
                         className="cursor-pointer hover:underline"

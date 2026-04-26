@@ -7,13 +7,25 @@ import "../styles/ForgetPassword.css"; // <--- New CSS Import
 
 function ForgetPassword() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
 
   const handleForgotPassword = () => {
-    if (email !== "") {
-      axios({
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
+    axios({
         url: `${WEB_URL}/api/userForgetPassword`,
-        data: { email: email },
+        data: { email: trimmedEmail },
         method: 'post',
       }).then((response) => {
         toast.success(response.data.msg);
@@ -22,10 +34,9 @@ function ForgetPassword() {
       }).catch((error) => {
         console.error(error);
         toast.error("Something went wrong. Please try again.");
+      }).finally(() => {
+        setLoading(false);
       });
-    } else {
-        toast.error("Please enter your email address");
-    }
   };
 
   return (
@@ -65,8 +76,8 @@ function ForgetPassword() {
             <i className="fa-solid fa-envelope input-icon"></i>
           </div>
 
-          <button className="reset-btn" onClick={handleForgotPassword}>
-            Reset Password
+          <button className="reset-btn" onClick={handleForgotPassword} disabled={loading}>
+            {loading ? "Sending..." : "Reset Password"}
           </button>
         </div>
 

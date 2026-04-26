@@ -10,11 +10,11 @@ import "../styles/Events.css"; // <--- Import CSS
 // MUI Imports
 import {
   Container, Grid, Card, CardContent, CardActions, Typography, 
-  Button, Box, Tabs, Tab, IconButton
+  Button, Box, Tabs, Tab
 } from "@mui/material";
 
 import {
-  ArrowBack, CalendarMonth, AccessTime, LocationOn, EventBusy
+  ArrowBack, EventBusy
 } from "@mui/icons-material";
 
 export default function Events() {
@@ -36,16 +36,6 @@ export default function Events() {
   };
 
   useEffect(() => { getEvents(); }, []);
-
-  const formatDate = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    return date.toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" });
-  };
-
-  const formatTime = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", timeZone: "Asia/Kolkata" }).replace(/(\+|-)\d+:\d+/, "");
-  };
 
   // Filter Logic
   useEffect(() => {
@@ -74,7 +64,6 @@ export default function Events() {
             <Typography variant="body1" className="evt-header-subtitle">Discover, Connect, and Experience</Typography>
           </Box>
           <Box className="evt-header-actions" display="flex" alignItems="center">
-            <img src="/images/Events-amico.png" alt="Events" className="evt-header-img" />
             <Button 
                 startIcon={<ArrowBack />} 
                 onClick={() => nav("/home")} 
@@ -121,19 +110,6 @@ export default function Events() {
                     <Typography variant="h6" className="evt-card-title" noWrap title={elem.title}>
                         {elem.title}
                     </Typography>
-                    
-                    <Box className="evt-info-item">
-                        <CalendarMonth className="evt-info-icon" />
-                        <Typography className="evt-info-text">{formatDate(elem.date)}</Typography>
-                    </Box>
-                    <Box className="evt-info-item">
-                        <AccessTime className="evt-info-icon" />
-                        <Typography className="evt-info-text">{formatTime(elem.date)}</Typography>
-                    </Box>
-                    <Box className="evt-info-item">
-                        <LocationOn className="evt-info-icon" />
-                        <Typography className="evt-info-text" title={elem.venue}>{elem.venue}</Typography>
-                    </Box>
                   </CardContent>
 
                   <CardActions className="evt-card-actions">

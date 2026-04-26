@@ -173,8 +173,17 @@ const getUpcommingEvents = async (req, res) => {
 const participateInEvent = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
-        if (!event.participants.includes(req.body.userId)) {
-            await event.updateOne({ $push: { participants: req.body.userId } });
+        if (!event) {
+            return res.status(404).json({ success: false, msg: "Event not found" });
+        }
+
+        const participantId = req.user?._id?.toString();
+        if (!participantId) {
+            return res.status(401).json({ success: false, msg: "Unauthorized" });
+        }
+
+        if (!event.participants.includes(participantId)) {
+            await event.updateOne({ $push: { participants: participantId } });
             res.status(200).json("Participated in this event Successfully");
         } else {
             res.status(403).json("You have been already participated in this event");

@@ -15,9 +15,8 @@ feedback_route.use(cookieParser());
  * FEEDBACK ROUTES
  */
 
-// --- PUBLIC ROUTES ---
-// Allows any registered user/student to submit feedback to a member or the institute
-feedback_route.post('/addFeedback', feedback_controller.addFeedback);
+// Allows authenticated users to submit feedback.
+feedback_route.post('/addFeedback', requireAuth, feedback_controller.addFeedback);
 
 
 // --- SECURE ROUTES (Require Institute/Admin Authentication) ---

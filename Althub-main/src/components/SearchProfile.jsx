@@ -49,7 +49,8 @@ export default function SearchProfile({ socket }) {
 
     axios.post(`${WEB_URL}/api/searchUser`, payload)
       .then((res) => {
-        setShowUsers(res.data.data || []);
+        const users = (res.data.data || []).filter((user) => user._id !== userID);
+        setShowUsers(users);
         setIsSearching(false);
       })
       .catch(() => {

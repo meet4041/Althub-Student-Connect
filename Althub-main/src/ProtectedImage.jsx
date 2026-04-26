@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { WEB_URL } from "./baseURL"; 
 
-const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profile1.png" }) => {
+const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profile1.png", ...props }) => {
   const [currentSrc, setCurrentSrc] = useState(defaultImage);
   const [loading, setLoading] = useState(true);
 
@@ -56,10 +56,10 @@ const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profil
   }, [imgSrc, defaultImage]);
 
   if (loading) {
-      return <img src={defaultImage} alt={alt} className={className} style={{opacity: 0.5}} />;
+      return <img src={defaultImage} alt={alt} className={className} style={{opacity: 0.5}} {...props} />;
   }
 
-  return <img src={currentSrc} alt={alt} className={className} />;
+  return <img src={currentSrc} alt={alt} className={className} {...props} />;
 };
 
 export default ProtectedImage;
