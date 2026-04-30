@@ -144,3 +144,33 @@
     .edit-event-wrapper { margin-left: 0 !important; overflow-y: auto; }
     .edit-event-container { height: auto; }
 }
+
+/* Minimal Althub route polish */
+.edit-event-wrapper {
+    margin-left: 248px !important;
+    padding: 28px 0 40px !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
+}
+
+.edit-event-container {
+    max-width: 1440px !important;
+    padding: 0 28px 36px !important;
+}
+
+.event-form-card {
+    border-radius: 14px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+@media (max-width: 767px) {
+    .edit-event-wrapper {
+        margin-left: 0 !important;
+        padding: 20px 0 24px !important;
+    }
+
+    .edit-event-container {
+        padding: 0 16px 24px !important;
+    }
+}

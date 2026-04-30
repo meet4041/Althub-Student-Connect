@@ -13,7 +13,7 @@ axiosInstance.interceptors.request.use(
         if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
         }
-        const token = localStorage.getItem('token');
+        const token = null;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -32,12 +32,6 @@ axiosInstance.interceptors.response.use(
             const publicPaths = ['/', '/login', '/forgot-password', '/new-password'];
 
             if (!publicPaths.includes(currentPath)) {
-                localStorage.removeItem('userDetails');
-                localStorage.removeItem('userRole');
-                localStorage.removeItem('AlmaPlus_admin_Id');
-                localStorage.removeItem('AlmaPlus_admin_Name');
-                localStorage.removeItem('AlmaPlus_admin_Pic');
-                localStorage.removeItem('token');
                 window.location.href = '/login';
             }
         }

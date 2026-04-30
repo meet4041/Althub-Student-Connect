@@ -12,7 +12,7 @@ export const getProtectedImageUrl = (path) => {
   if (/^https?:\/\//i.test(path)) return path;
 
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const token = localStorage.getItem('token');
+  const token = null;
 
   if (normalizedPath.startsWith('/api/images/') && token) {
     return `${ALTHUB_API_URL}${normalizedPath}?token=${encodeURIComponent(token)}`;

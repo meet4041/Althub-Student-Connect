@@ -1,11 +1,13 @@
+import { useAuth } from '../context/AuthContext';
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
 
 import '../styles/footer.css';
 
 function Footer() {
+    const { user } = useAuth();
     const year = new Date().getFullYear();
-    const userRole = localStorage.getItem('userRole');
+    const userRole = user?.role;
     const portalLabel = userRole === 'alumni_office'
         ? 'Alumni Portal'
         : userRole === 'placement_cell'

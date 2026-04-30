@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -18,13 +19,15 @@ import {
 
 // Sub-component for Chat User Item
 const ChatUserItem = ({ data, currentId, onClick }) => {
+  const { user: authUser, logout } = useAuth();
+
   // Logic to fetch user details for this conversation item (simplified for refactor)
   // Assuming 'data' contains friend details directly or via fetch inside (kept simple here)
   // You might need to fetch the friend's details like in your original ChatUser component.
   // For this refactor, I'll structure it assuming we have the data or fetch it.
 
   const [friend, setFriend] = useState(null);
-  const myId = localStorage.getItem("Althub_Id");
+  const myId = (authUser?._id);
 
   useEffect(() => {
     const friendId = data.members.find((m) => m !== myId);
@@ -58,7 +61,8 @@ const ChatUserItem = ({ data, currentId, onClick }) => {
 };
 
 export default function Message({ socket }) {
-  const userid = localStorage.getItem("Althub_Id");
+  const { user: authUser } = useAuth();
+  const userid = (authUser?._id);
   const [conversations, setConversations] = useState([]);
   const [currentChat, setCurrentChat] = useState(null); // Stores conversation object
   const [messages, setMessages] = useState([]);
@@ -73,9 +77,12 @@ export default function Message({ socket }) {
 
   // --- 1. Initialize & Fetch Conversations ---
   const getConversations = useCallback(() => {
-    axios.get(`${WEB_URL}/api/getConversations/${userid}`).then((res) => {
-      setConversations(res.data.data);
-    });
+    if (!userid) return;
+    axios.get(`${WEB_URL}/api/getConversations/${userid}`)
+      .then((res) => {
+        setConversations(res.data.data);
+      })
+      .catch((err) => console.log('Init Conv Error:', err));
   }, [userid]);
 
   useEffect(() => {
@@ -100,20 +107,19 @@ export default function Message({ socket }) {
 
   // --- 3. Handle Location State (Redirect from Profile) ---
   useEffect(() => {
-    if (location.state) {
+    if (location.state && userid) {
       const friend = location.state;
       setReceiver(friend);
       // Check if conversation exists
-      axios.post(`${WEB_URL}/api/searchConversations`, { person1: userid, person2: friend._id })
+      axios.post(`${WEB_URL}/api/searchConversations`, { person1: userid, person2: friend?._id })
         .then((res) => {
           if (res.data.data.length > 0) {
             setCurrentChat(res.data.data[0]);
           } else {
-            // Create new if strictly needed instantly, or handle as "new chat" UI
-            // For now, let's assume getMessages handles empty state or creates on first message
-            setCurrentChat({ _id: "new", members: [userid, friend._id] });
+            setCurrentChat({ _id: "new", members: [userid, friend?._id] });
           }
-        });
+        })
+        .catch(err => console.log('Location conv fetch error', err));
     }
   }, [location.state, userid]);
 
@@ -121,7 +127,8 @@ export default function Message({ socket }) {
   useEffect(() => {
     if (currentChat && currentChat._id !== "new") {
       axios.get(`${WEB_URL}/api/getMessages/${currentChat._id}`)
-        .then((res) => setMessages(res.data.data));
+        .then((res) => setMessages(res.data.data))
+        .catch((err) => console.log('Message fetch failed', err));
     } else {
       setMessages([]);
     }

@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState, useEffect, useCallback, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,15 +12,13 @@ import Footer from '../layouts/Footer.jsx';
 import '../styles/profile.css';
 
 const Profile = () => {
-    const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
+  const { user, logout } = useAuth();
+  const adminData = user || {};
+
+    const admin_Id = (user?._id);
     const navigate = useNavigate();
     const clearAdminSession = () => {
-        localStorage.removeItem('userDetails');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('AlmaPlus_admin_Id');
-        localStorage.removeItem('AlmaPlus_admin_Name');
-        localStorage.removeItem('AlmaPlus_admin_Pic');
-        localStorage.removeItem('token');
+        logout();
     };
 
     const [changepass, setChangePass] = useState({
@@ -157,10 +156,7 @@ const Profile = () => {
             }).then((response) => {
                 if (response.data.success === true) {
                     toast.success('Password Updated. Logging out...');
-                    setTimeout(() => {
-                        clearAdminSession();
-                        navigate('/login', { replace: true });
-                    }, 2000);
+                    setTimeout(() => clearAdminSession(), 2000);
                 } else {
                     setDisable2(false);
                     toast.error(response.data.msg || 'Update Failed');

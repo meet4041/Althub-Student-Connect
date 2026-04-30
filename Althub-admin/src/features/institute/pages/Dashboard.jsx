@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Dashboard() {
     const navigate = useNavigate();
+    const { user, loading: authLoading } = useAuth();
     const [users, setUsers] = useState(null); 
     const [alumniMembers, setAlumniMembers] = useState(null);
     const [events, setEvents] = useState(null);
@@ -23,8 +25,8 @@ function Dashboard() {
     const [showCsvModal, setShowCsvModal] = useState(false);
     const [csvFile, setCsvFile] = useState(null);
 
-    const themeColors = { primary: '#2563EB' };
-    const userRole = localStorage.getItem('userRole');
+    const themeColors = { primary: '#0d9488' };
+    const userRole = (user?.role);
     const isAlumniOffice = userRole === 'alumni_office';
     const isPlacementOffice = userRole === 'placement_cell';
     const isInstitute = !isAlumniOffice && !isPlacementOffice;
@@ -48,8 +50,10 @@ function Dashboard() {
 
         if (window.App) window.App.init();
 
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
-        const name = localStorage.getItem("AlmaPlus_institute_Name");
+        if (authLoading) return;
+
+        const id = (user?._id);
+        const name = (user?.name || '');
 
         if (!id || !name) {
             navigate('/login');
@@ -59,7 +63,7 @@ function Dashboard() {
         setInstitute_Id(id);
         setInstitute_Name(name);
         setLoading(false);
-    }, [navigate]);
+    }, [authLoading, navigate, user?._id, user?.name]);
     
     useEffect(() => {
         if (institute_Id) {

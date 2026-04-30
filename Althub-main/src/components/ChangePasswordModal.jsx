@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import axios from "axios";
 import React, { useState } from "react";
 import { WEB_URL } from "../baseURL";
@@ -5,6 +6,8 @@ import { toast } from "react-toastify";
 import "../styles/ChangePasswordModal.css"; // <--- Import the new CSS
 
 const ChangePasswordModal = ({ closeModal }) => {
+  const { user: authUser, logout } = useAuth();
+
   const [errors, setErrors] = useState({});
   const [pass, setPass] = useState({ old: "", new: "", confirm: "" });
 
@@ -55,7 +58,7 @@ const ChangePasswordModal = ({ closeModal }) => {
                 toast.success("Password Updated. Logging out...");
                 
                 // Clear only client-side user id; auth token is HttpOnly cookie and will be cleared by server.
-                localStorage.removeItem("Althub_Id");
+                logout();
                 closeModal();
                 
                 setTimeout(() => {

@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
@@ -14,6 +15,8 @@ import {
 import { Close, Edit, Add, School, Delete } from "@mui/icons-material";
 
 const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
+  const { user: authUser, logout } = useAuth();
+
   const [ex, setEx] = useState({
     _id: "",
     institutename: "",
@@ -63,7 +66,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
   const handleSubmit = () => {
     if (!validate()) return;
     
-    const userID = localStorage.getItem("Althub_Id");
+    const userID = (authUser?._id);
 
     // --- LOGIC FOR DEFAULT MONTHS ---
     // Start Year becomes July (Year-07-01)

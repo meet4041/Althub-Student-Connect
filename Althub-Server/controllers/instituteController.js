@@ -299,7 +299,7 @@ const instituteLogin = async (req, res) => {
                 userData.role = normalizedRole;
                 res.status(200).send({ success: true, msg: "Login Successful", data: userData, token });
             } else { res.status(401).send({ success: false, msg: "Invalid credentials" }); }
-        } else { res.status(404).send({ success: false, msg: "Account not found" }); }
+        } else { res.status(400).send({ success: false, msg: "Account not found. Please register first." }); }
     } catch (error) { res.status(500).send({ success: false, msg: "Internal Server Error" }); }
 }
 
@@ -426,6 +426,23 @@ const getInstituteById = async (req, res) => {
 const updateInstitute = async (req, res) => {
     try {
         const { id, name, address, phone, email, website, image, active } = req.body;
+        
+        const actingUserId = req.user._id.toString();
+        const role = req.user.role;
+        if (role !== 'admin') {
+            if (role === 'alumni_office' || role === 'placement_cell') {
+                if (id !== actingUserId) return res.status(403).send({ success: false, msg: "Unauthorized" });
+            } else if (role === 'institute') {
+                if (id !== actingUserId) {
+                    let child = await AlumniOffice.findById(id);
+                    if (!child) child = await PlacementCell.findById(id);
+                    if (!child || child.parent_institute_id?.toString() !== actingUserId) {
+                        return res.status(403).send({ success: false, msg: "Unauthorized" });
+                    }
+                }
+            }
+        }
+
         const updateFields = { address, phone, email, website, active };
 
         if (typeof name !== 'undefined') {
@@ -454,6 +471,23 @@ const updateInstitute = async (req, res) => {
 const deleteInstitute = async (req, res) => {
     try {
         const id = req.params.id;
+        const actingUserId = req.user._id.toString();
+        const role = req.user.role;
+        
+        if (role !== 'admin') {
+            if (role === 'alumni_office' || role === 'placement_cell') {
+                if (id !== actingUserId) return res.status(403).send({ success: false, msg: "Unauthorized" });
+            } else if (role === 'institute') {
+                if (id !== actingUserId) {
+                    let child = await AlumniOffice.findById(id);
+                    if (!child) child = await PlacementCell.findById(id);
+                    if (!child || child.parent_institute_id?.toString() !== actingUserId) {
+                        return res.status(403).send({ success: false, msg: "Unauthorized" });
+                    }
+                }
+            }
+        }
+
         let deleted = await Institute.findByIdAndDelete(id);
         if(!deleted) deleted = await AlumniOffice.findByIdAndDelete(id);
         if(!deleted) deleted = await PlacementCell.findByIdAndDelete(id);

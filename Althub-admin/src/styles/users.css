@@ -395,6 +395,71 @@
 @media (max-width: 767px) {
     .users-content-wrapper {
         margin-left: 0 !important;
-        padding-top: 35px !important;
+        padding-top: 20px !important;
+    }
+
+    .directory-container {
+        padding: 0 16px 24px !important;
+    }
+
+    .toolbar-container {
+        align-items: stretch !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        padding: 16px !important;
+    }
+
+    .search-pill-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .search-input-icon {
+        width: 42px;
+        justify-content: center;
+        padding: 0 !important;
+        border-radius: 10px 0 0 10px !important;
+    }
+
+    .search-input-modern {
+        min-width: 0;
+        border-radius: 0 10px 10px 0 !important;
+        font-size: 13px !important;
+    }
+
+    .toolbar-container > .d-flex {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .rows-select-modern {
+        width: 112px !important;
+    }
+
+    .directory-card .table-responsive {
+        overflow-x: auto;
+    }
+
+    .directory-card table {
+        min-width: 560px;
+    }
+
+    .user-name-text,
+    .user-email-text {
+        max-width: 230px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .table-footer {
+        gap: 12px;
+        text-align: center;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }

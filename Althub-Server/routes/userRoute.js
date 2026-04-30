@@ -2,8 +2,17 @@ import express from "express";
 import { uploadSingle } from '../db/conn.js';
 import * as user_controller from "../controllers/userController.js"; 
 import { requireAuth } from "../middleware/authMiddleware.js";
+import rateLimit from "express-rate-limit";
 
 const user_route = express.Router();
+
+const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 mins
+    max: 10,
+    message: { success: false, msg: "Too many upload requests. Try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // --- PUBLIC ROUTES ---
 user_route.post('/register', user_controller.registerUser);
@@ -15,14 +24,14 @@ user_route.post('/userResetPassword', user_controller.resetpassword);
 user_route.get('/userLogout', user_controller.userLogout);
 
 // --- PROTECTED ROUTES ---
+user_route.get('/auth/me', requireAuth, user_controller.getMyAuth);
 user_route.post('/updatePassword', requireAuth, user_controller.updatePassword);
 user_route.post('/userProfileEdit', requireAuth, user_controller.userProfileEdit);
 user_route.put('/deleteProfilePic/:id', requireAuth, user_controller.deleteProfilePic);
 user_route.delete("/deleteUser/:id", requireAuth, user_controller.deleteUser);
 user_route.put('/updateProfilePic', requireAuth, uploadSingle('image'), user_controller.updateProfilePic);
 
-// Public during signup, also usable after auth.
-user_route.post('/uploadUserImage', uploadSingle('profilepic'), user_controller.uploadUserImage);
+user_route.post('/uploadUserImage', uploadLimiter, uploadSingle('profilepic'), user_controller.uploadUserImage);
 
 // User Data & Search
 user_route.get('/getUsers', requireAuth, user_controller.getUsers);

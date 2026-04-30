@@ -210,3 +210,153 @@
 .sidebar .nav .nav-dropdown.active .nav-dropdown-submenu a.active i {
     color: #2563eb !important;
 }
+
+/* --- Minimal Althub admin shell polish --- */
+#header {
+    height: 64px !important;
+    padding: 0 24px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+}
+
+.navbar-brand b {
+    color: #0f172a !important;
+    font-size: 20px !important;
+    letter-spacing: 0 !important;
+}
+
+.brand-badge {
+    background: #eff6ff !important;
+    color: #2563eb !important;
+    border-color: #dbeafe !important;
+    border-radius: 999px !important;
+    padding: 4px 10px !important;
+}
+
+#sidebar {
+    top: 64px !important;
+    height: calc(100vh - 64px) !important;
+    width: 248px !important;
+    padding: 14px 10px !important;
+    background: #ffffff !important;
+    border-right: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+}
+
+.sidebar-bg {
+    width: 248px !important;
+    background: #ffffff !important;
+    border-right: 1px solid #e5e7eb !important;
+}
+
+.sidebar .nav li a {
+    min-height: 42px;
+    margin: 2px 0 !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    color: #475569 !important;
+    font-size: 14px !important;
+    font-weight: 650 !important;
+    letter-spacing: 0 !important;
+}
+
+.sidebar .nav li a i {
+    width: 20px !important;
+    margin-right: 12px !important;
+    font-size: 15px !important;
+    color: #94a3b8 !important;
+}
+
+.sidebar .nav li.active > a {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    box-shadow: none !important;
+}
+
+.sidebar .nav li.active > a i {
+    color: #2563eb !important;
+    transform: none !important;
+}
+
+.sidebar .nav li a:hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+}
+
+.sidebar .nav .nav-dropdown-submenu {
+    margin: 4px 0 6px 32px !important;
+    background: transparent !important;
+    border-left: 1px solid #e2e8f0;
+    border-radius: 0 !important;
+}
+
+.sidebar .nav .nav-dropdown-submenu a {
+    min-height: 36px;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
+
+.navbar-user img {
+    width: 34px !important;
+    height: 34px !important;
+    box-shadow: 0 0 0 1px #e2e8f0 !important;
+}
+
+.navbar-user span {
+    color: #334155 !important;
+    font-size: 13px !important;
+    font-weight: 650 !important;
+}
+
+.dropdown-menu-modern {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10) !important;
+}
+
+#page-container,
+body {
+    background: #f8fafc !important;
+}
+
+@media (max-width: 767px) {
+    #header {
+        height: 62px !important;
+        padding: 0 14px !important;
+    }
+
+    .navbar-brand-link {
+        min-width: 0;
+    }
+
+    .navbar-brand b {
+        font-size: 18px !important;
+    }
+
+    .brand-badge {
+        max-width: 170px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 9px !important;
+        padding: 4px 8px !important;
+        margin-left: 8px !important;
+    }
+
+    #sidebar,
+    .sidebar-bg {
+        display: none !important;
+    }
+
+    .navbar-right-group {
+        flex-shrink: 0;
+    }
+
+    .navbar-user span,
+    .navbar-caret {
+        display: none !important;
+    }
+}

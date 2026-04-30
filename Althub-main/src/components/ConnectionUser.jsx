@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState, useCallback } from "react";
 import { WEB_URL } from "../baseURL";
 import axios from "axios";
@@ -7,9 +8,11 @@ import "../styles/ConnectionUser.css"; // <--- New CSS Import
 
 function ConnectionUser({ userid, type, getUser, isOwner }) {
   const [user, setUser] = useState({});
-  const myid = localStorage.getItem("Althub_Id");
+  const myid = (authUser?._id);
   const nav = useNavigate(); 
   const logError = (error) => {
+  const { user: authUser, logout } = useAuth();
+
     if (import.meta.env.DEV) {
       console.error(error);
     }

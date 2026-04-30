@@ -4,14 +4,13 @@ import axios from "axios";
 import { WEB_URL } from "../baseURL";
 import { toast } from "react-toastify";
 import ProtectedImage from "../ProtectedImage";
-import {
-  Home, FileText, Search, MessageSquare, Bell, Gift, MessageCircle, Menu, X, LogOut, User
-} from "lucide-react";
+import { Home, FileText, Search, MessageSquare, Bell, Gift, MessageCircle, Menu, X, LogOut, User } from "lucide-react";
 import "../styles/Navbar.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar({ socket }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState({});
+  const { user, logout } = useAuth();
   const [showNavbar, setShowNavbar] = useState(true);
 
   // Notification State
@@ -21,24 +20,12 @@ export default function Navbar({ socket }) {
   const nav = useNavigate();
   const { pathname } = useLocation();
 
-  const getUser = useCallback(() => {
-    const id = localStorage.getItem("Althub_Id");
-    if (!id) { setUser({}); return; }
-    axios.get(`${WEB_URL}/api/searchUserById/${id}`).then((res) => {
-      if (res.data?.data) setUser(res.data.data[0]);
-    }).catch(console.error);
-  }, []);
-
   const handleLogout = () => {
-    localStorage.clear();
-    setUser({});
-    nav("/");
+    logout();
     setMobileOpen(false);
   };
 
   useEffect(() => {
-    getUser();
-
     const hiddenRoutes = ["/register", "/login", "/", "/forgot-password", "/forget-password", "/new-password"];
     setShowNavbar(!hiddenRoutes.includes(pathname));
 
@@ -46,8 +33,7 @@ export default function Navbar({ socket }) {
       Notification.requestPermission();
     }
 
-    if (socket) {
-      socket.emit("addUser", localStorage.getItem("Althub_Id"));
+    if (socket && user?._id) {
 
       const handleMessage = () => { if (pathname !== "/message") setHasMsg(true); };
 
@@ -72,7 +58,7 @@ export default function Navbar({ socket }) {
         socket.off("getNotification", handleNotification);
       };
     }
-  }, [pathname, socket, getUser, nav]);
+  }, [pathname, socket, user?._id, nav]);
 
   useEffect(() => {
     if (pathname === "/message") setHasMsg(false);
@@ -138,7 +124,7 @@ export default function Navbar({ socket }) {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
-              <span className="nav-username">{user.fname || "User"}</span>
+              <span className="nav-username">{user?.fname || "User"}</span>
             </div>
 
             {/* Mobile Toggle */}
@@ -169,7 +155,7 @@ export default function Navbar({ socket }) {
               />
             </div>
             <div>
-              <p className="font-bold text-slate-800 text-lg leading-tight">{user.fname} {user.lname}</p>
+              <p className="font-bold text-slate-800 text-lg leading-tight">{user?.fname || "User"} {user?.lname || ""}</p>
               <p className="text-xs text-slate-500 font-medium">View Profile</p>
             </div>
           </div>

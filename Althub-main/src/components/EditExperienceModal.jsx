@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
@@ -15,6 +16,8 @@ import {
 } from "@mui/icons-material";
 
 const EditExperienceModal = ({ closeModal, experience, getExperience, modal }) => {
+  const { user: authUser, logout } = useAuth();
+
   const [ex, setEx] = useState({
     _id: "",
     companyname: "",
@@ -97,7 +100,7 @@ const [uploading, setUploading] = useState(false);
 
   const handleSubmit = () => {
     if (!validate()) return;
-    const userID = localStorage.getItem("Althub_Id");
+    const userID = (authUser?._id);
     const payload = {
       userid: userID,
       _id: ex._id || "",

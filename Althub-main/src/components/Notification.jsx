@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -11,11 +12,13 @@ import {
 import "../styles/Notification.css"; 
 
 export default function Notification() {
+  const { user: authUser, logout } = useAuth();
+
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null); // Tracks which ID to delete
   const nav = useNavigate();
-  const userid = localStorage.getItem("Althub_Id");
+  const userid = (authUser?._id);
 
   const getNotifications = () => {
     axios.post(`${WEB_URL}/api/getnotifications`, { userid })

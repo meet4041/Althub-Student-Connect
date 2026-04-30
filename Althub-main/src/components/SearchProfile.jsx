@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
@@ -11,6 +12,8 @@ import {
 import "../styles/SearchProfile.css"; // Ensure path matches your file
 
 export default function SearchProfile({ socket }) {
+  const { user: authUser, logout } = useAuth();
+
   const [name, setName] = useState("");
   const [showUsers, setShowUsers] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -26,7 +29,7 @@ export default function SearchProfile({ socket }) {
   const [degree, setDegree] = useState("");
   const [year, setYear] = useState("");
 
-  const userID = localStorage.getItem("Althub_Id");
+  const userID = (authUser?._id);
   const [self, setSelf] = useState({});
 
   useEffect(() => {

@@ -1,0 +1,379 @@
+/* Althub green and white theme override */
+:root {
+    --primary-blue: #0d9488;
+    --primary-blue-light: #ecfdf5;
+    --brand-blue: #0d9488;
+    --brand-navy: #12372f;
+    --brand-light-blue: #ccfbf1;
+
+    --institute-primary: #0d9488;
+    --institute-primary-dark: #0f766e;
+    --institute-id-bg: #ecfdf5;
+    --institute-id-text: #0f766e;
+
+    --admin-shell-bg: #f6faf8;
+    --admin-surface: #ffffff;
+    --admin-surface-muted: #f8fffd;
+    --admin-border: #dce9e4;
+    --admin-border-strong: #b7d8ce;
+    --admin-text: #10231f;
+    --admin-muted: #60736d;
+    --admin-faint: #8aa09a;
+    --admin-blue: #0d9488;
+    --admin-blue-dark: #0f766e;
+    --admin-blue-soft: #ecfdf5;
+    --admin-green: #66bd9e;
+    --admin-green-dark: #479378;
+    --admin-shadow: 0 1px 2px rgba(16, 35, 31, 0.05);
+    --admin-shadow-hover: 0 14px 34px rgba(13, 148, 136, 0.12);
+}
+
+html,
+body,
+#root,
+#page-container {
+    background: var(--admin-shell-bg) !important;
+    color: var(--admin-text) !important;
+}
+
+#header {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border-bottom-color: var(--admin-border) !important;
+}
+
+.navbar-brand,
+.navbar-brand b {
+    color: var(--admin-text) !important;
+}
+
+.brand-badge,
+.institute-badge {
+    background: var(--admin-blue-soft) !important;
+    color: var(--admin-blue-dark) !important;
+    border-color: #ccfbf1 !important;
+}
+
+#sidebar,
+.sidebar-bg {
+    background: #ffffff !important;
+    border-right-color: var(--admin-border) !important;
+}
+
+.sidebar .nav li a {
+    color: #526861 !important;
+}
+
+.sidebar .nav li a i {
+    color: #8aa09a !important;
+}
+
+.sidebar .nav li.active > a,
+.sidebar .nav .nav-dropdown.active .nav-dropdown-submenu a.active {
+    background: var(--admin-blue-soft) !important;
+    color: var(--admin-blue-dark) !important;
+}
+
+.sidebar .nav li.active > a i,
+.sidebar .nav li a:hover i,
+.sidebar .nav .nav-dropdown.active .nav-dropdown-submenu a.active i {
+    color: var(--admin-blue) !important;
+}
+
+.sidebar .nav li a:hover,
+.sidebar .nav .nav-dropdown-submenu a:hover {
+    background: #f2fbf8 !important;
+    color: var(--admin-text) !important;
+}
+
+.sidebar .nav .nav-dropdown-submenu {
+    border-left-color: var(--admin-border) !important;
+}
+
+.dashboard-content,
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper,
+.add-post-wrapper,
+.alumni-content-wrapper {
+    background:
+        linear-gradient(180deg, #ffffff 0, #f8fffd 180px, var(--admin-shell-bg) 520px) !important;
+}
+
+.institute-page-title,
+.dashboard-header-h1,
+.events-title,
+.users-header,
+.alumni-header,
+.posts-header,
+.feedback-container .page-header,
+.profile-main-container .page-header,
+.edit-event-title {
+    color: var(--admin-text) !important;
+}
+
+.institute-page-subtitle,
+.dashboard-content .text-muted.small,
+.events-header .text-muted.small,
+.feedback-container .text-muted.small,
+.profile-main-container .text-muted.small,
+.edit-event-container .text-muted.small,
+.posts-container .text-muted.small,
+.alumni-subtitle {
+    color: var(--admin-muted) !important;
+}
+
+a,
+.dashboard-breadcrumb-link,
+.posts-breadcrumb-link,
+.institute-page-breadcrumb .breadcrumb-item a,
+.breadcrumb-item a {
+    color: var(--admin-blue-dark) !important;
+}
+
+.settings-layout-box,
+.event-form-card,
+.post-form-card,
+.alumni-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card,
+.institute-page-card,
+.card.border-0,
+.stat-card-modern,
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.dashboard-csv-bar {
+    border-color: var(--admin-border) !important;
+    box-shadow: var(--admin-shadow) !important;
+}
+
+.stat-card-modern:hover,
+.events-card:hover,
+.alumni-card:hover {
+    border-color: var(--admin-border-strong) !important;
+    box-shadow: var(--admin-shadow-hover) !important;
+}
+
+.table thead th,
+.events-table thead th,
+.users-th,
+.posts-table th,
+.feedback-table th,
+.post-main-card thead th,
+.feedback-main-card thead th,
+.directory-card thead th {
+    background: var(--admin-surface-muted) !important;
+    color: var(--admin-muted) !important;
+    border-bottom-color: var(--admin-border) !important;
+}
+
+.table td,
+.table th {
+    border-color: #edf5f2 !important;
+}
+
+.table-user-row:hover,
+.post-row:hover,
+.feedback-row:hover,
+.events-table tbody tr:hover {
+    background: #f5fcfa !important;
+}
+
+.btn-primary,
+.btn-events-create,
+.posts-create-btn,
+.dashboard-csv-btn,
+.edit-event-save-btn,
+.institute-edit-post .edit-event-save-btn,
+.post-footer-actions .btn-primary,
+.form-footer-sticky .btn-primary,
+.alumni-add-btn,
+.events-modal-btn.primary {
+    background: var(--admin-blue) !important;
+    border-color: var(--admin-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(13, 148, 136, 0.18) !important;
+}
+
+.btn-primary:hover,
+.btn-events-create:hover,
+.posts-create-btn:hover,
+.dashboard-csv-btn:hover,
+.edit-event-save-btn:hover,
+.institute-edit-post .edit-event-save-btn:hover,
+.post-footer-actions .btn-primary:hover,
+.form-footer-sticky .btn-primary:hover,
+.alumni-add-btn:hover,
+.events-modal-btn.primary:hover {
+    background: var(--admin-blue-dark) !important;
+    border-color: var(--admin-blue-dark) !important;
+    box-shadow: 0 10px 24px rgba(13, 148, 136, 0.22) !important;
+}
+
+.btn-primary:focus,
+.btn-primary.focus,
+.btn-events-create:focus,
+.posts-create-btn:focus,
+.dashboard-csv-btn:focus,
+.edit-event-save-btn:focus,
+.post-footer-actions .btn-primary:focus,
+.form-footer-sticky .btn-primary:focus {
+    background: var(--admin-blue) !important;
+    border-color: var(--admin-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18), 0 8px 18px rgba(13, 148, 136, 0.16) !important;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-events-create:active,
+.posts-create-btn:active,
+.dashboard-csv-btn:active,
+.dashboard-csv-btn.active,
+.dashboard-csv-btn:not(:disabled):not(.disabled):active,
+.edit-event-save-btn:active,
+.post-footer-actions .btn-primary:active,
+.form-footer-sticky .btn-primary:active {
+    background: #0b6f68 !important;
+    border-color: #0b6f68 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.20) !important;
+    transform: translateY(1px) !important;
+}
+
+.btn-light,
+.btn-white,
+.edit-event-back-btn,
+.post-form-card .btn-light,
+.edit-event-container .btn-light {
+    border-color: var(--admin-border) !important;
+    color: #28443d !important;
+}
+
+.btn-light:hover,
+.btn-white:hover,
+.edit-event-back-btn:hover {
+    background: #f5fcfa !important;
+    color: var(--admin-blue-dark) !important;
+}
+
+.search-input-modern,
+.posts-search-input,
+.events-search-input,
+.feedback-container input.form-control.border-0.bg-light,
+.search-pill-container .form-control,
+.posts-search-group .form-control,
+.form-control,
+.form-control-modern,
+.form-control-saas,
+.custom-select,
+select,
+textarea {
+    border-color: var(--admin-border) !important;
+    color: var(--admin-text) !important;
+}
+
+.form-control:focus,
+.form-control-modern:focus,
+.form-control-saas:focus,
+.custom-select:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--admin-blue) !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12) !important;
+}
+
+.input-group-text.bg-light,
+.posts-search-icon,
+.search-input-icon {
+    border-color: var(--admin-border) !important;
+    color: var(--admin-faint) !important;
+}
+
+.feedback-id-badge,
+.post-id-badge,
+.id-badge-soft,
+.events-table-num,
+.users-content-wrapper .badge.bg-light,
+.feedback-container .badge.bg-light,
+.post-date-badge,
+.events-filter-tab.active,
+.events-view-btn.active,
+.alumni-filter-btn.active,
+.settings-nav-link.active {
+    background: var(--admin-blue-soft) !important;
+    color: var(--admin-blue-dark) !important;
+    border-color: #ccfbf1 !important;
+}
+
+.settings-nav-link.active {
+    box-shadow: inset 4px 0 0 var(--admin-blue) !important;
+}
+
+.pagination-btn,
+.posts-page-btn,
+.events-page-btn,
+.feedback-container .page-link {
+    border-color: var(--admin-border) !important;
+    color: var(--admin-muted) !important;
+}
+
+.pagination-btn-active,
+.posts-page-btn.active,
+.events-page-btn.active,
+.feedback-container .page-item.active .page-link {
+    background: var(--admin-blue) !important;
+    border-color: var(--admin-blue) !important;
+    color: #ffffff !important;
+}
+
+.stat-card-modern .stats-icon,
+.stat-card-modern .stats-link a,
+.events-stat-icon,
+.events-title-icon,
+.alumni-card-icon,
+.users-header-icon,
+.post-action-edit,
+.text-primary {
+    color: var(--admin-blue) !important;
+}
+
+.stat-card-modern .stats-link,
+.avatar-master-wrapper,
+.info-box-light,
+.post-upload-zone,
+.upload-drop-zone,
+.settings-nav-sidebar {
+    background: var(--admin-surface-muted) !important;
+    border-color: var(--admin-border) !important;
+}
+
+.post-action-edit:hover {
+    background: var(--admin-blue-soft) !important;
+    border-color: #99f6e4 !important;
+}
+
+.post-action-delete:hover {
+    background: #fff1f2 !important;
+    border-color: #fecdd3 !important;
+}
+
+.modal-backdrop-custom,
+.csv-modal-backdrop {
+    background: rgba(18, 55, 47, 0.48) !important;
+}
+
+.app-footer {
+    border-top-color: var(--admin-border) !important;
+    color: var(--admin-muted) !important;
+}
+
+#page-loader .spinner {
+    border-top-color: var(--admin-blue) !important;
+}

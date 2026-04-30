@@ -13,13 +13,15 @@ import {
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/HomePage.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home({ socket }) {
   const settings = { dots: true, infinite: false, speed: 500, slidesToShow: 1, slidesToScroll: 1, arrows: false };
   const nav = useNavigate();
+  const { user, logout } = useAuth();
+  const userid = user?._id;
 
   // State
-  const [user, setUser] = useState({});
   const [post, setPost] = useState([]);
   const [description, setDescription] = useState("");
   const [events, setEvents] = useState([]);
@@ -29,11 +31,8 @@ export default function Home({ socket }) {
   const [hasEducation, setHasEducation] = useState(true);
   const [showEduModal, setShowEduModal] = useState(false);
 
-  // CHANGED: Initialized as empty array to store real data
   const [suggestions, setSuggestions] = useState([]);
   const [filePreviews, setFilePreviews] = useState([]);
-
-  const userid = localStorage.getItem("Althub_Id");
   const emptyEducationList = useMemo(() => [], []);
 
   useEffect(() => {
@@ -76,10 +75,6 @@ export default function Home({ socket }) {
     return false;
   };
 
-  const getUser = useCallback(() => {
-    if (userid) axios.get(`${WEB_URL}/api/searchUserById/${userid}`, { withCredentials: true }).then((res) => { if (res.data?.data) setUser(res.data.data[0]); });
-  }, [userid]);
-
   const checkEducation = useCallback(() => {
     if (userid) axios.post(`${WEB_URL}/api/getEducation`, { userid }).then((res) => setHasEducation(res.data.data?.length > 0));
   }, [userid]);
@@ -106,11 +101,10 @@ export default function Home({ socket }) {
   }, [userid, user.followings]); // Re-run if user followings change
 
   useEffect(() => {
-    getUser();
     checkEducation();
     axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
     axios.get(`${WEB_URL}/api/getEvents`).then((res) => setEvents(res.data.data));
-  }, [getUser, checkEducation]);
+  }, [checkEducation]);
 
   // CHANGED: Fetch suggestions only after we have user data (to know who we follow)
   useEffect(() => {
@@ -205,7 +199,7 @@ export default function Home({ socket }) {
             <div onClick={() => nav("/search-profile")} className="menu-item"><Users size={20} /> Search Alumni</div>
             <div onClick={() => nav("/events")} className="menu-item"><Calendar size={20} /> Events</div>
             <div onClick={() => nav("/feedback")} className="menu-item"><MessageSquare size={20} /> Feedback</div>
-            <div onClick={() => { localStorage.clear(); nav("/"); }} className="menu-item menu-item-logout"><LogOut size={20} /> Logout</div>
+            <div onClick={() => logout()} className="menu-item menu-item-logout"><LogOut size={20} /> Logout</div>
           </div>
         </div>
 

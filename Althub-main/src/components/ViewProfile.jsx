@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
@@ -18,6 +19,8 @@ import ChangePasswordModal from "./ChangePasswordModal";
 import FollowerModal from "./FollowerModal";
 
 export default function ViewProfile() {
+  const { user: authUser, logout } = useAuth();
+
     const nav = useNavigate();
     const [user, setUser] = useState({});
     const [language, setLanguage] = useState([]);
@@ -39,7 +42,7 @@ export default function ViewProfile() {
 
     const [modalType, setModalType] = useState(""); 
     const [followerTab, setFollowerTab] = useState("Follower");
-    const userID = localStorage.getItem("Althub_Id");
+    const userID = (authUser?._id);
 
     // --- Click Outside Listener ---
     useEffect(() => {
@@ -86,7 +89,7 @@ export default function ViewProfile() {
     const handleDeleteAccount = () => {
         if (window.confirm("Are you sure? This cannot be undone.")) {
             axios.delete(`${WEB_URL}/api/deleteUser/${userID}`, { withCredentials: true }).then(() => {
-                toast.success("Account Deleted"); localStorage.clear(); nav("/");
+                toast.success("Account Deleted"); logout(); nav("/");
             });
         }
     };

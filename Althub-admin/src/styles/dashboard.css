@@ -34,7 +34,7 @@
 }
 
 .dashboard-breadcrumb-link {
-    color: #2563eb;
+    color: #0f766e;
     font-weight: 600;
     text-decoration: none;
 }
@@ -46,18 +46,20 @@
 .institute-badge {
     margin-top: -20px;
     margin-right: 5px;
-    background-color: #2563eb;
+    background-color: #ecfdf5;
+    color: #0f766e !important;
     font-size: 13px;
     font-weight: 600;
     padding: 10px 16px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    box-shadow: none;
+    border: 1px solid #ccfbf1;
 }
 
 /* --- Stat Cards --- */
 .stat-card-modern {
     border-radius: 16px !important;
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    background: linear-gradient(135deg, #0d9488 0%, #479378 100%) !important;
     border: none !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
@@ -65,7 +67,7 @@
 
 .stat-card-modern:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.3) !important;
+    box-shadow: 0 12px 20px -5px rgba(13, 148, 136, 0.24) !important;
 }
 
 .stat-card-modern .stats-link {
@@ -82,18 +84,18 @@
 .security-alert-modern {
     border-radius: 12px !important;
     background: #ffffff !important;
-    border-left: 5px solid #2563eb !important;
+    border-left: 5px solid #0d9488 !important;
 }
 
 .security-icon-circle {
     width: 45px;
     height: 45px;
-    background-color: #2563eb;
+    background-color: #0d9488;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2);
 }
 
 .dashboard-csv-btn {
@@ -180,4 +182,197 @@
     justify-content: flex-end;
     gap: 10px;
     margin-top: 16px;
+}
+
+/* Final dashboard polish overrides, loaded with the dashboard page */
+.dashboard-content {
+    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
+    margin-left: 248px !important;
+    padding-top: 28px !important;
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+}
+
+.dashboard-csv-bar {
+    align-items: center !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    padding: 14px 16px !important;
+}
+
+.dashboard-csv-btn {
+    min-width: 132px;
+    height: 40px;
+    border-radius: 10px !important;
+    background: #0d9488 !important;
+    border: 1px solid #0d9488 !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(13, 148, 136, 0.18) !important;
+    white-space: nowrap;
+}
+
+.dashboard-csv-btn:hover {
+    background: #0f766e !important;
+    border-color: #0f766e !important;
+    color: #ffffff !important;
+}
+
+.stat-card-modern.widget.widget-stats {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    overflow: hidden;
+}
+
+.stat-card-modern.widget.widget-stats .stats-info h4 {
+    color: #64748b !important;
+    font-size: 12px !important;
+    letter-spacing: 0.04em !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-info p {
+    color: #0f172a !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-icon {
+    color: #0d9488 !important;
+    opacity: 0.14 !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-link {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-link a {
+    color: #0f766e !important;
+    font-weight: 700 !important;
+}
+
+/* Green dashboard consistency override */
+.dashboard-content {
+    background: linear-gradient(180deg, #ffffff 0, #f8fffd 220px, #f6faf8 520px) !important;
+}
+
+.dashboard-csv-bar,
+.security-alert-modern,
+.stat-card-modern.widget.widget-stats {
+    border-color: #dce9e4 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(16, 35, 31, 0.05) !important;
+}
+
+.dashboard-csv-text,
+.security-alert-modern h6 {
+    color: #10231f !important;
+}
+
+.dashboard-csv-btn {
+    height: 40px !important;
+    border-radius: 10px !important;
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(13, 148, 136, 0.18) !important;
+}
+
+.dashboard-csv-btn:hover {
+    background: #0f766e !important;
+    border-color: #0f766e !important;
+}
+
+.dashboard-csv-btn:focus,
+.dashboard-csv-btn.focus {
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18), 0 8px 18px rgba(13, 148, 136, 0.16) !important;
+}
+
+.dashboard-csv-btn:active,
+.dashboard-csv-btn.active,
+.dashboard-csv-btn:not(:disabled):not(.disabled):active {
+    background: #0b6f68 !important;
+    border-color: #0b6f68 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.20) !important;
+    transform: translateY(1px) !important;
+}
+
+.stat-card-modern.widget.widget-stats {
+    background: #ffffff !important;
+}
+
+.stat-card-modern.widget.widget-stats:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 14px 34px rgba(13, 148, 136, 0.12) !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-icon {
+    color: #0d9488 !important;
+    opacity: 0.14 !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-info h4 {
+    color: #60736d !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-info p {
+    color: #10231f !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-link {
+    background: #f8fffd !important;
+    border-top: 1px solid #dce9e4 !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-link a {
+    color: #0f766e !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-link a:hover,
+.stat-card-modern.widget.widget-stats .stats-link a:focus {
+    color: #0b6f68 !important;
+    text-decoration: none !important;
+}
+
+.stat-card-modern.widget.widget-stats .stats-link a:active {
+    color: #075e58 !important;
+}
+
+.security-alert-modern {
+    background: #ffffff !important;
+    border-left: 4px solid #0d9488 !important;
+}
+
+.security-icon-circle {
+    width: 42px;
+    height: 42px;
+    background: #0d9488 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 18px rgba(13, 148, 136, 0.16) !important;
+}
+
+@media (max-width: 767px) {
+    .dashboard-content {
+        margin-left: 0 !important;
+        padding-top: 20px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    .dashboard-csv-bar {
+        align-items: stretch !important;
+        flex-direction: column;
+    }
+
+    .dashboard-csv-btn {
+        width: 100%;
+        min-width: 0;
+    }
 }

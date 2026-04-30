@@ -1,16 +1,16 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-
-const isAuthenticated = () => {
-    const adminId = localStorage.getItem('AlmaPlus_admin_Id');
-    const userDetails = localStorage.getItem('userDetails');
-    const token = localStorage.getItem('token');
-    return !!(adminId && userDetails && token);
-};
+import { useAuth } from '../context/AuthContext';
 
 const AuthGuard = ({ children }) => {
     const location = useLocation();
-    if (!isAuthenticated()) {
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return null;
+    }
+
+    if (!(user?._id && user.role === 'admin')) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
@@ -18,4 +18,3 @@ const AuthGuard = ({ children }) => {
 };
 
 export default AuthGuard;
-export { isAuthenticated };

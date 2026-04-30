@@ -18,7 +18,7 @@ instance.interceptors.request.use(
         if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
         }
-        const token = localStorage.getItem('token');
+        const token = null;
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -37,11 +37,11 @@ instance.interceptors.response.use(
             const currentPath = window.location.pathname;
             const publicPaths = ['/login', '/register', '/forgot-password', '/new-password', '/'];
             if (!publicPaths.includes(currentPath)) {
-                localStorage.removeItem('userDetails');
-                localStorage.removeItem('userRole');
-                localStorage.removeItem('AlmaPlus_institute_Id');
-                localStorage.removeItem('AlmaPlus_institute_Name');
-                localStorage.removeItem('token');
+                /* localStorage cleared globally by Interceptor */;
+                /* localStorage cleared globally by Interceptor */;
+                /* localStorage cleared globally by Interceptor */;
+                /* localStorage cleared globally by Interceptor */;
+                /* localStorage cleared globally by Interceptor */;
                 window.location.href = '/login';
             }
         }

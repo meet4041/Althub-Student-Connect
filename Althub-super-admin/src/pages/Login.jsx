@@ -3,11 +3,13 @@ import axiosInstance from '../services/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 import '../styles/login.css'; 
 
 const Login = () => {
     const navigate = useNavigate();
+    const { user, loginSync } = useAuth();
     const [loginInfo, setLoginInfo] = useState({ email: '', password: '' });
     const [check, setCheck] = useState(false);
     const [errors, setErrors] = useState({});
@@ -33,16 +35,9 @@ const Login = () => {
                     if (response.data.success === true) {
                         toast.success('Access Granted!');
                         const adminData = response.data.data;
-                        const token = response.data.token;
-
-                        localStorage.setItem('userDetails', JSON.stringify(adminData));
-                        localStorage.setItem('userRole', adminData.role || 'admin');
-                        localStorage.setItem('AlmaPlus_admin_Id', adminData._id);
-                        localStorage.setItem('AlmaPlus_admin_Name', adminData.name || 'Admin');
-                        localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic || '');
-                        if (token) {
-                            localStorage.setItem('token', token);
-                        }
+                        
+                        // Sync state directly into memory bypassing insecure endpoints
+                        loginSync(adminData);
 
                         if (check) {
                             localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Enabled');
@@ -73,7 +68,7 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (localStorage.getItem('token') && localStorage.getItem('userDetails')) {
+        if (user?._id && user.role === 'admin') {
             navigate('/dashboard', { replace: true });
             return;
         }
@@ -83,7 +78,7 @@ const Login = () => {
             setCheck(true);
             setLoginInfo(prev => ({ ...prev, email: savedEmail }));
         }
-    }, [navigate]);
+    }, [navigate, user]);
 
     return (
         <Fragment>

@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,9 @@ import Footer from '../../../layouts/Footer.jsx';
 import '../../../styles/profile.css';
 
 const Profile = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const navigate = useNavigate();
     const [institute_Id, setInstitute_Id] = useState(null);
     const [activeTab, setActiveTab] = useState('general');
@@ -37,13 +41,7 @@ const Profile = () => {
     const [disable2, setDisable2] = useState(false);
 
     const clearInstituteSession = () => {
-        localStorage.removeItem('userDetails');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('AlmaPlus_institute_Id');
-        localStorage.removeItem('AlmaPlus_institute_Name');
-        localStorage.removeItem('token');
-        localStorage.removeItem('althub_remembered_email');
-        localStorage.removeItem('althub_remember_me_status');
+        logout();
     };
 
     const getData = (id) => {
@@ -73,7 +71,7 @@ const Profile = () => {
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
         
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        const id = (user?._id);
         if (id) {
             setInstitute_Id(id);
             getData(id);
@@ -139,10 +137,7 @@ const Profile = () => {
                     } catch (error) {
                         console.error('Logout after password update failed:', error);
                     }
-                    setTimeout(() => {
-                        clearInstituteSession();
-                        navigate('/login', { replace: true });
-                    }, 2000);
+                    setTimeout(() => clearInstituteSession(), 2000);
                 } else {
                     setDisable2(false);
                     toast.error(response.data.msg || 'Update Failed');

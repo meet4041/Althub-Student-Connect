@@ -2,13 +2,17 @@ import Markup from './app/Routes.jsx';
 import React from "react";
 import './App.css';
 import './styles/institute-layout.css';
+import './styles/althub-green-theme.css';
 
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Markup />
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+         <Markup />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

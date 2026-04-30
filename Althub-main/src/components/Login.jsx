@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { Mail, Lock, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react"; // Added Eye icons
+import { Eye, EyeOff, Loader2, Lock, Mail, ArrowLeft } from "lucide-react"; 
 import { WEB_URL } from "../baseURL";
-import "../styles/Login.css"; // Ensure this points to your correct CSS file
+import "../styles/Login.css"; 
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const nav = useNavigate();
@@ -13,13 +14,14 @@ export default function Login() {
   // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
 
+  const { user: authUser, loginSync } = useAuth();
   const [user, setUser] = useState({ email: "", password: "" });
 
   useEffect(() => {
-    if (localStorage.getItem("Althub_Id")) {
+    if (authUser) {
       nav('/home');
     }
-  }, [nav]);
+  }, [authUser, nav]);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -51,7 +53,7 @@ export default function Login() {
         withCredentials: true
       }).then((response) => {
         toast.success("Welcome back!");
-        localStorage.setItem("Althub_Id", response.data.data._id);
+        loginSync(response.data.data);
         setUser({ email: "", password: "" });
         setTimeout(() => nav("/home"), 1000);
       }).catch((err) => {

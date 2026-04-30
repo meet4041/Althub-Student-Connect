@@ -31,7 +31,9 @@
 .feedback-content-wrapper,
 .posts-content-wrapper,
 .profile-content-wrapper,
-.edit-event-wrapper {
+.edit-event-wrapper,
+.add-post-wrapper,
+.alumni-content-wrapper {
     background: var(--institute-page-bg) !important;
     margin-left: var(--institute-page-offset-x) !important;
     margin-top: 0 !important;
@@ -61,7 +63,9 @@
 .posts-container,
 .profile-main-container,
 .edit-event-container,
-.leaderboard-container {
+.leaderboard-container,
+.add-post-container,
+.alumni-container {
     padding-top: 0 !important;
     padding-left: var(--institute-page-side-gap) !important;
     padding-right: var(--institute-page-side-gap) !important;
@@ -520,5 +524,1010 @@
 
     .institute-page-actions {
         width: 100%;
+    }
+}
+
+/* --- Althub minimal admin refinement layer --- */
+:root {
+    --institute-page-bg: #f8fafc;
+    --institute-page-offset-x: 248px;
+    --institute-page-top-gap: 28px;
+    --institute-page-side-gap: 28px;
+    --institute-page-bottom-gap: 36px;
+    --institute-section-gap: 20px;
+    --institute-page-title-size: 22px;
+    --institute-page-title-color: #0f172a;
+    --institute-page-subtitle-color: #64748b;
+    --institute-page-card-radius: 14px;
+    --institute-page-card-border: #e2e8f0;
+    --institute-primary: #2563eb;
+    --institute-primary-dark: #1d4ed8;
+    --institute-soft-bg: #f8fafc;
+    --institute-soft-border: #e2e8f0;
+    --institute-soft-text: #64748b;
+    --institute-id-bg: #eff6ff;
+    --institute-id-text: #2563eb;
+    --institute-btn-height: 40px;
+    --institute-btn-radius: 10px;
+}
+
+.dashboard-content,
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper {
+    background:
+        linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
+    margin-left: var(--institute-page-offset-x) !important;
+    padding-top: var(--institute-page-top-gap) !important;
+}
+
+.dashboard-content,
+.events-container,
+.directory-container,
+.feedback-container,
+.posts-container,
+.profile-main-container,
+.edit-event-container,
+.leaderboard-container {
+    padding-left: var(--institute-page-side-gap) !important;
+    padding-right: var(--institute-page-side-gap) !important;
+}
+
+.institute-page-header,
+.dashboard-content > .d-sm-flex.align-items-center.justify-content-between.mb-4.mt-2,
+.directory-container > .d-flex.align-items-center.justify-content-between.mb-4,
+.posts-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.feedback-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.edit-event-container > .d-flex.align-items-center.justify-content-between.mb-3,
+.profile-main-container > .mb-4,
+.leaderboard-container > .d-sm-flex.align-items-center.justify-content-between.mb-4 {
+    align-items: flex-end !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+}
+
+.institute-page-title,
+.dashboard-header-h1,
+.events-title,
+.users-header,
+.posts-header,
+.feedback-container .page-header,
+.profile-main-container .page-header,
+.edit-event-title {
+    color: #0f172a !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+}
+
+.institute-page-subtitle,
+.dashboard-content .text-muted.small,
+.events-header .text-muted.small,
+.feedback-container .text-muted.small,
+.profile-main-container .text-muted.small,
+.edit-event-container .text-muted.small,
+.posts-container .text-muted.small {
+    color: #64748b !important;
+    font-size: 13px !important;
+}
+
+.breadcrumb,
+.dashboard-breadcrumb,
+.users-breadcrumb {
+    font-size: 12px !important;
+}
+
+.institute-badge {
+    background: #eff6ff !important;
+    color: #2563eb !important;
+    border: 1px solid #dbeafe !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    padding: 8px 12px !important;
+}
+
+.settings-layout-box,
+.event-form-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card,
+.csv-modal,
+.modal-content-premium,
+.card,
+.widget,
+.panel {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.dashboard-csv-bar,
+.feedback-container .card-body > .p-4.d-flex,
+.feedback-container .card-body > .p-4.d-flex.flex-wrap {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
+    box-shadow: none !important;
+}
+
+.table,
+.events-table,
+.posts-table,
+.feedback-table {
+    margin-bottom: 0 !important;
+    color: #334155 !important;
+}
+
+.table thead th,
+.events-table thead th,
+.users-th,
+.posts-table th,
+.feedback-table th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.table td,
+.table th,
+.events-table td,
+.events-table th,
+.posts-table td,
+.feedback-table td {
+    vertical-align: middle !important;
+    border-color: #f1f5f9 !important;
+}
+
+.table-user-row:hover,
+.post-row:hover,
+.feedback-row:hover,
+.events-table tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+.search-input-modern,
+.posts-search-input,
+.events-search-input,
+.feedback-container input.form-control.border-0.bg-light,
+.search-pill-container .form-control,
+.posts-search-group .form-control,
+.form-control,
+.custom-select,
+select {
+    min-height: 40px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+}
+
+.form-control:focus,
+.custom-select:focus,
+select:focus {
+    border-color: #93c5fd !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+.input-group-text.bg-light,
+.posts-search-icon,
+.search-input-icon {
+    border-color: #e2e8f0 !important;
+    background: #ffffff !important;
+}
+
+.btn-events-create,
+.posts-create-btn,
+.dashboard-csv-btn,
+.edit-event-save-btn,
+.institute-edit-post .edit-event-save-btn,
+.post-footer-actions .btn-primary,
+.form-footer-sticky .btn-primary,
+.btn-primary {
+    background: #2563eb !important;
+    border: 1px solid #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.16) !important;
+    border-radius: 10px !important;
+    font-weight: 750 !important;
+}
+
+.btn-events-create:hover,
+.posts-create-btn:hover,
+.dashboard-csv-btn:hover,
+.edit-event-save-btn:hover,
+.institute-edit-post .edit-event-save-btn:hover,
+.post-footer-actions .btn-primary:hover,
+.form-footer-sticky .btn-primary:hover,
+.btn-primary:hover {
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+    transform: translateY(-1px);
+}
+
+.btn-light,
+.btn-white,
+.edit-event-back-btn,
+.post-form-card .btn-light,
+.edit-event-container .btn-light {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    font-weight: 700 !important;
+}
+
+.btn-light:hover,
+.btn-white:hover,
+.edit-event-back-btn:hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+}
+
+.stat-card-modern {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    transform: none !important;
+}
+
+.stat-card-modern:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+.stat-card-modern .stats-info h4,
+.stat-card-modern .stats-info p,
+.stat-card-modern .stats-link a {
+    color: #0f172a !important;
+}
+
+.stat-card-modern .stats-info h4 {
+    color: #64748b !important;
+    font-size: 12px !important;
+    letter-spacing: 0.04em !important;
+}
+
+.stat-card-modern .stats-info p {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+}
+
+.stat-card-modern .stats-icon {
+    color: #2563eb !important;
+    opacity: 0.14 !important;
+}
+
+.stat-card-modern .stats-link {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+
+.stat-card-modern .stats-link a {
+    color: #2563eb !important;
+    font-weight: 700 !important;
+}
+
+.events-stat-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+}
+
+.feedback-id-badge,
+.post-id-badge,
+.id-badge-soft,
+.events-table-num,
+.users-content-wrapper .badge.bg-light,
+.feedback-container .badge.bg-light {
+    background: #eff6ff !important;
+    color: #2563eb !important;
+    border: 1px solid #dbeafe !important;
+    border-radius: 999px !important;
+}
+
+.pagination-btn,
+.posts-page-btn,
+.events-page-btn,
+.feedback-container .page-link {
+    min-width: 36px;
+    height: 36px;
+    border-radius: 10px !important;
+}
+
+.user-avatar-img,
+.post-media-preview,
+.events-table-thumb {
+    border-radius: 10px !important;
+}
+
+.modal-backdrop-custom,
+.csv-modal-backdrop {
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+.modal-content-premium,
+.csv-modal {
+    border-radius: 16px !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18) !important;
+}
+
+@media (max-width: 767px) {
+    :root {
+        --institute-page-top-gap: 20px;
+        --institute-page-side-gap: 16px;
+    }
+
+    .dashboard-content,
+    .events-content-wrapper,
+    .users-content-wrapper,
+    .feedback-content-wrapper,
+    .posts-content-wrapper,
+    .profile-content-wrapper,
+    .edit-event-wrapper,
+    .add-post-wrapper,
+    .alumni-content-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
+/* --- Full admin route consistency pass --- */
+.events-content-wrapper,
+.posts-content-wrapper,
+.feedback-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper,
+.add-post-wrapper,
+.alumni-content-wrapper,
+.users-content-wrapper,
+.dashboard-content {
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-left: 248px !important;
+    padding-top: 28px !important;
+    padding-bottom: 40px !important;
+}
+
+.events-container,
+.posts-container,
+.feedback-container,
+.profile-main-container,
+.edit-event-container,
+.add-post-container,
+.alumni-container,
+.directory-container,
+.leaderboard-container {
+    width: 100% !important;
+    max-width: 1440px !important;
+    margin: 0 auto !important;
+    padding: 0 28px 36px !important;
+}
+
+.profile-main-container,
+.feedback-container {
+    height: auto !important;
+    min-height: auto !important;
+    display: block !important;
+}
+
+.profile-main-container {
+    margin-left: auto !important;
+    margin-top: 0 !important;
+}
+
+.settings-layout-box,
+.event-form-card,
+.post-form-card,
+.alumni-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card {
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.settings-layout-box,
+.event-form-card,
+.post-form-card {
+    min-height: auto !important;
+}
+
+.settings-detail-content,
+.form-body-scroll,
+.post-body-scroll,
+.feedback-scroll-area,
+.posts-scroll-area,
+.events-content-area {
+    overflow: visible !important;
+}
+
+.settings-detail-content,
+.form-body-scroll,
+.post-body-scroll {
+    padding: 24px !important;
+}
+
+.settings-nav-sidebar {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+}
+
+.avatar-master-wrapper,
+.info-box-light,
+.post-upload-zone,
+.upload-drop-zone {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+}
+
+.post-upload-zone,
+.upload-drop-zone {
+    border-style: dashed !important;
+}
+
+.events-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+    gap: 18px !important;
+    padding: 20px !important;
+}
+
+.events-card {
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+.events-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+.events-stats-strip {
+    gap: 14px !important;
+    margin: 18px 0 !important;
+}
+
+.events-stat-card {
+    min-width: 0 !important;
+    flex: 1 1 180px;
+    padding: 16px !important;
+}
+
+.events-search-input,
+.events-filter-tab,
+.events-view-btn {
+    min-height: 40px !important;
+}
+
+.events-view-btn {
+    min-width: 42px !important;
+}
+
+.events-filter-tabs,
+.events-view-toggle {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+}
+
+.events-modal,
+.csv-modal,
+.modal-content-premium {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+}
+
+.alumni-shell-header,
+.events-header {
+    align-items: flex-end !important;
+}
+
+.alumni-header,
+.events-title {
+    color: #0f172a !important;
+    font-size: 22px !important;
+    letter-spacing: 0 !important;
+}
+
+.alumni-add-btn {
+    min-height: 40px !important;
+    border-radius: 10px !important;
+    background: #2563eb !important;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.16) !important;
+}
+
+.form-footer-sticky,
+.post-footer-actions {
+    position: static !important;
+    padding: 14px 20px !important;
+    background: #ffffff !important;
+}
+
+.form-control-modern,
+.form-control-saas,
+textarea.form-control-modern,
+textarea.form-control-saas {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    color: #0f172a !important;
+}
+
+textarea.form-control-modern,
+textarea.form-control-saas {
+    min-height: 140px !important;
+}
+
+@media (max-width: 991px) {
+    .settings-layout-box {
+        flex-direction: column !important;
+    }
+
+    .settings-nav-sidebar {
+        width: 100% !important;
+        display: flex !important;
+        overflow-x: auto;
+        padding: 8px !important;
+    }
+
+    .settings-nav-link {
+        border-radius: 10px !important;
+        white-space: nowrap;
+        margin: 0 !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .events-content-wrapper,
+    .posts-content-wrapper,
+    .feedback-content-wrapper,
+    .profile-content-wrapper,
+    .edit-event-wrapper,
+    .add-post-wrapper,
+    .alumni-content-wrapper,
+    .users-content-wrapper,
+    .dashboard-content {
+        margin-left: 0 !important;
+        padding-top: 20px !important;
+        padding-bottom: 24px !important;
+    }
+
+    .events-container,
+    .posts-container,
+    .feedback-container,
+    .profile-main-container,
+    .edit-event-container,
+    .add-post-container,
+    .alumni-container,
+    .directory-container,
+    .leaderboard-container {
+        padding: 0 16px 24px !important;
+        max-width: none !important;
+    }
+
+    .events-header,
+    .alumni-shell-header,
+    .institute-page-header {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    .events-toolbar,
+    .posts-toolbar,
+    .alumni-toolbar {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    .events-search-wrap,
+    .events-search-input,
+    .posts-search-group {
+        min-width: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    .events-filter-tabs,
+    .events-view-toggle,
+    .events-pagination-controls {
+        width: 100%;
+        justify-content: space-between;
+        overflow-x: auto;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr !important;
+        padding: 16px !important;
+    }
+
+    .events-pagination,
+    .posts-table-footer,
+    .table-footer {
+        align-items: center !important;
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    .settings-detail-content,
+    .form-body-scroll,
+    .post-body-scroll {
+        padding: 18px !important;
+    }
+
+    .avatar-master-wrapper {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+
+    .avatar-large-circle {
+        margin-right: 0 !important;
+    }
+}
+
+/* --- Althub admin redesign layer --- */
+:root {
+    --admin-shell-bg: #f6f8fb;
+    --admin-surface: #ffffff;
+    --admin-surface-muted: #f8fafc;
+    --admin-border: #e5e7eb;
+    --admin-border-strong: #dbe3ef;
+    --admin-text: #0f172a;
+    --admin-muted: #64748b;
+    --admin-faint: #94a3b8;
+    --admin-blue: #2563eb;
+    --admin-blue-dark: #1d4ed8;
+    --admin-blue-soft: #eff6ff;
+    --admin-radius: 12px;
+    --admin-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --admin-shadow-hover: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+html,
+body,
+#root,
+#page-container {
+    background: var(--admin-shell-bg) !important;
+    color: var(--admin-text);
+}
+
+.dashboard-content,
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper,
+.add-post-wrapper,
+.alumni-content-wrapper {
+    background:
+        linear-gradient(180deg, #ffffff 0, #f8fafc 180px, var(--admin-shell-bg) 520px) !important;
+}
+
+.events-container,
+.posts-container,
+.feedback-container,
+.profile-main-container,
+.edit-event-container,
+.add-post-container,
+.alumni-container,
+.directory-container,
+.leaderboard-container,
+.dashboard-content {
+    max-width: 1360px !important;
+}
+
+.institute-page-header,
+.dashboard-content > .d-sm-flex.align-items-center.justify-content-between.mb-4.mt-2,
+.directory-container > .d-flex.align-items-center.justify-content-between.mb-4,
+.posts-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.feedback-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.edit-event-container > .d-flex.align-items-center.justify-content-between.mb-3,
+.profile-main-container > .mb-4,
+.leaderboard-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.events-header,
+.alumni-shell-header {
+    padding-bottom: 2px !important;
+    border-bottom: none !important;
+}
+
+.institute-page-title,
+.dashboard-header-h1,
+.events-title,
+.users-header,
+.alumni-header,
+.posts-header,
+.feedback-container .page-header,
+.profile-main-container .page-header,
+.edit-event-title {
+    color: var(--admin-text) !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+}
+
+.institute-page-subtitle,
+.dashboard-content .text-muted.small,
+.events-header .text-muted.small,
+.feedback-container .text-muted.small,
+.profile-main-container .text-muted.small,
+.edit-event-container .text-muted.small,
+.posts-container .text-muted.small,
+.alumni-subtitle {
+    color: var(--admin-muted) !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+.breadcrumb,
+.institute-page-breadcrumb,
+.dashboard-breadcrumb,
+.users-breadcrumb,
+.posts-breadcrumb {
+    font-size: 12px !important;
+    font-weight: 650 !important;
+}
+
+.settings-layout-box,
+.event-form-card,
+.post-form-card,
+.alumni-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card,
+.institute-page-card,
+.card.border-0,
+.stat-card-modern,
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.dashboard-csv-bar {
+    background: var(--admin-surface) !important;
+    border: 1px solid var(--admin-border) !important;
+    border-radius: var(--admin-radius) !important;
+    box-shadow: var(--admin-shadow) !important;
+}
+
+.stat-card-modern,
+.events-card,
+.alumni-card,
+.post-main-card,
+.events-content-card,
+.feedback-main-card,
+.directory-card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.stat-card-modern:hover,
+.events-card:hover,
+.alumni-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: var(--admin-border-strong) !important;
+    box-shadow: var(--admin-shadow-hover) !important;
+}
+
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.feedback-container .card-body > .p-4.d-flex,
+.feedback-container .card-body > .p-4.d-flex.flex-wrap,
+.dashboard-csv-bar {
+    padding: 16px !important;
+    gap: 12px !important;
+    border-bottom: 1px solid var(--admin-border) !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-top: 0 !important;
+    border-radius: 0 !important;
+}
+
+.table thead th,
+.events-table thead th,
+.users-th,
+.posts-table th,
+.feedback-table th,
+.post-main-card thead th,
+.feedback-main-card thead th,
+.directory-card thead th {
+    background: var(--admin-surface-muted) !important;
+    color: var(--admin-muted) !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid var(--admin-border) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+}
+
+.table td,
+.table th {
+    border-color: #eef2f7 !important;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+.table-user-row,
+.post-row,
+.feedback-row,
+.events-table tbody tr {
+    transition: background 0.16s ease;
+}
+
+.table-user-row:hover,
+.post-row:hover,
+.feedback-row:hover,
+.events-table tbody tr:hover {
+    background: #f8fbff !important;
+}
+
+.btn,
+.btn-primary,
+.btn-light,
+.custom-select,
+.form-control,
+select,
+textarea {
+    border-radius: 10px !important;
+}
+
+.btn-primary,
+.btn-events-create,
+.posts-create-btn,
+.dashboard-csv-btn,
+.edit-event-save-btn,
+.institute-edit-post .edit-event-save-btn,
+.post-footer-actions .btn-primary,
+.form-footer-sticky .btn-primary {
+    min-height: 40px !important;
+    background: var(--admin-blue) !important;
+    border-color: var(--admin-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.14) !important;
+}
+
+.btn-primary:hover,
+.btn-events-create:hover,
+.posts-create-btn:hover,
+.dashboard-csv-btn:hover,
+.edit-event-save-btn:hover,
+.institute-edit-post .edit-event-save-btn:hover,
+.post-footer-actions .btn-primary:hover,
+.form-footer-sticky .btn-primary:hover {
+    background: var(--admin-blue-dark) !important;
+    border-color: var(--admin-blue-dark) !important;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18) !important;
+}
+
+.btn-light,
+.btn-white,
+.edit-event-back-btn,
+.post-form-card .btn-light,
+.edit-event-container .btn-light {
+    background: #ffffff !important;
+    border: 1px solid var(--admin-border) !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+}
+
+.search-input-modern,
+.posts-search-input,
+.events-search-input,
+.feedback-container input.form-control.border-0.bg-light,
+.search-pill-container .form-control,
+.posts-search-group .form-control,
+.form-control,
+.custom-select,
+select {
+    background: #ffffff !important;
+    border: 1px solid var(--admin-border) !important;
+    color: var(--admin-text) !important;
+    box-shadow: none !important;
+}
+
+.input-group-text.bg-light,
+.posts-search-icon,
+.search-input-icon {
+    background: #ffffff !important;
+    border-color: var(--admin-border) !important;
+    color: var(--admin-faint) !important;
+}
+
+.feedback-id-badge,
+.post-id-badge,
+.id-badge-soft,
+.events-table-num,
+.users-content-wrapper .badge.bg-light,
+.feedback-container .badge.bg-light {
+    background: var(--admin-blue-soft) !important;
+    color: var(--admin-blue) !important;
+    border: 1px solid #dbeafe !important;
+}
+
+.pagination-btn,
+.posts-page-btn,
+.events-page-btn,
+.feedback-container .page-link {
+    background: #ffffff !important;
+    border: 1px solid var(--admin-border) !important;
+    color: var(--admin-muted) !important;
+    box-shadow: none !important;
+}
+
+.pagination-btn-active,
+.posts-page-btn.active,
+.events-page-btn.active,
+.feedback-container .page-item.active .page-link {
+    background: var(--admin-blue) !important;
+    border-color: var(--admin-blue) !important;
+    color: #ffffff !important;
+}
+
+.table-footer,
+.posts-table-footer,
+.feedback-container .card-body > .p-4.bg-white,
+.events-pagination,
+.form-footer-sticky,
+.post-footer-actions {
+    background: #ffffff !important;
+    border-top: 1px solid var(--admin-border) !important;
+}
+
+.form-body-scroll,
+.post-body-scroll,
+.settings-detail-content {
+    background: #ffffff !important;
+}
+
+.avatar-master-wrapper,
+.info-box-light,
+.post-upload-zone,
+.upload-drop-zone {
+    background: var(--admin-surface-muted) !important;
+    border-color: var(--admin-border) !important;
+}
+
+@media (max-width: 767px) {
+    .institute-page-title,
+    .dashboard-header-h1,
+    .events-title,
+    .users-header,
+    .alumni-header,
+    .posts-header,
+    .feedback-container .page-header,
+    .profile-main-container .page-header,
+    .edit-event-title {
+        font-size: 22px !important;
+    }
+
+    .toolbar-container,
+    .posts-toolbar,
+    .events-toolbar,
+    .feedback-container .card-body > .p-4.d-flex,
+    .feedback-container .card-body > .p-4.d-flex.flex-wrap,
+    .dashboard-csv-bar {
+        padding: 14px !important;
     }
 }

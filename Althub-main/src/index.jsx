@@ -4,6 +4,7 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css'; 
+import { AuthProvider } from './context/AuthContext';
 
 // --- MUI Imports ---
 import { ThemeProvider } from '@mui/material/styles';
@@ -19,8 +20,10 @@ root.render(
     <ThemeProvider theme={theme}>
       {/* CssBaseline kicksstart an elegant, consistent, and simple baseline to build upon. */}
       <CssBaseline />
-      <BrowserRouter>
-        <App />
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>

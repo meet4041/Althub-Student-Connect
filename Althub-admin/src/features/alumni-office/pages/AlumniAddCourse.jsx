@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../service/axios';
@@ -11,6 +12,9 @@ import '../../../styles/alumni-pages.css';
 import '../../../styles/add-post.css';
 
 const AlumniAddCourse = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [stream, setStream] = useState('');
@@ -38,7 +42,7 @@ const AlumniAddCourse = () => {
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
 
-        const instituteid = localStorage.getItem("AlmaPlus_institute_Id");
+        const instituteid = (user?._id);
         if (!instituteid) {
             toast.error("Institute not found. Please log in again.");
             return;

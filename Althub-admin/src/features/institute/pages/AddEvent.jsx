@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -11,6 +12,9 @@ import Footer from '../../../layouts/Footer.jsx';
 import '../../../styles/edit-event.css';
 
 const AddEvent = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
     const themeColor = '#2563EB';
@@ -20,7 +24,7 @@ const AddEvent = () => {
         const element = document.getElementById("page-container");
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        const id = (user?._id);
         if (!id) {
             navigate('/login', { replace: true });
             return;

@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -34,6 +35,8 @@ const compressImage = async (file) => {
 };
 
 export default function Register() {
+  const { user: authUser, logout } = useAuth();
+
   const nav = useNavigate();
   const [university, setUniversity] = useState([]);
   const [activeStep, setActiveStep] = useState(0);
@@ -57,7 +60,7 @@ export default function Register() {
   const steps = ['Personal', 'Social', 'Details', 'Photo', 'Account'];
 
   useEffect(() => {
-    if (localStorage.getItem("Althub_Id")) nav('/home');
+    if ((authUser?._id)) nav('/home');
     axios.get(`${WEB_URL}/api/getInstitutes`).then((res) => setUniversity(res.data.data));
   }, [nav]);
 

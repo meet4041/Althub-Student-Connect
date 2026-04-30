@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
@@ -13,6 +14,9 @@ import axiosInstance from '../../../service/axios';
 import '../../../styles/users.css';
 
 const Users = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState(null);
     const [users, setUsers] = useState([]);
@@ -37,8 +41,8 @@ const Users = () => {
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
 
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
-        const name = localStorage.getItem("AlmaPlus_institute_Name");
+        const id = (user?._id);
+        const name = (user?.name || '');
         setInstitute_Id(id);
         setInstitute_Name(name);
     }, []);

@@ -2,9 +2,9 @@
 
 .app-footer {
     position: fixed;
-    left: 260px;
+    left: 248px;
     bottom: 0;
-    width: calc(100% - 260px);
+    width: calc(100% - 248px);
     height: 44px;
     padding: 0 24px;
     background: #ffffff;
@@ -46,8 +46,20 @@ body.sidebar-collapsed .app-footer {
 
 @media (max-width: 767px) {
     .app-footer {
-        left: 0;
+        position: static;
+        left: auto;
         width: 100%;
-        padding: 0 16px;
+        min-height: 52px;
+        height: auto;
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px 10px;
+        text-align: center;
+    }
+
+    .app-footer-left,
+    .app-footer-right {
+        justify-content: center;
     }
 }

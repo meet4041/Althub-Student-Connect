@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -12,6 +13,9 @@ import Footer from '../../../layouts/Footer.jsx';
 import '../../../styles/add-post.css';
 
 const AddPost = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Data, setInstitute_Data] = useState(null); // To store profile pic and name
     const navigate = useNavigate();
@@ -28,7 +32,7 @@ const AddPost = () => {
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
         
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        const id = (user?._id);
         if (!id) {
             navigate('/login', { replace: true });
             return;

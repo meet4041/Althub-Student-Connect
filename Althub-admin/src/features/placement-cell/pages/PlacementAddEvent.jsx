@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,6 +12,9 @@ import Footer from '../../../layouts/Footer.jsx';
 import '../../../styles/edit-event.css';
 
 const PlacementAddEvent = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
 
@@ -19,7 +23,7 @@ const PlacementAddEvent = () => {
         const element = document.getElementById("page-container");
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
-        setInstitute_Id(localStorage.getItem("AlmaPlus_institute_Id"));
+        setInstitute_Id((user?._id));
     }, []);
 
     const [errors, setErrors] = useState({});

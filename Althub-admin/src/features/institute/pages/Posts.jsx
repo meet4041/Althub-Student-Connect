@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/alt-text, no-unused-vars */
 import React, { useState, useEffect, Fragment, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
@@ -13,6 +14,9 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import '../../../styles/posts.css';
 
 const Posts = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
@@ -30,7 +34,7 @@ const Posts = () => {
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
 
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        const id = (user?._id);
         if (!id) {
             navigate('/login', { replace: true });
             return;
@@ -163,12 +167,12 @@ const Posts = () => {
                                                         <td className="align-middle">
                                                             <span className="post-date-badge"><i className="far fa-clock mr-1"></i> {formatDate(elem.date)}</span>
                                                         </td>
-                                                        <td className="align-middle text-right pr-5">
-                                                            <div className="d-flex justify-content-end">
-                                                                <Link to="/edit-post" state={{ post: elem }} className="btn btn-light btn-sm mr-2 shadow-none border post-action-btn">
+                                                        <td className="align-middle post-actions-cell">
+                                                            <div className="post-actions" aria-label="Post actions">
+                                                                <Link to="/edit-post" state={{ post: elem }} className="post-action-btn post-action-edit" aria-label="Edit post">
                                                                     <i className="fa fa-edit text-primary"></i>
                                                                 </Link>
-                                                                <button className="btn btn-light btn-sm border post-action-btn" onClick={() => { setDeleteId(elem._id); setAlert(true); }}>
+                                                                <button type="button" className="post-action-btn post-action-delete" aria-label="Delete post" onClick={() => { setDeleteId(elem._id); setAlert(true); }}>
                                                                     <i className="fa fa-trash-alt text-danger"></i>
                                                                 </button>
                                                             </div>

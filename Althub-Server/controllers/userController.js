@@ -9,6 +9,9 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
 import RefreshToken from "../models/refreshTokenModel.js";
+import { determineUserStatus, checkAlumniStatus, getLatestEducation, createFlexibleRegex } from "../services/userService.js";
+import { sendResetPasswordMail } from "../services/emailService.js";
+
 // --- SECURITY UTILITIES ---
 const sanitizeInput = (text) => {
     if (typeof text !== 'string') return text;
@@ -33,148 +36,6 @@ const createtoken = (user) => {
 const securePassword = async (password) => {
     try { return await bcryptjs.hash(password, 10); } catch (error) { throw new Error(error.message); }
 }
-
-const sendresetpasswordMail = async (name, email, token) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: config.emailUser,
-                pass: config.emailPassword
-            },
-        });
-        
-        // Use environment variable for URL in production instead of hardcoded localhost
-        const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
-        const resetLink = `${clientURL}/new-password?token=${token}`;
-        
-        const mailoptions = {
-            from: `"Althub Support" <${config.emailUser}>`,
-            to: email,
-            subject: 'Reset your Althub password',
-            html: `
-                <div style="margin:0;padding:32px 16px;background:#f4fbfa;font-family:Arial,sans-serif;color:#0f172a;">
-                    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #dbe7e5;border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(15,23,42,0.08);">
-                        <div style="padding:32px 36px;background:linear-gradient(135deg,#ecfeff 0%,#dff8f4 100%);border-bottom:1px solid #e2ecea;text-align:center;">
-                            <div style="font-size:34px;font-weight:800;letter-spacing:-0.02em;color:#0f172a;">
-                                alt<span style="color:#63d5d0;">hub.</span>
-                            </div>
-                            <p style="margin:14px 0 0;font-size:14px;letter-spacing:0.18em;text-transform:uppercase;color:#4f9d94;font-weight:700;">
-                                Password Reset
-                            </p>
-                        </div>
-
-                        <div style="padding:36px;">
-                            <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;color:#0f172a;">Reset your password</h1>
-                            <p style="margin:0 0 14px;font-size:16px;line-height:1.7;color:#475569;">
-                                Hi ${name || "there"},
-                            </p>
-                            <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#475569;">
-                                We received a request to reset your Althub account password. Click the button below to create a new password.
-                            </p>
-
-                            <div style="margin:30px 0;text-align:center;">
-                                <a href="${resetLink}" style="display:inline-block;padding:14px 28px;border-radius:14px;background:#4f9d94;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;">
-                                    Reset Password
-                                </a>
-                            </div>
-
-                            <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#64748b;">
-                                If the button does not work, copy and paste this link into your browser:
-                            </p>
-                            <p style="margin:0 0 24px;padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;word-break:break-all;font-size:13px;line-height:1.7;color:#0f172a;">
-                                ${resetLink}
-                            </p>
-
-                            <p style="margin:0 0 10px;font-size:14px;line-height:1.7;color:#64748b;">
-                                If you did not request this, you can safely ignore this email.
-                            </p>
-                            <p style="margin:0;font-size:14px;line-height:1.7;color:#64748b;">
-                                This link is meant only for your account security.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `
-        };
-        const info = await transporter.sendMail(mailoptions);
-        return info;
-    } catch (error) {
-        console.error("Nodemailer Error:", error);
-        throw new Error("Failed to send email. Please try again later.");
-    }
-}
-
-// --- STATUS CALCULATION LOGIC ---
-const determineUserStatus = (educations) => {
-    if (!educations || educations.length === 0) return "-";
-
-    const now = new Date();
-    let isStudent = false;
-
-    for (let edu of educations) {
-        let gradYear = 0;
-
-        // 1. Try to use End Date
-        if (edu.enddate) {
-            const d = new Date(edu.enddate);
-            if (!isNaN(d.getTime())) gradYear = d.getFullYear();
-        } 
-        // 2. Try to use Join Date + Duration
-        else if (edu.joindate && edu.course) {
-            const s = new Date(edu.joindate);
-            if (!isNaN(s.getTime())) {
-                const startYear = s.getFullYear();
-                const courseName = (edu.course || "").toLowerCase();
-                let duration = 0;
-                
-                if (courseName.includes('b.tech') || courseName.includes('btech') || courseName.includes('bachelor')) {
-                    duration = 4;
-                } else if (courseName.includes('m.tech') || courseName.includes('mtech') || courseName.includes('master')) {
-                    duration = 2;
-                } else {
-                    duration = 4; // Default fallback
-                }
-                gradYear = startYear + duration;
-            }
-        }
-
-        if (gradYear > 0) {
-            const cutoffDate = new Date(gradYear, 4, 15); // May 15th
-            if (now <= cutoffDate) {
-                isStudent = true;
-                break; 
-            }
-        }
-    }
-
-    return isStudent ? "Student" : "Alumni";
-};
-
-const checkAlumniStatus = (educations) => {
-    return determineUserStatus(educations) === "Alumni";
-};
-
-const getLatestEducation = (educations) => {
-    if (!educations || educations.length === 0) return { course: "", year: "" };
-    const sorted = educations.sort((a, b) => {
-        const dateA = new Date(a.enddate || "1900-01-01");
-        const dateB = new Date(b.enddate || "1900-01-01");
-        return dateB - dateA;
-    });
-    const latest = sorted[0];
-    const year = latest.enddate ? new Date(latest.enddate).getFullYear() : "";
-    return { course: latest.course, year: year.toString() };
-};
-
-const createFlexibleRegex = (text) => {
-    if (!text) return null;
-    const clean = text.replace(/[\W_]+/g, "");
-    const pattern = clean.split('').join('[\\W_]*');
-    return new RegExp(pattern, "i");
-};
 
 
 // --- CONTROLLERS (Exported Directly) ---
@@ -398,7 +259,7 @@ export const forgetPassword = async (req, res) => {
         if (userData) {
             const randomString = randomstring.generate();
             await User.updateOne({ email: email }, { $set: { token: randomString } });
-            await sendresetpasswordMail(userData.fname, userData.email, randomString);
+            await sendResetPasswordMail(userData.fname, userData.email, randomString);
             res.status(200).send({ success: true, msg: "Check inbox to reset password" });
         } else { res.status(200).send({ success: false, msg: "Email does not exist!" }); }
     } catch (error) { res.status(500).send({ success: false, msg: "Failed to send email." }); }
@@ -719,12 +580,13 @@ export const getAlumniByCourseSpec = async (req, res) => {
 }
 
 export const followUser = async (req, res) => {
-    if (req.body.userId !== req.params.id) {
+    const actingUserId = req.user._id.toString(); // IDOR PREVENTED
+    if (actingUserId !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
-            const currentUser = await User.findById(req.body.userId);
-            if (!user.followers.includes(req.body.userId)) {
-                await user.updateOne({ $push: { followers: req.body.userId } });
+            const currentUser = await User.findById(actingUserId);
+            if (!user.followers.includes(actingUserId)) {
+                await user.updateOne({ $push: { followers: actingUserId } });
                 await currentUser.updateOne({ $push: { followings: req.params.id } });
                 res.status(200).json("followed");
             } else { res.status(403).json("already follow"); }
@@ -733,12 +595,13 @@ export const followUser = async (req, res) => {
 };
 
 export const unfollowUser = async (req, res) => {
-    if (req.body.userId !== req.params.id) {
+    const actingUserId = req.user._id.toString(); // IDOR PREVENTED
+    if (actingUserId !== req.params.id) {
         try {
             const user = await User.findById(req.params.id);
-            const currentUser = await User.findById(req.body.userId);
-            if (user.followers.includes(req.body.userId)) {
-                await user.updateOne({ $pull: { followers: req.body.userId } });
+            const currentUser = await User.findById(actingUserId);
+            if (user.followers.includes(actingUserId)) {
+                await user.updateOne({ $pull: { followers: actingUserId } });
                 await currentUser.updateOne({ $pull: { followings: req.params.id } });
                 res.status(200).json("unfollowed");
             } else { res.status(403).json("dont follow user"); }
@@ -766,9 +629,23 @@ export const updateProfilePic = async (req, res) => {
 
 export const deleteProfilePic = async (req, res) => {
     try {
+        const actingUserId = req.user._id.toString(); // IDOR PREVENTED
+        if (req.params.id !== actingUserId && req.user.role !== 'admin') {
+            return res.status(403).send({ success: false, msg: "Unauthorized deletion attempt" });
+        }
         const updatedUser = await User.findByIdAndUpdate(req.params.id, { $set: { profilepic: "" } }, { new: true });
         res.status(200).send({ success: true, msg: "Profile removed", data: updatedUser });
     } catch (error) { res.status(500).send({ success: false, msg: error.message }); }
+};
+
+export const getMyAuth = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ success: false, msg: "Unauthorized" });
+        const userObj = req.user.toObject ? req.user.toObject() : req.user;
+        delete userObj.password;
+        delete userObj.token;
+        return res.status(200).json({ success: true, data: userObj });
+    } catch (err) { res.status(500).json({ success: false, msg: err.message }); }
 };
 
 export const getRandomUsers = async (req, res) => {

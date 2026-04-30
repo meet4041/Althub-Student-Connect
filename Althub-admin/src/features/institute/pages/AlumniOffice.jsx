@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -10,6 +11,9 @@ import '../../../styles/feedback.css';
 import '../../../styles/dashboard.css';
 
 const AlumniOffice = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const themeColor = '#2563EB';
     const [alumniStaff, setAlumniStaff] = useState([]);
     const [displayStaff, setDisplayStaff] = useState([]);
@@ -22,12 +26,12 @@ const AlumniOffice = () => {
 
     const fetchData = () => {
         setLoading(true);
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        const id = (user?._id);
         if (!id) {
             navigate('/login', { replace: true });
             return;
         }
-        setInstitute_Name(localStorage.getItem("AlmaPlus_institute_Name") || '');
+        setInstitute_Name((user?.name || '') || '');
 
         axiosInstance.get(`/api/getAlumniOfficeByInstitute/${id}`)
             .then((response) => {

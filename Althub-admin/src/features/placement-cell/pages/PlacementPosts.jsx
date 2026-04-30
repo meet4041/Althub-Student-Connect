@@ -1,3 +1,4 @@
+import { useAuth } from '../../../context/AuthContext';
 /* eslint-disable react-hooks/exhaustive-deps, jsx-a11y/alt-text, no-unused-vars */
 import React, { useState, useEffect, Fragment, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,6 +14,9 @@ import '../../../styles/events.css';
 import '../../../styles/posts.css';
 
 const PlacementPosts = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const [institute_Id, setInstitute_Id] = useState(null);
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
@@ -29,7 +33,7 @@ const PlacementPosts = () => {
         const element = document.getElementById("page-container");
         if (loader) loader.style.display = 'none';
         if (element) element.classList.add("show");
-        const id = localStorage.getItem("AlmaPlus_institute_Id");
+        const id = (user?._id);
         setInstitute_Id(id);
     }, []);
 

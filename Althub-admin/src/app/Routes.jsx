@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
@@ -36,10 +37,13 @@ import PlacementAddPost from '../features/placement-cell/pages/PlacementAddPost.
 import PlacementEditPost from '../features/placement-cell/pages/PlacementEditPost.jsx';
 
 const Markup = () => {
+  const { user, logout } = useAuth();
+  const userDetails = user || {};
+
     const location = useLocation();
 
     useEffect(() => {
-        const role = localStorage.getItem('userRole');
+        const role = (user?.role);
         const title =
             role === 'placement_cell'
                 ? 'Althub Placement Cell'

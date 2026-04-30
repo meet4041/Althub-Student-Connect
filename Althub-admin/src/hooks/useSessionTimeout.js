@@ -2,6 +2,7 @@
  * useSessionTimeout - Logs out user after period of inactivity.
  * Protects against session hijacking on shared/unattended devices.
  */
+import { useAuth } from '../context/AuthContext';
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../service/axios';
@@ -9,41 +10,33 @@ import axiosInstance from '../service/axios';
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 const EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];
 
-const secureLogout = async (navigate) => {
-    try {
-        await axiosInstance.get('/api/instituteLogout');
-    } catch (err) {
-        console.error("Session logout error", err);
-    } finally {
-        localStorage.removeItem('userDetails');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('AlmaPlus_institute_Id');
-        localStorage.removeItem('AlmaPlus_institute_Name');
-        localStorage.removeItem('token');
-        navigate('/login', { replace: true });
-    }
-};
-
 export const useSessionTimeout = (enabled = true) => {
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
     const timeoutRef = useRef(null);
-    const savedCallback = useRef(secureLogout);
 
-    useEffect(() => {
-        savedCallback.current = () => secureLogout(navigate);
-    }, [navigate]);
+    const secureLogout = useCallback(async () => {
+        try {
+            await axiosInstance.get('/api/instituteLogout');
+        } catch (err) {
+            console.error("Session logout error", err);
+        } finally {
+            logout();
+            navigate('/login', { replace: true });
+        }
+    }, [logout, navigate]);
 
     const resetTimer = useCallback(() => {
         if (!enabled) return;
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-            savedCallback.current();
+            secureLogout();
         }, INACTIVITY_MS);
-    }, [enabled]);
+    }, [enabled, secureLogout]);
 
     useEffect(() => {
         if (!enabled) return;
-        if (!localStorage.getItem('AlmaPlus_institute_Id')) return;
+        if (!(user?._id)) return;
 
         resetTimer();
 
@@ -54,5 +47,5 @@ export const useSessionTimeout = (enabled = true) => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             EVENTS.forEach((ev) => window.removeEventListener(ev, handler));
         };
-    }, [enabled, resetTimer]);
+    }, [enabled, resetTimer, user?._id]);
 };

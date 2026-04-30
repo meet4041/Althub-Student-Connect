@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState, useEffect } from "react";
 import ConnectionUser from "./ConnectionUser";
 
@@ -126,10 +127,12 @@ const styles = `
 `;
 
 const FollowerModal = ({ closeModal, user, getUser, initialType = "Follower" }) => {
+  const { user: authUser, logout } = useAuth();
+
   const [type, setType] = useState(initialType);
   
   // --- Check if the logged-in user owns this profile ---
-  const myID = localStorage.getItem("Althub_Id");
+  const myID = (authUser?._id);
   const isOwner = user._id === myID; 
   // ----------------------------------------------------
 

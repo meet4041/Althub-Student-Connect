@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
+import { useAuth } from '../context/AuthContext';
 import axios from '../service/axios'; 
 import { ALTHUB_API_URL } from '../config/baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
@@ -11,7 +12,8 @@ import '../styles/menu.css';
 function Menu() {
    const navigate = useNavigate();
    const location = useLocation(); 
-   const userRole = localStorage.getItem('userRole');
+   const { user, logout } = useAuth();
+   const userRole = user?.role;
    const [profileInfo, setProfileInfo] = useState({
       name: 'DAU',
       image: ''
@@ -26,10 +28,10 @@ function Menu() {
    const isPlacementOffice = userRole === 'placement_cell';
 
    useEffect(() => {
-      const id = localStorage.getItem("AlmaPlus_institute_Id");
+      const id = user?._id;
       if (!id) return;
       getData(id);
-   }, []);
+   }, [user?._id]);
 
    useEffect(() => {
       if (isOfficeRoute) {
@@ -43,13 +45,7 @@ function Menu() {
       } catch (err) {
          console.error("Logout error", err);
       } finally {
-         localStorage.removeItem('userDetails');
-         localStorage.removeItem('userRole');
-         localStorage.removeItem('AlmaPlus_institute_Id');
-         localStorage.removeItem('AlmaPlus_institute_Name');
-         localStorage.removeItem('token');
-         localStorage.removeItem('althub_remembered_email');
-         localStorage.removeItem('althub_remember_me_status');
+         logout();
          navigate('/login', { replace: true });
       }
    }
@@ -76,7 +72,6 @@ function Menu() {
             <div className="navbar-header">
                <Link to="/dashboard" className="navbar-brand navbar-brand-link">
                   <b>Althub</b>
-                  <span className="brand-badge">{profileInfo.name}</span>
                </Link>
             </div>
             
@@ -172,9 +167,7 @@ function Menu() {
                               <span>Post</span>
                            </Link>
                         </li>
-                        
 
-                        {/* --- NEW LEADERBOARD LINK --- */}
                         <li className={isActive("/leaderboard")}>
                            <Link to="/leaderboard">
                               <i className="fa fa-trophy text-warning"></i>
@@ -182,7 +175,6 @@ function Menu() {
                            </Link>
                         </li>
 
-                        {/* --- OFFICES DROPDOWN --- */}
                         <li
                            className={`nav-dropdown ${(isOfficeActive("/alumni-office") || isOfficeActive("/placement-office")) ? "active" : ""} ${officeDropdownOpen ? "open" : ""}`}
                            onMouseEnter={() => setOfficeDropdownOpen(true)}

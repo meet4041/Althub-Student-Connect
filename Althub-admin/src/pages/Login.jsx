@@ -1,19 +1,23 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useRef } from 'react';
 import axiosInstance from '../service/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 import '../styles/login.css';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { user, loginSync } = useAuth();
+    const allowedRoles = ['institute', 'alumni_office', 'placement_cell'];
     const [loginInfo, setLoginInfo] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
     const [disable, setDisable] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const loginTimerRef = useRef(null);
 
     const InputEvent = (e) => {
         const { name, value } = e.target;
@@ -33,14 +37,9 @@ const Login = () => {
                         toast.success('Login Successful!');
                         
                         const responseData = response.data.data;
-                        localStorage.setItem('userDetails', JSON.stringify(responseData));
-                        localStorage.setItem('userRole', responseData.role); 
-
-                        localStorage.setItem('AlmaPlus_institute_Id', responseData._id);
-                        localStorage.setItem('AlmaPlus_institute_Name', responseData.name || responseData.institutename || '');
-                        if (response.data.token) {
-                            localStorage.setItem('token', response.data.token);
-                        }
+                        
+                        // Push into React Context Memory explicitly bypassing localStorage
+                        loginSync(responseData);
 
                         if (rememberMe) {
                             localStorage.setItem('althub_remembered_email', loginInfo.email.trim().toLowerCase());
@@ -50,15 +49,8 @@ const Login = () => {
                             localStorage.setItem('althub_remember_me_status', 'false');
                         }
 
-                        setTimeout(() => {
-                            setDisable(false);
-                            if (responseData.role === 'alumni_office') {
-                                navigate('/dashboard'); 
-                            } else if (responseData.role === 'placement_cell') {
-                                navigate('/dashboard'); 
-                            } else {
-                                navigate('/dashboard');
-                            }
+                        loginTimerRef.current = setTimeout(() => {
+                            navigate('/dashboard', { replace: true });
                         }, 1000);
 
                     } else {
@@ -83,7 +75,7 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (localStorage.getItem("token") && localStorage.getItem("userDetails")) {
+        if (user?._id && allowedRoles.includes(user.role)) {
             navigate('/dashboard');
         }
         
@@ -95,7 +87,13 @@ const Login = () => {
                 email: localStorage.getItem('althub_remembered_email') || ''
             }));
         }
-    }, [navigate]);
+    }, [navigate, user]);
+
+    useEffect(() => {
+        return () => {
+            if (loginTimerRef.current) clearTimeout(loginTimerRef.current);
+        };
+    }, []);
 
     return (
         <Fragment>

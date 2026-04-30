@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState, useCallback, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../services/axios';
@@ -6,26 +7,22 @@ import axiosInstance from '../services/axios';
 import '../styles/menu.css';
 
 function Menu() {
+   const { user, logout } = useAuth();
    const navigate = useNavigate();
    const location = useLocation();
-   const admin_Id = localStorage.getItem("AlmaPlus_admin_Id");
+   const admin_Id = (user?._id);
    const normalizeAdminName = (name) => {
       if (!name || name === 'Althub Admin') return 'Althub Super Admin';
       return name;
    };
 
    const [admin, setAdmin] = useState({
-      name: normalizeAdminName(localStorage.getItem('AlmaPlus_admin_Name')),
-      profilepic: localStorage.getItem('AlmaPlus_admin_Pic') || ''
+      name: normalizeAdminName((user?.name || '')),
+      profilepic: (user?.profilepic || '') || ''
    });
 
    const clearAdminSession = () => {
-      localStorage.removeItem('userDetails');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('AlmaPlus_admin_Id');
-      localStorage.removeItem('AlmaPlus_admin_Name');
-      localStorage.removeItem('AlmaPlus_admin_Pic');
-      localStorage.removeItem('token');
+      logout();
    };
 
    const Logout = async () => {
@@ -35,7 +32,6 @@ function Menu() {
          console.error("Logout error", err);
       } finally {
          clearAdminSession();
-         navigate('/login', { replace: true });
       }
    }
 

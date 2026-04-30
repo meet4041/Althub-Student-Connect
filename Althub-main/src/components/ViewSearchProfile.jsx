@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { WEB_URL } from "../baseURL";
@@ -12,6 +13,8 @@ import {
 import "../styles/ViewSearchProfile.css"; 
 
 export default function ViewSearchProfile({ socket }) {
+  const { user: authUser, logout } = useAuth();
+
   const location = useLocation();
   const nav = useNavigate();
   const [user, setUser] = useState({});
@@ -19,7 +22,7 @@ export default function ViewSearchProfile({ socket }) {
   const [experience, setExperience] = useState([]);
   const [skills, setSkills] = useState([]);
   const [language, setLanguage] = useState([]);
-  const myID = localStorage.getItem("Althub_Id");
+  const myID = (authUser?._id);
   const [userID, setUserID] = useState("");
   const [self, setSelf] = useState({});
   const [showFollowerModal, setShowFollowerModal] = useState(false);

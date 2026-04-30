@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useState, useCallback } from "react";
 import Slider from "react-slick";
 import axios from "axios";
@@ -13,11 +14,13 @@ import "slick-carousel/slick/slick-theme.css";
 import "../styles/MyPosts.css";
 
 export default function MyPosts() {
+  const { user: authUser, logout } = useAuth();
+
   const nav = useNavigate();
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({});
   const [topUsers, setTopUsers] = useState([]);
-  const userid = localStorage.getItem("Althub_Id");
+  const userid = (authUser?._id);
 
   // Edit State
   const [openModal, setOpenModal] = useState(false);

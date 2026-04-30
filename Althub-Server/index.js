@@ -14,6 +14,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
+import { globalErrorHandler } from "./middleware/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,6 +56,7 @@ app.use(helmet({
         "'self'", 
         "http://localhost:3000", 
         "http://localhost:3001", 
+        "http://localhost:3002", 
         "http://localhost:5173", 
         "http://localhost:5001", 
         "http://127.0.0.1:5173",
@@ -99,18 +101,17 @@ const apiLimiter = rateLimit({
 
 const imageLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 120,
+  max: 3000,
   message: { success: false, msg: 'Image request limit exceeded.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-app.use('/api', apiLimiter);
-
 // --- CORS CONFIGURATION ---
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:3002',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://althub-admin.vercel.app',
@@ -193,6 +194,9 @@ const csrfProtect = (req, res, next) => {
 app.use("/api", ensureCsrfCookie, csrfProtect);
 
 // --- MOUNT ROUTES ---
+app.use("/api/images", imageLimiter, images_route); 
+app.use("/api", apiLimiter);
+
 app.post("/api/adminLogin", loginLimiter);
 app.post("/api/instituteLogin", loginLimiter);
 app.post("/api/userLogin", loginLimiter); 
@@ -210,7 +214,6 @@ app.use("/api", experience_route);
 app.use("/api", feedback_route);
 app.use("/api", company_route);
 app.use("/api", notification_route);
-app.use("/api/images", imageLimiter, images_route); 
 
 // Health Check
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
@@ -218,16 +221,7 @@ app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Error Handler
-app.use((err, req, res, next) => {
-  if (err && err.name === 'MulterError') {
-    return res.status(400).json({ success: false, msg: 'File upload error: ' + err.message });
-  }
-  console.error("Server Error:", err);
-  res.status(err.status || 500).json({
-    success: false,
-    message: process.env.NODE_ENV === 'production' ? "Internal Server Error" : err.message
-  });
-});
+app.use(globalErrorHandler);
 
 // --- SOCKET.IO ---
 const server = http.createServer(app);

@@ -26,97 +26,33 @@ const MyPosts = lazy(() => import("./components/MyPosts"));
 
 axios.defaults.withCredentials = true;
 
+const getCookieValue = (name) => {
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[2]) : null;
+};
+
+axios.interceptors.request.use(
+  (config) => {
+    const csrfToken = getCookieValue("csrf_token");
+    config.headers = config.headers || {};
+    if (csrfToken) config.headers["X-CSRF-Token"] = csrfToken;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error)
+);
+
 function App() {
   const [isAuthReady, setIsAuthReady] = useState(false); 
   const nav = useNavigate(); 
 
-  const getCookieValue = (name) => {
-    const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-    return match ? decodeURIComponent(match[2]) : null;
-  };
-
   useLayoutEffect(() => {
     setIsAuthReady(true); 
   }, []);
-
-  useEffect(() => {
-    // --- AXIOS INTERCEPTORS ---
-    const reqInterceptor = axios.interceptors.request.use(
-      (config) => {
-        const csrfToken = getCookieValue("csrf_token");
-        config.headers = config.headers || {};
-        if (csrfToken) {
-          config.headers["X-CSRF-Token"] = csrfToken;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    const resInterceptor = axios.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-        if (error.response && error.response.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-            try {
-                await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/refreshToken`, {}, { withCredentials: true });
-                return axios(originalRequest);
-            } catch (refreshErr) {
-                handleSecurityLogout();
-                return Promise.reject(refreshErr);
-            }
-        }
-
-        const errorMsg = error.response?.data?.msg || "";
-        const authFailure =
-          error.response?.status === 401 ||
-          (error.response?.status === 403 &&
-            /token|auth|access denied|user not found|forbidden/i.test(errorMsg) &&
-            errorMsg !== "CSRF token invalid or missing");
-
-        if (authFailure) {
-            handleSecurityLogout();
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    // --- CENTRALIZED LOGOUT LOGIC ---
-    const handleSecurityLogout = () => {
-      console.warn("Security Event: Logging out");
-      // Token is stored as HttpOnly cookie; do not keep a client-side copy
-      localStorage.removeItem("Althub_Id");
-      if (socket.connected) socket.disconnect();
-      nav("/login");
-    };
-
-    // --- SOCKET CONNECTION & SECURITY LISTENERS ---
-    const userId = localStorage.getItem("Althub_Id");
-
-    if (userId && !socket.connected) {
-      socket.connect();
-    }
-
-    const onConnect = () => {
-      if(userId) socket.emit("addUser", userId);
-    };
-
-    // SECURITY: Listen for a forced logout from the server
-    const onForceLogout = () => {
-      handleSecurityLogout();
-    };
-
-    socket.on("connect", onConnect);
-    socket.on("forceLogout", onForceLogout); // Point 3 implementation
-
-    return () => {
-      axios.interceptors.request.eject(reqInterceptor);
-      axios.interceptors.response.eject(resInterceptor);
-      socket.off("connect", onConnect);
-      socket.off("forceLogout", onForceLogout);
-    };
-  }, [nav]);
 
   if (!isAuthReady) return null; 
 
