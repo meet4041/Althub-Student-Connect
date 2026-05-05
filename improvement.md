@@ -1442,3 +1442,31 @@ This file tracks structural improvements made to the project and why each change
 - Route sweep passed for `/home`, `/view-profile`, `/my-posts`, `/search-profile`, `/events`, `/feedback`, `/notification`, and `/message`.
 - Checked for login redirects, `undefined`, `NaN`, and horizontal overflow across the swept routes.
 - `npm --prefix Althub-main run build`
+
+### Production v1 API compatibility fallback
+
+**Files changed**
+- `Althub-shared/src/apiClient.js`
+- `improvement.md`
+
+**What changed**
+- Checked the live production main app at `https://althub-connect.vercel.app`.
+- Confirmed login succeeds, but authenticated page data calls fail because the deployed frontend calls `/api/v1/*`.
+- Confirmed the live Render backend still returns `Cannot GET /api/v1/events` and `Cannot GET /api/v1/posts`.
+- Confirmed the same live backend still serves data from legacy endpoints such as `/api/getEvents` and `/api/getPost`.
+- Added a centralized 404 fallback in the shared API client that retries known `/api/v1` resource-style calls against their legacy endpoint equivalents.
+- Covered posts, events, institute users, user lookup/search/random, notifications, likes, participation, and common admin post/event mutations.
+
+**Reason**
+- Vercel is currently serving the newer frontend while Render is still serving a backend that does not expose the new `/api/v1` aliases.
+- The fallback lets main, admin, and super-admin keep using the cleaner frontend v1 API calls while remaining compatible with the currently deployed backend.
+- Once Render is deploying the new `Althub-server` code with `/api/v1`, the fallback will not run because the v1 requests will no longer 404.
+
+**Verification**
+- Live check: `https://althub-server.onrender.com/api/v1/events` returned `Cannot GET /api/v1/events`.
+- Live check: `https://althub-server.onrender.com/api/getEvents` returned event data.
+- Live check: `https://althub-server.onrender.com/api/v1/posts` returned `Cannot GET /api/v1/posts`.
+- Live check: `https://althub-server.onrender.com/api/getPost` returned post data.
+- `npm --prefix Althub-main run build`
+- `npm --prefix Althub-admin run build`
+- `npm --prefix Althub-super-admin run build`
