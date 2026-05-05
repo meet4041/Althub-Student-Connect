@@ -136,3 +136,5 @@ ui-debug.log
 
 .DS_Store
 .env*.local
+
+improvement.md

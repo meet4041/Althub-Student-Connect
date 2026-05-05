@@ -61,7 +61,7 @@ export default function Register() {
 
   useEffect(() => {
     if ((authUser?._id)) nav('/home');
-    apiClient.get(`/api/getInstitutes`).then((res) => setUniversity(res.data.data));
+    apiClient.get(`/api/v1/institutes`).then((res) => setUniversity(res.data.data));
   }, [nav]);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function Register() {
     const formData = new FormData();
     formData.append("profilepic", compressed);
 
-    apiClient.post(`/api/uploadUserImage`, formData, { headers: { "Content-Type": "multipart/form-data" } })
+    apiClient.post(`/api/v1/uploadUserImage`, formData, { headers: { "Content-Type": "multipart/form-data" } })
       .then((res) => {
         setUser({ ...user, profilepic: res.data.data.url });
         setUploading(false);
@@ -148,7 +148,7 @@ export default function Register() {
     if (validateStep(4)) {
       const body = { ...user, skills: JSON.stringify(skills) };
       try {
-        await apiClient.post(`/api/register`, body, { withCredentials: true });
+        await apiClient.post(`/api/v1/register`, body, { withCredentials: true });
         toast.success("Welcome aboard!");
         nav("/login");
       } catch (err) { toast.error(err.response?.data?.msg || "Error"); }

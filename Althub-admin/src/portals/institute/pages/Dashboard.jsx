@@ -72,7 +72,7 @@ function Dashboard() {
         try {
             const formData = new FormData();
             formData.append('file', csvFile);
-            const res = await axiosInstance.post('/api/bulkInviteAlumniCsv', formData, {
+            const res = await axiosInstance.post('/api/v1/bulkInviteAlumniCsv', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             const { createdCount, skippedCount, failedCount } = res.data?.data || {};
@@ -158,7 +158,7 @@ function Dashboard() {
 
     const getPortalAnnouncement = async () => {
         try {
-            const response = await axiosInstance.get('/api/portalAnnouncement');
+            const response = await axiosInstance.get('/api/v1/portalAnnouncement');
             if (response.data?.success && response.data.data) {
                 setAnnouncement(response.data.data);
             }

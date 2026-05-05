@@ -60,7 +60,7 @@ export default function Feedback() {
         setIsSubmitting(true);
 
         apiClient({
-            url: `/api/addFeedback`,
+            url: `/api/v1/feedback`,
             method: 'post',
             withCredentials: true,
             data: {

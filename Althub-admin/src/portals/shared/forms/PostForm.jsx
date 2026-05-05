@@ -41,7 +41,7 @@ export default function PostForm({ config = {} }) {
       return;
     }
     setOwnerId(id);
-    axiosInstance.get(`/api/getInstituteById/${id}`)
+    axiosInstance.get(`/api/v1/institutes/${id}`)
       .then((res) => { if (res.data.success) setProfile(res.data.data); })
       .catch(() => {});
   }, [editingPost?._id, isEdit, navigate, options.backPath, user?._id]);

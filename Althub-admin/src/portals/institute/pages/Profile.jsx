@@ -47,7 +47,7 @@ const Profile = () => {
     const getData = (id) => {
         if (!id) return;
         setIsDataLoading(true);
-        axiosInstance.get(`/api/getInstituteById/${id}`).then((response) => {
+        axiosInstance.get(`/api/v1/institutes/${id}`).then((response) => {
             if (response.data.success === true) {
                 const fetchedData = response.data.data;
                 setProfileInfo({
@@ -90,7 +90,7 @@ const Profile = () => {
         const body = new FormData();
         body.append('image', file);
 
-        axiosInstance.post(`/api/uploadInstituteImage`, body, {
+        axiosInstance.post(`/api/v1/uploadInstituteImage`, body, {
             headers: { 'Content-Type': "multipart/form-data" },
         }).then((response) => {
             if (response.data.success === true) {
@@ -105,8 +105,7 @@ const Profile = () => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axiosInstance.post(`/api/instituteUpdate`, {
-                id: institute_Id,
+            axiosInstance.patch(`/api/v1/institutes/${institute_Id}`, {
                 name: profileInfo.name,
                 phone: profileInfo.phone,
                 email: profileInfo.email,
@@ -124,7 +123,7 @@ const Profile = () => {
         e.preventDefault();
         if (validateTwo()) {
             setDisable2(true);
-            axiosInstance.post(`/api/instituteUpdatePassword`, {
+            axiosInstance.post(`/api/v1/instituteUpdatePassword`, {
                 institute_id: institute_Id,
                 oldpassword: changepass.oldpassword,
                 newpassword: changepass.newpassword
@@ -132,7 +131,7 @@ const Profile = () => {
                 if (response.data.success) {
                     toast.success('Password Updated. Redirecting...');
                     try {
-                        await axiosInstance.get('/api/instituteLogout');
+                        await axiosInstance.get('/api/v1/instituteLogout');
                     } catch (error) {
                         console.error('Logout after password update failed:', error);
                     }

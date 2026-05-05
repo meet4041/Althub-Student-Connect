@@ -34,7 +34,7 @@ const AlumniOffice = () => {
         }
         setInstitute_Name((user?.name || '') || '');
 
-        axiosInstance.get(`/api/getAlumniOfficeByInstitute/${id}`)
+        axiosInstance.get(`/api/v1/institutes/${id}/alumni-office`)
             .then((response) => {
                 if (response.data.success) {
                     setAlumniStaff(response.data.data || []);

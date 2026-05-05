@@ -75,14 +75,14 @@ export default function SearchProfile({ socket }) {
         userid: targetId, msg: msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() 
     });
 
-    apiClient.put(`/api/follow/${targetId}`, { userId: userID })
+    apiClient.put(`/api/v1/users/${targetId}/follow`, { userId: userID })
         .then(() => {
             toast.success("Following!");
             performSearch(); 
-            apiClient.post(`/api/searchConversations`, { person1: targetId, person2: userID })
+            apiClient.post(`/api/v1/conversations/search`, { person1: targetId, person2: userID })
             .then((res) => {
                 if (res.data.data.length <= 0) {
-                    apiClient.post(`/api/newConversation`, { senderId: userID, receiverId: targetId });
+                    apiClient.post(`/api/v1/conversations`, { senderId: userID, receiverId: targetId });
                 }
             });
         })
@@ -91,7 +91,7 @@ export default function SearchProfile({ socket }) {
 
   const confirmUnfollow = () => {
     if (!unfollowId) return;
-    apiClient.put(`/api/unfollow/${unfollowId}`, { userId: userID })
+    apiClient.put(`/api/v1/users/${unfollowId}/unfollow`, { userId: userID })
         .then(() => {
             toast.info("Unfollowed.");
             setUnfollowId(null);

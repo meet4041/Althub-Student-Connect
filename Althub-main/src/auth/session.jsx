@@ -11,7 +11,7 @@ const syncSocketUser = (userData) => {
 const authSession = createAuthSession({
     apiClient,
     mePath: '/api/auth/main/me',
-    logoutPath: '/api/userLogout',
+    logoutPath: '/api/v1/userLogout',
     onUserLoaded: syncSocketUser,
     onLogout: () => {
         if (socket.connected) socket.disconnect();

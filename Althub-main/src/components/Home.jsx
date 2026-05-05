@@ -76,7 +76,7 @@ export default function Home({ socket }) {
   };
 
   const checkEducation = useCallback(() => {
-    if (userid) apiClient.post(`/api/getEducation`, { userid }).then((res) => setHasEducation(res.data.data?.length > 0));
+    if (userid) apiClient.get(`/api/v1/users/${userid}/education`).then((res) => setHasEducation(res.data.data?.length > 0));
   }, [userid]);
 
   // CHANGED: New function to fetch random users and filter them

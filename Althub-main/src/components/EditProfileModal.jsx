@@ -64,7 +64,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
     formData.append("image", file);
     formData.append("userid", user._id);
 
-    apiClient.put(`/api/updateProfilePic`, formData, { withCredentials: true }) 
+    apiClient.put(`/api/v1/users/${user._id}/profile-image`, formData, { withCredentials: true }) 
       .then((res) => {
         toast.success("Picture updated!");
         setUserData(prev => ({ ...prev, profilepic: res.data.data.profilepic }));
@@ -75,7 +75,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
   const handleImageDelete = () => {
     if (!window.confirm("Remove profile picture?")) return;
-    apiClient.put(`/api/deleteProfilePic/${user._id}`, {}, { withCredentials: true })
+    apiClient.delete(`/api/v1/users/${user._id}/profile-image`, { withCredentials: true })
       .then(() => {
         toast.success("Picture removed.");
         setUserData(prev => ({ ...prev, profilepic: "" }));
@@ -86,7 +86,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
   const handleDeleteAccount = () => {
     if (window.confirm("Are you sure? This cannot be undone.")) {
-      apiClient.delete(`/api/deleteUser/${user._id}`, { withCredentials: true })
+      apiClient.delete(`/api/v1/users/${user._id}`, { withCredentials: true })
         .then(() => {
           toast.success("Account Deleted");
           closeModal();
@@ -113,7 +113,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
   const handleUpdate = () => {
     if (validate()) {
-        apiClient.post(`/api/userProfileEdit`, {
+        apiClient.patch(`/api/v1/users/${userData._id}`, {
           id: userData._id,
           fname: userData.fname,
           lname: userData.lname,

@@ -55,7 +55,7 @@ function NewPassword() {
         }
         if (validate()) {
             setDisable(true);
-            const myurl = `/api/instituteResetPassword?token=${token}`;
+            const myurl = `/api/v1/instituteResetPassword?token=${token}`;
             axiosInstance({
                 method: "post",
                 url: myurl,

@@ -87,12 +87,12 @@ export default function ViewProfile() {
 
     const getEducation = useCallback(() => {
         if (!userID) return;
-        apiClient.post(`/api/getEducation`, { userid: userID }, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
+        apiClient.get(`/api/v1/users/${userID}/education`, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
     }, [userID]);
 
     const getExperience = useCallback(() => {
         if (!userID) return;
-        apiClient.post(`/api/getExperience`, { userid: userID }, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
+        apiClient.get(`/api/v1/users/${userID}/experience`, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
     }, [userID]);
 
     const getNewUsers = useCallback(() => {
@@ -107,7 +107,7 @@ export default function ViewProfile() {
     // --- Handlers ---
     const handleDeleteAccount = () => {
         if (window.confirm("Are you sure? This cannot be undone.")) {
-            apiClient.delete(`/api/deleteUser/${userID}`, { withCredentials: true }).then(() => {
+            apiClient.delete(`/api/v1/users/${userID}`, { withCredentials: true }).then(() => {
                 toast.success("Account Deleted"); logout(); nav("/");
             });
         }

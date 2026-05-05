@@ -17,7 +17,7 @@ export const useSessionTimeout = (enabled = true) => {
 
     const secureLogout = useCallback(async () => {
         try {
-            await axiosInstance.get('/api/instituteLogout');
+            await axiosInstance.get('/api/v1/instituteLogout');
         } catch (err) {
             console.error("Session logout error", err);
         } finally {

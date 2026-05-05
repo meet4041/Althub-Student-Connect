@@ -1470,3 +1470,48 @@ This file tracks structural improvements made to the project and why each change
 - `npm --prefix Althub-main run build`
 - `npm --prefix Althub-admin run build`
 - `npm --prefix Althub-super-admin run build`
+
+### Admin placement event delete compatibility
+
+**Files changed**
+- `Althub-admin/src/portals/shared/pages/PortalEventsPage.jsx`
+- `improvement.md`
+
+**What changed**
+- Reverted the temporary page-level fallback after the shared API client became responsible for compatibility.
+- The shared admin event page now calls only the v1 event list and delete endpoints.
+
+**Reason**
+- The live Render backend still does not expose `/api/v1/institutes/699080c1614d9e5460581d86/events`, which breaks placement-cell event refreshes in production.
+- Keeping fallback logic in `@althub/shared` avoids scattering legacy API knowledge across UI pages.
+
+**Verification**
+- Confirmed the legacy Render route `/api/getEventsByInstitute/699080c1614d9e5460581d86` responds with HTTP 200.
+- `npm --prefix Althub-admin run build`
+
+### Main and admin v1 API route consolidation
+
+**Files changed**
+- `Althub-server/routes/v1ResourceAliases.js`
+- `Althub-shared/src/apiClient.js`
+- `Althub-main/src/**`
+- `Althub-admin/src/**`
+- `improvement.md`
+
+**What changed**
+- Added resource-style v1 aliases for education, experience, conversations, messages, feedback, institute profile/offices, courses, user profile updates, password changes, and profile image updates.
+- Moved main app data calls to `/api/v1` for posts, events, users, education, experience, feedback, notifications, follows, conversations, messages, profile updates, auth, and public registration flows.
+- Moved admin app data calls to `/api/v1` for events, posts, users, feedback, leaderboard, institute details, delegated offices, courses, CSV invite, announcements, auth, and profile settings.
+- Extended the shared transitional fallback so production still works while the live Render backend catches up to the new `/api/v1` routes.
+- Removed route-level legacy fallback from the shared admin events page so UI pages call v1 directly.
+
+**Reason**
+- The frontend had drifted into a mixed API contract: some routes used clean `/api/v1` resources while others still called legacy names such as `/api/getEducation`, `/api/getConversations`, `/api/addFeedback`, and `/api/getInstituteById`.
+- Centralizing any temporary legacy compatibility in `@althub/shared` keeps the UI code simpler and makes it easier to remove the fallback after Render deploys the new backend.
+
+**Verification**
+- `node --check Althub-server/routes/v1ResourceAliases.js`
+- `node -e "import('./Althub-server/routes/v1ResourceAliases.js').then(() => console.log('v1 aliases import ok'))"`
+- `npm --prefix Althub-main run build`
+- `npm --prefix Althub-admin run build`
+- `rg -n '(/api/(?!v1|auth|images))' Althub-main/src Althub-admin/src --pcre2`

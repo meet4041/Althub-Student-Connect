@@ -49,7 +49,7 @@ export default function Login() {
           email: user.email,
           password: user.password,
         },
-        url: `/api/userLogin`,
+        url: `/api/v1/userLogin`,
         withCredentials: true
       }).then((response) => {
         toast.success("Welcome back!");

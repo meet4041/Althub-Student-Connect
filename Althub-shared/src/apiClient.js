@@ -50,6 +50,24 @@ const createLegacyFallbackConfig = (config = {}) => {
 
   let match;
 
+  // Transitional v1 aliases for live backends that have not deployed /api/v1 yet.
+  if (path === '/api/v1/register') return route('/api/register');
+  if (path === '/api/v1/userLogin') return route('/api/userLogin');
+  if (path === '/api/v1/userLogout') return route('/api/userLogout');
+  if (path === '/api/v1/userForgetPassword') return route('/api/userForgetPassword');
+  if (path === '/api/v1/userResetPassword') return route(config.url.replace('/api/v1/userResetPassword', '/api/userResetPassword'));
+  if (path === '/api/v1/registerInstitute') return route('/api/registerInstitute');
+  if (path === '/api/v1/instituteLogin') return route('/api/instituteLogin');
+  if (path === '/api/v1/instituteLogout') return route('/api/instituteLogout');
+  if (path === '/api/v1/instituteForgetPassword') return route('/api/instituteForgetPassword');
+  if (path === '/api/v1/instituteResetPassword') return route(config.url.replace('/api/v1/instituteResetPassword', '/api/instituteResetPassword'));
+  if (path === '/api/v1/instituteUpdatePassword') return route('/api/instituteUpdatePassword');
+  if (path === '/api/v1/uploadUserImage') return route('/api/uploadUserImage');
+  if (path === '/api/v1/uploadCompanyLogo') return route('/api/uploadCompanyLogo');
+  if (path === '/api/v1/uploadInstituteImage') return route('/api/uploadInstituteImage');
+  if (path === '/api/v1/bulkInviteAlumniCsv') return route('/api/bulkInviteAlumniCsv');
+  if (path === '/api/v1/portalAnnouncement') return route('/api/portalAnnouncement');
+
   // Posts
   if (method === 'get' && path === '/api/v1/posts') return route('/api/getPost');
   if (method === 'post' && path === '/api/v1/posts') return route('/api/addPost');
@@ -90,9 +108,27 @@ const createLegacyFallbackConfig = (config = {}) => {
   if (method === 'post' && path === '/api/v1/users/random') return route('/api/getRandomUsers');
   match = path.match(/^\/api\/v1\/institutes\/([^/]+)\/users$/);
   if (method === 'get' && match) return route(`/api/getUsersOfInstitute/${match[1]}`);
+  match = path.match(/^\/api\/v1\/users\/([^/]+)\/profile-image$/);
+  if (match && method === 'put') return route('/api/updateProfilePic');
+  if (match && method === 'delete') return route(`/api/deleteProfilePic/${match[1]}`);
+  match = path.match(/^\/api\/v1\/users\/me\/password$/);
+  if (method === 'put' && match) {
+    return route('/api/updatePassword', { method: 'post' });
+  }
   match = path.match(/^\/api\/v1\/users\/([^/]+)$/);
   if (method === 'get' && match) return route(`/api/searchUserById/${match[1]}`);
+  if (method === 'delete' && match) return route(`/api/deleteUser/${match[1]}`);
+  if ((method === 'patch' || method === 'put') && match) {
+    return route('/api/userProfileEdit', {
+      method: 'post',
+      data: appendBodyId(config.data, match[1]),
+    });
+  }
   if (method === 'put' && match) return route(`/api/follow/${match[1]}`);
+  match = path.match(/^\/api\/v1\/users\/([^/]+)\/follow$/);
+  if (method === 'put' && match) return route(`/api/follow/${match[1]}`);
+  match = path.match(/^\/api\/v1\/users\/([^/]+)\/unfollow$/);
+  if (method === 'put' && match) return route(`/api/unfollow/${match[1]}`);
 
   // Notifications
   if (method === 'post' && path === '/api/v1/notifications') return route('/api/addNotification');
@@ -110,6 +146,64 @@ const createLegacyFallbackConfig = (config = {}) => {
       data: { ...(config.data || {}), notificationId: match[1] },
     });
   }
+
+  // Education
+  match = path.match(/^\/api\/v1\/users\/([^/]+)\/education$/);
+  if (method === 'get' && match) return route('/api/getEducation', { method: 'post', data: { userid: match[1] } });
+  if (method === 'post' && match) return route('/api/addEducation', { data: { ...(config.data || {}), userid: match[1] } });
+  match = path.match(/^\/api\/v1\/education\/([^/]+)$/);
+  if ((method === 'patch' || method === 'put') && match) {
+    return route('/api/editEducation', {
+      method: 'post',
+      data: appendBodyId(config.data, match[1]),
+    });
+  }
+  if (method === 'delete' && match) return route(`/api/deleteEducation/${match[1]}`);
+
+  // Experience
+  match = path.match(/^\/api\/v1\/users\/([^/]+)\/experience$/);
+  if (method === 'get' && match) return route('/api/getExperience', { method: 'post', data: { userid: match[1] } });
+  if (method === 'post' && match) return route('/api/addExperience', { data: { ...(config.data || {}), userid: match[1] } });
+  match = path.match(/^\/api\/v1\/experience\/([^/]+)$/);
+  if ((method === 'patch' || method === 'put') && match) {
+    return route('/api/editExperience', {
+      method: 'post',
+      data: { ...(config.data || {}), _id: match[1] },
+    });
+  }
+  if (method === 'delete' && match) return route(`/api/deleteExperience/${match[1]}`);
+
+  // Conversations and messages
+  match = path.match(/^\/api\/v1\/users\/([^/]+)\/conversations$/);
+  if (method === 'get' && match) return route(`/api/getConversations/${match[1]}`);
+  if (method === 'post' && path === '/api/v1/conversations') return route('/api/newConversation');
+  if (method === 'post' && path === '/api/v1/conversations/search') return route('/api/searchConversations');
+  match = path.match(/^\/api\/v1\/conversations\/([^/]+)\/messages$/);
+  if (method === 'get' && match) return route(`/api/getMessages/${match[1]}`);
+  if (method === 'post' && path === '/api/v1/messages') return route('/api/newMessage');
+
+  // Feedback
+  if (method === 'post' && path === '/api/v1/feedback') return route('/api/addFeedback');
+  if (method === 'get' && path === '/api/v1/feedback') return route('/api/getFeedback');
+  if (method === 'get' && path === '/api/v1/feedback/leaderboard') return route('/api/getLeaderboard');
+  match = path.match(/^\/api\/v1\/feedback\/([^/]+)$/);
+  if (method === 'delete' && match) return route(`/api/deleteFeedback/${match[1]}`);
+
+  // Institutes and courses
+  if (method === 'get' && path === '/api/v1/institutes') return route('/api/getInstitutes');
+  match = path.match(/^\/api\/v1\/institutes\/([^/]+)$/);
+  if (method === 'get' && match) return route(`/api/getInstituteById/${match[1]}`);
+  if ((method === 'patch' || method === 'put') && match) {
+    return route('/api/instituteUpdate', {
+      method: 'post',
+      data: appendBodyId(config.data, match[1]),
+    });
+  }
+  match = path.match(/^\/api\/v1\/institutes\/([^/]+)\/alumni-office$/);
+  if (method === 'get' && match) return route(`/api/getAlumniOfficeByInstitute/${match[1]}`);
+  match = path.match(/^\/api\/v1\/institutes\/([^/]+)\/placement-cell$/);
+  if (method === 'get' && match) return route(`/api/getPlacementCellByInstitute/${match[1]}`);
+  if (method === 'post' && path === '/api/v1/courses') return route('/api/addCourse');
 
   return null;
 };

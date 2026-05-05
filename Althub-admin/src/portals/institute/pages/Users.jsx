@@ -138,7 +138,7 @@ const Users = () => {
     const DeleteUser = () => {
         axiosInstance({
             method: "delete",
-            url: `/api/deleteUser/${deleteId}`,
+            url: `/api/v1/users/${deleteId}`,
         }).then((response) => {
             if (response.data.success) {
                 setAlert(false);

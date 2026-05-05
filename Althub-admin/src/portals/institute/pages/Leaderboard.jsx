@@ -29,7 +29,7 @@ const Leaderboard = () => {
 
     const fetchLeaderboard = () => {
         // Standardizing the fetch to use the token stored during login
-        axiosInstance.get(`/api/getLeaderboard`, {
+        axiosInstance.get(`/api/v1/feedback/leaderboard`, {
         })
         .then(res => {
             if (res.data.success) {

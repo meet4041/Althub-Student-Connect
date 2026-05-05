@@ -41,7 +41,7 @@ function Menu() {
 
    const Logout = async () => {
       try {
-         await axiosInstance.get('/api/instituteLogout');
+         await axiosInstance.get('/api/v1/instituteLogout');
       } catch (err) {
          console.error("Logout error", err);
       } finally {
@@ -52,7 +52,7 @@ function Menu() {
 
    const getData = (id) => {
       if (id) {
-         axiosInstance.get(`/api/getInstituteById/${id}`)
+         axiosInstance.get(`/api/v1/institutes/${id}`)
          .then((response) => {
             if (response.data.success === true) {
                const fetched = response.data.data || {};

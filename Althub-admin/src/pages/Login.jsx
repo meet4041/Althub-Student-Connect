@@ -31,7 +31,7 @@ const Login = () => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axiosInstance.post('/api/instituteLogin', { email: loginInfo.email.trim().toLowerCase(), password: loginInfo.password })
+            axiosInstance.post('/api/v1/instituteLogin', { email: loginInfo.email.trim().toLowerCase(), password: loginInfo.password })
                 .then((response) => {
                     if (response.data.success === true) {
                         toast.success('Login Successful!');

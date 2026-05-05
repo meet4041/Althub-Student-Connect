@@ -46,8 +46,8 @@ const ChangePasswordModal = ({ closeModal }) => {
   const handleChangePassword = () => {
     if (validate()) {
         apiClient({
-            url: `/api/updatePassword`, 
-            method: "post",
+            url: `/api/v1/users/me/password`, 
+            method: "put",
             withCredentials: true,
             data: {
                 oldpassword: pass.old,

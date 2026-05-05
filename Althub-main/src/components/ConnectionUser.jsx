@@ -7,12 +7,11 @@ import ProtectedImage from "../ProtectedImage";
 import "../styles/ConnectionUser.css"; // <--- New CSS Import
 
 function ConnectionUser({ userid, type, getUser, isOwner }) {
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState({});
   const myid = (authUser?._id);
   const nav = useNavigate(); 
   const logError = (error) => {
-  const { user: authUser, logout } = useAuth();
-
     if (import.meta.env.DEV) {
       console.error(error);
     }
@@ -39,7 +38,7 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
     e.stopPropagation(); // Prevent triggering the profile click
     if (window.confirm("Do you want to remove this user?")) {
       apiClient({
-        url: `/api/unfollow/${type === "Follower" ? myid : userid}`,
+        url: `/api/v1/users/${type === "Follower" ? myid : userid}/unfollow`,
         data: {
           userId: type === "Follower" ? userid : myid,
         },
