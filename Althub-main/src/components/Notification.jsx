@@ -1,8 +1,8 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../api/client";
 import { useNavigate } from "react-router-dom";
-import { WEB_URL } from "../baseURL";
+import { WEB_URL } from "../config/api";
 import ProtectedImage from "../ProtectedImage";
 import { toast } from "react-toastify";
 import { 
@@ -21,7 +21,9 @@ export default function Notification() {
   const userid = (authUser?._id);
 
   const getNotifications = () => {
-    axios.post(`${WEB_URL}/api/getnotifications`, { userid })
+    if (!userid) return;
+
+    apiClient.get(`/api/v1/users/${userid}/notifications`, { withCredentials: true })
       .then((res) => {
         if (res.data?.data) {
           const allowed = ["New Follower", "New Like", "New Event", "New Message"];
@@ -46,7 +48,7 @@ export default function Notification() {
   const confirmDelete = () => {
     if (!deleteId) return;
     
-    axios.post(`${WEB_URL}/api/deleteNotification`, { notificationId: deleteId })
+    apiClient.delete(`/api/v1/notifications/${deleteId}`, { withCredentials: true })
       .then((res) => {
         if (res.data.success) {
           setNotifications(prev => prev.filter(item => item._id !== deleteId));
@@ -58,7 +60,7 @@ export default function Notification() {
   };
 
   const handleProfileRedirect = (id) => {
-    if (id) nav(`/view-profile/${id}`); 
+    if (id) nav(`/view-search-profile/${id}`); 
   };
 
   const formatTime = (timestamp) => {
@@ -83,7 +85,28 @@ export default function Notification() {
     }
   };
 
-  useEffect(() => { getNotifications(); }, []);
+  const cleanNotificationText = (value, fallback) => {
+    const text = String(value || "")
+      .replace(/\bundefined\b/gi, "Someone")
+      .replace(/\bnull\b/gi, "Someone")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return text || fallback;
+  };
+
+  const getNotificationMessage = (notification) => {
+    const fallbackByTitle = {
+      "New Like": "Someone liked your post.",
+      "New Follower": "Someone started following you.",
+      "New Event": "A new event has been added.",
+      "New Message": "You have a new message.",
+    };
+
+    return cleanNotificationText(notification.msg, fallbackByTitle[notification.title] || "You have a new update.");
+  };
+
+  useEffect(() => { getNotifications(); }, [userid]);
 
   return (
     <div className="notif-wrapper">
@@ -126,8 +149,8 @@ export default function Notification() {
                   
                   {/* Content */}
                   <div className="notif-content">
-                    <p className="notif-main-text">{elem.title}</p>
-                    <p className="notif-sub-text">{elem.msg}</p>
+                    <p className="notif-main-text">{cleanNotificationText(elem.title, "Notification")}</p>
+                    <p className="notif-sub-text">{getNotificationMessage(elem)}</p>
                   </div>
 
                   {/* Meta */}

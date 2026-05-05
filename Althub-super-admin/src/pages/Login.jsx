@@ -1,9 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 
 import '../styles/login.css'; 
 
@@ -36,15 +36,12 @@ const Login = () => {
                         toast.success('Access Granted!');
                         const adminData = response.data.data;
                         
-                        // Sync state directly into memory bypassing insecure endpoints
                         loginSync(adminData);
 
                         if (check) {
-                            localStorage.setItem('AlmaPlus_Admin_Remember_Me', 'Enabled');
-                            localStorage.setItem('AlmaPlus_Admin_Email', loginInfo.email.trim().toLowerCase());
+                            localStorage.setItem('althub_admin_remembered_email', loginInfo.email.trim().toLowerCase());
                         } else {
-                            localStorage.removeItem('AlmaPlus_Admin_Remember_Me');
-                            localStorage.removeItem('AlmaPlus_Admin_Email');
+                            localStorage.removeItem('althub_admin_remembered_email');
                         }
                         
                         setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
@@ -73,8 +70,8 @@ const Login = () => {
             return;
         }
 
-        const savedEmail = localStorage.getItem('AlmaPlus_Admin_Email');
-        if (localStorage.getItem('AlmaPlus_Admin_Remember_Me') === 'Enabled' && savedEmail) {
+        const savedEmail = localStorage.getItem('althub_admin_remembered_email');
+        if (savedEmail) {
             setCheck(true);
             setLoginInfo(prev => ({ ...prev, email: savedEmail }));
         }

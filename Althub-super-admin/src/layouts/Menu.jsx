@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 
 // IMPORT NEW STYLES
 import '../styles/menu.css';
@@ -47,8 +47,6 @@ function Menu() {
                name: adminName,
                profilepic: adminData.profilepic || '',
             });
-            localStorage.setItem('AlmaPlus_admin_Name', adminName);
-            localStorage.setItem('AlmaPlus_admin_Pic', adminData.profilepic || '');
          }
       }).catch(err => console.error(err));
    }, [admin_Id]);
@@ -138,6 +136,12 @@ function Menu() {
                <li className="admin-nav-item">
                   <Link to="/connected" className={`admin-nav-link ${isActive("/connected")}`}>
                      <i className="fa fa-project-diagram"></i> <span>Connected</span>
+                  </Link>
+               </li>
+
+               <li className="admin-nav-item">
+                  <Link to="/announcement" className={`admin-nav-link ${isActive("/announcement")}`}>
+                     <i className="fa fa-bullhorn"></i> <span>Announcement</span>
                   </Link>
                </li>
 

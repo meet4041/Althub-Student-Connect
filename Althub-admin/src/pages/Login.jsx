@@ -1,10 +1,10 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react-hooks/exhaustive-deps, no-unused-vars */
 import React, { useState, useEffect, Fragment, useRef } from 'react';
-import axiosInstance from '../service/axios';
+import axiosInstance from '../api/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 
 import '../styles/login.css';
 
@@ -38,15 +38,12 @@ const Login = () => {
                         
                         const responseData = response.data.data;
                         
-                        // Push into React Context Memory explicitly bypassing localStorage
                         loginSync(responseData);
 
                         if (rememberMe) {
                             localStorage.setItem('althub_remembered_email', loginInfo.email.trim().toLowerCase());
-                            localStorage.setItem('althub_remember_me_status', 'true');
                         } else {
                             localStorage.removeItem('althub_remembered_email');
-                            localStorage.setItem('althub_remember_me_status', 'false');
                         }
 
                         loginTimerRef.current = setTimeout(() => {
@@ -79,12 +76,12 @@ const Login = () => {
             navigate('/dashboard');
         }
         
-        const savedStatus = localStorage.getItem('althub_remember_me_status');
-        if (savedStatus === 'true') {
+        const rememberedEmail = localStorage.getItem('althub_remembered_email');
+        if (rememberedEmail) {
             setRememberMe(true);
             setLoginInfo((prev) => ({
                 ...prev,
-                email: localStorage.getItem('althub_remembered_email') || ''
+                email: rememberedEmail
             }));
         }
     }, [navigate, user]);

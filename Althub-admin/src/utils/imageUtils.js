@@ -3,6 +3,7 @@
  * Handles image URLs for protected image routes and works with Vercel deployment.
  */
 import { ALTHUB_API_URL } from '../config/baseURL';
+import { buildImageUrl, getImageOnError as createImageOnError } from '@althub/shared/images';
 
 /** Default fallback images by context */
 export const FALLBACK_IMAGES = {
@@ -17,31 +18,15 @@ export const FALLBACK_IMAGES = {
  * @param {string} fallback - Fallback path when image fails (relative to public)
  */
 export function getImageUrl(path, fallback = FALLBACK_IMAGES.profile) {
-    if (!path || typeof path !== 'string') return fallback;
-    const trimmed = path.trim();
-    if (!trimmed) return fallback;
-    // Already absolute URL
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    // Normalize: ensure leading slash for API paths
-    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-    const baseUrl = ALTHUB_API_URL.replace(/\/$/, '');
-    const token = null;
-    const isProtectedImage = cleanPath.startsWith('/api/images/');
-    const fullUrl = isProtectedImage && token
-        ? `${baseUrl}${cleanPath}?token=${encodeURIComponent(token)}`
-        : `${baseUrl}${cleanPath}`;
-    return fullUrl;
+    return buildImageUrl(path, {
+        baseURL: ALTHUB_API_URL,
+        fallback,
+    });
 }
 
 /**
  * Standard onError handler for img tags - swaps to fallback
  */
 export function getImageOnError(fallback = FALLBACK_IMAGES.profile) {
-    return (e) => {
-        if (e?.target && !e.target.dataset.fallbackApplied) {
-            e.target.dataset.fallbackApplied = 'true';
-            e.target.onerror = null;
-            e.target.src = fallback;
-        }
-    };
+    return createImageOnError(fallback);
 }

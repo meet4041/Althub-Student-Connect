@@ -1,174 +1,175 @@
-/* admin/src/jsx/styles/menu.css */
-
-/* --- MODERN HEADER (GLASSMORPHISM) --- */
 .admin-header {
-    background: var(--althub-glass);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    height: 75px;
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 1050;
+    height: var(--althub-header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1050;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0 24px;
+    background: rgba(255, 255, 255, 0.94);
+    border-bottom: 1px solid var(--althub-border);
     box-shadow: var(--althub-shadow-sm);
+    backdrop-filter: blur(14px);
 }
 
 .admin-logo-link {
     display: flex;
     align-items: center;
-    text-decoration: none !important;
-    gap: 15px;
-}
-
-.admin-logo-img {
-    height: 45px;
-    border-radius: 12px;
-    transition: transform 0.3s ease;
-}
-
-.admin-logo-link:hover .admin-logo-img {
-    transform: rotate(-5deg) scale(1.05);
+    gap: 12px;
+    text-decoration: none;
 }
 
 .admin-brand-name {
-    font-size: 1.5rem;
+    color: var(--althub-text);
+    font-size: 20px;
     font-weight: 800;
-    color: var(--althub-blue-deep);
-    letter-spacing: -0.8px;
+    letter-spacing: 0;
 }
 
-/* --- USER DROPDOWN --- */
 .user-dropdown-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: var(--althub-white);
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 14px;
     border: 1px solid var(--althub-border);
-    padding: 8px 20px;
-    border-radius: 50px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--althub-text);
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .user-dropdown-btn:hover {
-    border-color: var(--althub-blue-primary);
-    background: var(--althub-blue-light);
+    border-color: var(--althub-border-strong);
+    background: var(--althub-surface-muted);
 }
 
 .user-name-label {
+    color: var(--althub-text);
+    font-size: 13px;
     font-weight: 700;
-    color: var(--althub-blue-deep);
-    font-size: 0.9rem;
 }
 
-/* --- FLOATING SIDEBAR --- */
 .admin-sidebar {
-    width: 280px;
-    background: linear-gradient(165deg, var(--althub-blue-primary) 0%, var(--althub-blue-deep) 100%);
     position: fixed;
-    top: 90px; /* Space from top */
-    bottom: 20px; /* Space from bottom */
-    left: 20px; /* Space from left */
     z-index: 1040;
-    border-radius: 24px; /* Fully rounded floating card */
-    padding-top: 30px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 15px 0 40px rgba(37, 99, 235, 0.15);
+    top: var(--althub-header-height);
+    bottom: 0;
+    left: 0;
+    width: var(--althub-sidebar-width);
+    padding: 16px 10px;
+    background: #ffffff;
+    border-right: 1px solid var(--althub-border);
 }
 
 .sidebar-profile {
-    padding: 0 30px 30px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 25px;
+    padding: 4px 14px 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--althub-border);
 }
 
 .profile-name {
-    color: var(--althub-white);
-    font-weight: 700;
     display: block;
-    font-size: 1.1rem;
-    margin-bottom: 4px;
+    color: var(--althub-text);
+    font-size: 14px;
+    font-weight: 800;
 }
 
 .profile-role {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.7rem;
+    color: var(--althub-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 600;
 }
 
 .nav-header-text {
-    padding: 10px 30px;
-    font-size: 0.7rem;
+    padding: 12px 14px 8px;
+    color: var(--althub-text-faint);
+    font-size: 11px;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0;
     text-transform: uppercase;
-    letter-spacing: 2px;
 }
 
-/* --- NAV LINKS --- */
 .admin-nav-list {
-    list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .admin-nav-item {
-    padding: 4px 20px;
+    margin: 2px 0;
 }
 
 .admin-nav-link {
+    min-height: 42px;
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 14px 18px;
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none !important;
-    border-radius: 16px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--althub-radius-md);
+    color: var(--althub-text-muted);
+    font-size: 14px;
+    font-weight: 650;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease;
 }
 
 .admin-nav-link i {
-    width: 22px;
+    width: 20px;
+    color: var(--althub-text-faint);
     text-align: center;
-    font-size: 1.1rem;
-    transition: transform 0.3s ease;
 }
 
 .admin-nav-link:hover {
-    color: var(--althub-white);
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--althub-surface-muted);
+    color: var(--althub-text);
+    text-decoration: none;
 }
 
 .admin-nav-link:hover i {
-    transform: translateX(3px);
+    color: var(--althub-brand);
 }
 
-/* THE "POPPING" ACTIVE STATE */
 .admin-nav-link.active {
-    background: var(--althub-white);
-    color: var(--althub-blue-primary) !important;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    transform: translateX(5px);
+    background: var(--althub-brand-soft);
+    color: var(--althub-brand-strong);
 }
 
 .admin-nav-link.active i {
-    color: var(--althub-blue-primary);
+    color: var(--althub-brand);
 }
 
-/* Adjust main content to respect floating sidebar */
 #content {
-    margin-left: 320px !important;
-    padding-top: 100px !important;
-    transition: all 0.3s ease;
+    margin-left: var(--althub-sidebar-width);
+    padding-top: calc(var(--althub-header-height) + 28px);
+    transition: margin-left 0.25s ease;
+}
+
+@media (max-width: 767px) {
+    .admin-header {
+        height: 62px;
+        padding: 0 14px;
+    }
+
+    .admin-brand-name {
+        font-size: 18px;
+    }
+
+    .admin-sidebar {
+        display: none;
+    }
+
+    .user-name-label,
+    .user-dropdown-btn .fa-chevron-down {
+        display: none;
+    }
+
+    #content {
+        margin-left: 0;
+        padding-top: 82px;
+    }
 }

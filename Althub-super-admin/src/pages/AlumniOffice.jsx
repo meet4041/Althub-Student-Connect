@@ -1,10 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
-// USING THE PREMIUM THEME
 import '../styles/users.css';
 
 const AlumniOffice = () => {
@@ -66,7 +65,6 @@ const AlumniOffice = () => {
                 <Menu />
                 <div id="content" className="content users-wrapper">
                     
-                    {/* PREMIUM HEADER */}
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
                             <h1 className="page-header mb-1">Alumni Governance</h1>
@@ -74,7 +72,7 @@ const AlumniOffice = () => {
                                 Campus Hubs: <span className="text-primary">{data.length}</span> Verified Alumni Offices
                             </p>
                         </div>
-                        <div className="search-input-group-modern" style={{ minWidth: '350px', borderColor:'#2563eb'}}>
+                        <div className="search-input-group-modern">
                             <i className="fa fa-search"></i>
                             <input 
                                 type="text" 
@@ -94,7 +92,7 @@ const AlumniOffice = () => {
                         <div className="row">
                             {displayData.length > 0 ? displayData.map((item) => (
                                 <div key={item._id} className="col-lg-4 col-md-6 mb-4">
-                                    <div className="inst-floating-card h-100" onClick={() => setSelectedItem(item)} style={{ cursor: 'pointer' }}>
+                                    <div className="inst-floating-card h-100" onClick={() => setSelectedItem(item)}>
                                         <div className="inst-card-body">
                                             <div className="d-flex justify-content-between">
                                                 <div className="inst-icon-glow">

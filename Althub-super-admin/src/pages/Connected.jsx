@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, Fragment } from 'react';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 

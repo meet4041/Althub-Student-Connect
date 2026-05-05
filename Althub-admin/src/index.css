@@ -12,25 +12,15 @@ code {
     monospace;
 }
 
-/* --- Blue & White Theme Variables --- */
-:root {
-  --primary-blue: #2563EB;       /* Royal Blue */
-  --primary-blue-light: #EFF6FF; /* Very Light Blue for active backgrounds */
-  --text-dark: #1E293B;          /* Dark Slate for headings */
-  --text-gray: #64748B;          /* Gray for inactive menu items */
-  --white: #ffffff;
-  --sidebar-width: 220px;
-}
-
 /* --- Header Styling --- */
 .header.navbar-default {
   background: var(--white);
-  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid #e2e8f0;
+  box-shadow: var(--althub-shadow-sm);
+  border-bottom: 1px solid var(--althub-border);
 }
 
 .navbar-brand {
-  color: var(--primary-blue) !important;
+  color: var(--primary-green);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -38,7 +28,7 @@ code {
 /* --- Sidebar Styling --- */
 .sidebar {
   background: var(--white);
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--althub-border);
 }
 
 .sidebar .nav > li > a {
@@ -49,7 +39,7 @@ code {
 }
 
 .sidebar .nav > li > a:hover {
-  color: var(--primary-blue);
+  color: var(--primary-green);
   background: transparent;
 }
 
@@ -61,18 +51,18 @@ code {
 }
 
 /* --- Active Menu Item Styling --- */
-/* This creates the Blue Highlight effect */
+/* This creates the Green Highlight effect */
 .sidebar .nav > li.active > a {
-  background: var(--primary-blue-light) !important;
-  color: var(--primary-blue) !important;
-  border-right: 3px solid var(--primary-blue); /* Accent bar on the right */
+  background: var(--primary-green-light);
+  color: var(--primary-green);
+  border-right: 3px solid var(--primary-green); /* Accent bar on the right */
 }
 
 .sidebar .nav > li.active > a i {
-  color: var(--primary-blue) !important;
+  color: var(--primary-green);
 }
 
 /* --- Dropdown Profile --- */
 .navbar-user img {
-  border: 2px solid var(--primary-blue-light);
+  border: 2px solid var(--primary-green-light);
 }

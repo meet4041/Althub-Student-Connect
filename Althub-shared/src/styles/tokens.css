@@ -1,0 +1,71 @@
+:root {
+  color-scheme: light;
+
+  --althub-brand: #0d9488;
+  --althub-brand-strong: #0f766e;
+  --althub-brand-deep: #115e59;
+  --althub-brand-soft: #ecfdf5;
+  --althub-brand-muted: #ccfbf1;
+  --althub-brand-ring: rgba(13, 148, 136, 0.18);
+
+  --althub-surface: #ffffff;
+  --althub-surface-muted: #f8fffd;
+  --althub-shell-bg: #f4fbf8;
+  --althub-border: #dcebe6;
+  --althub-border-strong: #bfe3d8;
+  --althub-text: #12372f;
+  --althub-text-muted: #526861;
+  --althub-text-faint: #7b928b;
+
+  --althub-danger: #e11d48;
+  --althub-danger-soft: #fff1f2;
+  --althub-warning: #d97706;
+  --althub-warning-soft: #fffbeb;
+  --althub-success: #0d9488;
+  --althub-success-soft: #ecfdf5;
+
+  --althub-radius-sm: 8px;
+  --althub-radius-md: 10px;
+  --althub-radius-lg: 14px;
+  --althub-sidebar-width: 248px;
+  --althub-header-height: 64px;
+  --althub-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --althub-shadow-md: 0 14px 34px rgba(15, 23, 42, 0.08);
+  --althub-shadow-brand: 0 10px 24px rgba(13, 148, 136, 0.18);
+
+  --primary-blue: var(--althub-brand);
+  --primary-blue-light: var(--althub-brand-soft);
+  --brand-blue: var(--althub-brand);
+  --brand-navy: var(--althub-brand-deep);
+  --brand-light-blue: var(--althub-brand-soft);
+  --primary-green: var(--althub-brand);
+  --primary-green-light: var(--althub-brand-soft);
+  --brand-green: var(--althub-brand);
+  --brand-light-green: var(--althub-brand-soft);
+
+  --althub-blue-primary: var(--althub-brand);
+  --althub-blue-deep: var(--althub-brand-deep);
+  --althub-blue-light: var(--althub-brand-soft);
+  --althub-white: var(--althub-surface);
+  --althub-bg: var(--althub-shell-bg);
+  --althub-glass: rgba(255, 255, 255, 0.82);
+
+  --admin-blue: var(--althub-brand);
+  --admin-blue-dark: var(--althub-brand-strong);
+  --admin-blue-soft: var(--althub-brand-soft);
+  --admin-shell-bg: var(--althub-shell-bg);
+  --admin-surface: var(--althub-surface);
+  --admin-surface-muted: var(--althub-surface-muted);
+  --admin-border: var(--althub-border);
+  --admin-border-strong: var(--althub-border-strong);
+  --admin-text: var(--althub-text);
+  --admin-muted: var(--althub-text-muted);
+  --admin-faint: var(--althub-text-faint);
+  --admin-shadow: var(--althub-shadow-sm);
+  --admin-shadow-hover: var(--althub-shadow-md);
+
+  --text-dark: var(--althub-text);
+  --text-gray: var(--althub-text-muted);
+  --white: var(--althub-surface);
+  --sidebar-width: var(--althub-sidebar-width);
+}

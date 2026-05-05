@@ -1,0 +1,213 @@
+/* Reusable admin primitives. Page CSS should only add exceptions. */
+.admin-page-title,
+.institute-page-title,
+.dashboard-header-h1,
+.events-title,
+.users-header,
+.alumni-header,
+.posts-header,
+.edit-event-title {
+    margin: 0;
+    color: var(--admin-text);
+    font-size: var(--admin-page-title-size);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.admin-card,
+.settings-layout-box,
+.event-form-card,
+.post-form-card,
+.alumni-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card,
+.institute-page-card,
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.dashboard-csv-bar {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-card-radius);
+    box-shadow: var(--admin-shadow-sm);
+}
+
+.btn-primary,
+.btn-events-create,
+.posts-create-btn,
+.dashboard-csv-btn,
+.edit-event-save-btn,
+.post-footer-actions .btn-primary,
+.form-footer-sticky .btn-primary {
+    min-height: var(--admin-btn-height);
+    background: var(--admin-brand);
+    border-color: var(--admin-brand);
+    color: #ffffff;
+    box-shadow: var(--admin-shadow-brand);
+    font-weight: 750;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-events-create:hover,
+.posts-create-btn:hover,
+.dashboard-csv-btn:hover,
+.edit-event-save-btn:hover,
+.post-footer-actions .btn-primary:hover,
+.form-footer-sticky .btn-primary:hover {
+    background: var(--admin-brand-strong);
+    border-color: var(--admin-brand-strong);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px var(--admin-brand-ring), var(--admin-shadow-brand);
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:not(:disabled):not(.disabled):active {
+    background: var(--admin-brand-deep);
+    border-color: var(--admin-brand-deep);
+    color: #ffffff;
+}
+
+.btn-light,
+.btn-white,
+.edit-event-back-btn {
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    color: #334155;
+    box-shadow: none;
+    font-weight: 700;
+}
+
+.btn-light:hover,
+.btn-white:hover,
+.edit-event-back-btn:hover {
+    background: var(--admin-surface-muted);
+    color: var(--admin-text);
+}
+
+.form-control,
+.custom-select,
+select,
+textarea {
+    min-height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-btn-radius);
+    color: var(--admin-text);
+    box-shadow: none;
+}
+
+.form-control:focus,
+.custom-select:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--admin-brand);
+    box-shadow: 0 0 0 3px var(--admin-brand-ring);
+}
+
+.text-primary {
+    color: var(--admin-brand);
+}
+
+.admin-form-title {
+    color: var(--admin-text);
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.admin-form-back-btn {
+    border-radius: 8px;
+}
+
+.admin-post-textarea {
+    min-height: 300px;
+    resize: none;
+}
+
+.admin-table-head-row {
+    background: var(--admin-surface-muted);
+}
+
+.admin-hover-row {
+    transition: background 0.2s ease;
+}
+
+.admin-id-col {
+    width: 70px;
+}
+
+.admin-status-col {
+    width: 120px;
+}
+
+.admin-name-cell {
+    font-size: 15px;
+}
+
+.admin-name-cell-sm {
+    font-size: 14px;
+}
+
+.admin-muted-badge {
+    border-radius: 8px;
+    color: var(--admin-text-muted);
+    font-weight: 600;
+}
+
+.leaderboard-card {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.leaderboard-rank-col {
+    width: 100px;
+}
+
+.leaderboard-bronze {
+    background: #cd7f32;
+    color: #ffffff;
+}
+
+.leaderboard-score-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.leaderboard-score-pill.good {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.leaderboard-score-pill.ok {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.leaderboard-score-pill.bad {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.leaderboard-star {
+    font-size: 12px;
+}
+
+.feedback-message-col {
+    width: 35%;
+}
+
+.feedback-score-col {
+    width: 110px;
+}
+
+.profile-security-form {
+    max-width: 500px;
+}

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
+import apiClient from "../api/client";
 import { Eye, EyeOff, Loader2, Lock, Mail, ArrowLeft } from "lucide-react"; 
-import { WEB_URL } from "../baseURL";
+import { WEB_URL } from "../config/api";
 import "../styles/Login.css"; 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../auth/session";
 
 export default function Login() {
   const nav = useNavigate();
@@ -43,13 +43,13 @@ export default function Login() {
     e.preventDefault();
     if (validate()) {
       setLoading(true);
-      axios({
+      apiClient({
         method: "post",
         data: {
           email: user.email,
           password: user.password,
         },
-        url: `${WEB_URL}/api/userLogin`,
+        url: `/api/userLogin`,
         withCredentials: true
       }).then((response) => {
         toast.success("Welcome back!");
@@ -118,6 +118,7 @@ export default function Login() {
                   className="login-custom-input"
                   value={user.email}
                   onChange={handleChange}
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -142,6 +143,7 @@ export default function Login() {
                   className="login-custom-input pr-12" // Added extra right padding for the eye icon
                   value={user.password}
                   onChange={handleChange}
+                  autoComplete="current-password"
                 />
                 {/* Toggle Button */}
                 <button

@@ -2,7 +2,7 @@ import React, { useState, Fragment, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 
 import '../styles/login.css';
 

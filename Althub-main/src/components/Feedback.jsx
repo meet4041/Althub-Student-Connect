@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { WEB_URL } from '../baseURL';
+import apiClient from "../api/client";
+import { WEB_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import "../styles/Feedback.css"; // <--- New CSS Import
@@ -20,7 +20,7 @@ export default function Feedback() {
     const location = useLocation();
 
     useEffect(() => {
-        axios.get(`${WEB_URL}/api/getUsers`, {
+        apiClient.get(`/api/v1/users`, {
             withCredentials: true 
         }).then((res) => {
             if(res.data.success) {
@@ -59,8 +59,8 @@ export default function Feedback() {
 
         setIsSubmitting(true);
 
-        axios({
-            url: `${WEB_URL}/api/addFeedback`,
+        apiClient({
+            url: `/api/addFeedback`,
             method: 'post',
             withCredentials: true,
             data: {

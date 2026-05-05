@@ -1,0 +1,21 @@
+{
+  "name": "@althub/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./api": "./src/apiClient.js",
+    "./auth": "./src/auth/createAuthSession.jsx",
+    "./config": "./src/config.js",
+    "./cookies": "./src/cookies.js",
+    "./images": "./src/images.js",
+    "./styles/tokens.css": "./src/styles/tokens.css"
+  },
+  "peerDependencies": {
+    "axios": "^1.6.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.10.0"
+  }
+}

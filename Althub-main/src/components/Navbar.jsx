@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import ProtectedImage from "../ProtectedImage";
 import { Home, FileText, Search, MessageSquare, Bell, Gift, MessageCircle, Menu, X, LogOut, User } from "lucide-react";
 import "../styles/Navbar.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../auth/session";
 
 export default function Navbar({ socket }) {
   const [mobileOpen, setMobileOpen] = useState(false);

@@ -9,7 +9,19 @@ import Institutes from '../pages/Institute';
 import PlacementCell from '../pages/PlacementCell';
 import AlumniOffice from '../pages/AlumniOffice';
 import Connected from '../pages/Connected';
-import AuthGuard from '../components/AuthGuard';
+import Announcement from '../pages/Announcement';
+import AuthGuard from '../auth/AuthGuard';
+
+const protectedRoutes = [
+    { path: '/dashboard', element: <Dashboard /> },
+    { path: '/profile', element: <Profile /> },
+    { path: '/users', element: <Users /> },
+    { path: '/placement-cell', element: <PlacementCell /> },
+    { path: '/alumni-office', element: <AlumniOffice /> },
+    { path: '/connected', element: <Connected /> },
+    { path: '/announcement', element: <Announcement /> },
+    { path: '/institute', element: <Institutes /> },
+];
 
 const AppRoutes = () => {
     return (
@@ -18,49 +30,13 @@ const AppRoutes = () => {
             <Route path='/login' element={<Login />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
             <Route path='/new-password' element={<NewPassword />} />
-
-            {/* Protected Routes (Wrapped in AuthGuard) */}
-            <Route path='/dashboard' element={
-                <AuthGuard>
-                    <Dashboard />
-                </AuthGuard>
-            } />
-
-            <Route path='/profile' element={
-                <AuthGuard>
-                    <Profile />
-                </AuthGuard>
-            } />
-
-            <Route path='/users' element={
-                <AuthGuard>
-                    <Users />
-                </AuthGuard>
-            } />
-
-            <Route path='/placement-cell' element={
-                <AuthGuard>
-                    <PlacementCell />
-                </AuthGuard>
-            } />
-
-            <Route path='/alumni-office' element={
-                <AuthGuard>
-                    <AlumniOffice />
-                </AuthGuard>
-            } />
-
-            <Route path='/connected' element={
-                <AuthGuard>
-                    <Connected />
-                </AuthGuard>
-            } />
-
-            <Route path='/institute' element={
-                <AuthGuard>
-                    <Institutes />
-                </AuthGuard>
-            } />
+            {protectedRoutes.map(({ path, element }) => (
+                <Route
+                    key={path}
+                    path={path}
+                    element={<AuthGuard>{element}</AuthGuard>}
+                />
+            ))}
 
             <Route path='*' element={<Navigate to='/login' replace />} />
         </Routes>

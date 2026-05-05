@@ -1,7 +1,7 @@
 import React from "react";
 import Slider from "react-slick";
-import { WEB_URL } from "../baseURL";
-import axios from "axios";
+import { WEB_URL } from "../config/api";
+import apiClient from "../api/client";
 import { toast } from "react-toastify";
 import ProtectedImage from "../ProtectedImage";
 import "../styles/EventModal.css"; // <--- Import CSS
@@ -35,7 +35,7 @@ const EventModal = ({ closeModal, event, getEvents }) => {
   };
 
   const handleJoin = () => {
-    axios.put(`${WEB_URL}/api/participateInEvent/${event._id}`, {})
+    apiClient.put(`/api/v1/events/${event._id}/participation`, {})
       .then((res) => {
         toast.success(res.data);
         closeModal();

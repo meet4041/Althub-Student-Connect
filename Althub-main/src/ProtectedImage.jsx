@@ -1,62 +1,75 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { WEB_URL } from "./baseURL"; 
+import apiClient from "./api/client";
+import { WEB_URL } from "./config/api";
 
 const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profile1.png", ...props }) => {
   const [currentSrc, setCurrentSrc] = useState(defaultImage);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Validation
-    if (!imgSrc || imgSrc === "undefined" || imgSrc === "") {
+    let active = true;
+    let objectUrl = null;
+    let retryTimer = null;
+
+    const finishWithDefault = () => {
+      if (!active) return;
       setCurrentSrc(defaultImage);
+      setLoading(false);
+    };
+
+    if (!imgSrc || imgSrc === "undefined" || imgSrc === "") {
+      finishWithDefault();
+      return;
+    }
+
+    if (imgSrc.startsWith("http") || imgSrc.startsWith("blob:") || imgSrc.startsWith("data:")) {
+      setCurrentSrc(imgSrc);
       setLoading(false);
       return;
     }
 
-    // 2. Optimization: Static/External images don't need auth
-    if (imgSrc.startsWith("http")) {
-       setCurrentSrc(imgSrc);
-       setLoading(false);
-       return;
-    }
-
-    // 3. The Secure Fetch
-    const fetchSecureImage = async () => {
-      let objectUrl = null;
+    const fetchSecureImage = async (attempt = 0) => {
       try {
         setLoading(true);
-        // Ensure strictly one slash between base and path
         const cleanPath = imgSrc.startsWith("/") ? imgSrc : `/${imgSrc}`;
         const fullUrl = `${WEB_URL}${cleanPath}`;
-
-        // Prefer cookie-based auth (HttpOnly jwt_token). Use withCredentials.
-        const response = await axios.get(fullUrl, {
+        const response = await apiClient.get(fullUrl, {
           responseType: "blob",
-          withCredentials: true
+          withCredentials: true,
         });
 
-        objectUrl = URL.createObjectURL(response.data);
-        setCurrentSrc(objectUrl);
-      } catch (error) {
-        console.error("Image Load Failed:", error);
-        setCurrentSrc(defaultImage);
-      } finally {
-        setLoading(false);
-      }
+        const nextObjectUrl = URL.createObjectURL(response.data);
+        if (!active) {
+          URL.revokeObjectURL(nextObjectUrl);
+          return;
+        }
 
-      // Cleanup: revoke object URL on unmount or when src changes
-      return () => {
         if (objectUrl) URL.revokeObjectURL(objectUrl);
-      };
+        objectUrl = nextObjectUrl;
+        setCurrentSrc(nextObjectUrl);
+        setLoading(false);
+      } catch (error) {
+        if (!active) return;
+        if (attempt === 0) {
+          retryTimer = window.setTimeout(() => fetchSecureImage(1), 500);
+          return;
+        }
+        console.error("Image Load Failed:", error);
+        finishWithDefault();
+      }
     };
 
-    const cleanup = fetchSecureImage();
-    return () => { if (cleanup && typeof cleanup === 'function') cleanup(); };
+    fetchSecureImage();
+
+    return () => {
+      active = false;
+      if (retryTimer) window.clearTimeout(retryTimer);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [imgSrc, defaultImage]);
 
   if (loading) {
-      return <img src={defaultImage} alt={alt} className={className} style={{opacity: 0.5}} {...props} />;
+    return <img src={defaultImage} alt={alt} className={className} style={{ opacity: 0.5 }} {...props} />;
   }
 
   return <img src={currentSrc} alt={alt} className={className} {...props} />;

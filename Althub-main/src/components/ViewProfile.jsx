@@ -1,12 +1,12 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
 import { 
-  MapPin, Globe, Edit3, MoreHorizontal, Plus, Lock, Trash2, 
+  MapPin, Globe, Github, Edit3, MoreHorizontal, Plus, Lock, Trash2,
   Briefcase, GraduationCap, Award, ChevronRight, UserCheck 
 } from "lucide-react"; 
 import "../styles/ViewProfile.css"; 
@@ -17,6 +17,21 @@ import EditExperienceModal from "./EditExperienceModal";
 import EditEducationModal from "./EditEducationModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import FollowerModal from "./FollowerModal";
+
+const parseListField = (value) => {
+    if (Array.isArray(value)) return value;
+    if (!value || typeof value !== 'string') return [];
+
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return value
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+};
 
 export default function ViewProfile() {
   const { user: authUser, logout } = useAuth();
@@ -59,26 +74,30 @@ export default function ViewProfile() {
 
     // --- Data Fetching ---
     const getUser = useCallback(() => {
-        axios.get(`${WEB_URL}/api/searchUserById/${userID}`, { withCredentials: true }).then((res) => {
-            if (res.data?.data) {
+        if (!userID) return;
+        apiClient.get(`/api/v1/users/${userID}`, { withCredentials: true }).then((res) => {
+            if (res.data?.data?.length) {
                 const u = res.data.data[0];
                 setUser(u);
-                u.languages && setLanguage(JSON.parse(u.languages));
-                u.skills && setSkills(JSON.parse(u.skills));
+                setLanguage(parseListField(u.languages));
+                setSkills(parseListField(u.skills));
             }
         });
     }, [userID]);
 
     const getEducation = useCallback(() => {
-        axios.post(`${WEB_URL}/api/getEducation`, { userid: userID }, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
+        if (!userID) return;
+        apiClient.post(`/api/getEducation`, { userid: userID }, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
     }, [userID]);
 
     const getExperience = useCallback(() => {
-        axios.post(`${WEB_URL}/api/getExperience`, { userid: userID }, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
+        if (!userID) return;
+        apiClient.post(`/api/getExperience`, { userid: userID }, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
     }, [userID]);
 
     const getNewUsers = useCallback(() => {
-        axios.post(`${WEB_URL}/api/getRandomUsers`, { userid: userID }, { withCredentials: true }).then((res) => setTopUsers(res.data.data));
+        if (!userID) return;
+        apiClient.post(`/api/v1/users/random`, { userid: userID }, { withCredentials: true }).then((res) => setTopUsers(res.data.data));
     }, [userID]);
 
     useEffect(() => {
@@ -88,7 +107,7 @@ export default function ViewProfile() {
     // --- Handlers ---
     const handleDeleteAccount = () => {
         if (window.confirm("Are you sure? This cannot be undone.")) {
-            axios.delete(`${WEB_URL}/api/deleteUser/${userID}`, { withCredentials: true }).then(() => {
+            apiClient.delete(`/api/deleteUser/${userID}`, { withCredentials: true }).then(() => {
                 toast.success("Account Deleted"); logout(); nav("/");
             });
         }

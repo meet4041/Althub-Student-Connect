@@ -1,8 +1,8 @@
 .posts-content-wrapper {
-    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
     min-height: 100vh;
-    margin-left: 260px !important;
-    padding: 35px 24px 80px !important;
+    margin-left: 260px;
+    padding: 35px 24px 80px;
     transition: margin-left 0.3s ease;
 }
 
@@ -43,8 +43,8 @@
 }
 
 .posts-search-group {
-    max-width: 520px !important;
-    margin-bottom: 0 !important;
+    max-width: 520px;
+    margin-bottom: 0;
 }
 
 .posts-rows-select {
@@ -67,9 +67,9 @@
 }
 
 .post-row td {
-    padding-top: 16px !important;
-    padding-bottom: 16px !important;
-    vertical-align: middle !important;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    vertical-align: middle;
 }
 
 .post-row td:first-child {
@@ -137,16 +137,16 @@
 
 .post-action-btn {
     appearance: none;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    line-height: 1 !important;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -156,7 +156,7 @@
 }
 
 .post-action-btn i {
-    margin: 0 !important;
+    margin: 0;
     font-size: 14px;
     line-height: 1;
 }
@@ -184,14 +184,14 @@
 
 .post-actions-cell {
     width: 132px;
-    padding-right: 24px !important;
-    text-align: right !important;
+    padding-right: 24px;
+    text-align: right;
 }
 
 @media (max-width: 767px) {
     .posts-content-wrapper {
-        margin-left: 0 !important;
-        padding: 24px 16px 72px !important;
+        margin-left: 0;
+        padding: 24px 16px 72px;
     }
 
     .posts-toolbar-group,
@@ -200,39 +200,19 @@
     }
 
     .posts-toolbar {
-        padding: 16px !important;
+        padding: 16px;
     }
 
     .posts-search-group {
-        max-width: none !important;
+        max-width: none;
         width: 100%;
     }
 }
 
-/* Minimal Althub route polish */
-.posts-content-wrapper {
-    margin-left: 248px !important;
-    padding: 28px 0 40px !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
-}
-
-.posts-container {
-    max-width: 1440px !important;
-    padding: 0 28px 36px !important;
-}
-
-.post-main-card,
-.posts-toolbar-group {
-    border-color: #e2e8f0 !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-}
-
 /* Posts table redesign */
 .posts-container .post-main-card {
-    border-radius: 12px !important;
-    overflow: hidden !important;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .posts-container .table-responsive {
@@ -244,16 +224,16 @@
 }
 
 .posts-th-id {
-    width: 76px !important;
+    width: 76px;
 }
 
 .posts-th-media {
-    width: 140px !important;
+    width: 140px;
 }
 
 .posts-th-actions {
-    width: 132px !important;
-    padding-right: 24px !important;
+    width: 132px;
+    padding-right: 24px;
 }
 
 .post-row td {
@@ -261,13 +241,13 @@
 }
 
 .post-row .post-media-preview {
-    width: 96px !important;
-    min-width: 96px !important;
-    height: 56px !important;
+    width: 96px;
+    min-width: 96px;
+    height: 56px;
 }
 
 .post-desc-clamp {
-    max-width: none !important;
+    max-width: none;
     -webkit-line-clamp: 2;
     font-size: 14px;
 }
@@ -288,40 +268,40 @@
 }
 
 .post-action-edit {
-    color: #2563eb !important;
+    color: #0d9488;
 }
 
 .post-action-delete {
-    color: #dc2626 !important;
+    color: #dc2626;
 }
 
 .post-action-edit:hover {
-    background: #eff6ff !important;
-    border-color: #bfdbfe !important;
+    background: #ecfdf5;
+    border-color: #99f6e4;
 }
 
 .post-action-delete:hover {
-    background: #fef2f2 !important;
-    border-color: #fecaca !important;
+    background: #fef2f2;
+    border-color: #fecaca;
 }
 
 @media (max-width: 767px) {
     .posts-content-wrapper {
-        margin-left: 0 !important;
-        padding: 20px 0 24px !important;
+        margin-left: 0;
+        padding: 20px 0 24px;
     }
 
     .posts-container {
-        padding: 0 16px 24px !important;
+        padding: 0 16px 24px;
     }
 
     .posts-th-actions,
     .post-actions-cell {
-        padding-right: 16px !important;
+        padding-right: 16px;
     }
 
     .posts-container .table-responsive {
-        overflow: visible !important;
+        overflow: visible;
         border-top: 1px solid #eef2f7;
     }
 
@@ -331,7 +311,7 @@
     .posts-container tr,
     .posts-container td {
         display: block;
-        width: 100% !important;
+        width: 100%;
     }
 
     .posts-container thead {
@@ -362,9 +342,9 @@
     .post-row td,
     .post-row td:first-child {
         height: auto;
-        padding: 0 !important;
-        border: 0 !important;
-        width: auto !important;
+        padding: 0;
+        border: 0;
+        width: auto;
     }
 
     .post-row td:nth-child(1) {
@@ -394,13 +374,13 @@
         grid-row: 3;
         align-self: center;
         justify-self: end;
-        padding-right: 0 !important;
+        padding-right: 0;
     }
 
     .post-row .post-media-preview {
-        width: 82px !important;
-        min-width: 82px !important;
-        height: 58px !important;
+        width: 82px;
+        min-width: 82px;
+        height: 58px;
     }
 
     .post-desc-clamp {
@@ -417,12 +397,12 @@
     }
 
     .post-date-badge i {
-        margin: 0 !important;
+        margin: 0;
         font-size: 13px;
     }
 
     .post-actions-cell {
-        text-align: right !important;
+        text-align: right;
     }
 
     .post-actions {
@@ -431,9 +411,9 @@
     }
 
     .post-action-btn {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        min-height: 38px !important;
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
     }
 }

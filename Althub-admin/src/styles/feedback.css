@@ -1,106 +1,96 @@
-/* src/styles/feedback.css */
+/* Feedback and office pages now use shared admin chrome from institute-layout.css. */
 
 .feedback-content-wrapper {
-    background-color: #F1F5F9 !important;
-    height: 100vh;
-    /* FIX: Standard offsets for sidebar and header */
-    margin-left: 215px !important; 
-    padding-top: 35px !important; 
-    margin-top: 0 !important;
-    overflow: hidden; /* Lock page-level scroll */
-    transition: margin-left 0.3s ease;
-}
-
-.feedback-container {
-    height: calc(100vh - 65px);
-    padding: 25px 30px;
-    display: flex;
-    flex-direction: column;
-}
-
-.feedback-scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 5px;
-    padding-bottom: 30px;
-}
-
-.feedback-main-card {
-    border-radius: 16px !important;
-    border: 1px solid #E2E8F0 !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-    background: #ffffff;
-    overflow: hidden;
-}
-
-.feedback-row {
-    transition: background-color 0.2s;
-}
-
-.feedback-row:hover {
-    background-color: #F8FAFC !important;
-}
-
-.feedback-id-badge {
-    background-color: #F1F5F9;
-    color: #64748B;
-    font-weight: 700;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 5px;
-}
-
-.rating-stars {
-    color: #F59E0B; /* Amber-500 */
-    font-size: 13px;
-    letter-spacing: 1px;
-}
-
-.message-box {
-    color: #64748B;
-    font-size: 13.5px;
-    font-style: italic;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-@media (max-width: 767px) {
-    .feedback-content-wrapper { margin-left: 0 !important; overflow-y: auto; }
-    .feedback-container { height: auto; }
-}
-
-/* Minimal Althub route polish */
-.feedback-content-wrapper {
-    margin-left: 248px !important;
-    padding: 28px 0 40px !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
+    min-height: 100vh;
+    margin-left: var(--althub-sidebar-width);
+    padding-top: var(--institute-page-top-gap);
+    background: linear-gradient(180deg, #ffffff 0, var(--althub-surface-muted) 220px, var(--althub-shell-bg) 520px);
 }
 
 .feedback-container,
 .leaderboard-container {
-    max-width: 1440px !important;
-    height: auto !important;
-    padding: 0 28px 36px !important;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0;
+    padding: 0 var(--institute-page-side-gap) var(--institute-page-bottom-gap);
 }
 
 .feedback-scroll-area {
-    overflow: visible !important;
-    padding-right: 0 !important;
+    overflow: visible;
+}
+
+.feedback-main-card {
+    margin-top: 0;
+}
+
+.feedback-row {
+    transition: background-color 0.16s ease;
+}
+
+.feedback-row:hover {
+    background-color: var(--althub-surface-muted);
+}
+
+.feedback-id-badge {
+    display: inline-flex;
+    min-width: 34px;
+    justify-content: center;
+    padding: 5px 8px;
+    background: var(--althub-brand-soft);
+    border: 1px solid var(--althub-brand-muted);
+    border-radius: 999px;
+    color: var(--althub-brand-strong);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.message-box {
+    max-width: 100%;
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--althub-text-muted);
+    font-size: 13.5px;
+    font-style: italic;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.feedback-score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.feedback-score-pill.good {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.feedback-score-pill.ok {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.feedback-score-pill.bad {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 @media (max-width: 767px) {
     .feedback-content-wrapper {
-        margin-left: 0 !important;
-        padding: 20px 0 24px !important;
+        margin-left: 0;
+        padding-top: var(--institute-page-top-gap);
     }
 
     .feedback-container,
     .leaderboard-container {
-        padding: 0 16px 24px !important;
+        padding: 0 var(--institute-page-side-gap) 24px;
     }
 }

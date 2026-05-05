@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
 import { toast } from "react-toastify";
@@ -34,7 +34,7 @@ export default function SearchProfile({ socket }) {
 
   useEffect(() => {
     if(userID) {
-      axios.get(`${WEB_URL}/api/searchUserById/${userID}`)
+      apiClient.get(`/api/v1/users/${userID}`)
         .then((res) => { if (res?.data?.data) setSelf(res.data.data[0]); })
         .catch(console.error);
     }
@@ -50,7 +50,7 @@ export default function SearchProfile({ socket }) {
         year: overrideParams.year !== undefined ? overrideParams.year : year
     };
 
-    axios.post(`${WEB_URL}/api/searchUser`, payload)
+    apiClient.post(`/api/v1/users/search`, payload)
       .then((res) => {
         const users = (res.data.data || []).filter((user) => user._id !== userID);
         setShowUsers(users);
@@ -71,18 +71,18 @@ export default function SearchProfile({ socket }) {
     const msg = `${self.fname} ${self.lname} Started Following You`;
     if (socket) socket.emit("sendNotification", { receiverid: targetId, title: "New Follower", msg: msg });
     
-    axios.post(`${WEB_URL}/api/addNotification`, { 
+    apiClient.post(`/api/v1/notifications`, { 
         userid: targetId, msg: msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() 
     });
 
-    axios.put(`${WEB_URL}/api/follow/${targetId}`, { userId: userID })
+    apiClient.put(`/api/follow/${targetId}`, { userId: userID })
         .then(() => {
             toast.success("Following!");
             performSearch(); 
-            axios.post(`${WEB_URL}/api/searchConversations`, { person1: targetId, person2: userID })
+            apiClient.post(`/api/searchConversations`, { person1: targetId, person2: userID })
             .then((res) => {
                 if (res.data.data.length <= 0) {
-                    axios.post(`${WEB_URL}/api/newConversation`, { senderId: userID, receiverId: targetId });
+                    apiClient.post(`/api/newConversation`, { senderId: userID, receiverId: targetId });
                 }
             });
         })
@@ -91,7 +91,7 @@ export default function SearchProfile({ socket }) {
 
   const confirmUnfollow = () => {
     if (!unfollowId) return;
-    axios.put(`${WEB_URL}/api/unfollow/${unfollowId}`, { userId: userID })
+    apiClient.put(`/api/unfollow/${unfollowId}`, { userId: userID })
         .then(() => {
             toast.info("Unfollowed.");
             setUnfollowId(null);

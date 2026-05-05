@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import EditEducationModal from "./EditEducationModal";
 import ProtectedImage from "../ProtectedImage";
@@ -13,7 +13,7 @@ import {
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/HomePage.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../auth/session";
 
 export default function Home({ socket }) {
   const settings = { dots: true, infinite: false, speed: 500, slidesToShow: 1, slidesToScroll: 1, arrows: false };
@@ -76,13 +76,13 @@ export default function Home({ socket }) {
   };
 
   const checkEducation = useCallback(() => {
-    if (userid) axios.post(`${WEB_URL}/api/getEducation`, { userid }).then((res) => setHasEducation(res.data.data?.length > 0));
+    if (userid) apiClient.post(`/api/getEducation`, { userid }).then((res) => setHasEducation(res.data.data?.length > 0));
   }, [userid]);
 
   // CHANGED: New function to fetch random users and filter them
   const getSuggestions = useCallback(() => {
     if (!userid) return;
-    axios.post(`${WEB_URL}/api/getRandomUsers`, { userid })
+    apiClient.post(`/api/v1/users/random`, { userid })
       .then((res) => {
         if (res.data.data) {
           // Filter out users I already follow and my own profile
@@ -102,8 +102,8 @@ export default function Home({ socket }) {
 
   useEffect(() => {
     checkEducation();
-    axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
-    axios.get(`${WEB_URL}/api/getEvents`).then((res) => setEvents(res.data.data));
+    apiClient.get(`/api/v1/posts`, { withCredentials: true }).then((res) => setPost(res.data.data));
+    apiClient.get(`/api/v1/events`).then((res) => setEvents(res.data.data));
   }, [checkEducation]);
 
   // CHANGED: Fetch suggestions only after we have user data (to know who we follow)
@@ -137,7 +137,7 @@ export default function Home({ socket }) {
       const compressed = await Promise.all(Array.from(fileList).map(f => compressImage(f)));
       compressed.forEach(f => body.append(`photos`, f, f.name));
     }
-    axios.post(`${WEB_URL}/api/addPost`, body, { headers: { "Content-type": "multipart/form-data" }, withCredentials: true })
+    apiClient.post(`/api/v1/posts`, body, { headers: { "Content-type": "multipart/form-data" }, withCredentials: true })
       .then(() => {
         toast.success("Posted!");
         filePreviews.forEach((url) => URL.revokeObjectURL(url));
@@ -145,15 +145,15 @@ export default function Home({ socket }) {
         setFileList(null);
         setDescription("");
         setUploading(false);
-        axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
+        apiClient.get(`/api/v1/posts`, { withCredentials: true }).then((res) => setPost(res.data.data));
       })
       .catch(() => { toast.error("Failed"); setUploading(false); });
   };
 
   const handleLike = (elem) => {
-    axios.put(`${WEB_URL}/api/like/${elem._id}`, { userId: userid }).then((res) => {
+    apiClient.put(`/api/v1/posts/${elem._id}/like`, { userId: userid }).then((res) => {
       if (userid !== elem.userid && res.data.msg === "Like") socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` });
-      axios.get(`${WEB_URL}/api/getPost`, { withCredentials: true }).then((r) => setPost(r.data.data));
+      apiClient.get(`/api/v1/posts`, { withCredentials: true }).then((r) => setPost(r.data.data));
     });
   };
 

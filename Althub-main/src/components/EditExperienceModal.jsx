@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import "../styles/EditExperienceModal.css";
 
@@ -67,7 +67,7 @@ const [uploading, setUploading] = useState(false);
     const body = new FormData();
     body.append("companylogo", file); // Key must match backend storage setup
 
-    axios.post(`${WEB_URL}/api/uploadCompanyLogo`, body, { 
+    apiClient.post(`/api/uploadCompanyLogo`, body, { 
         headers: { "Content-Type": "multipart/form-data" } 
     })
     .then((res) => {
@@ -112,8 +112,8 @@ const [uploading, setUploading] = useState(false);
       description: ex.description,
     };
 
-    const url = ex._id ? `${WEB_URL}/api/editExperience` : `${WEB_URL}/api/addExperience`;
-    axios.post(url, payload)
+    const url = ex._id ? `/api/editExperience` : `/api/addExperience`;
+    apiClient.post(url, payload)
       .then((res) => {
         if (res.data && res.data.success) {
           toast.success(ex._id ? "Updated!" : "Added!");
@@ -136,7 +136,7 @@ const [uploading, setUploading] = useState(false);
 
   const handleDelete = () => {
     if (window.confirm("Delete this experience?")) {
-      axios.delete(`${WEB_URL}/api/deleteExperience/${ex._id}`).then(() => {
+      apiClient.delete(`/api/deleteExperience/${ex._id}`).then(() => {
         toast.success("Deleted!");
         getExperience();
         handleCancel();

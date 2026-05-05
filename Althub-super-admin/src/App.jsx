@@ -1,7 +1,7 @@
 import Routes from './app/Routes';
 import './styles/app.css';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './auth/session';
 
 function App() {
   return (

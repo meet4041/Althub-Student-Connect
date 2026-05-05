@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 import { getProtectedImageUrl } from '../config/baseURL';
@@ -145,7 +145,7 @@ const Users = () => {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span className={`status-pill-modern ${user.type === 'Student' ? 'pill-blue' : 'pill-amber'}`}>
+                                                    <span className={`status-pill-modern ${user.type === 'Student' ? 'pill-green' : 'pill-amber'}`}>
                                                         <i className={`fa ${user.type === 'Student' ? 'fa-book' : 'fa-graduation-cap'} mr-1`}></i> {user.type}
                                                     </span>
                                                 </td>
@@ -187,7 +187,7 @@ const Users = () => {
                                     <img src={getProtectedImageUrl(selectedUser.profilepic)} className="modal-squircle-lg" alt="profile" />
                                     <div className="ml-4">
                                         <h2 className="modal-user-name">{selectedUser.fname} {selectedUser.lname}</h2>
-                                        <span className={`status-pill-modern ${selectedUser.type === 'Student' ? 'pill-blue' : 'pill-amber'}`}>
+                                        <span className={`status-pill-modern ${selectedUser.type === 'Student' ? 'pill-green' : 'pill-amber'}`}>
                                             {selectedUser.type}
                                         </span>
                                     </div>

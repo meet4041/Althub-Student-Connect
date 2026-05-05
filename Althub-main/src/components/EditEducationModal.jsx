@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import "../styles/EditEducationModal.css"; 
 
@@ -36,7 +36,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
   useEffect(() => {
     setEducations(education);
     setModalType(modal); 
-    axios.get(`${WEB_URL}/api/getInstitutes`).then((res) => setUniversity(res.data.data));
+    apiClient.get(`/api/getInstitutes`).then((res) => setUniversity(res.data.data));
   }, [education, modal]);
 
   const handleChange = (e) => {
@@ -85,9 +85,9 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
         collagelogo: ex.collagelogo,
     };
 
-    const url = ex._id ? `${WEB_URL}/api/editEducation` : `${WEB_URL}/api/addEducation`;
+    const url = ex._id ? `/api/editEducation` : `/api/addEducation`;
 
-    axios.post(url, payload)
+    apiClient.post(url, payload)
         .then(() => {
             toast.success(ex._id ? "Education Updated!" : "Education Added!");
             getEducation();
@@ -103,7 +103,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
 
   const handleDelete = () => {
     if (window.confirm("Delete this record?")) {
-      axios.delete(`${WEB_URL}/api/deleteEducation/${ex._id}`).then(() => {
+      apiClient.delete(`/api/deleteEducation/${ex._id}`).then(() => {
           toast.success("Deleted!");
           getEducation();
           handleCancel();

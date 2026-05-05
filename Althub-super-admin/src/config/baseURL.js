@@ -1,22 +1,13 @@
-// Helper to detect if we are running locally
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+import { getViteApiBaseUrl } from '@althub/shared/config';
+import { buildImageUrl } from '@althub/shared/images';
 
-export const ALTHUB_API_URL = isLocal
-  ? 'http://localhost:5001'
-  : 'https://althub-server.onrender.com';
+export const ALTHUB_API_URL = getViteApiBaseUrl(import.meta.env);
 
 export const WEB_URL = ALTHUB_API_URL;
 
 export const getProtectedImageUrl = (path) => {
-  if (!path || typeof path !== 'string') return 'assets/img/login-bg/profile1.png';
-  if (/^https?:\/\//i.test(path)) return path;
-
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const token = null;
-
-  if (normalizedPath.startsWith('/api/images/') && token) {
-    return `${ALTHUB_API_URL}${normalizedPath}?token=${encodeURIComponent(token)}`;
-  }
-
-  return `${ALTHUB_API_URL}${normalizedPath}`;
+  return buildImageUrl(path, {
+    baseURL: ALTHUB_API_URL,
+    fallback: 'assets/img/login-bg/profile1.png',
+  });
 };

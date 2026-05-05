@@ -2,10 +2,9 @@ import Markup from './app/Routes.jsx';
 import React from "react";
 import './App.css';
 import './styles/institute-layout.css';
-import './styles/althub-green-theme.css';
 
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './auth/session';
 
 function App() {
   return (

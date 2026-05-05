@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient from "../api/client";
 import React, { useEffect, useState } from 'react';
-import { WEB_URL } from '../baseURL';
+import { WEB_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import "../styles/NewPassword.css"; // <--- New CSS Import
@@ -51,8 +51,8 @@ function NewPassword() {
 
     if (validate()) {
       setLoading(true);
-      axios({
-        url: `${WEB_URL}/api/userResetPassword?token=${token}`,
+      apiClient({
+        url: `/api/userResetPassword?token=${token}`,
         data: {
           password: password.new
         },

@@ -1,0 +1,41 @@
+/* Althub admin design tokens. Keep colors, spacing, and shell dimensions here. */
+:root {
+    --admin-sidebar-width: var(--althub-sidebar-width, 248px);
+    --admin-header-height: var(--althub-header-height, 92px);
+    --admin-page-top-gap: 28px;
+    --admin-page-side-gap: 28px;
+    --admin-page-bottom-gap: 36px;
+    --admin-section-gap: 22px;
+    --admin-header-gap: 16px;
+    --admin-page-title-size: 24px;
+    --admin-btn-height: 40px;
+    --admin-btn-radius: var(--althub-radius-md, 10px);
+    --admin-card-radius: var(--althub-radius-lg, 14px);
+    --admin-bg: var(--althub-shell-bg, #f8fafc);
+    --admin-surface: var(--althub-surface, #ffffff);
+    --admin-surface-muted: var(--althub-surface-muted, #f8fafc);
+    --admin-text: var(--althub-text, #12372f);
+    --admin-text-muted: var(--althub-text-muted, #64748b);
+    --admin-text-faint: var(--althub-text-faint, #94a3b8);
+    --admin-border: var(--althub-border, #dbe8e3);
+    --admin-border-strong: var(--althub-border-strong, #b7d7cc);
+    --admin-brand: var(--althub-brand, #15947f);
+    --admin-brand-strong: var(--althub-brand-strong, #0f766e);
+    --admin-brand-deep: var(--althub-brand-deep, #115e59);
+    --admin-brand-soft: var(--althub-brand-soft, #e8fff7);
+    --admin-brand-muted: var(--althub-brand-muted, #b9f4df);
+    --admin-brand-ring: var(--althub-brand-ring, rgba(21, 148, 127, 0.16));
+    --admin-danger: var(--althub-danger, #dc2626);
+    --admin-danger-soft: var(--althub-danger-soft, #fff1f2);
+    --admin-shadow-sm: var(--althub-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.04));
+    --admin-shadow-md: var(--althub-shadow-md, 0 18px 48px rgba(15, 23, 42, 0.14));
+    --admin-shadow-brand: var(--althub-shadow-brand, 0 10px 22px rgba(21, 148, 127, 0.18));
+}
+
+@media (max-width: 767px) {
+    :root {
+        --admin-page-top-gap: 20px;
+        --admin-page-side-gap: 16px;
+        --admin-page-bottom-gap: 24px;
+    }
+}

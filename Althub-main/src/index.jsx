@@ -2,16 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
-import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css'; 
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './auth/session';
+import { configureGlobalAxios } from './api/client';
 
 // --- MUI Imports ---
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme'; // Import the custom theme we created
 
-axios.defaults.withCredentials = true;
+configureGlobalAxios();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

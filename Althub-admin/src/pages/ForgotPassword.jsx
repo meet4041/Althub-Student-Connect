@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
 import { ALTHUB_API_URL } from '../config/baseURL';
-import axiosInstance from '../service/axios';
+import axiosInstance from '../api/client';
 
 // COMPANY STANDARD: Import external CSS files
 import '../styles/login.css';    // Reusing the shared split-screen layout
@@ -31,7 +31,7 @@ function ForgotPassword() {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axiosInstance.post(`${ALTHUB_API_URL}/api/instituteForgetPassword`, { email: email.trim().toLowerCase() })
+            axiosInstance.post(`/api/instituteForgetPassword`, { email: email.trim().toLowerCase() })
                 .then((response) => {
                     if (response.data.success) {
                         toast.success(response.data.msg || "Reset link sent!");

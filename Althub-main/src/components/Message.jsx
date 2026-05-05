@@ -1,8 +1,8 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 
 import ProtectedImage from "../ProtectedImage";
 import "../styles/Message.css"; // <--- Import CSS
@@ -32,7 +32,7 @@ const ChatUserItem = ({ data, currentId, onClick }) => {
   useEffect(() => {
     const friendId = data.members.find((m) => m !== myId);
     if (friendId) {
-      axios.get(`${WEB_URL}/api/searchUserById/${friendId}`)
+      apiClient.get(`/api/v1/users/${friendId}`)
         .then(res => setFriend(res.data.data[0]))
         .catch(console.error);
     }
@@ -78,7 +78,7 @@ export default function Message({ socket }) {
   // --- 1. Initialize & Fetch Conversations ---
   const getConversations = useCallback(() => {
     if (!userid) return;
-    axios.get(`${WEB_URL}/api/getConversations/${userid}`)
+    apiClient.get(`/api/getConversations/${userid}`)
       .then((res) => {
         setConversations(res.data.data);
       })
@@ -111,7 +111,7 @@ export default function Message({ socket }) {
       const friend = location.state;
       setReceiver(friend);
       // Check if conversation exists
-      axios.post(`${WEB_URL}/api/searchConversations`, { person1: userid, person2: friend?._id })
+      apiClient.post(`/api/searchConversations`, { person1: userid, person2: friend?._id })
         .then((res) => {
           if (res.data.data.length > 0) {
             setCurrentChat(res.data.data[0]);
@@ -126,7 +126,7 @@ export default function Message({ socket }) {
   // --- 4. Fetch Messages for Current Chat ---
   useEffect(() => {
     if (currentChat && currentChat._id !== "new") {
-      axios.get(`${WEB_URL}/api/getMessages/${currentChat._id}`)
+      apiClient.get(`/api/getMessages/${currentChat._id}`)
         .then((res) => setMessages(res.data.data))
         .catch((err) => console.log('Message fetch failed', err));
     } else {
@@ -176,7 +176,7 @@ export default function Message({ socket }) {
 
     // Save to DB
     try {
-      const res = await axios.post(`${WEB_URL}/api/newMessage`, msgData);
+      const res = await apiClient.post(`/api/newMessage`, msgData);
       // If it was a new chat, update conversation ID
       if (currentChat?._id === "new") {
         getConversations(); // Refresh list

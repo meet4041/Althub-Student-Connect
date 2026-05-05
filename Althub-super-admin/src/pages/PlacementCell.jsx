@@ -1,10 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
-// USING THE PREMIUM THEME
 import '../styles/users.css';
 
 const PlacementCell = () => {
@@ -76,7 +75,7 @@ const PlacementCell = () => {
                                 Global Registry: <span className="text-primary">{data.length}</span> Official Placement Nodes
                             </p>
                         </div>
-                        <div className="search-input-group-modern" style={{ minWidth: '350px', borderColor:'#2563eb'}}>
+                        <div className="search-input-group-modern">
                             <i className="fa fa-search"></i>
                             <input 
                                 type="text" 
@@ -96,7 +95,7 @@ const PlacementCell = () => {
                         <div className="row">
                             {displayData.length > 0 ? displayData.map((item) => (
                                 <div key={item._id} className="col-lg-4 col-md-6 mb-4">
-                                    <div className="inst-floating-card h-100" onClick={() => setSelectedItem(item)} style={{ cursor: 'pointer' }}>
+                                    <div className="inst-floating-card h-100" onClick={() => setSelectedItem(item)}>
                                         <div className="inst-card-body">
                                             <div className="d-flex justify-content-between">
                                                 <div className="inst-icon-glow">
@@ -146,7 +145,7 @@ const PlacementCell = () => {
                                 <div className="modal-profile-section">
                                     <div>
                                         <h2 className="modal-user-name">{selectedItem.name}</h2>
-                                        <span className="status-pill-modern pill-blue">
+                                        <span className="status-pill-modern pill-green">
                                             <i className="fa fa-briefcase mr-1"></i> Placement Cell
                                         </span>
                                     </div>

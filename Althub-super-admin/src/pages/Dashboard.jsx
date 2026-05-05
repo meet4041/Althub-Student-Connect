@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom';
 import Loader from '../layouts/Loader.jsx';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 
-// IMPORT UPDATED BLUE THEME STYLES
 import '../styles/dashboard.css';
 
 function Dashboard() {
@@ -20,7 +19,6 @@ function Dashboard() {
 
     useEffect(() => {
         const initDashboard = async () => {
-            // Bypass template loader lag
             if (document.getElementById('page-loader')) {
                 document.getElementById('page-loader').style.display = 'none';
             }
@@ -30,9 +28,8 @@ function Dashboard() {
                 const element = document.getElementById("page-container");
                 if (element) element.classList.add("show");
 
-                // Fetch all data in parallel for maximum speed
                 const [uRes, iRes, aRes, pRes] = await Promise.all([
-                    axiosInstance.get(`/api/getUsers`),
+                    axiosInstance.get(`/api/v1/users`),
                     axiosInstance.get(`/api/getInstitutes`),
                     axiosInstance.get(`/api/getAlumniOffices`),
                     axiosInstance.get(`/api/getPlacementCells`)
@@ -85,7 +82,6 @@ function Dashboard() {
                             {error && <div className="alert alert-danger border-0 shadow-sm mb-4">{error}</div>}
 
                             <div className="stats-grid">
-                                {/* USERS CARD */}
                                 <div className="stat-card bg-users">
                                     <i className="fa fa-user-graduate card-icon"></i>
                                     <div className="card-label">Total Verified Members</div>
@@ -95,7 +91,6 @@ function Dashboard() {
                                     </Link>
                                 </div>
 
-                                {/* INSTITUTES CARD */}
                                 <div className="stat-card bg-institutes">
                                     <i className="fa fa-university card-icon"></i>
                                     <div className="card-label">Active Institutes</div>
@@ -105,7 +100,6 @@ function Dashboard() {
                                     </Link>
                                 </div>
 
-                                {/* ALUMNI OFFICES CARD */}
                                 <div className="stat-card bg-alumni">
                                     <i className="fa fa-graduation-cap card-icon"></i>
                                     <div className="card-label">Alumni Offices</div>
@@ -115,7 +109,6 @@ function Dashboard() {
                                     </Link>
                                 </div>
 
-                                {/* PLACEMENT CELLS CARD */}
                                 <div className="stat-card bg-placement">
                                     <i className="fa fa-briefcase card-icon"></i>
                                     <div className="card-label">Placement Cells</div>

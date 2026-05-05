@@ -2,8 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
-import { ALTHUB_API_URL } from '../config/baseURL';
-import axios from 'axios';
+import axiosInstance from '../api/client';
 
 // SHARED LOGIN STYLES
 import '../styles/login.css';
@@ -35,10 +34,9 @@ function ForgotPassword() {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            const myurl = `${ALTHUB_API_URL}/api/forgetpassword`;
-            axios({
+            axiosInstance({
                 method: "post",
-                url: myurl,
+                url: '/api/forgetpassword',
                 data: { email: email },
             }).then((response) => {
                 if (response.data.success === true) {

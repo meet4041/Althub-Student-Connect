@@ -1,11 +1,11 @@
 /* src/styles/profile.css */
 
 .profile-content-wrapper {
-    background-color: #F8FAFC !important;
+    background-color: #F8FAFC;
     height: 100vh;
-    margin-left: 245px !important; 
-    padding-top: 35px !important; 
-    margin-top: 0 !important;
+    margin-left: 245px; 
+    padding-top: 35px; 
+    margin-top: 0;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -52,9 +52,9 @@
 .settings-nav-link i { margin-right: 12px; font-size: 16px; }
 
 .settings-nav-link.active {
-    color: #2563EB;
-    background: #EBF2FF;
-    box-shadow: inset 3px 0 0 #2563EB;
+    color: var(--althub-brand-strong);
+    background: var(--althub-brand-soft);
+    box-shadow: inset 3px 0 0 var(--althub-brand);
 }
 
 /* Content Detail View */
@@ -119,18 +119,18 @@
 }
 
 .form-control-saas {
-    background-color: #F8FAFC !important;
-    border: 1px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-    height: 44px !important;
-    font-size: 14px !important;
-    color: #1E293B !important;
-    padding: 10px 16px !important;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    height: 44px;
+    font-size: 14px;
+    color: #1E293B;
+    padding: 10px 16px;
 }
 
 .form-control-saas:focus {
-    border-color: #2563EB !important;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08) !important;
+    border-color: var(--althub-brand);
+    box-shadow: 0 0 0 4px var(--althub-brand-ring);
 }
 
 @media (max-width: 991px) {
@@ -139,70 +139,3 @@
     .settings-nav-link { padding: 10px 15px; }
 }
 
-/* Minimal Althub route polish */
-.profile-content-wrapper {
-    margin-left: 248px !important;
-    padding: 28px 0 40px !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
-}
-
-.profile-main-container {
-    max-width: 1440px !important;
-    height: auto !important;
-    margin: 0 auto !important;
-    padding: 0 28px 36px !important;
-}
-
-.settings-layout-box {
-    min-height: auto !important;
-    border-radius: 14px !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-}
-
-.settings-detail-content {
-    padding: 24px !important;
-}
-
-@media (max-width: 767px) {
-    .profile-content-wrapper {
-        margin-left: 0 !important;
-        padding: 20px 0 24px !important;
-    }
-
-    .profile-main-container {
-        padding: 0 16px 24px !important;
-    }
-
-    .settings-nav-sidebar {
-        overflow-x: auto;
-        gap: 8px;
-        padding: 10px 12px !important;
-        scrollbar-width: none;
-    }
-
-    .settings-nav-sidebar::-webkit-scrollbar {
-        display: none;
-    }
-
-    .settings-nav-link {
-        flex: 0 0 auto;
-        min-width: max-content;
-        border-radius: 10px;
-        white-space: nowrap;
-    }
-}
-
-@media (max-width: 480px) {
-    .settings-nav-sidebar {
-        flex-direction: column;
-        align-items: stretch;
-        overflow-x: visible;
-    }
-
-    .settings-nav-link {
-        width: 100%;
-        min-width: 0;
-    }
-}

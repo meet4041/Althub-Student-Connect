@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient from "../api/client";
 import React, { useState } from 'react';
-import { WEB_URL } from '../baseURL';
+import { WEB_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import "../styles/ForgetPassword.css"; // <--- New CSS Import
@@ -23,8 +23,8 @@ function ForgetPassword() {
     }
 
     setLoading(true);
-    axios({
-        url: `${WEB_URL}/api/userForgetPassword`,
+    apiClient({
+        url: `/api/userForgetPassword`,
         data: { email: trimmedEmail },
         method: 'post',
       }).then((response) => {

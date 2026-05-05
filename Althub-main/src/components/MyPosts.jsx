@@ -1,8 +1,8 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback } from "react";
 import Slider from "react-slick";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
@@ -60,14 +60,14 @@ export default function MyPosts() {
     if (!userid) return;
 
     // 1. User Profile
-    axios.get(`${WEB_URL}/api/searchUserById/${userid}`, { withCredentials: true })
+    apiClient.get(`/api/v1/users/${userid}`, { withCredentials: true })
       .then((res) => {
         if (res.data?.data) setUser(res.data.data[0]);
       })
       .catch(err => console.error("User fetch error:", err));
 
     // 2. My Posts
-    axios.get(`${WEB_URL}/api/getPostByUser/${userid}`, {
+    apiClient.get(`/api/v1/users/${userid}/posts`, {
       withCredentials: true
     })
       .then((res) => {
@@ -83,7 +83,7 @@ export default function MyPosts() {
       });
 
     // 3. Suggestions
-    axios.post(`${WEB_URL}/api/getRandomUsers`, { userid })
+    apiClient.post(`/api/v1/users/random`, { userid })
       .then((res) => {
         setTopUsers(res.data.data || []);
       })
@@ -104,7 +104,7 @@ export default function MyPosts() {
   const confirmDelete = () => {
     if (!deleteId) return;
 
-    axios.delete(`${WEB_URL}/api/deletePost/${deleteId}`, { withCredentials: true })
+    apiClient.delete(`/api/v1/posts/${deleteId}`, { withCredentials: true })
       .then(() => {
         toast.success("Post deleted");
         setDeleteId(null);
@@ -126,7 +126,7 @@ export default function MyPosts() {
     formData.append("description", editDesc);
     editImages.forEach(img => formData.append("existingPhotos", img));
 
-    axios.post(`${WEB_URL}/api/editPost`, formData, {
+    apiClient.patch(`/api/v1/posts/${editId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
       withCredentials: true
     })

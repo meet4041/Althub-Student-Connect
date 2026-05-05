@@ -1,20 +1,20 @@
 /* src/styles/footer.css */
 
 .app-footer {
-    position: fixed;
-    left: 248px;
-    bottom: 0;
-    width: calc(100% - 248px);
-    height: 44px;
-    padding: 0 24px;
+    position: relative;
+    margin-left: var(--althub-sidebar-width);
+    width: calc(100% - var(--althub-sidebar-width));
+    min-height: 44px;
+    padding: 12px 28px;
     background: #ffffff;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--althub-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: #64748b;
+    color: var(--althub-text-muted);
     font-size: 12px;
-    z-index: 1005;
+    z-index: 1;
+    box-sizing: border-box;
 }
 
 .app-footer-left,
@@ -25,29 +25,28 @@
 }
 
 .app-footer-brand {
-    color: #0f172a;
-    font-weight: 700;
-    letter-spacing: 0.2px;
+    color: var(--althub-text);
+    font-weight: 750;
+    letter-spacing: 0;
 }
 
 .app-footer-divider {
-    color: #cbd5f5;
+    color: var(--althub-brand-muted);
 }
 
 .app-footer-text {
-    color: #64748b;
-    font-weight: 500;
+    color: var(--althub-text-muted);
+    font-weight: 600;
 }
 
 body.sidebar-collapsed .app-footer {
-    left: 80px;
+    margin-left: 80px;
     width: calc(100% - 80px);
 }
 
 @media (max-width: 767px) {
     .app-footer {
-        position: static;
-        left: auto;
+        margin-left: 0;
         width: 100%;
         min-height: 52px;
         height: auto;

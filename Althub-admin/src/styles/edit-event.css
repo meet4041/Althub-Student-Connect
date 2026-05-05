@@ -1,11 +1,11 @@
 /* src/styles/edit-event.css */
 
 .edit-event-wrapper {
-    background-color: #F8FAFC !important; /* Slightly lighter for premium feel */
+    background-color: #F8FAFC; /* Slightly lighter for premium feel */
     min-height: 100vh;
-    margin-left: 260px !important;
-    padding-top: 35px !important;
-    margin-top: 0 !important;
+    margin-left: 260px;
+    padding-top: 35px;
+    margin-top: 0;
     transition: margin-left 0.3s ease;
 }
 
@@ -21,9 +21,9 @@
     min-height: 560px;
     display: flex;
     flex-direction: column;
-    border-radius: 16px !important;
-    border: 1px solid #E2E8F0 !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    border-radius: 16px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     background: #ffffff;
     overflow: hidden;
 }
@@ -45,18 +45,18 @@
 }
 
 .form-control-modern {
-    background-color: #F1F5F9 !important;
-    border: 1px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-    padding: 10px 14px !important;
-    font-size: 14px !important;
+    background-color: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
     transition: all 0.2s ease;
 }
 
 .form-control-modern:focus {
-    border-color: #2563EB !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08) !important;
+    border-color: var(--althub-brand);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px var(--althub-brand-ring);
 }
 
 /* Right Side - Media/Upload Section */
@@ -77,8 +77,8 @@
 }
 
 .upload-drop-zone:hover {
-    border-color: #2563EB;
-    background: #EFF6FF;
+    border-color: var(--althub-brand);
+    background: var(--althub-brand-soft);
 }
 
 .preview-grid {
@@ -107,8 +107,8 @@
 }
 
 .upload-drop-zone label:hover {
-    border-color: #2563EB;
-    background: #EFF6FF;
+    border-color: var(--althub-brand);
+    background: var(--althub-brand-soft);
 }
 
 .form-footer-sticky {
@@ -130,47 +130,18 @@
 }
 
 .edit-event-note {
-    border-left: 4px solid #2563EB;
+    border-left: 4px solid var(--althub-brand);
 }
 
 .edit-event-save-btn {
     border-radius: 10px;
-    background-color: #2563EB;
+    background-color: var(--althub-brand);
     border: none;
     font-weight: 700;
 }
 
 @media (max-width: 767px) {
-    .edit-event-wrapper { margin-left: 0 !important; overflow-y: auto; }
+    .edit-event-wrapper { margin-left: 0; overflow-y: auto; }
     .edit-event-container { height: auto; }
 }
 
-/* Minimal Althub route polish */
-.edit-event-wrapper {
-    margin-left: 248px !important;
-    padding: 28px 0 40px !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
-}
-
-.edit-event-container {
-    max-width: 1440px !important;
-    padding: 0 28px 36px !important;
-}
-
-.event-form-card {
-    border-radius: 14px !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-}
-
-@media (max-width: 767px) {
-    .edit-event-wrapper {
-        margin-left: 0 !important;
-        padding: 20px 0 24px !important;
-    }
-
-    .edit-event-container {
-        padding: 0 16px 24px !important;
-    }
-}

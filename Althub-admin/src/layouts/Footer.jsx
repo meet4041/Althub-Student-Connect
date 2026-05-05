@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
 

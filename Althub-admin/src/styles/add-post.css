@@ -1,11 +1,11 @@
 /* src/styles/add-post.css */
 
 .add-post-wrapper {
-    background-color: #F8FAFC !important;
+    background-color: #F8FAFC;
     min-height: 100vh;
-    margin-left: 260px !important; /* Locks to your Sidebar width */
-    padding-top: 35px !important;  /* Locks to your Header height */
-    margin-top: 0 !important;
+    margin-left: 260px; /* Locks to your Sidebar width */
+    padding-top: 35px;  /* Locks to your Header height */
+    margin-top: 0;
     transition: margin-left 0.3s ease;
 }
 
@@ -20,9 +20,9 @@
     min-height: 520px;
     display: flex;
     flex-direction: column;
-    border-radius: 16px !important;
-    border: 1px solid #E2E8F0 !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    border-radius: 16px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     background: #ffffff;
     overflow: hidden;
 }
@@ -44,18 +44,18 @@
 }
 
 .form-control-saas {
-    background-color: #F1F5F9 !important;
-    border: 1px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-    padding: 12px 14px !important;
-    font-size: 14px !important;
+    background-color: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
     transition: all 0.2s ease;
 }
 
 .form-control-saas:focus {
-    border-color: #2563EB !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08) !important;
+    border-color: var(--althub-brand);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px var(--althub-brand-ring);
 }
 
 /* Media Upload Styling */
@@ -76,8 +76,8 @@
 }
 
 .post-upload-zone:hover {
-    border-color: #2563EB;
-    background: #EFF6FF;
+    border-color: var(--althub-brand);
+    background: var(--althub-brand-soft);
 }
 
 .post-preview-grid {
@@ -113,41 +113,12 @@
 }
 
 .post-upload-zone label:hover {
-    border-color: #2563EB;
-    background: #EFF6FF;
+    border-color: var(--althub-brand);
+    background: var(--althub-brand-soft);
 }
 
 @media (max-width: 767px) {
-    .add-post-wrapper { margin-left: 0 !important; overflow-y: auto; }
+    .add-post-wrapper { margin-left: 0; overflow-y: auto; }
     .add-post-container { height: auto; }
 }
 
-/* Minimal Althub route polish */
-.add-post-wrapper {
-    margin-left: 248px !important;
-    padding: 28px 0 40px !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
-}
-
-.add-post-container {
-    max-width: 1440px !important;
-    padding: 0 28px 36px !important;
-}
-
-.post-form-card {
-    border-radius: 14px !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-}
-
-@media (max-width: 767px) {
-    .add-post-wrapper {
-        margin-left: 0 !important;
-        padding: 20px 0 24px !important;
-    }
-
-    .add-post-container {
-        padding: 0 16px 24px !important;
-    }
-}

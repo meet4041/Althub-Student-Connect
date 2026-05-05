@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useLayoutEffect, Suspense, lazy } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom"; 
 import { ToastContainer } from "react-toastify";
-import { socket } from "./socket";
-import axios from "axios"; 
+import { socket } from "./realtime/socket";
 
 // Components
 import Navbar from "./components/Navbar";
 import Loader from "./components/Loader"; 
-import AuthGuard from "./components/AuthGuard";
+import AuthGuard from "./auth/AuthGuard";
 
 const Main = lazy(() => import("./components/Main"));
 const Login = lazy(() => import("./components/Login"));
@@ -23,28 +22,6 @@ const Notification = lazy(() => import("./components/Notification"));
 const ForgetPassword = lazy(() => import("./components/ForgetPassword"));
 const NewPassword = lazy(() => import("./components/NewPassword"));
 const MyPosts = lazy(() => import("./components/MyPosts"));
-
-axios.defaults.withCredentials = true;
-
-const getCookieValue = (name) => {
-  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-  return match ? decodeURIComponent(match[2]) : null;
-};
-
-axios.interceptors.request.use(
-  (config) => {
-    const csrfToken = getCookieValue("csrf_token");
-    config.headers = config.headers || {};
-    if (csrfToken) config.headers["X-CSRF-Token"] = csrfToken;
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
-);
 
 function App() {
   const [isAuthReady, setIsAuthReady] = useState(false); 
@@ -75,6 +52,7 @@ function App() {
               <Route path="/feedback" element={<Feedback />} />
               <Route path="/view-profile" element={<ViewProfile />} />
               <Route path="/view-search-profile" element={<ViewSearchProfile socket={socket} />} />
+              <Route path="/view-search-profile/:id" element={<ViewSearchProfile socket={socket} />} />
               <Route path="/search-profile" element={<SearchProfile socket={socket} />} />
               <Route path="/message" element={<Message socket={socket} />} />
               <Route path="/notification" element={<Notification />} />

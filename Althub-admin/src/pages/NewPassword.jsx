@@ -4,7 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link } from "react-router-dom";
 import { ALTHUB_API_URL } from "../config/baseURL";
-import axiosInstance from '../service/axios';
+import axiosInstance from '../api/client';
 
 // COMPANY STANDARD: Import external CSS files
 import '../styles/login.css';    // Shared split-screen layout
@@ -55,7 +55,7 @@ function NewPassword() {
         }
         if (validate()) {
             setDisable(true);
-            const myurl = `${ALTHUB_API_URL}/api/instituteResetPassword?token=${token}`;
+            const myurl = `/api/instituteResetPassword?token=${token}`;
             axiosInstance({
                 method: "post",
                 url: myurl,

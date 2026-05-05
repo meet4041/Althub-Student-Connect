@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "../styles/EditProfileModal.css"; // <--- Import CSS
@@ -64,7 +64,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
     formData.append("image", file);
     formData.append("userid", user._id);
 
-    axios.put(`${WEB_URL}/api/updateProfilePic`, formData, { withCredentials: true }) 
+    apiClient.put(`/api/updateProfilePic`, formData, { withCredentials: true }) 
       .then((res) => {
         toast.success("Picture updated!");
         setUserData(prev => ({ ...prev, profilepic: res.data.data.profilepic }));
@@ -75,7 +75,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
   const handleImageDelete = () => {
     if (!window.confirm("Remove profile picture?")) return;
-    axios.put(`${WEB_URL}/api/deleteProfilePic/${user._id}`, {}, { withCredentials: true })
+    apiClient.put(`/api/deleteProfilePic/${user._id}`, {}, { withCredentials: true })
       .then(() => {
         toast.success("Picture removed.");
         setUserData(prev => ({ ...prev, profilepic: "" }));
@@ -86,10 +86,9 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
   const handleDeleteAccount = () => {
     if (window.confirm("Are you sure? This cannot be undone.")) {
-      axios.delete(`${WEB_URL}/api/deleteUser/${user._id}`, { withCredentials: true })
+      apiClient.delete(`/api/deleteUser/${user._id}`, { withCredentials: true })
         .then(() => {
           toast.success("Account Deleted");
-          localStorage.clear();
           closeModal();
           navigate("/"); 
         })
@@ -114,7 +113,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
   const handleUpdate = () => {
     if (validate()) {
-        axios.post(`${WEB_URL}/api/userProfileEdit`, {
+        apiClient.post(`/api/userProfileEdit`, {
           id: userData._id,
           fname: userData.fname,
           lname: userData.lname,

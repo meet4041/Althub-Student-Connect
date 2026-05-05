@@ -1,0 +1,173 @@
+import Event from "../models/EventModel.js";
+import Notification from "../models/notificationModel.js";
+import User from "../models/userModel.js";
+import Institute from "../models/instituteModel.js";
+import { uploadFromBuffer, connectToMongo } from "../db/conn.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
+import { forbidden, notFound, unauthorized } from "../utils/httpError.js";
+
+// ... [Keep your other functions like addEvents, getEvents, deleteEvent exactly as they were] ...
+
+const addEvents = asyncHandler(async (req, res) => {
+        await connectToMongo();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && req.body.organizerid && requesterId !== req.body.organizerid.toString()) {
+            throw forbidden('Unauthorized: organizer mismatch');
+        }
+        let photoIds = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `event-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                photoIds.push(`/api/images/${fileId}`);
+            }
+        }
+        const event = new Event({
+            organizerid: req.body.organizerid || requesterId,
+            title: req.body.title,
+            description: req.body.description,
+            date: req.body.date,
+            venue: req.body.venue,
+            photos: photoIds,
+            createdByRole: req.user?.role || "institute"
+        });
+        const event_data = await event.save();
+        
+        // Notifications Logic
+        const institute = await Institute.findById(req.body.organizerid);
+        const users = await User.find({});
+        const notifications = users.map(user => ({
+            userid: user._id,
+            senderid: req.body.organizerid,
+            image: institute ? institute.profilepic : '',
+            title: "New Event",
+            msg: `New Event: ${req.body.title} has been added by ${institute ? institute.insname : 'Institute'}.`,
+            date: new Date()
+        }));
+        await Notification.insertMany(notifications);
+
+        res.status(200).send({ success: true, data: event_data });
+});
+
+// ... [Include getEvents, getEventsByInstitute, deleteEvent here] ...
+
+const getEvents = asyncHandler(async (req, res) => {
+        const evet_data = await Event.find({}).lean();
+        res.status(200).send({ success: true, data: evet_data });
+});
+
+const getEventsByInstitute = asyncHandler(async (req, res) => {
+        const evet_data = await Event.find({ organizerid: req.params.organizerid }).lean();
+        res.status(200).send({ success: true, data: evet_data });
+});
+
+
+const deleteEvent = asyncHandler(async (req, res) => {
+        const id = req.params.id;
+        const event = await Event.findById(id).lean();
+        if (!event) throw notFound('Event not found');
+        const ownerId = (event.organizerid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            throw forbidden('Forbidden: cannot delete this event');
+        }
+        await Event.deleteOne({ _id: id });
+        res.status(200).send({ success: true, msg: 'Event Deleted successfully' });
+});
+
+// --- FIXED EDIT EVENT FUNCTION ---
+const editEvent = asyncHandler(async (req, res) => {
+        await connectToMongo();
+
+        const { id, title, description, date, venue } = req.body;
+
+        // 1. Find existing event to get current photos
+        const existingEvent = await Event.findById(id);
+        if (!existingEvent) {
+            throw notFound('Event not found');
+        }
+        const ownerId = (existingEvent.organizerid || '').toString();
+        const requesterId = req.user?._id?.toString();
+        if (requesterId && ownerId && requesterId !== ownerId) {
+            throw forbidden('Forbidden: cannot edit this event');
+        }
+
+        // 2. Handle New File Uploads
+        let newPhotoUrls = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `event-${Date.now()}-${file.originalname}`;
+                const fileId = await uploadFromBuffer(file.buffer, filename, file.mimetype);
+                newPhotoUrls.push(`/api/images/${fileId}`);
+            }
+        }
+
+        // 3. Replace photos if new files are uploaded, otherwise keep existing
+        const updatedPhotos = newPhotoUrls.length > 0 ? newPhotoUrls : (existingEvent.photos || []);
+
+        // 4. Update the event
+        const updateData = {
+            title,
+            description,
+            date,
+            venue,
+            photos: updatedPhotos
+        };
+
+        const event_data = await Event.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true }
+        );
+
+        res.status(200).send({ success: true, msg: 'Event Updated Successfully', data: event_data });
+});
+
+// ... [Include searchEvent, getUpcommingEvents, participateInEvent here] ...
+
+const searchEvent = asyncHandler(async (req, res) => {
+        var search = req.body.search;
+        var event_data = await Event.find({ "title": { $regex: ".*" + search + ".*" } });
+        if (event_data.length > 0) {
+            res.status(200).send({ success: true, msg: "Event Details", data: event_data });
+        }
+        else {
+            res.status(200).send({ success: true, msg: 'Event not Found' });
+        }
+});
+
+const getUpcommingEvents = asyncHandler(async (req, res) => {
+        let start = Date.now();
+        const event_data = await Event.find({ date: { $gte: start } }).lean();
+        res.status(200).send({ success: true, data: event_data });
+});
+
+const participateInEvent = asyncHandler(async (req, res) => {
+        const event = await Event.findById(req.params.id);
+        if (!event) {
+            throw notFound("Event not found");
+        }
+
+        const participantId = req.user?._id?.toString();
+        if (!participantId) {
+            throw unauthorized("Unauthorized");
+        }
+
+        if (!event.participants.includes(participantId)) {
+            await event.updateOne({ $push: { participants: participantId } });
+            res.status(200).json("Participated in this event Successfully");
+        } else {
+            throw forbidden("You have been already participated in this event");
+        }
+});
+
+export default {
+    addEvents,
+    getEvents,
+    getEventsByInstitute,
+    deleteEvent,
+    editEvent,
+    searchEvent,
+    getUpcommingEvents,
+    participateInEvent
+};

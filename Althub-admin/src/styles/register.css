@@ -61,7 +61,7 @@
 }
 
 .text-highlight {
-    color: #38bdf8; /* Lighter blue for better contrast */
+    color: #5eead4; /* Lighter green for better contrast */
     position: relative;
 }
 
@@ -127,26 +127,26 @@
     background-color: #f0f7ff;
     padding: 10px 15px;
     border-radius: 10px;
-    border: 1px dashed #2563eb;
-    margin-bottom: 15px !important;
+    border: 1px dashed #0d9488;
+    margin-bottom: 15px;
 }
 
 .master-input-wrapper {
-    background: #ffffff !important;
-    border: 1.5px solid #dbeafe !important;
+    background: #ffffff;
+    border: 1.5px solid #ccfbf1;
 }
 
 /* Reducing margins for a perfect fit on screen */
 .modern-form-group {
-    margin-bottom: 10px !important;
+    margin-bottom: 10px;
 }
 
 .form-heading {
-    margin-bottom: 20px !important;
+    margin-bottom: 20px;
 }
 
 @media (max-width: 991px) {
-    .auth-visual-side { display: none !important; }
+    .auth-visual-side { display: none; }
     .auth-main-wrapper {
         overflow-y: auto; /* Enable scroll only on mobile */
     }
@@ -154,6 +154,6 @@
         flex-direction: column;
     }
     .flex-1 {
-        margin-left: 0 !important;
+        margin-left: 0;
     }
 }

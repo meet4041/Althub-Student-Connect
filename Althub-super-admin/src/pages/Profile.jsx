@@ -1,9 +1,9 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useState, useEffect, useCallback, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import { getProtectedImageUrl } from '../config/baseURL';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
@@ -62,8 +62,6 @@ const Profile = () => {
                     phone: data.phone || "",
                     profilepic: data.profilepic || ""
                 });
-                localStorage.setItem('AlmaPlus_admin_Name', data.name);
-                localStorage.setItem('AlmaPlus_admin_Pic', data.profilepic || '');
             }
         }).catch(err => {
             console.error("Profile Fetch Error:", err);
@@ -97,8 +95,6 @@ const Profile = () => {
         }).then((response) => {
             if (response.data.success === true) {
                 toast.success('Profile Updated Successfully');
-                localStorage.setItem('AlmaPlus_admin_Name', profileInfo.name);
-                localStorage.setItem('AlmaPlus_admin_Pic', profileInfo.profilepic || '');
                 setDisable(false);
                 setErrors({});
             } else {

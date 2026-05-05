@@ -1,8 +1,8 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import {
   ArrowLeft, ArrowRight, User, Calendar, MapPin,
@@ -61,7 +61,7 @@ export default function Register() {
 
   useEffect(() => {
     if ((authUser?._id)) nav('/home');
-    axios.get(`${WEB_URL}/api/getInstitutes`).then((res) => setUniversity(res.data.data));
+    apiClient.get(`/api/getInstitutes`).then((res) => setUniversity(res.data.data));
   }, [nav]);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function Register() {
     const formData = new FormData();
     formData.append("profilepic", compressed);
 
-    axios.post(`${WEB_URL}/api/uploadUserImage`, formData, { headers: { "Content-Type": "multipart/form-data" } })
+    apiClient.post(`/api/uploadUserImage`, formData, { headers: { "Content-Type": "multipart/form-data" } })
       .then((res) => {
         setUser({ ...user, profilepic: res.data.data.url });
         setUploading(false);
@@ -148,7 +148,7 @@ export default function Register() {
     if (validateStep(4)) {
       const body = { ...user, skills: JSON.stringify(skills) };
       try {
-        await axios.post(`${WEB_URL}/api/register`, body, { withCredentials: true });
+        await apiClient.post(`/api/register`, body, { withCredentials: true });
         toast.success("Welcome aboard!");
         nav("/login");
       } catch (err) { toast.error(err.response?.data?.msg || "Error"); }

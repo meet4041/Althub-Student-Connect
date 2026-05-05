@@ -60,7 +60,7 @@
 }
 
 .text-highlight {
-    color: #38bdf8; /* Lighter blue for better contrast on dark bg */
+    color: #5eead4; /* Lighter green for better contrast on dark bg */
     position: relative;
 }
 
@@ -113,7 +113,7 @@
 }
 
 .form-heading {
-    margin-bottom: 24px !important;
+    margin-bottom: 24px;
 }
 
 .text-navy {
@@ -165,7 +165,7 @@
 }
 
 .error-border {
-    border-color: #ef4444 !important;
+    border-color: #ef4444;
 }
 
 .error-msg-modern {
@@ -251,7 +251,7 @@
 
 /* RESPONSIVE */
 @media (max-width: 991px) {
-    .auth-visual-side { display: none !important; }
+    .auth-visual-side { display: none; }
     .auth-form-side { width: 100%; padding: 20px; }
 }
 
@@ -283,6 +283,34 @@
 }
 
 .btn-signup-link:hover {
-    color: #3b82f6;
+    color: #0d9488;
     text-decoration: underline;
+}
+
+/* Restored admin auth visual background */
+body .auth-main-wrapper .auth-visual-side {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(20, 184, 166, 0.42) 0, transparent 34%),
+        radial-gradient(circle at 82% 76%, rgba(13, 148, 136, 0.34) 0, transparent 36%),
+        radial-gradient(circle at 48% 58%, rgba(12, 74, 110, 0.42) 0, transparent 42%),
+        linear-gradient(135deg, #020617 0%, #06192f 42%, #051f1d 70%, #000000 100%);
+}
+
+body .auth-main-wrapper .mesh-overlay {
+    opacity: 0.78;
+    background:
+        linear-gradient(115deg, transparent 0%, rgba(94, 234, 212, 0.18) 28%, transparent 46%),
+        linear-gradient(62deg, transparent 8%, rgba(14, 165, 233, 0.16) 38%, transparent 62%),
+        radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.45) 0, transparent 48%),
+        radial-gradient(at 100% 100%, rgba(8, 47, 73, 0.72) 0, transparent 54%);
+}
+
+body .auth-main-wrapper .text-highlight {
+    color: #5eead4;
+}
+
+body .auth-main-wrapper .glass-logo-box {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 18px 45px rgba(0, 82, 204, 0.24);
 }

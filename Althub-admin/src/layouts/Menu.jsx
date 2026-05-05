@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars, jsx-a11y/anchor-is-valid */
-import { useAuth } from '../context/AuthContext';
-import axios from '../service/axios'; 
-import { ALTHUB_API_URL } from '../config/baseURL';
+import { useAuth } from '../auth/session';
+import axiosInstance from '../api/client';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUtils';
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
@@ -24,6 +23,7 @@ function Menu() {
    const isOfficeActive = (path) => location.pathname.startsWith(path) ? "active" : "";
    const isOfficeRoute = location.pathname.startsWith("/alumni-office") || location.pathname.startsWith("/placement-office");
    const [officeDropdownOpen, setOfficeDropdownOpen] = useState(false);
+   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
    const isAlumniOffice = userRole === 'alumni_office';
    const isPlacementOffice = userRole === 'placement_cell';
 
@@ -41,7 +41,7 @@ function Menu() {
 
    const Logout = async () => {
       try {
-         await axios.get('/api/instituteLogout');
+         await axiosInstance.get('/api/instituteLogout');
       } catch (err) {
          console.error("Logout error", err);
       } finally {
@@ -52,7 +52,7 @@ function Menu() {
 
    const getData = (id) => {
       if (id) {
-         axios.get(`/api/getInstituteById/${id}`)
+         axiosInstance.get(`/api/getInstituteById/${id}`)
          .then((response) => {
             if (response.data.success === true) {
                const fetched = response.data.data || {};
@@ -77,7 +77,7 @@ function Menu() {
             
             <ul className="navbar-nav navbar-right navbar-right-group">
                <li className="dropdown navbar-user">
-                  <a href="#" className="dropdown-toggle navbar-user-link" data-toggle="dropdown" onClick={(e) => e.preventDefault()}>
+                  <a href="#" className="dropdown-toggle navbar-user-link" onClick={(e) => { e.preventDefault(); setProfileDropdownOpen((open) => !open); }}>
                      <img 
                         src={getImageUrl(profileInfo.image, FALLBACK_IMAGES.profile)} 
                         alt="Profile"
@@ -86,12 +86,12 @@ function Menu() {
                      <span className="d-none d-md-inline">{profileInfo.name}</span> 
                      <b className="caret navbar-caret"></b>
                   </a>
-                  <div className="dropdown-menu dropdown-menu-right dropdown-menu-modern">
+                  <div className={`dropdown-menu-modern ${profileDropdownOpen ? 'show' : ''}`}>
                      <Link to="/profile" className="dropdown-item py-2">
                         <i className="fa fa-user-circle mr-2 opacity-50"></i> Edit Profile
                      </Link>
                      <div className="dropdown-divider"></div>
-                     <a onClick={Logout} className="dropdown-item py-2 text-danger font-weight-bold" style={{ cursor: 'pointer' }}>
+                     <a onClick={Logout} className="dropdown-item py-2 text-danger font-weight-bold menu-clickable">
                         <i className="fa fa-sign-out-alt mr-2"></i> Log Out
                      </a>
                   </div>

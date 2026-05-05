@@ -1,0 +1,729 @@
+/* Shared admin page chrome. Keep this file structural; route files own their details. */
+:root {
+    --institute-page-bg: var(--althub-shell-bg);
+    --institute-page-offset-x: var(--althub-sidebar-width);
+    --institute-page-top-gap: 28px;
+    --institute-page-side-gap: 28px;
+    --institute-page-bottom-gap: 36px;
+    --institute-section-gap: 22px;
+    --institute-header-gap: 16px;
+    --institute-page-title-size: 24px;
+    --institute-page-title-color: var(--althub-text);
+    --institute-page-subtitle-color: var(--althub-text-muted);
+    --institute-page-card-radius: var(--althub-radius-lg);
+    --institute-page-card-border: var(--althub-border);
+    --institute-primary: var(--althub-brand);
+    --institute-primary-dark: var(--althub-brand-strong);
+    --institute-soft-bg: var(--althub-surface-muted);
+    --institute-soft-border: var(--althub-border);
+    --institute-soft-text: var(--althub-text-muted);
+    --institute-id-bg: var(--althub-brand-soft);
+    --institute-id-text: var(--althub-brand-strong);
+    --institute-toolbar-gap: 14px;
+    --institute-btn-height: 40px;
+    --institute-btn-radius: var(--althub-radius-md);
+}
+
+html,
+body,
+#root,
+#page-container {
+    background: var(--althub-shell-bg);
+    color: var(--althub-text);
+}
+
+.dashboard-content,
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper,
+.add-post-wrapper,
+.alumni-content-wrapper {
+    min-height: 100vh;
+    margin-left: var(--institute-page-offset-x);
+    width: auto;
+    max-width: none;
+    box-sizing: border-box;
+    margin-top: 0;
+    padding-top: var(--institute-page-top-gap);
+    background: linear-gradient(180deg, #ffffff 0, var(--althub-surface-muted) 220px, var(--althub-shell-bg) 520px);
+    transition: margin-left 0.25s ease;
+}
+
+.dashboard-content,
+.events-container,
+.directory-container,
+.feedback-container,
+.posts-container,
+.profile-main-container,
+.edit-event-container,
+.leaderboard-container,
+.add-post-container,
+.alumni-container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0;
+    padding: 0 var(--institute-page-side-gap) var(--institute-page-bottom-gap);
+}
+
+.dashboard-content {
+    width: auto;
+    max-width: none;
+}
+
+.events-content-wrapper,
+.users-content-wrapper,
+.feedback-content-wrapper,
+.posts-content-wrapper,
+.profile-content-wrapper,
+.edit-event-wrapper,
+.add-post-wrapper,
+.alumni-content-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.posts-content-wrapper,
+.feedback-content-wrapper {
+    height: auto;
+    overflow: visible;
+}
+
+.posts-container,
+.feedback-container {
+    min-height: calc(100vh - var(--althub-header-height));
+}
+
+.posts-scroll-area,
+.feedback-scroll-area {
+    flex: initial;
+    overflow: visible;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+.institute-page-header,
+.dashboard-content > .d-sm-flex.align-items-center.justify-content-between.mb-4.mt-2,
+.directory-container > .d-flex.align-items-center.justify-content-between.mb-4,
+.posts-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.feedback-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.edit-event-container > .d-flex.align-items-center.justify-content-between.mb-3,
+.profile-main-container > .mb-4,
+.leaderboard-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+.events-header,
+.alumni-shell-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--institute-header-gap);
+    margin-top: 0;
+    margin-bottom: var(--institute-section-gap);
+    padding-bottom: 2px;
+    border-bottom: 0;
+}
+
+.institute-page-header-copy {
+    min-width: 0;
+}
+
+.breadcrumb,
+.institute-page-breadcrumb,
+.dashboard-breadcrumb,
+.users-breadcrumb,
+.posts-breadcrumb,
+.events-header .breadcrumb,
+.directory-container .breadcrumb,
+.posts-container .breadcrumb,
+.feedback-container .breadcrumb {
+    margin-bottom: 6px;
+    padding: 0;
+    background: transparent;
+    color: var(--althub-text-muted);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.breadcrumb a,
+.institute-page-breadcrumb .breadcrumb-item a,
+.dashboard-breadcrumb-link {
+    color: var(--althub-brand-strong);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover,
+.institute-page-breadcrumb .breadcrumb-item a:hover,
+.dashboard-breadcrumb-link:hover {
+    color: var(--althub-brand-deep);
+    text-decoration: none;
+}
+
+.institute-page-title,
+.dashboard-header-h1,
+.events-title,
+.users-header,
+.alumni-header,
+.posts-header,
+.feedback-container .page-header,
+.profile-main-container .page-header,
+.edit-event-title {
+    margin: 0;
+    color: var(--institute-page-title-color);
+    font-size: var(--institute-page-title-size);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.institute-page-subtitle,
+.dashboard-content .text-muted.small,
+.events-header .text-muted.small,
+.feedback-container .text-muted.small,
+.profile-main-container .text-muted.small,
+.edit-event-container .text-muted.small,
+.posts-container .text-muted.small,
+.alumni-subtitle {
+    margin: 8px 0 0;
+    color: var(--institute-page-subtitle-color);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.institute-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 0;
+}
+
+.settings-layout-box,
+.event-form-card,
+.post-form-card,
+.alumni-card,
+.events-content-card,
+.directory-card,
+.post-main-card,
+.feedback-main-card,
+.institute-page-card,
+.card.border-0,
+.stat-card-modern,
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.dashboard-csv-bar {
+    background: var(--althub-surface);
+    border: 1px solid var(--althub-border);
+    border-radius: var(--althub-radius-lg);
+    box-shadow: var(--althub-shadow-sm);
+}
+
+.toolbar-container,
+.posts-toolbar,
+.events-toolbar,
+.feedback-container .card-body > .p-4.d-flex,
+.feedback-container .card-body > .p-4.d-flex.flex-wrap,
+.dashboard-csv-bar {
+    gap: var(--institute-toolbar-gap);
+    padding: 16px;
+}
+
+.admin-card {
+    overflow: hidden;
+    background: var(--althub-surface);
+    border: 1px solid var(--althub-border);
+    border-radius: var(--althub-radius-lg);
+    box-shadow: var(--althub-shadow-sm);
+}
+
+.admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--institute-toolbar-gap);
+    padding: 16px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--althub-border);
+}
+
+.admin-search-box {
+    width: min(420px, 100%);
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--althub-border);
+    border-radius: var(--althub-radius-md);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.admin-search-box:focus-within {
+    border-color: var(--althub-brand);
+    box-shadow: 0 0 0 3px var(--althub-brand-ring);
+}
+
+.admin-search-icon {
+    width: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--althub-text-faint);
+}
+
+.admin-search-input {
+    min-width: 0;
+    flex: 1;
+    height: 42px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--althub-text);
+    font-size: 14px;
+}
+
+.admin-table {
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 0;
+}
+
+.admin-table thead th {
+    background: var(--althub-surface-muted);
+    color: var(--althub-text-muted);
+    border-top: 0;
+    border-bottom: 1px solid var(--althub-border);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.admin-table tbody td {
+    height: 64px;
+    vertical-align: middle;
+    border-color: #eef2f7;
+}
+
+.admin-table-actions-cell {
+    width: 104px;
+    text-align: right;
+}
+
+.admin-table-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.admin-table-action {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--althub-border);
+    border-radius: var(--althub-radius-md);
+    background: #ffffff;
+    color: var(--althub-text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.admin-table-action-danger {
+    color: var(--althub-danger);
+}
+
+.admin-table-action:hover {
+    background: var(--althub-surface-muted);
+    border-color: var(--althub-border-strong);
+    color: var(--althub-brand-strong);
+    text-decoration: none;
+}
+
+.admin-table-action-danger:hover {
+    background: var(--althub-danger-soft);
+    border-color: #fecdd3;
+}
+
+.admin-table-footer {
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border-top: 1px solid var(--althub-border);
+}
+
+.admin-table-count {
+    margin: 0;
+    color: var(--althub-text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.admin-page-button {
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid var(--althub-border);
+    border-radius: var(--althub-radius-md);
+    background: #ffffff;
+    color: var(--althub-text-muted);
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.admin-page-button.active,
+.admin-page-button:hover {
+    background: var(--althub-brand);
+    border-color: var(--althub-brand);
+    color: #ffffff;
+}
+
+.admin-role-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 5px 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.admin-role-student {
+    background: var(--althub-brand-soft);
+    border-color: var(--althub-brand-muted);
+    color: var(--althub-brand-strong);
+}
+
+.admin-role-alumni {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.table,
+.events-table,
+.posts-table,
+.feedback-table {
+    margin-bottom: 0;
+    color: #334155;
+}
+
+.table thead th,
+.events-table thead th,
+.users-th,
+.posts-table th,
+.feedback-table th,
+.post-main-card thead th,
+.feedback-main-card thead th,
+.directory-card thead th {
+    background: var(--althub-surface-muted);
+    color: var(--althub-text-muted);
+    border-top: 0;
+    border-bottom: 1px solid var(--althub-border);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.table td,
+.table th,
+.events-table td,
+.events-table th,
+.posts-table td,
+.feedback-table td {
+    vertical-align: middle;
+    border-color: #eef2f7;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table-user-row,
+.post-row,
+.feedback-row,
+.events-table tbody tr {
+    transition: background 0.16s ease;
+}
+
+.table-user-row:hover,
+.post-row:hover,
+.feedback-row:hover,
+.events-table tbody tr:hover {
+    background: var(--althub-surface-muted);
+}
+
+.btn,
+.btn-primary,
+.btn-light,
+.custom-select,
+.form-control,
+select,
+textarea {
+    border-radius: var(--althub-radius-md);
+}
+
+.text-primary {
+    color: var(--althub-brand);
+}
+
+.btn-primary,
+.btn-events-create,
+.posts-create-btn,
+.dashboard-csv-btn,
+.edit-event-save-btn,
+.institute-edit-post .edit-event-save-btn,
+.post-footer-actions .btn-primary,
+.form-footer-sticky .btn-primary {
+    min-height: var(--institute-btn-height);
+    background: var(--althub-brand);
+    border-color: var(--althub-brand);
+    color: #ffffff;
+    box-shadow: var(--althub-shadow-brand);
+    font-weight: 750;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-events-create:hover,
+.posts-create-btn:hover,
+.dashboard-csv-btn:hover,
+.edit-event-save-btn:hover,
+.institute-edit-post .edit-event-save-btn:hover,
+.post-footer-actions .btn-primary:hover,
+.form-footer-sticky .btn-primary:hover {
+    background: var(--althub-brand-strong);
+    border-color: var(--althub-brand-strong);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px var(--althub-brand-ring), var(--althub-shadow-brand);
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:not(:disabled):not(.disabled):active {
+    background: var(--althub-brand-deep);
+    border-color: var(--althub-brand-deep);
+    color: #ffffff;
+}
+
+.btn-light,
+.btn-white,
+.edit-event-back-btn,
+.post-form-card .btn-light,
+.edit-event-container .btn-light {
+    background: #ffffff;
+    border: 1px solid var(--althub-border);
+    color: #334155;
+    box-shadow: none;
+    font-weight: 700;
+}
+
+.btn-light:hover,
+.btn-white:hover,
+.edit-event-back-btn:hover {
+    background: var(--althub-surface-muted);
+    color: var(--althub-text);
+}
+
+.search-input-modern,
+.posts-search-input,
+.events-search-input,
+.feedback-container input.form-control.border-0.bg-light,
+.search-pill-container .form-control,
+.posts-search-group .form-control,
+.form-control,
+.custom-select,
+select,
+textarea {
+    min-height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--althub-border);
+    color: var(--althub-text);
+    box-shadow: none;
+}
+
+.form-control:focus,
+.custom-select:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--althub-brand);
+    box-shadow: 0 0 0 3px var(--althub-brand-ring);
+}
+
+.input-group-text.bg-light,
+.posts-search-icon,
+.search-input-icon {
+    background: #ffffff;
+    border-color: var(--althub-border);
+    color: var(--althub-text-faint);
+}
+
+.feedback-id-badge,
+.post-id-badge,
+.id-badge-soft,
+.events-table-num,
+.users-content-wrapper .badge.bg-light,
+.feedback-container .badge.bg-light,
+.institute-badge {
+    background: var(--althub-brand-soft);
+    color: var(--althub-brand-strong);
+    border: 1px solid var(--althub-brand-muted);
+    border-radius: 999px;
+}
+
+.pagination-btn,
+.posts-page-btn,
+.events-page-btn,
+.feedback-container .page-link {
+    min-width: 36px;
+    height: 36px;
+    background: #ffffff;
+    border: 1px solid var(--althub-border);
+    border-radius: var(--althub-radius-md);
+    color: var(--althub-text-muted);
+    box-shadow: none;
+}
+
+.pagination-btn-active,
+.posts-page-btn.active,
+.events-page-btn.active,
+.feedback-container .page-item.active .page-link {
+    background: var(--althub-brand);
+    border-color: var(--althub-brand);
+    color: #ffffff;
+}
+
+.table-footer,
+.posts-table-footer,
+.feedback-container .card-body > .p-4.bg-white,
+.events-pagination,
+.form-footer-sticky,
+.post-footer-actions {
+    background: #ffffff;
+    border-top: 1px solid var(--althub-border);
+}
+
+.form-body-scroll,
+.post-body-scroll,
+.settings-detail-content {
+    background: #ffffff;
+}
+
+.avatar-master-wrapper,
+.info-box-light,
+.post-upload-zone,
+.upload-drop-zone {
+    background: var(--althub-surface-muted);
+    border-color: var(--althub-border);
+}
+
+.user-avatar-img,
+.post-media-preview,
+.events-table-thumb {
+    border-radius: var(--althub-radius-md);
+}
+
+.modal-backdrop-custom,
+.csv-modal-backdrop {
+    background: rgba(18, 55, 47, 0.48);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content-premium,
+.csv-modal {
+    background: #ffffff;
+    border: 1px solid var(--althub-border);
+    border-radius: 16px;
+    box-shadow: var(--althub-shadow-md);
+}
+
+@media (max-width: 767px) {
+    :root {
+        --institute-page-top-gap: 20px;
+        --institute-page-side-gap: 16px;
+    }
+
+    .dashboard-content,
+    .events-content-wrapper,
+    .users-content-wrapper,
+    .feedback-content-wrapper,
+    .posts-content-wrapper,
+    .profile-content-wrapper,
+    .edit-event-wrapper,
+    .add-post-wrapper,
+    .alumni-content-wrapper {
+        margin-left: 0;
+        width: auto;
+        padding-top: var(--institute-page-top-gap);
+    }
+
+    .dashboard-content,
+    .events-container,
+    .directory-container,
+    .feedback-container,
+    .posts-container,
+    .profile-main-container,
+    .edit-event-container,
+    .leaderboard-container,
+    .add-post-container,
+    .alumni-container {
+        padding-left: var(--institute-page-side-gap);
+        padding-right: var(--institute-page-side-gap);
+        padding-bottom: 24px;
+    }
+
+    .institute-page-header,
+    .dashboard-content > .d-sm-flex.align-items-center.justify-content-between.mb-4.mt-2,
+    .directory-container > .d-flex.align-items-center.justify-content-between.mb-4,
+    .posts-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+    .feedback-container > .d-sm-flex.align-items-center.justify-content-between.mb-4,
+    .edit-event-container > .d-flex.align-items-center.justify-content-between.mb-3,
+    .profile-main-container > .mb-4,
+    .leaderboard-container > .d-sm-flex.align-items-center.justify-content-between.mb-4 {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-toolbar,
+    .admin-table-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-search-box {
+        width: 100%;
+    }
+
+    .admin-table-footer {
+        gap: 12px;
+    }
+
+    .admin-pagination {
+        flex-wrap: wrap;
+    }
+}

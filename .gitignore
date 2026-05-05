@@ -106,15 +106,15 @@ lib/
 *.db
 
 # Uploaded files and media (from server)
-Althub-Server/public/userImages/
-Althub-Server/public/postImages/
-Althub-Server/public/eventImages/
-Althub-Server/public/instituteImages/
-Althub-Server/public/companyImages/
-Althub-Server/public/educationImages/
-Althub-Server/public/experienceImages/
-Althub-Server/public/adminImages/
-Althub-Server/public/notificationSenderImages/
+Althub-server/public/userImages/
+Althub-server/public/postImages/
+Althub-server/public/eventImages/
+Althub-server/public/instituteImages/
+Althub-server/public/companyImages/
+Althub-server/public/educationImages/
+Althub-server/public/experienceImages/
+Althub-server/public/adminImages/
+Althub-server/public/notificationSenderImages/
 
 # Firebase
 .firebase/
@@ -131,8 +131,8 @@ ui-debug.log
 .netlify
 
 # Optional: Keep structure but ignore content
-# !Althub-Server/public/*/
-# !Althub-Server/public/*/.gitkeep
+# !Althub-server/public/*/
+# !Althub-server/public/*/.gitkeep
 
 .DS_Store
 .env*.local

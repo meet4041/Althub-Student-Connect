@@ -3,30 +3,30 @@
 /* src/styles/users.css */
 
 .users-content-wrapper {
-    background-color: #F1F5F9 !important;
+    background-color: #F1F5F9;
     min-height: 100vh;
     
     /* 1. Remove left gap: Set margin to match Sidebar width exactly */
-    margin-left: 260px !important; 
+    margin-left: 260px; 
     
     /* 2. Remove top gap: Clear fixed header height with zero margin-top */
-    padding-top: 35px !important; 
-    margin-top: 100 !important;
+    padding-top: 35px; 
+    margin-top: 100;
     
     /* 3. Reset internal padding if necessary */
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 0;
+    padding-right: 0;
     
     transition: margin-left 0.3s ease;
 }
 
 .users-breadcrumb {
-    background: transparent !important;
-    padding: 0 !important;
+    background: transparent;
+    padding: 0;
 }
 
 .users-breadcrumb-link {
-    color: #2563eb;
+    color: #0d9488;
     font-weight: 600;
     text-decoration: none;
 }
@@ -60,7 +60,7 @@
 }
 
 .search-input-icon {
-    border-radius: 8px 0 0 8px !important;
+    border-radius: 8px 0 0 8px;
 }
 
 .users-table-head {
@@ -105,16 +105,16 @@
 }
 
 .pagination-btn {
-    border-radius: 6px !important;
-    color: #2563eb !important;
+    border-radius: 6px;
+    color: #0d9488;
     width: 36px;
     text-align: center;
-    background: #F8FAFC !important;
+    background: #F8FAFC;
 }
 
 .pagination-btn-active {
-    background-color: #2563eb !important;
-    color: #fff !important;
+    background-color: #0d9488;
+    color: #fff;
     font-weight: bold;
 }
 
@@ -124,14 +124,14 @@
 }
 
 .directory-card {
-    border-radius: 12px !important;
+    border-radius: 12px;
     overflow: hidden;
 }
 
 /* Toolbar Styling */
 .toolbar-container {
-    padding: 1.5rem !important;
-    border-bottom: 1px solid #F1F5F9 !important;
+    padding: 1.5rem;
+    border-bottom: 1px solid #F1F5F9;
 }
 
 .search-pill-container {
@@ -139,17 +139,17 @@
 }
 
 .search-input-modern {
-    border-radius: 0 8px 8px 0 !important;
-    font-size: 14px !important;
-    height: 42px !important;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    height: 42px;
 }
 
 .rows-select-modern {
-    border-radius: 6px !important;
-    width: 110px !important;
-    height: 38px !important;
+    border-radius: 6px;
+    width: 110px;
+    height: 38px;
     cursor: pointer;
-    color: #475569 !important;
+    color: #475569;
 }
 
 /* Table Row Styling */
@@ -184,9 +184,9 @@
 }
 
 .modal-content-premium {
-    border-radius: 20px !important;
+    border-radius: 20px;
     overflow: hidden;
-    border: none !important;
+    border: none;
 }
 
 .user-modal-wide {
@@ -219,7 +219,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0.02));
+    background: linear-gradient(135deg, var(--althub-brand-soft), #ffffff);
     box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
     margin-bottom: 12px;
 }
@@ -289,7 +289,7 @@
 }
 
 .user-info-link {
-    color: #2563eb;
+    color: #0d9488;
     font-weight: 600;
     font-size: 13px;
     word-break: break-all;
@@ -345,7 +345,7 @@
 }
 
 .user-info-accent {
-    color: #2563eb;
+    color: #0d9488;
 }
 
 .user-modal-actions {
@@ -376,7 +376,7 @@
 }
 
 .profile-card-body {
-    padding: 3rem !important;
+    padding: 3rem;
 }
 
 .info-box-light {
@@ -386,7 +386,7 @@
 }
 
 .timeline-year {
-    color: #2563EB;
+    color: var(--althub-brand-strong);
     font-size: 13px;
     font-weight: 700;
 }
@@ -394,38 +394,38 @@
 /* Responsive */
 @media (max-width: 767px) {
     .users-content-wrapper {
-        margin-left: 0 !important;
-        padding-top: 20px !important;
+        margin-left: 0;
+        padding-top: 20px;
     }
 
     .directory-container {
-        padding: 0 16px 24px !important;
+        padding: 0 16px 24px;
     }
 
     .toolbar-container {
-        align-items: stretch !important;
-        flex-direction: column !important;
-        gap: 14px !important;
-        padding: 16px !important;
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px;
     }
 
     .search-pill-container {
-        max-width: 100% !important;
-        width: 100% !important;
-        flex-wrap: nowrap !important;
+        max-width: 100%;
+        width: 100%;
+        flex-wrap: nowrap;
     }
 
     .search-input-icon {
         width: 42px;
         justify-content: center;
-        padding: 0 !important;
-        border-radius: 10px 0 0 10px !important;
+        padding: 0;
+        border-radius: 10px 0 0 10px;
     }
 
     .search-input-modern {
         min-width: 0;
-        border-radius: 0 10px 10px 0 !important;
-        font-size: 13px !important;
+        border-radius: 0 10px 10px 0;
+        font-size: 13px;
     }
 
     .toolbar-container > .d-flex {
@@ -434,7 +434,7 @@
     }
 
     .rows-select-modern {
-        width: 112px !important;
+        width: 112px;
     }
 
     .directory-card .table-responsive {

@@ -1,7 +1,5 @@
-// Backend API URL - works for local dev and Vercel deployment
-const RENDER_URL = "https://althub-server.onrender.com";
-const LOCALHOST_URL = "http://localhost:5001";
+import { getViteApiBaseUrl } from '@althub/shared/config';
 
-export const ALTHUB_API_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === "production" ? RENDER_URL : LOCALHOST_URL);
+export const ALTHUB_API_URL = getViteApiBaseUrl(import.meta.env);
+
+export const WEB_URL = ALTHUB_API_URL;

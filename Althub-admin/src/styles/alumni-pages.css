@@ -1,12 +1,12 @@
 /* src/styles/alumni-pages.css */
 
 .alumni-content-wrapper {
-    background-color: #F1F5F9 !important;
+    background-color: #F1F5F9;
     min-height: 100vh;
-    margin-left: 260px !important;
-    padding-top: 35px !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    margin-left: 260px;
+    padding-top: 35px;
+    padding-left: 0;
+    padding-right: 0;
     padding-bottom: 30px;
     transition: margin-left 0.3s ease;
 }
@@ -37,12 +37,12 @@
 }
 
 .alumni-breadcrumb {
-    background: transparent !important;
-    padding: 0 !important;
+    background: transparent;
+    padding: 0;
 }
 
 .alumni-breadcrumb-link {
-    color: #2563eb;
+    color: #0d9488;
     font-weight: 600;
     text-decoration: none;
 }
@@ -92,8 +92,8 @@
 }
 
 .alumni-card-pill {
-    background: #eff6ff;
-    color: #2563eb;
+    background: #ecfdf5;
+    color: #0d9488;
     font-size: 11px;
     font-weight: 700;
     padding: 6px 10px;
@@ -102,12 +102,12 @@
 
 .alumni-add-btn {
     border-radius: 10px;
-    background-color: #2563EB;
+    background-color: var(--althub-brand);
     border: none;
     min-height: 48px;
     padding: 10px 22px;
     font-weight: 700;
-    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
+    box-shadow: var(--althub-shadow-brand);
 }
 
 .alumni-course-grid {
@@ -133,13 +133,13 @@
 }
 
 .alumni-course-card:hover {
-    border-color: #2563eb;
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
+    border-color: #0d9488;
+    box-shadow: var(--althub-shadow-sm);
 }
 
 .alumni-course-card.active {
-    border-color: #2563eb;
-    background: #eff6ff;
+    border-color: #0d9488;
+    background: #ecfdf5;
 }
 
 .alumni-course-title {
@@ -186,37 +186,8 @@
 
 @media (max-width: 767px) {
     .alumni-content-wrapper {
-        margin-left: 0 !important;
-        padding: 35px 0 2rem 0 !important;
+        margin-left: 0;
+        padding: 35px 0 2rem 0;
     }
 }
 
-/* Minimal Althub route polish */
-.alumni-content-wrapper {
-    margin-left: 248px !important;
-    padding: 28px 0 40px !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: linear-gradient(180deg, #ffffff 0, #f8fafc 220px) !important;
-}
-
-.alumni-container {
-    max-width: 1440px !important;
-    padding: 0 28px 36px !important;
-}
-
-.alumni-card {
-    border-radius: 14px !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-}
-
-@media (max-width: 767px) {
-    .alumni-content-wrapper {
-        margin-left: 0 !important;
-        padding: 20px 0 24px !important;
-    }
-
-    .alumni-container {
-        padding: 0 16px 24px !important;
-    }
-}

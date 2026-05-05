@@ -2,10 +2,10 @@
  * useSessionTimeout - Logs out user after period of inactivity.
  * Protects against session hijacking on shared/unattended devices.
  */
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../service/axios';
+import axiosInstance from '../api/client';
 
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 const EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];

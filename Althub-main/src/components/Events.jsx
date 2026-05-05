@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import EventModal from "./EventModal";
@@ -27,7 +27,7 @@ export default function Events() {
   const nav = useNavigate();
 
   const getEvents = () => {
-    axios.get(`${WEB_URL}/api/getEvents`)
+    apiClient.get(`/api/v1/events`)
       .then((res) => {
         setEvents(res.data.data);
         setShowEvent(res.data.data);

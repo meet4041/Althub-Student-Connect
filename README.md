@@ -59,7 +59,7 @@
 
 ```mermaid
 graph TB
-    A[Althub-Main<br/>Student/Alumni Portal] --> D[Althub-Server<br/>Backend API]
+    A[Althub-Main<br/>Student/Alumni Portal] --> D[Althub-server<br/>Backend API]
     B[Althub-super-admin<br/>Super Admin Panel] --> D
     C[Althub-Admin<br/>Institute Management] --> D
     D --> E[(MongoDB Database)]

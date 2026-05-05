@@ -1,11 +1,10 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import axiosInstance from '../services/axios';
+import axiosInstance from '../api/client';
 import Menu from '../layouts/Menu.jsx';
 import Footer from '../layouts/Footer.jsx';
 import { getProtectedImageUrl } from '../config/baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
-// RE-USING PREMIUM THEME STYLES
 import '../styles/users.css'; 
 
 const Institutes = () => {
@@ -14,7 +13,6 @@ const Institutes = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Deletion States
     const [deleteId, setDeleteId] = useState('');
     const [showDeletePrompt, setShowDeletePrompt] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -81,7 +79,7 @@ const Institutes = () => {
                                 Global Directory of <span className="text-primary">{institutes.length}</span> Partner Campuses
                             </p>
                         </div>
-                        <div className="search-input-group-modern" style={{ minWidth: '350px', borderColor:'#2563eb'}}>
+                        <div className="search-input-group-modern">
                             <i className="fa fa-search"></i>
                             <input 
                                 type="text" 

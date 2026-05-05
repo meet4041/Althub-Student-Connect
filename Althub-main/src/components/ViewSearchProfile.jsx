@@ -1,9 +1,9 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import axios from "axios";
-import { WEB_URL } from "../baseURL";
+import apiClient from "../api/client";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import FollowerModal from "./FollowerModal";
 import ProtectedImage from "../ProtectedImage";
 import { 
@@ -12,11 +12,27 @@ import {
 } from "lucide-react"; 
 import "../styles/ViewSearchProfile.css"; 
 
+const parseListField = (value) => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'string') return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+};
+
 export default function ViewSearchProfile({ socket }) {
   const { user: authUser, logout } = useAuth();
 
   const location = useLocation();
   const nav = useNavigate();
+  const { id: routeUserId } = useParams();
   const [user, setUser] = useState({});
   const [education, setEducation] = useState([]);
   const [experience, setExperience] = useState([]);
@@ -29,46 +45,50 @@ export default function ViewSearchProfile({ socket }) {
   const [followerTab, setFollowerTab] = useState("Follower");
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
 
-  useEffect(() => { if (location.state && location.state.id) setUserID(location.state.id); }, [location.state]);
+  useEffect(() => {
+    const nextUserId = routeUserId || location.state?.id || "";
+    setUserID(nextUserId);
+  }, [location.state, routeUserId]);
 
   const getUser = useCallback((signal) => {
     if (userID) {
-      axios.get(`${WEB_URL}/api/searchUserById/${userID}`, { signal }).then((res) => {
-        if (res.data.data) {
-          setUser(res.data.data[0]);
-          res.data.data[0].skills && setSkills(JSON.parse(res.data.data[0].skills));
-          res.data.data[0].languages && setLanguage(JSON.parse(res.data.data[0].languages));
+      apiClient.get(`/api/v1/users/${userID}`, { signal }).then((res) => {
+        if (res.data.data?.length) {
+          const profile = res.data.data[0];
+          setUser(profile);
+          setSkills(parseListField(profile.skills));
+          setLanguage(parseListField(profile.languages));
         }
       });
     }
   }, [userID]);
 
   const getSelf = useCallback((signal) => {
-    if (userID) axios.get(`${WEB_URL}/api/searchUserById/${myID}`, { signal }).then((res) => { if (res.data.data) setSelf(res.data.data[0]); });
+    if (userID) apiClient.get(`/api/v1/users/${myID}`, { signal }).then((res) => { if (res.data.data) setSelf(res.data.data[0]); });
   }, [userID, myID]);
 
   const getEducation = useCallback((signal) => {
-    if (userID) axios.post(`${WEB_URL}/api/getEducation`, { userid: userID }, { signal }).then((res) => setEducation(res.data.data || []));
+    if (userID) apiClient.post(`/api/getEducation`, { userid: userID }, { signal }).then((res) => setEducation(res.data.data || []));
   }, [userID]);
 
   const getExperience = useCallback((signal) => {
-    if (userID) axios.post(`${WEB_URL}/api/getExperience`, { userid: userID }, { signal }).then((res) => setExperience(res.data.data || []));
+    if (userID) apiClient.post(`/api/getExperience`, { userid: userID }, { signal }).then((res) => setExperience(res.data.data || []));
   }, [userID]);
 
   const handleFollow = () => {
     const msg = `${self.fname} ${self.lname} Started Following You`;
     if (socket) socket.emit("sendNotification", { receiverid: userID, title: "New Follower", msg });
-    axios.post(`${WEB_URL}/api/addNotification`, { userid: userID, msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() });
+    apiClient.post(`/api/v1/notifications`, { userid: userID, msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() });
 
-    axios.put(`${WEB_URL}/api/follow/${userID}`, { userId: myID }).then((res) => {
+    apiClient.put(`/api/follow/${userID}`, { userId: myID }).then((res) => {
         toast.success(res.data);
         getUser();
-        if (!user.followings.includes(myID.toString())) axios.post(`${WEB_URL}/api/newConversation`, { senderId: myID, receiverId: userID });
+        if (!user.followings.includes(myID.toString())) apiClient.post(`/api/newConversation`, { senderId: myID, receiverId: userID });
     });
   };
 
   const confirmUnfollow = () => {
-    axios.put(`${WEB_URL}/api/unfollow/${userID}`, { userId: myID }).then(() => {
+    apiClient.put(`/api/unfollow/${userID}`, { userId: myID }).then(() => {
         toast.info("Unfollowed successfully.");
         setShowUnfollowModal(false);
         getUser();

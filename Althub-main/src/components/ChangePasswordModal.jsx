@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
-import axios from "axios";
+import { useAuth } from '../auth/session';
+import apiClient from "../api/client";
 import React, { useState } from "react";
-import { WEB_URL } from "../baseURL";
+import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import "../styles/ChangePasswordModal.css"; // <--- Import the new CSS
 
@@ -45,8 +45,8 @@ const ChangePasswordModal = ({ closeModal }) => {
 
   const handleChangePassword = () => {
     if (validate()) {
-        axios({
-            url: `${WEB_URL}/api/updatePassword`, 
+        apiClient({
+            url: `/api/updatePassword`, 
             method: "post",
             withCredentials: true,
             data: {

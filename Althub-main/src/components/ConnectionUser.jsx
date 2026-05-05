@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback } from "react";
-import { WEB_URL } from "../baseURL";
-import axios from "axios";
+import { WEB_URL } from "../config/api";
+import apiClient from "../api/client";
 import { useNavigate } from "react-router-dom";
 import ProtectedImage from "../ProtectedImage";
 import "../styles/ConnectionUser.css"; // <--- New CSS Import
@@ -20,9 +20,9 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
 
   const getUser1 = useCallback(() => {
     if (userid && userid !== "") {
-      axios({
+      apiClient({
         method: "get",
-        url: `${WEB_URL}/api/searchUserById/${userid}`,
+        url: `/api/v1/users/${userid}`,
       })
         .then((Response) => {
           if (Response.data && Response.data.data && Response.data.data[0]) {
@@ -38,8 +38,8 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
   const handleUnfollow = (e) => {
     e.stopPropagation(); // Prevent triggering the profile click
     if (window.confirm("Do you want to remove this user?")) {
-      axios({
-        url: `${WEB_URL}/api/unfollow/${type === "Follower" ? myid : userid}`,
+      apiClient({
+        url: `/api/unfollow/${type === "Follower" ? myid : userid}`,
         data: {
           userId: type === "Follower" ? userid : myid,
         },

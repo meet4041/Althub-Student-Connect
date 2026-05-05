@@ -4,11 +4,8 @@
 
 /* Variables */
 :root {
-  --brand-blue: #0052cc;
-  --brand-navy: #091e42;
-  --brand-light-blue: #deebff;
-  --bg-soft: #f4f5f7;
-  --text-main: #172b4d;
+  --bg-soft: var(--althub-shell-bg);
+  --text-main: var(--althub-text);
 }
 
 body .auth-main-wrapper {
@@ -40,8 +37,8 @@ body .auth-visual-side {
 body .mesh-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(at 0% 0%, #0747a6 0px, transparent 50%),
-              radial-gradient(at 100% 100%, #0052cc 0px, transparent 50%);
+  background: radial-gradient(at 0% 0%, #115e59 0px, transparent 50%),
+              radial-gradient(at 100% 100%, #0d9488 0px, transparent 50%);
   opacity: 0.6;
 }
 
@@ -68,7 +65,7 @@ body .title-text {
 }
 
 body .text-highlight { 
-  color: #4c9aff; 
+  color: #5eead4; 
 }
 
 body .subtitle-text { 
@@ -134,7 +131,7 @@ body .input-wrapper-modern {
 
 body .input-wrapper-modern:focus-within {
   background: #fff;
-  border-color: var(--brand-blue);
+  border-color: var(--brand-green);
   box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.1);
 }
 
@@ -156,7 +153,7 @@ body .icon-left {
 }
 
 body .error-border { 
-  border-color: #ff5630 !important; 
+  border-color: #ff5630; 
 }
 
 body .error-msg-modern { 
@@ -193,8 +190,8 @@ body .checkmark {
 }
 
 body .checkbox-container-modern input:checked ~ .checkmark { 
-  background-color: var(--brand-blue); 
-  border-color: var(--brand-blue); 
+  background-color: var(--brand-green); 
+  border-color: var(--brand-green); 
 }
 
 body .checkbox-container-modern input:checked ~ .checkmark:after {
@@ -210,7 +207,7 @@ body .checkbox-container-modern input:checked ~ .checkmark:after {
 }
 
 body .forgot-pass-link { 
-  color: var(--brand-blue); 
+  color: var(--brand-green); 
   font-weight: 700; 
   font-size: 14px; 
   cursor: pointer; 
@@ -220,7 +217,7 @@ body .forgot-pass-link {
 body .btn-modern-submit {
   width: 100%;
   padding: 16px;
-  background: var(--brand-blue);
+  background: var(--brand-green);
   color: white;
   border: none;
   border-radius: 12px;
@@ -246,7 +243,7 @@ body .mobile-logo {
   width: 70px; 
   border-radius: 12px; 
   margin-bottom: 10px; 
-  border: 2px solid var(--brand-blue); 
+  border: 2px solid var(--brand-green); 
 }
 
 @media (max-width: 991px) {
@@ -262,11 +259,8 @@ body .mobile-logo {
 }
 
 :root {
-  --brand-blue: #0052cc;
-  --brand-navy: #091e42;
-  --brand-light-blue: #deebff;
-  --bg-soft: #f4f5f7;
-  --text-main: #172b4d;
+  --bg-soft: var(--althub-shell-bg);
+  --text-main: var(--althub-text);
 }
 
 .auth-main-wrapper {
@@ -294,15 +288,15 @@ body .mobile-logo {
 .mesh-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(at 0% 0%, #0747a6 0px, transparent 50%),
-              radial-gradient(at 100% 100%, #0052cc 0px, transparent 50%);
+  background: radial-gradient(at 0% 0%, #115e59 0px, transparent 50%),
+              radial-gradient(at 100% 100%, #0d9488 0px, transparent 50%);
   opacity: 0.6;
 }
 
 .visual-inner { position: relative; z-index: 5; color: white; max-width: 500px; }
 .main-logo-glow { width: 100px; border-radius: 20px; box-shadow: 0 0 30px rgba(0, 82, 204, 0.5); margin-bottom: 40px; }
 .title-text { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
-.text-highlight { color: #4c9aff; }
+.text-highlight { color: #5eead4; }
 .subtitle-text { font-size: 1.1rem; line-height: 1.6; color: #b3bac5; }
 
 .badge-pill-custom {
@@ -342,7 +336,7 @@ body .mobile-logo {
 
 .input-wrapper-modern:focus-within {
   background: #fff;
-  border-color: var(--brand-blue);
+  border-color: var(--brand-green);
   box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.1);
 }
 
@@ -356,17 +350,17 @@ body .mobile-logo {
   color: var(--text-main);
 }
 
-.icon-left { min-width: 50px; text-align: center; color: var(--brand-blue) !important; font-size: 1.2rem; }
-.error-border { border-color: #ff5630 !important; }
+.icon-left { min-width: 50px; text-align: center; color: var(--brand-green); font-size: 1.2rem; }
+.error-border { border-color: #ff5630; }
 .error-msg-modern { color: #ff5630; font-size: 12px; margin-top: 5px; font-weight: 600; }
 
 /* Back Link & Button */
-.back-to-login { color: var(--brand-blue); font-weight: 700; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.3s; }
+.back-to-login { color: var(--brand-green); font-weight: 700; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.3s; }
 
 .btn-modern-submit {
   width: 100%;
   padding: 16px;
-  background: var(--brand-blue);
+  background: var(--brand-green);
   color: white;
   border: none;
   border-radius: 12px;
@@ -382,7 +376,7 @@ body .mobile-logo {
   transform: translateY(-2px);
 }
 
-.mobile-logo { width: 70px; border-radius: 12px; margin-bottom: 10px; border: 2px solid var(--brand-blue); }
+.mobile-logo { width: 70px; border-radius: 12px; margin-bottom: 10px; border: 2px solid var(--brand-green); }
 
 @media (max-width: 991px) {
   .auth-form-side { background: var(--bg-soft); }
