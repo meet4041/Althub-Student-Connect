@@ -10,8 +10,11 @@ const syncSocketUser = (userData) => {
 
 const authSession = createAuthSession({
     apiClient,
-    mePath: '/api/v1/auth/main/me',
-    logoutPath: '/api/v1/userLogout',
+    // Use legacy /api paths so this works against the currently-deployed backend
+    // (which doesn't have /api/v1 mount yet). Both old and new backends serve
+    // /api/auth/me and /api/userLogout.
+    mePath: '/api/auth/me',
+    logoutPath: '/api/userLogout',
     onUserLoaded: syncSocketUser,
     onLogout: () => {
         if (socket.connected) socket.disconnect();

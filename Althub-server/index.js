@@ -17,6 +17,7 @@ import xss from "xss-clean";
 import { globalErrorHandler } from "./middleware/errorHandler.js";
 import { corsOptions, cspConnectSrc } from "./config/origins.js";
 import { createApiRouter } from "./routes/apiRoutes.js";
+import { buildInfo } from "./utils/buildInfo.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -191,12 +192,40 @@ const apiVersionHeader = (version) => (req, res, next) => {
   next();
 };
 
+const legacyApiHeader = (req, res, next) => {
+  res.setHeader("X-Althub-API-Version", "legacy");
+  res.setHeader("X-Althub-API-Deprecated", "true");
+  res.setHeader("X-Althub-API-Successor", "/api/v1");
+  next();
+};
+
 // --- MOUNT ROUTES ---
+// Both /api (legacy) and /api/v1 are mounted. Keeping the legacy mount means
+// a rolling deploy can never leave the system in a state where the frontend
+// uses paths the backend doesn't serve. Once all clients have moved to /v1
+// for an extended period, the legacy mount can be removed.
 const apiRouterOptions = { apiLimiter, imageLimiter, loginLimiter };
 app.use("/api/v1", apiVersionHeader("v1"), createApiRouter({ ...apiRouterOptions, includeResourceAliases: true }));
+app.use("/api", legacyApiHeader, createApiRouter(apiRouterOptions));
 
-// Health Check
-app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));
+// Health Check + deploy identification.
+// `curl /` shows the running commit so you can verify what's actually live
+// without guessing from behavior. Also exposed as JSON at /version.
+app.get("/", (req, res) => {
+  res
+    .status(200)
+    .type("text/plain")
+    .send(
+      `Althub Server is running!\n` +
+      `commit:  ${buildInfo.shortCommit || "unknown"} (${buildInfo.commit || "unknown"})\n` +
+      `branch:  ${buildInfo.branch || "unknown"}\n` +
+      `started: ${buildInfo.startedAt}\n` +
+      `node:    ${buildInfo.nodeVersion}\n` +
+      `env:     ${buildInfo.env}\n`
+    );
+});
+
+app.get("/version", (req, res) => res.status(200).json(buildInfo));
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -256,6 +285,11 @@ connectToMongo()
   .then(() => {
     server.listen(port, "0.0.0.0", () => {
       console.log(`Server running on port ${port}`);
+      console.log(
+        `Build: commit=${buildInfo.shortCommit || "unknown"} ` +
+        `branch=${buildInfo.branch || "unknown"} ` +
+        `env=${buildInfo.env}`
+      );
     });
   })
   .catch(err => {

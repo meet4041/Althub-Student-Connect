@@ -3,8 +3,9 @@ import apiClient from '../api/client';
 
 const authSession = createAuthSession({
     apiClient,
-    mePath: '/api/v1/auth/super-admin/me',
-    logoutPath: '/api/v1/adminLogout',
+    // Use legacy paths until backend deploys v1 mount. See main/auth/session.jsx.
+    mePath: '/api/auth/me',
+    logoutPath: '/api/adminLogout',
 });
 
 export const AuthContext = authSession.AuthContext;
