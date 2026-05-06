@@ -20,7 +20,7 @@ const Users = () => {
 
     const fetchInstitutes = () => {
         setLoading(true);
-        axiosInstance.get('/api/getInstitutes')
+        axiosInstance.get('/api/v1/getInstitutes')
             .then(res => {
                 setInstitutes(res.data.data || []);
                 setLoading(false);
@@ -31,7 +31,7 @@ const Users = () => {
         setLoading(true);
         setSelectedInst(inst);
         setSearchTerm('');
-        axiosInstance.get(`/api/getUsersByInstitute/${inst._id}`)
+        axiosInstance.get(`/api/v1/getUsersByInstitute/${inst._id}`)
             .then(res => {
                 const data = res.data.data || [];
                 setUsers(data);

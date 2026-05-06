@@ -24,8 +24,6 @@ post_route.put('/like/:id', requireAuth, post_controller.likeUnlikePost);
 post_route.get('/getPost', requireAuth, post_controller.getPosts);
 post_route.get('/getFriendsPost/all', requireAuth, post_controller.getFriendsPost);
 post_route.get('/getPostById/:userid', requireAuth, post_controller.getPostById);
-// Alias for legacy frontend route name
-post_route.get('/getPostByUser/:userid', requireAuth, post_controller.getPostById);
 
 // Institute Specific Add Post
 post_route.post('/instituteAddPost', requireAuth, uploadArray('photos', 5, { maxFileSize: 20 * 1024 * 1024 }), post_controller.instituteAddPost);

@@ -17,7 +17,7 @@ const Announcement = () => {
     useEffect(() => {
         const init = async () => {
             try {
-                const response = await axiosInstance.get('/api/portalAnnouncement');
+                const response = await axiosInstance.get('/api/v1/portalAnnouncement');
                 const announcement = response.data?.data || {};
                 setForm({
                     title: announcement.title || '',
@@ -48,7 +48,7 @@ const Announcement = () => {
         setStatus('');
 
         try {
-            await axiosInstance.put('/api/portalAnnouncement', form);
+            await axiosInstance.put('/api/v1/portalAnnouncement', form);
             setStatus('Announcement updated for institute admin dashboards.');
         } catch (err) {
             setStatus(err.response?.data?.msg || 'Announcement update failed.');

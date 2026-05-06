@@ -7,22 +7,4 @@ const apiClient = createApiClient({
     loginPath: '/login',
 });
 
-export const fetchSecureImage = async (imagePath) => {
-    if (!imagePath) return null;
-
-    if (imagePath.startsWith('http') && !imagePath.includes('api/images')) {
-        return imagePath;
-    }
-
-    try {
-        const response = await apiClient.get(imagePath, {
-            responseType: 'blob'
-        });
-        return URL.createObjectURL(response.data);
-    } catch (error) {
-        console.error("Failed to load secure image:", error);
-        return 'assets/img/login-bg/profile1.png';
-    }
-};
-
 export default apiClient;

@@ -35,7 +35,7 @@ function ForgotPassword() {
             setDisable(true);
             axiosInstance({
                 method: "post",
-                url: '/api/forgetpassword',
+                url: '/api/v1/forgetpassword',
                 data: { email: email },
             }).then((response) => {
                 if (response.data.success === true) {

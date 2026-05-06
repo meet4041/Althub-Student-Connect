@@ -27,11 +27,25 @@ const Login = () => {
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
     const handleRememberMeChange = (e) => setRememberMe(e.target.checked);
 
+    // Login with transparent legacy-path fallback.
+    // The /api/v1 path may return 403 (CSRF allowlist mismatch on backends
+    // that don't yet have the v1-aware allowlist) or 404 (very old backend).
+    // Falling back to /api/<endpoint> works on the legacy mount.
+    // Once the new backend is confirmed deployed, this fallback can be removed.
+    const loginRequest = (payload) =>
+        axiosInstance.post('/api/v1/instituteLogin', payload).catch((err) => {
+            const status = err.response?.status;
+            if (status === 403 || status === 404) {
+                return axiosInstance.post('/api/instituteLogin', payload);
+            }
+            throw err;
+        });
+
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axiosInstance.post('/api/v1/instituteLogin', { email: loginInfo.email.trim().toLowerCase(), password: loginInfo.password })
+            loginRequest({ email: loginInfo.email.trim().toLowerCase(), password: loginInfo.password })
                 .then((response) => {
                     if (response.data.success === true) {
                         toast.success('Login Successful!');

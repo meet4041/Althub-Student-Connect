@@ -21,9 +21,9 @@ function Dashboard() {
             try {
                 const [uRes, iRes, aRes, pRes] = await Promise.all([
                     axiosInstance.get(`/api/v1/users`),
-                    axiosInstance.get(`/api/getInstitutes`),
-                    axiosInstance.get(`/api/getAlumniOffices`),
-                    axiosInstance.get(`/api/getPlacementCells`)
+                    axiosInstance.get(`/api/v1/getInstitutes`),
+                    axiosInstance.get(`/api/v1/getAlumniOffices`),
+                    axiosInstance.get(`/api/v1/getPlacementCells`)
                 ]);
 
                 setCounts({

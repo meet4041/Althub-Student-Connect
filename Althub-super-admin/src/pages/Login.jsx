@@ -22,12 +22,26 @@ const Login = () => {
         if (errors[`${name}_err`]) setErrors(prev => ({ ...prev, [`${name}_err`]: null }));
     }
 
+    // Login with transparent legacy-path fallback. See Althub-admin/src/pages/Login.jsx
+    // for rationale. Try the v1 path first (so we work against the new backend
+    // that drops the legacy /api mount), fall back to /api/adminLogin (so we
+    // also work against the old backend whose CSRF allowlist only matches
+    // unversioned endpoint names). Remove once new backend is deployed.
+    const loginRequest = (payload) =>
+        axiosInstance.post('/api/v1/adminLogin', payload).catch((err) => {
+            const status = err.response?.status;
+            if (status === 403 || status === 404) {
+                return axiosInstance.post('/api/adminLogin', payload);
+            }
+            throw err;
+        });
+
     const submitHandler = (e) => {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
 
-            axiosInstance.post('/api/adminLogin', {
+            loginRequest({
                 email: loginInfo.email.trim().toLowerCase(),
                 password: loginInfo.password
             })

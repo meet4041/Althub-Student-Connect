@@ -1,77 +1,41 @@
 import React, { useEffect, useState } from "react";
-import apiClient from "../../api/client";
+import { buildImageUrl, getImageOnError } from "@althub/shared/images";
 import { WEB_URL } from "../../config/api";
 
-const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profile1.png", ...props }) => {
-  const [currentSrc, setCurrentSrc] = useState(defaultImage);
-  const [loading, setLoading] = useState(true);
+// Thin wrapper around <img> that prepends WEB_URL to backend paths and
+// renders the fallback on error. Uses native browser caching (Cache-Control
+// + ETag set by Althub-server/routes/imagesRoute.js) — no blob fetch needed.
+//
+// Same auth model as before: the browser sends the HttpOnly cookies on the
+// <img> request thanks to SameSite=None; Secure (in cross-site mode) or
+// SameSite=Lax (in same-origin mode).
+const ProtectedImage = ({
+  imgSrc,
+  alt = "",
+  className,
+  defaultImage = "/images/profile1.png",
+  loading = "lazy",
+  decoding = "async",
+  ...props
+}) => {
+  const resolved = buildImageUrl(imgSrc, { baseURL: WEB_URL, fallback: defaultImage });
+  const [src, setSrc] = useState(resolved);
 
   useEffect(() => {
-    let active = true;
-    let objectUrl = null;
-    let retryTimer = null;
-
-    const finishWithDefault = () => {
-      if (!active) return;
-      setCurrentSrc(defaultImage);
-      setLoading(false);
-    };
-
-    if (!imgSrc || imgSrc === "undefined" || imgSrc === "") {
-      finishWithDefault();
-      return;
-    }
-
-    if (imgSrc.startsWith("http") || imgSrc.startsWith("blob:") || imgSrc.startsWith("data:")) {
-      setCurrentSrc(imgSrc);
-      setLoading(false);
-      return;
-    }
-
-    const fetchSecureImage = async (attempt = 0) => {
-      try {
-        setLoading(true);
-        const cleanPath = imgSrc.startsWith("/") ? imgSrc : `/${imgSrc}`;
-        const response = await apiClient.get(`${WEB_URL}${cleanPath}`, {
-          responseType: "blob",
-          withCredentials: true,
-        });
-
-        const nextObjectUrl = URL.createObjectURL(response.data);
-        if (!active) {
-          URL.revokeObjectURL(nextObjectUrl);
-          return;
-        }
-
-        if (objectUrl) URL.revokeObjectURL(objectUrl);
-        objectUrl = nextObjectUrl;
-        setCurrentSrc(nextObjectUrl);
-        setLoading(false);
-      } catch (error) {
-        if (!active) return;
-        if (attempt === 0) {
-          retryTimer = window.setTimeout(() => fetchSecureImage(1), 500);
-          return;
-        }
-        console.error("Image Load Failed:", error);
-        finishWithDefault();
-      }
-    };
-
-    fetchSecureImage();
-
-    return () => {
-      active = false;
-      if (retryTimer) window.clearTimeout(retryTimer);
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
+    setSrc(buildImageUrl(imgSrc, { baseURL: WEB_URL, fallback: defaultImage }));
   }, [imgSrc, defaultImage]);
 
-  if (loading) {
-    return <img src={defaultImage} alt={alt} className={className} style={{ opacity: 0.5 }} {...props} />;
-  }
-
-  return <img src={currentSrc} alt={alt} className={className} {...props} />;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      loading={loading}
+      decoding={decoding}
+      onError={getImageOnError(defaultImage)}
+      {...props}
+    />
+  );
 };
 
 export default ProtectedImage;

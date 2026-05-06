@@ -14,12 +14,12 @@ education_route.use(bodyParser.urlencoded({ extended: true }));
 education_route.use(cookieParser());
 
 // Education routes
-education_route.post('/addEducation', education_controller.addEducation);
-education_route.post('/getEducation', education_controller.getEducation);
-education_route.delete('/deleteEducation/:id', education_controller.deleteEducation);
-education_route.post('/editEducation', education_controller.editEducation);
+education_route.post('/addEducation', requireAuth, education_controller.addEducation);
+education_route.post('/getEducation', requireAuth, education_controller.getEducation);
+education_route.delete('/deleteEducation/:id', requireAuth, education_controller.deleteEducation);
+education_route.post('/editEducation', requireAuth, education_controller.editEducation);
 // Collage logos: 5MB max
-education_route.post('/uploadCollageLogo', uploadSingle('collagelogo', { maxFileSize: 5 * 1024 * 1024 }), asyncHandler(async (req, res) => {
+education_route.post('/uploadCollageLogo', requireAuth, uploadSingle('collagelogo', { maxFileSize: 5 * 1024 * 1024 }), asyncHandler(async (req, res) => {
     if (!req.file) throw badRequest('No file provided');
     const fileId = req.file.id || req.file._id || (req.file.fileId && req.file.fileId.toString());
     return res.status(200).send({ success: true, data: { url: `/api/images/${fileId}` } });

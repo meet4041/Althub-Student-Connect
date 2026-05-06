@@ -22,7 +22,7 @@ const Institutes = () => {
 
     const getInstitutesData = () => {
         setLoading(true);
-        axiosInstance.get(`/api/getInstitutes`)
+        axiosInstance.get(`/api/v1/getInstitutes`)
             .then((response) => {
                 if (response.data.success === true) {
                     setInstitutes(response.data.data);
@@ -52,7 +52,7 @@ const Institutes = () => {
     }
 
     const executeDeletion = () => {
-        axiosInstance.delete(`/api/deleteInstitute/${deleteId}`).then((response) => {
+        axiosInstance.delete(`/api/v1/deleteInstitute/${deleteId}`).then((response) => {
             if (response.data.success === true) {
                 setShowDeletePrompt(false);
                 setShowSuccessAlert(true);

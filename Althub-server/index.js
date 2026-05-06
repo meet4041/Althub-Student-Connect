@@ -86,33 +86,61 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 // --- CSRF (Double Submit Cookie) ---
+//
+// Strategy:
+//  - Every request gets a `csrf_token` cookie (readable, SameSite=None in prod
+//    so it survives cross-site requests; HttpOnly auth cookies are separate).
+//  - State-changing methods must echo it back in the X-CSRF-Token header.
+//  - Pre-auth endpoints (login/register/password reset) are allowlisted because
+//    a fresh visitor may not have a cookie yet.
+//
+// Path matching: requests can arrive as `/v1/<endpoint>` (current) or `/<endpoint>`
+// (legacy mount, removed but third-party clients may still hit it). We list
+// canonical endpoint names once and expand to all known prefixes so the check
+// is robust to mount-path changes and avoids surprises like the one fixed in
+// commit history (frontend on /api/v1, backend allowlist only had /<endpoint>,
+// CSRF rejected logins).
+
 const csrfCookieOptions = {
   httpOnly: false,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+  path: '/',
 };
 
-const csrfAllowlist = new Set([
-  "/adminLogin",
-  "/instituteLogin",
-  "/userLogin",
-  "/registerInstitute",
-  "/register",
-  "/uploadUserImage",
-  "/instituteForgetPassword",
-  "/instituteResetPassword",
-  "/forgetpassword",
-  "/resetpassword",
-  "/userForgetPassword",
-  "/userResetPassword"
-]);
+const CSRF_EXEMPT_ENDPOINTS = [
+  "adminLogin",
+  "instituteLogin",
+  "userLogin",
+  "registerInstitute",
+  "register",
+  "uploadUserImage",
+  "instituteForgetPassword",
+  "instituteResetPassword",
+  "forgetpassword",
+  "resetpassword",
+  "userForgetPassword",
+  "userResetPassword",
+  "refreshToken",
+];
 
-const normalizeCsrfPath = (path) => path.replace(/^\/v1(?=\/)/, "");
+// Build allowlist with every prefix the CSRF middleware might see.
+// `app.use("/api", csrfProtect)` strips `/api`, so req.path will be either
+// `/v1/<endpoint>` or `/<endpoint>` (legacy). Belt-and-suspenders: include both.
+const CSRF_PREFIXES = ['', '/v1'];
+const csrfAllowlist = new Set(
+  CSRF_EXEMPT_ENDPOINTS.flatMap((endpoint) =>
+    CSRF_PREFIXES.map((prefix) => `${prefix}/${endpoint}`)
+  )
+);
 
 const ensureCsrfCookie = (req, res, next) => {
   if (!req.cookies?.csrf_token) {
     const csrfToken = crypto.randomBytes(32).toString('hex');
     res.cookie('csrf_token', csrfToken, csrfCookieOptions);
+    // Expose immediately so a request that both sets the cookie AND checks it
+    // (e.g. login flow) can succeed on the first try.
+    req.cookies = { ...(req.cookies || {}), csrf_token: csrfToken };
   }
   next();
 };
@@ -120,33 +148,52 @@ const ensureCsrfCookie = (req, res, next) => {
 const csrfProtect = (req, res, next) => {
   const method = req.method.toUpperCase();
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") return next();
-  if (csrfAllowlist.has(normalizeCsrfPath(req.path))) return next();
+  if (csrfAllowlist.has(req.path)) return next();
+
   const cookieToken = req.cookies?.csrf_token;
   const headerToken = req.headers["x-csrf-token"];
+
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-    return res.status(403).json({ success: false, msg: "CSRF token invalid or missing" });
+    // Diagnostic: which side is missing? Helps when frontend forgets to send
+    // the header or when cross-site cookie is being blocked by the browser.
+    const reason = !cookieToken
+      ? "csrf_token cookie missing (browser may be blocking 3rd-party cookies; check SameSite/Secure and same-origin setup)"
+      : !headerToken
+        ? "X-CSRF-Token header missing (apiClient should attach it from the cookie automatically)"
+        : "CSRF token mismatch (cookie was rotated; client should re-read the cookie before retrying)";
+    return res.status(403).json({ success: false, msg: "CSRF check failed", reason, path: req.path });
   }
   next();
 };
 
 app.use("/api", ensureCsrfCookie, csrfProtect);
 
+// CSRF token-fetch endpoint.
+//
+// In cross-site setups (e.g. frontend on *.vercel.app, backend on
+// *.onrender.com), the browser stores the csrf_token cookie on the backend's
+// domain — so the frontend's `document.cookie` cannot read it. This endpoint
+// returns the token in the response BODY so the frontend can hold it in
+// memory and echo it back via the X-CSRF-Token header.
+//
+// Mounted under /api so `ensureCsrfCookie` (above) has already set the cookie
+// on this same response. GET method is exempt from `csrfProtect` so this
+// endpoint works on the very first visit.
+app.get("/api/csrf", (req, res) => {
+  res.json({ csrfToken: req.cookies?.csrf_token || null });
+});
+app.get("/api/v1/csrf", (req, res) => {
+  res.json({ csrfToken: req.cookies?.csrf_token || null });
+});
+
 const apiVersionHeader = (version) => (req, res, next) => {
   res.setHeader("X-Althub-API-Version", version);
-  next();
-};
-
-const legacyApiHeader = (req, res, next) => {
-  res.setHeader("X-Althub-API-Version", "legacy");
-  res.setHeader("X-Althub-API-Deprecated", "true");
-  res.setHeader("X-Althub-API-Successor", "/api/v1");
   next();
 };
 
 // --- MOUNT ROUTES ---
 const apiRouterOptions = { apiLimiter, imageLimiter, loginLimiter };
 app.use("/api/v1", apiVersionHeader("v1"), createApiRouter({ ...apiRouterOptions, includeResourceAliases: true }));
-app.use("/api", legacyApiHeader, createApiRouter(apiRouterOptions));
 
 // Health Check
 app.get("/", (req, res) => res.status(200).send("Althub Server is running!"));

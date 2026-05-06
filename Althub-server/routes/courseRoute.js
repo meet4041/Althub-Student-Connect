@@ -11,10 +11,10 @@ course_route.use(bodyParser.urlencoded({ extended: true }));
 course_route.use(cookieParser());
 
 // course routes
-course_route.post('/addCourse', course_controller.addCourse);
+course_route.post('/addCourse', requireAuth, course_controller.addCourse);
 course_route.get('/getCourse', course_controller.getCourse);
-course_route.delete('/deleteCourse/:id', course_controller.deleteCourse);
-course_route.post('/editCourse', course_controller.editCourse);
+course_route.delete('/deleteCourse/:id', requireAuth, course_controller.deleteCourse);
+course_route.post('/editCourse', requireAuth, course_controller.editCourse);
 course_route.get('/getCourseByInstitute/:instituteid', course_controller.getCourseByInstitute);
 
 export default course_route;

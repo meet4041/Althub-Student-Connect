@@ -10,6 +10,7 @@
     "./config": "./src/config.js",
     "./cookies": "./src/cookies.js",
     "./images": "./src/images.js",
+    "./Image": "./src/Image.jsx",
     "./styles/tokens.css": "./src/styles/tokens.css"
   },
   "peerDependencies": {

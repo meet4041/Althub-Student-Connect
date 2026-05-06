@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import { requireAuth } from "../middleware/authMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { uploadSingle, uploadFromBuffer } from '../db/conn.js';
 import experience_controller from "../controllers/experienceController.js";
@@ -14,14 +15,14 @@ experience_route.use(express.static('public'));
 experience_route.use(cookieParser());
 
 // Experience routes
-experience_route.post('/addExperience', experience_controller.addExperience);
-experience_route.post('/getExperience', experience_controller.getExperience);
-experience_route.delete('/deleteExperience/:id', experience_controller.deleteExperience);
-experience_route.post('/editExperience', experience_controller.editExperience);
+experience_route.post('/addExperience', requireAuth, experience_controller.addExperience);
+experience_route.post('/getExperience', requireAuth, experience_controller.getExperience);
+experience_route.delete('/deleteExperience/:id', requireAuth, experience_controller.deleteExperience);
+experience_route.post('/editExperience', requireAuth, experience_controller.editExperience);
 
 // --- COMPANY LOGO UPLOAD (Fixed to use GridFS) ---
 // Company logos: 5MB max
-experience_route.post('/uploadCompanyLogo', uploadSingle('companylogo', { maxFileSize: 5 * 1024 * 1024 }), asyncHandler(async (req, res) => {
+experience_route.post('/uploadCompanyLogo', requireAuth, uploadSingle('companylogo', { maxFileSize: 5 * 1024 * 1024 }), asyncHandler(async (req, res) => {
     if (!req.file) throw badRequest('No file provided');
 
     // Upload buffer to GridFS

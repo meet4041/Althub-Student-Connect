@@ -49,7 +49,7 @@ const Profile = () => {
             return;
         }
         
-        axiosInstance.get(`/api/getAdminById/${admin_Id}`).then((response) => {
+        axiosInstance.get(`/api/v1/getAdminById/${admin_Id}`).then((response) => {
             const raw = response.data?.data;
             const data = Array.isArray(raw) ? raw[0] : raw;
             if (response.data.success === true && data) {
@@ -74,7 +74,7 @@ const Profile = () => {
     const submitHandler = (e) => {
         e.preventDefault();
         setDisable(true);
-        axiosInstance.post('/api/adminUpdate', {
+        axiosInstance.post('/api/v1/adminUpdate', {
             id: admin_Id,
             name: profileInfo.name,
             phone: profileInfo.phone,
@@ -107,7 +107,7 @@ const Profile = () => {
         const body = new FormData();
         body.append('profilepic', file);
 
-        axiosInstance.post('/api/uploadAdminImage', body, {
+        axiosInstance.post('/api/v1/uploadAdminImage', body, {
             headers: { 'Content-Type': 'multipart/form-data' },
         }).then((response) => {
             if (response.data.success) {
@@ -133,7 +133,7 @@ const Profile = () => {
         e.preventDefault();
         if (validateTwo()) {
             setDisable2(true);
-            axiosInstance.post('/api/updatepassword', {
+            axiosInstance.post('/api/v1/updatepassword', {
                 admin_id: admin_Id,
                 oldpassword: changepass.oldpassword,
                 newpassword: changepass.newpassword

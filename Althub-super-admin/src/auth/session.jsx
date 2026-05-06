@@ -3,8 +3,8 @@ import apiClient from '../api/client';
 
 const authSession = createAuthSession({
     apiClient,
-    mePath: '/api/auth/super-admin/me',
-    logoutPath: '/api/adminLogout',
+    mePath: '/api/v1/auth/super-admin/me',
+    logoutPath: '/api/v1/adminLogout',
 });
 
 export const AuthContext = authSession.AuthContext;

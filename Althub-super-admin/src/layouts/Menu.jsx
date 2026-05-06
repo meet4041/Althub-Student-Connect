@@ -26,7 +26,7 @@ function Menu() {
 
    const Logout = async () => {
       try {
-         await axiosInstance.get('/api/adminLogout');
+         await axiosInstance.get('/api/v1/adminLogout');
       } catch (err) {
          console.error("Logout error", err);
       } finally {
@@ -36,7 +36,7 @@ function Menu() {
 
    const getData = useCallback(() => {
       if (!admin_Id) return;
-      axiosInstance.get(`/api/getAdminById/${admin_Id}`).then((response) => {
+      axiosInstance.get(`/api/v1/getAdminById/${admin_Id}`).then((response) => {
          const raw = response.data?.data;
          const adminData = Array.isArray(raw) ? raw[0] : raw;
 
