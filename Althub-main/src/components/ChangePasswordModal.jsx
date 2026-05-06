@@ -1,12 +1,11 @@
 import { useAuth } from '../auth/session';
 import apiClient from "../api/client";
 import React, { useState } from "react";
-import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
-import "../styles/ChangePasswordModal.css"; // <--- Import the new CSS
+import "../styles/ChangePasswordModal.css";
 
 const ChangePasswordModal = ({ closeModal }) => {
-  const { user: authUser, logout } = useAuth();
+  const { logout } = useAuth();
 
   const [errors, setErrors] = useState({});
   const [pass, setPass] = useState({ old: "", new: "", confirm: "" });
@@ -57,13 +56,8 @@ const ChangePasswordModal = ({ closeModal }) => {
             if (res.data.success) {
                 toast.success("Password Updated. Logging out...");
                 
-                // Clear only client-side user id; auth token is HttpOnly cookie and will be cleared by server.
                 logout();
                 closeModal();
-                
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 1500);
             }
         }).catch((error) => {
             console.error("Change Password Error:", error);

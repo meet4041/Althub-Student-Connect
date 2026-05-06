@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import apiClient from "../api/client";
 import { WEB_URL } from "../config/api";
 import { useNavigate } from "react-router-dom";
-import ProtectedImage from "../ProtectedImage";
+import ProtectedImage from "./common/ProtectedImage";
 import { toast } from "react-toastify";
 import { 
   Search, SlidersHorizontal, ArrowLeft, GraduationCap, 

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/client';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 import { getProtectedImageUrl } from '../config/baseURL';
 
 import '../styles/users.css';
@@ -13,13 +12,9 @@ const Users = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     
-    // MODAL STATE
     const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
-        if (document.getElementById('page-loader')) document.getElementById('page-loader').style.display = 'none';
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
         fetchInstitutes();
     }, []);
 
@@ -54,10 +49,7 @@ const Users = () => {
     );
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content users-wrapper">
+        <AppShell contentClassName="users-wrapper">
                     
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
@@ -173,9 +165,6 @@ const Users = () => {
                             </div>
                         </div>
                     )}
-                </div>
-
-                {/* --- INTELLIGENCE MODAL (POPUP) --- */}
                 {selectedUser && (
                     <div className="althub-modal-overlay" onClick={() => setSelectedUser(null)}>
                         <div className="althub-modal-card" onClick={e => e.stopPropagation()}>
@@ -247,9 +236,7 @@ const Users = () => {
                     </div>
                 )}
 
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 

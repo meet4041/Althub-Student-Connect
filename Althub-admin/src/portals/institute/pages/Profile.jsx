@@ -7,11 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../../../api/client';
 import { ALTHUB_API_URL } from '../../../config/baseURL';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../../../utils/imageUtils';
-import Loader from '../../../layouts/Loader.jsx';
-import Menu from '../../../layouts/Menu.jsx';
-import Footer from '../../../layouts/Footer.jsx';
+import AppShell from '../../../layouts/AppShell.jsx';
 
-// Import CSS
 import '../../../styles/profile.css';
 
 const Profile = () => {
@@ -66,11 +63,6 @@ const Profile = () => {
     };
 
     useEffect(() => {
-        const loader = document.getElementById('page-loader');
-        const element = document.getElementById("page-container");
-        if (loader) loader.style.display = 'none';
-        if (element) element.classList.add("show");
-        
         const id = (user?._id);
         if (id) {
             setInstitute_Id(id);
@@ -167,10 +159,7 @@ const Profile = () => {
     return (
         <Fragment>
             <ToastContainer theme="colored" />
-            <Loader />
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content profile-content-wrapper">
+            <AppShell contentClassName="profile-content-wrapper">
                     <div className="profile-main-container">
                         
                         <div className="mb-4">
@@ -266,9 +255,7 @@ const Profile = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-                <Footer />
-            </div>
+            </AppShell>
         </Fragment>
     );
 };

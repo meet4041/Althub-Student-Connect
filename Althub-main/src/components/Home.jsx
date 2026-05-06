@@ -5,7 +5,7 @@ import apiClient from "../api/client";
 import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import EditEducationModal from "./EditEducationModal";
-import ProtectedImage from "../ProtectedImage";
+import ProtectedImage from "./common/ProtectedImage";
 import {
   User, Calendar, Heart, Gift, MessageSquare, LogOut,
   Image as ImageIcon, Briefcase, GraduationCap, Plus, Users
@@ -79,20 +79,16 @@ export default function Home({ socket }) {
     if (userid) apiClient.get(`/api/v1/users/${userid}/education`).then((res) => setHasEducation(res.data.data?.length > 0));
   }, [userid]);
 
-  // CHANGED: New function to fetch random users and filter them
   const getSuggestions = useCallback(() => {
     if (!userid) return;
     apiClient.post(`/api/v1/users/random`, { userid })
       .then((res) => {
         if (res.data.data) {
-          // Filter out users I already follow and my own profile
-          // Note: The backend usually handles 'not me', but we ensure 'not following' here
           const allSuggestions = res.data.data.filter(u =>
             u._id !== userid &&
             (!user.followings || !user.followings.includes(u._id))
           );
 
-          // Shuffle and pick 3
           const shuffled = allSuggestions.sort(() => 0.5 - Math.random());
           setSuggestions(shuffled.slice(0, 3));
         }
@@ -106,7 +102,6 @@ export default function Home({ socket }) {
     apiClient.get(`/api/v1/events`).then((res) => setEvents(res.data.data));
   }, [checkEducation]);
 
-  // CHANGED: Fetch suggestions only after we have user data (to know who we follow)
   useEffect(() => {
     if (user._id) {
       getSuggestions();
@@ -322,9 +317,6 @@ export default function Home({ socket }) {
                       <span>{person.city || "Student"}</span>
                     </div>
                   </div>
-                  {/* Note: Navigating to search profile is safer than direct follow here 
-                           because we want them to view the profile first 
-                        */}
                   <button
                     className="btn-icon-follow"
                     onClick={() => nav("/view-search-profile", { state: { id: person._id } })}

@@ -5,10 +5,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../api/client';
 import { getProtectedImageUrl } from '../config/baseURL';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 
-// IMPORT NEW STYLES
 import '../styles/profile.css';
 
 const Profile = () => {
@@ -70,16 +68,6 @@ const Profile = () => {
     }, [admin_Id, navigate]);
 
     useEffect(() => {
-        // KILL INFINITE LOADER IMMEDIATELY
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        
-        const element = document.getElementById("page-container");
-        if (element) {
-            element.classList.add("show");
-        }
-        
         getData();
     }, [getData]);
 
@@ -200,9 +188,7 @@ const Profile = () => {
     return (
         <Fragment>
             <ToastContainer theme="colored" />
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content profile-wrapper">
+            <AppShell contentClassName="profile-wrapper">
                     
                     {/* ENHANCED HEADER */}
                     <div className="d-flex justify-content-between align-items-end mb-3">
@@ -370,9 +356,7 @@ const Profile = () => {
                             )}
                         </div>
                     </div>
-                </div>
-                <Footer />
-            </div>
+            </AppShell>
         </Fragment>
     );
 };

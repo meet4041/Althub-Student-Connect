@@ -1515,3 +1515,111 @@ This file tracks structural improvements made to the project and why each change
 - `npm --prefix Althub-main run build`
 - `npm --prefix Althub-admin run build`
 - `rg -n '(/api/(?!v1|auth|images))' Althub-main/src Althub-admin/src --pcre2`
+
+### Structural cleanup and shell consolidation
+
+**Files changed**
+- `Althub-main/index.html`
+- `Althub-main/public/style.css`
+- `Althub-main/src/App.jsx`
+- `Althub-main/src/index.jsx`
+- `Althub-main/src/components/Home.jsx`
+- `Althub-main/src/components/Notification.jsx`
+- `Althub-main/src/styles/ConnectionUser.css`
+- `Althub-main/src/styles/HomePage.css`
+- `Althub-main/src/styles/SearchProfile.css`
+- `Althub-admin/src/layouts/Menu.jsx`
+- `Althub-admin/src/pages/ForgotPassword.jsx`
+- `Althub-admin/src/pages/Login.jsx`
+- `Althub-admin/src/pages/NewPassword.jsx`
+- `Althub-admin/src/pages/Register.jsx`
+- `Althub-admin/src/portals/institute/pages/AlumniOffice.jsx`
+- `Althub-admin/src/portals/institute/pages/Dashboard.jsx`
+- `Althub-admin/src/portals/institute/pages/Feedback.jsx`
+- `Althub-admin/src/portals/institute/pages/Leaderboard.jsx`
+- `Althub-admin/src/portals/institute/pages/PlacementOffice.jsx`
+- `Althub-admin/src/portals/institute/pages/Profile.jsx`
+- `Althub-admin/src/portals/institute/pages/Users.jsx`
+- `Althub-super-admin/src/layouts/AppShell.jsx`
+- `Althub-super-admin/src/layouts/Menu.jsx`
+- `Althub-super-admin/src/pages/AlumniOffice.jsx`
+- `Althub-super-admin/src/pages/Announcement.jsx`
+- `Althub-super-admin/src/pages/Connected.jsx`
+- `Althub-super-admin/src/pages/Dashboard.jsx`
+- `Althub-super-admin/src/pages/ForgotPassword.jsx`
+- `Althub-super-admin/src/pages/Institute.jsx`
+- `Althub-super-admin/src/pages/NewPassword.jsx`
+- `Althub-super-admin/src/pages/PlacementCell.jsx`
+- `Althub-super-admin/src/pages/Profile.jsx`
+- `Althub-super-admin/src/pages/Users.jsx`
+- `improvement.md`
+
+**What changed**
+- Removed the legacy `Althub-main/public/style.css` file and its global stylesheet link from the main Vite entry HTML.
+- Removed invalid/out-of-body slick CDN stylesheet links from main `index.html`; slick styles are already imported through the app bundle where needed.
+- Cleaned stale CRA-style metadata in main `index.html`.
+- Converted admin institute Feedback, Leaderboard, Users, Alumni Office, Placement Office, and Profile pages to the shared `AppShell`.
+- Added a super-admin `AppShell` and moved all protected super-admin pages onto it.
+- Removed page-local loader/header/sidebar/footer duplication from the converted admin and super-admin pages.
+- Removed scattered `page-loader` / `page-container` DOM manipulation from these protected pages; shell visibility is now owned by `AppShell`.
+- Removed stale patch comments such as `CHANGED`, `FIXED`, `COMPANY STANDARD`, `UNCHANGED`, and old “new button” notes from touched frontend files.
+- Removed ignored `.DS_Store` files from project folders.
+
+**Reason**
+- The old public stylesheet bypassed Vite and component ownership, which made the main app vulnerable to unexpected global CSS conflicts.
+- Admin and super-admin pages should not each own header/sidebar/footer and loader lifecycle behavior; central shell ownership makes layout changes safer.
+- Removing patch labels makes the code read as intentional product code instead of accumulated fixes.
+- Keeping route pages focused on data and page content makes the frontends easier to scale.
+
+**Verification**
+- `npm --prefix Althub-main run build`
+- `npm --prefix Althub-admin run build`
+- `npm --prefix Althub-super-admin run build`
+- `find . -name .DS_Store -not -path './.git/*' -not -path './node_modules/*' -not -path '*/node_modules/*' -print`
+- `rg -n "document\\.getElementById\\('page-loader'\\)|document\\.getElementById\\(\\\"page-container\\\"\\)|id=\\\"page-container\\\"|id=\\\"content\\\" className=\\\"content|CHANGED|FIXED|COMPANY STANDARD|UNCHANGED|IMPORT NEW|NEW:" Althub-super-admin/src Althub-admin/src/pages Althub-admin/src/portals/institute/pages Althub-admin/src/layouts Althub-main/src Althub-main/index.html`
+
+### Main frontend irregularity cleanup
+
+**Files changed**
+- `Althub-main/src/App.jsx`
+- `Althub-main/src/ProtectedImage.jsx`
+- `Althub-main/src/components/common/ProtectedImage.jsx`
+- `Althub-main/src/components/ChangePasswordModal.jsx`
+- `Althub-main/src/components/ConnectionUser.jsx`
+- `Althub-main/src/components/EditProfileModal.jsx`
+- `Althub-main/src/components/EventModal.jsx`
+- `Althub-main/src/components/Events.jsx`
+- `Althub-main/src/components/Feedback.jsx`
+- `Althub-main/src/components/FilterModal.jsx`
+- `Althub-main/src/components/ForgetPassword.jsx`
+- `Althub-main/src/components/Home.jsx`
+- `Althub-main/src/components/Loader.jsx`
+- `Althub-main/src/components/Login.jsx`
+- `Althub-main/src/components/Message.jsx`
+- `Althub-main/src/components/Navbar.jsx`
+- `Althub-main/src/components/NewPassword.jsx`
+- `Althub-main/src/components/Register.jsx`
+- `Althub-main/src/components/ViewProfile.jsx`
+- `Althub-main/src/components/ViewSearchProfile.jsx`
+- `Althub-main/src/styles/Events.css`
+- `improvement.md`
+
+**What changed**
+- Removed the redundant `isAuthReady` state/layout effect from main `App`; routing can render directly under `AuthProvider`.
+- Moved `ProtectedImage` from the `src` root into `src/components/common`, where shared UI components belong.
+- Updated all main component imports to use `components/common/ProtectedImage`.
+- Replaced `document.getElementById("edit-file-input")` in the profile editor with a React `ref`.
+- Switched the edit-profile avatar preview to `ProtectedImage` so profile images use the same credential-aware image path as the rest of the app.
+- Removed unused `WEB_URL`, auth, API, router, and icon imports from touched components.
+- Removed stale patch comments and obvious section comments from touched main components.
+- Converted the Events card image from inline sizing to the reusable `.evt-card-img` CSS class.
+- Removed the extra `window.location.href` redirect after password change; shared auth logout already clears state and navigates.
+
+**Reason**
+- Main had fewer hard structural issues than admin, but still had a patchy mix of root-level UI files, stale comments, unused imports, and direct DOM access.
+- Moving shared UI to `components/common` keeps app-level config/auth/api folders clean.
+- Using React refs and shared image behavior makes the code easier to reason about and reduces browser-specific image/session edge cases.
+
+**Verification**
+- `npm --prefix Althub-main run build`
+- `rg -n "from ['\\\"]\\.\\./ProtectedImage|import \\{ ALTHUB_API_URL \\}|from ['\\\"]axios|localStorage|sessionStorage|document\\.getElementById\\(|CHANGED|FIXED|UNCHANGED|COMPANY STANDARD|<---|Added|Note:" Althub-main/src Althub-main/index.html`

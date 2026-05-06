@@ -138,3 +138,5 @@ ui-debug.log
 .env*.local
 
 improvement.md
+
+.claude/worktrees/condescending-johnson-bb0357

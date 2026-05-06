@@ -2,12 +2,10 @@ import { useAuth } from '../auth/session';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../api/client";
-import { WEB_URL } from "../config/api";
 
-import ProtectedImage from "../ProtectedImage";
-import "../styles/Message.css"; // <--- Import CSS
+import ProtectedImage from "./common/ProtectedImage";
+import "../styles/Message.css";
 
-// MUI Imports
 import {
   Grid, Box, Typography, TextField, IconButton, Avatar,
   List, ListItem, ListItemAvatar, ListItemText, InputAdornment

@@ -1,9 +1,8 @@
 import apiClient from "../api/client";
 import React, { useEffect, useState } from 'react';
-import { WEB_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import "../styles/NewPassword.css"; // <--- New CSS Import
+import "../styles/NewPassword.css";
 
 function NewPassword() {
   const queryParameters = new URLSearchParams(window.location.search);

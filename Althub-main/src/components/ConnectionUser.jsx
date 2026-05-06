@@ -1,10 +1,9 @@
 import { useAuth } from '../auth/session';
 import React, { useEffect, useState, useCallback } from "react";
-import { WEB_URL } from "../config/api";
 import apiClient from "../api/client";
 import { useNavigate } from "react-router-dom";
-import ProtectedImage from "../ProtectedImage";
-import "../styles/ConnectionUser.css"; // <--- New CSS Import
+import ProtectedImage from "./common/ProtectedImage";
+import "../styles/ConnectionUser.css";
 
 function ConnectionUser({ userid, type, getUser, isOwner }) {
   const { user: authUser } = useAuth();
@@ -70,7 +69,7 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
       
       <div className="connection-left">
         <ProtectedImage 
-          imgSrc={user.profilepic} // Note: Changed receiverProfilePic to profilepic to match other components
+          imgSrc={user.profilepic}
           defaultImage="/images/profile1.png" 
           className="connection-avatar"
           alt="User"

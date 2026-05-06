@@ -1,23 +1,16 @@
 import { useAuth } from '../../../auth/session';
-/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Loader from '../../../layouts/Loader.jsx'
-import Menu from '../../../layouts/Menu.jsx';
-import Footer from '../../../layouts/Footer.jsx';
-import { ALTHUB_API_URL } from '../../../config/baseURL';
+import AppShell from '../../../layouts/AppShell.jsx';
 import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../../../utils/imageUtils';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import axiosInstance from '../../../api/client';
 import AdminPaginationFooter from '../../../components/admin/AdminPaginationFooter.jsx';
 import AdminSearchBox from '../../../components/admin/AdminSearchBox.jsx';
-
-// COMPANY STANDARD: Import external CSS
 import '../../../styles/users.css';
 
 const Users = () => {
-  const { user, logout } = useAuth();
-  const userDetails = user || {};
+  const { user } = useAuth();
 
     const [institute_Id, setInstitute_Id] = useState(null);
     const [institute_Name, setInstitute_Name] = useState(null);
@@ -32,15 +25,9 @@ const Users = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     
-    // NEW: Filter State
-    const [filterType, setFilterType] = useState('all'); // 'all' or 'Alumni'
+    const [filterType, setFilterType] = useState('all');
 
     useEffect(() => {
-        const loader = document.getElementById('page-loader');
-        const element = document.getElementById("page-container");
-        if (loader) loader.style.display = 'none';
-        if (element) element.classList.add("show");
-
         const id = (user?._id);
         const name = (user?.name || '');
         setInstitute_Id(id);
@@ -73,11 +60,9 @@ const Users = () => {
         });
     };
 
-    // Updated Filtering Logic to handle Alumni Toggle
     useEffect(() => {
         let processedUsers = [...users];
         
-        // 1. Filter by Search Term
         if (searchTerm) {
             processedUsers = processedUsers.filter(user =>
                 user.fname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,12 +70,10 @@ const Users = () => {
             );
         }
 
-        // 2. NEW: Filter by Alumni Type
         if (filterType === 'Alumni') {
             processedUsers = processedUsers.filter(user => user.type === 'Alumni');
         }
 
-        // 3. Handle Sorting
         if (sortConfig.key === 'fname') {
             processedUsers.sort((a, b) => {
                 let aValue = a.fname ? a.fname.toLowerCase() : '';
@@ -170,15 +153,11 @@ const Users = () => {
 
     const safeText = (value) => (value && String(value).trim() ? value : 'N/A');
 
-    // Calculate count for Alumni
     const alumniCount = users.filter(u => u.type === 'Alumni').length;
 
     return (
-        <Fragment>
-            <Loader />
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content users-content-wrapper">
+        <>
+            <AppShell contentClassName="users-content-wrapper">
                     <div className="directory-container">
                         <div className="d-flex align-items-center justify-content-between mb-4 institute-page-header">
                             <div className="institute-page-header-copy">
@@ -192,7 +171,6 @@ const Users = () => {
                                 <p className="institute-page-subtitle">Browse all students and alumni with the same structure used across institute tools.</p>
                             </div>
                             
-                            {/* ALUMNI FILTER BUTTON */}
                             <div className="d-flex align-items-center institute-page-actions">
                                 <button 
                                     className={`btn shadow-sm d-flex align-items-center alumni-filter-btn ${filterType === 'Alumni' ? 'btn-primary' : 'btn-white'}`}
@@ -270,7 +248,6 @@ const Users = () => {
                             </div>
                         </div>
                     </div>
-                </div>
 
                 {selectedUser && (
                     <div className="modal fade show modal-backdrop-custom">
@@ -394,9 +371,8 @@ const Users = () => {
 
                 <SweetAlert warning show={alert} showCancel confirmBtnText="Confirm" confirmBtnBsStyle="danger" cancelBtnBsStyle="light" title="Delete Member?" onConfirm={DeleteUser} onCancel={() => setAlert(false)} />
                 <SweetAlert success show={alert2} title="Successfully Removed" onConfirm={() => { setAlert2(false); getUsersData(); }} />
-                <Footer />
-            </div>
-        </Fragment>
+            </AppShell>
+        </>
     )
 }
 

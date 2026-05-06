@@ -1,7 +1,6 @@
 import React from 'react';
-import "../styles/FilterModal.css"; // <--- Import CSS
+import "../styles/FilterModal.css";
 
-// MUI Imports
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, IconButton, Typography, TextField, 

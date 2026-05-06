@@ -6,9 +6,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ALTHUB_API_URL } from '../config/baseURL';
 import axiosInstance from '../api/client';
 
-// COMPANY STANDARD: Import external CSS files
-import '../styles/login.css';    // Reusing the shared split-screen layout
-import '../styles/password.css'; // Importing page-specific styles
+import '../styles/login.css';
+import '../styles/password.css';
 
 function ForgotPassword() {
     const navigate = useNavigate();

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/client';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 import { getProtectedImageUrl } from '../config/baseURL';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
@@ -18,9 +17,6 @@ const Institutes = () => {
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        if (document.getElementById('page-loader')) document.getElementById('page-loader').style.display = 'none';
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
         getInstitutesData();
     }, []);
 
@@ -66,10 +62,7 @@ const Institutes = () => {
     }
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content users-wrapper">
+        <AppShell contentClassName="users-wrapper">
                     
                     {/* DIRECTORY HEADER */}
                     <div className="d-flex justify-content-between align-items-center mb-5">
@@ -154,9 +147,6 @@ const Institutes = () => {
                             )}
                         </div>
                     )}
-                </div>
-
-                {/* DELETE CONFIRMATION */}
                 {showDeletePrompt && (
                     <SweetAlert
                         warning
@@ -178,9 +168,7 @@ const Institutes = () => {
                     </SweetAlert>
                 )}
 
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     )
 }
 

@@ -1,10 +1,9 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/client';
 
-// SHARED LOGIN STYLES
 import '../styles/login.css';
 
 function ForgotPassword() {
@@ -53,19 +52,12 @@ function ForgotPassword() {
         }
     }
 
-    useEffect(() => {
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-    }, []);
-
     return (
         <Fragment>
             <ToastContainer autoClose={2500} hideProgressBar theme="colored" />
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
                     
-                    {/* LEFT SIDE: SHARED BRAND VISUALS */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
@@ -81,7 +73,6 @@ function ForgotPassword() {
                         </div>
                     </div>
 
-                    {/* RIGHT SIDE: RECOVERY FORM */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="form-heading mb-5">

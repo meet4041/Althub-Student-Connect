@@ -1,6 +1,5 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import React, { useEffect, useState } from 'react';
+import AppShell from '../layouts/AppShell.jsx';
 import axiosInstance from '../api/client';
 
 import '../styles/announcement.css';
@@ -17,12 +16,6 @@ const Announcement = () => {
 
     useEffect(() => {
         const init = async () => {
-            const loader = document.getElementById('page-loader');
-            if (loader) loader.style.display = 'none';
-
-            const element = document.getElementById('page-container');
-            if (element) element.classList.add('show');
-
             try {
                 const response = await axiosInstance.get('/api/portalAnnouncement');
                 const announcement = response.data?.data || {};
@@ -65,10 +58,7 @@ const Announcement = () => {
     };
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <main id="content" className="content announcement-wrapper">
+        <AppShell contentClassName="announcement-wrapper">
                     <div className="announcement-header">
                         <div>
                             <h1>Portal Announcement</h1>
@@ -130,10 +120,7 @@ const Announcement = () => {
                             </form>
                         )}
                     </section>
-                </main>
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 

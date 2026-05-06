@@ -1,8 +1,6 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import Loader from '../layouts/Loader.jsx';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 import axiosInstance from '../api/client';
 
 import '../styles/dashboard.css';
@@ -19,15 +17,8 @@ function Dashboard() {
 
     useEffect(() => {
         const initDashboard = async () => {
-            if (document.getElementById('page-loader')) {
-                document.getElementById('page-loader').style.display = 'none';
-            }
-
             setLoading(true);
             try {
-                const element = document.getElementById("page-container");
-                if (element) element.classList.add("show");
-
                 const [uRes, iRes, aRes, pRes] = await Promise.all([
                     axiosInstance.get(`/api/v1/users`),
                     axiosInstance.get(`/api/getInstitutes`),
@@ -55,11 +46,7 @@ function Dashboard() {
     }, []);
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-
-                <div id="content" className="content dashboard-wrapper">
+        <AppShell contentClassName="dashboard-wrapper">
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
                             <h1 className="dashboard-title">System Overview</h1>
@@ -121,10 +108,7 @@ function Dashboard() {
                             </div>
                         </Fragment>
                     )}
-                </div>
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 }
 

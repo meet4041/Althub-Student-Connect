@@ -1,11 +1,9 @@
 import { useAuth } from '../../../auth/session';
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../api/client';
-import Loader from '../../../layouts/Loader.jsx';
-import Menu from '../../../layouts/Menu.jsx';
-import Footer from '../../../layouts/Footer.jsx';
+import AppShell from '../../../layouts/AppShell.jsx';
 import AdminPaginationFooter from '../../../components/admin/AdminPaginationFooter.jsx';
 import AdminSearchBox from '../../../components/admin/AdminSearchBox.jsx';
 
@@ -13,8 +11,7 @@ import '../../../styles/feedback.css';
 import '../../../styles/dashboard.css';
 
 const AlumniOffice = () => {
-  const { user, logout } = useAuth();
-  const userDetails = user || {};
+  const { user } = useAuth();
 
     const [alumniStaff, setAlumniStaff] = useState([]);
     const [displayStaff, setDisplayStaff] = useState([]);
@@ -50,10 +47,6 @@ const AlumniOffice = () => {
 
     useEffect(() => {
         fetchData();
-        const loader = document.getElementById('page-loader');
-        const container = document.getElementById("page-container");
-        if (loader) loader.style.display = 'none';
-        if (container) container.classList.add("show");
     }, []);
 
     useEffect(() => {
@@ -75,11 +68,7 @@ const AlumniOffice = () => {
     const showingTo = hasStaff ? Math.min(indexOfLastItem, displayStaff.length) : 0;
 
     return (
-        <Fragment>
-            <Loader />
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content feedback-content-wrapper">
+        <AppShell contentClassName="feedback-content-wrapper">
                     <div className="feedback-container">
                         <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
                             <div className="institute-page-header-copy">
@@ -167,10 +156,7 @@ const AlumniOffice = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 

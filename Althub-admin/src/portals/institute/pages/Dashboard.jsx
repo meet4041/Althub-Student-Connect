@@ -5,7 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import AppShell from '../../../layouts/AppShell.jsx';
 import axiosInstance from '../../../api/client'; 
 
-// COMPANY STANDARD: Import external CSS
 import '../../../styles/dashboard.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

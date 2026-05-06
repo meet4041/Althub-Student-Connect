@@ -1,17 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../../api/client';
-import { ALTHUB_API_URL } from '../../../config/baseURL';
-import Loader from '../../../layouts/Loader.jsx';
-import Menu from '../../../layouts/Menu.jsx';
-import Footer from '../../../layouts/Footer.jsx';
+import AppShell from '../../../layouts/AppShell.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import AdminPaginationFooter from '../../../components/admin/AdminPaginationFooter.jsx';
 import AdminSearchBox from '../../../components/admin/AdminSearchBox.jsx';
 import AdminTableAction from '../../../components/admin/AdminTableAction.jsx';
-
-// Import CSS
 import '../../../styles/feedback.css';
 
 const Feedback = () => {
@@ -39,10 +33,6 @@ const Feedback = () => {
 
     useEffect(() => {
         fetchFeedbackData();
-        const loader = document.getElementById('page-loader');
-        const container = document.getElementById("page-container");
-        if (loader) loader.style.display = 'none';
-        if (container) container.classList.add("show");
     }, []);
 
     useEffect(() => {
@@ -75,11 +65,8 @@ const Feedback = () => {
     const showingTo = hasFeedback ? Math.min(indexOfLastItem, displayFeedbacks.length) : 0;
 
     return (
-        <Fragment>
-            <Loader />
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content feedback-content-wrapper">
+        <>
+            <AppShell contentClassName="feedback-content-wrapper">
                     <div className="feedback-container">
                         
                         <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
@@ -177,12 +164,10 @@ const Feedback = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+            </AppShell>
 
                 <SweetAlert warning show={showAlert} showCancel confirmBtnText="Confirm" confirmBtnBsStyle="danger" cancelBtnBsStyle="light" title="Delete Review?" onConfirm={confirmDelete} onCancel={() => setShowAlert(false)} />
-                <Footer />
-            </div>
-        </Fragment>
+        </>
     );
 };
 

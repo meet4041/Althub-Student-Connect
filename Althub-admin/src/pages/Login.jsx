@@ -120,9 +120,6 @@ const Login = () => {
                             </div>
                         </div>
                     </div>
-                    {/* ---------------------------------------- */}
-
-                    {/* RIGHT SIDE: FORM (UNCHANGED) */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="mobile-header d-lg-none text-center mb-4">

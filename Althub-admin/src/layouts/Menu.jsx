@@ -5,7 +5,6 @@ import { getImageUrl, getImageOnError, FALLBACK_IMAGES } from '../utils/imageUti
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 
-// COMPANY STANDARD: Import external CSS
 import '../styles/menu.css'; 
 
 function Menu() {

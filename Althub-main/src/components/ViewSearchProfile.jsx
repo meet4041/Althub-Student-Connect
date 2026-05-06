@@ -5,7 +5,7 @@ import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import FollowerModal from "./FollowerModal";
-import ProtectedImage from "../ProtectedImage";
+import ProtectedImage from "./common/ProtectedImage";
 import { 
   MapPin, Globe, MessageSquare, Star, UserPlus, UserCheck, 
   Briefcase, GraduationCap, Award, Globe as GlobeIcon 
@@ -182,7 +182,6 @@ export default function ViewSearchProfile({ socket }) {
                         </div>
 
                         <div className="vsp-stats">
-                            {/* Added 'group' manually */}
                             <div className="stat-box group" onClick={() => { setFollowerTab("Follower"); setShowFollowerModal(true); }}>
                                 <span className="stat-val">{user.followers?.length || 0}</span>
                                 <span className="stat-label">Followers</span>

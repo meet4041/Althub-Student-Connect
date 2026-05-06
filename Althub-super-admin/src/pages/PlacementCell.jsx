@@ -1,7 +1,6 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/client';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 import '../styles/users.css';
@@ -18,13 +17,6 @@ const PlacementCell = () => {
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        // Immediate UI reveal to stop infinite loading
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
-        
         fetchData();
     }, []);
 
@@ -63,10 +55,7 @@ const PlacementCell = () => {
     };
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content users-wrapper">
+        <AppShell contentClassName="users-wrapper">
                     
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
@@ -122,8 +111,6 @@ const PlacementCell = () => {
                             )}
                         </div>
                     )}
-                </div>
-
                 {showDeletePrompt && (
                     <SweetAlert warning showCancel confirmBtnText="Confirm" confirmBtnBsStyle="danger" title="Purge Record?" onConfirm={executeDelete} onCancel={() => setShowDeletePrompt(false)}>
                         Are you sure you want to remove this placement office?
@@ -176,9 +163,7 @@ const PlacementCell = () => {
                     </div>
                 )}
                 
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 

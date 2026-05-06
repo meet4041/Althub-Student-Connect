@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import apiClient from "../api/client";
-import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import "../styles/EditProfileModal.css"; // <--- Import CSS
+import ProtectedImage from "./common/ProtectedImage";
+import "../styles/EditProfileModal.css";
 
-// MUI Imports
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, IconButton, Typography, TextField, Grid, 
-  Avatar, Box, Radio, RadioGroup, FormControlLabel, 
+  Box, Radio, RadioGroup, FormControlLabel,
   FormControl, FormLabel, Autocomplete
 } from "@mui/material";
 
@@ -17,7 +16,6 @@ import {
   Close, CameraAlt, Delete
 } from "@mui/icons-material";
 
-// Options for Autocomplete (MUI expects simple array or objects)
 const languageOptions = ["English", "Hindi", "Gujarati", "Spanish", "French"];
 const skillOptions = ["Python", "Java", "React.js", "JavaScript", "C++", "SQL"];
 
@@ -27,6 +25,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
   const [dob, setDob] = useState("");
   const [languages, setLanguages] = useState([]);
   const [skills, setSkills] = useState([]);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -35,7 +34,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
         
         let parsedLangs = [];
         try { parsedLangs = JSON.parse(user.languages) || []; } catch(e){}
-        setLanguages(parsedLangs); // Store as array of strings ["English", "Hindi"]
+        setLanguages(parsedLangs);
 
         let parsedSkills = [];
         try { parsedSkills = JSON.parse(user.skills) || []; } catch(e){}
@@ -127,7 +126,7 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
           github: userData.github,
           portfolioweb: userData.portfolioweb,
           about: userData.about,
-          languages: JSON.stringify(languages), // Send as JSON string
+          languages: JSON.stringify(languages),
           skills: JSON.stringify(skills),
         }, { withCredentials: true })
         .then(() => {
@@ -148,11 +147,11 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
 
       <DialogContent className="ep-modal-content">
         
-        {/* Avatar Section */}
         <Box className="ep-avatar-section">
-            <Box className="ep-avatar-wrapper" onClick={() => document.getElementById("edit-file-input").click()}>
-                <Avatar 
-                    src={userData.profilepic ? `${WEB_URL}${userData.profilepic}` : ""} 
+            <Box className="ep-avatar-wrapper" onClick={() => fileInputRef.current?.click()}>
+                <ProtectedImage
+                    imgSrc={userData.profilepic}
+                    defaultImage="/images/profile1.png"
                     className="ep-avatar-img"
                 />
                 <div className="ep-upload-icon"><CameraAlt fontSize="small" /></div>
@@ -160,11 +159,10 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
             {userData.profilepic && (
                 <Button className="ep-remove-photo-btn" onClick={handleImageDelete}>Remove Photo</Button>
             )}
-            <input type="file" id="edit-file-input" hidden onChange={handleImageUpload} />
+            <input type="file" ref={fileInputRef} hidden onChange={handleImageUpload} />
         </Box>
 
         <Box className="ep-form-container">
-            {/* Personal Info */}
             <Grid container spacing={2}>
                 <Grid item xs={6}>
                     <TextField 
@@ -200,7 +198,6 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
                 </Grid>
             </Grid>
 
-            {/* Contact */}
             <Grid container spacing={2}>
                 <Grid item xs={6}>
                     <TextField 
@@ -217,7 +214,6 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
                 </Grid>
             </Grid>
 
-            {/* Location */}
             <Grid container spacing={2}>
                 <Grid item xs={4}>
                     <TextField 
@@ -241,7 +237,6 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
                 </Grid>
             </Grid>
 
-            {/* Socials */}
             <TextField 
                 label="GitHub URL" name="github" fullWidth variant="outlined" 
                 value={userData.github || ""} onChange={handleChange} 
@@ -251,7 +246,6 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
                 value={userData.portfolioweb || ""} onChange={handleChange} 
             />
 
-            {/* Skills & Languages (Autocomplete) */}
             <Autocomplete
                 multiple
                 options={languageOptions}
@@ -274,7 +268,6 @@ const EditProfileModal = ({ closeModal, user, getUser }) => {
             />
         </Box>
 
-        {/* Danger Zone */}
         <Box className="ep-danger-zone">
             <Typography variant="subtitle1" className="ep-danger-title">Delete Account</Typography>
             <Typography variant="body2" className="ep-danger-desc">

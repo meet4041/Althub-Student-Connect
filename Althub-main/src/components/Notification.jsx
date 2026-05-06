@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import apiClient from "../api/client";
 import { useNavigate } from "react-router-dom";
 import { WEB_URL } from "../config/api";
-import ProtectedImage from "../ProtectedImage";
+import ProtectedImage from "./common/ProtectedImage";
 import { toast } from "react-toastify";
 import { 
   ArrowLeft, Clock, Trash2, Bell, BellOff, Loader2, 
@@ -159,7 +159,7 @@ export default function Notification() {
                       <Clock size={14} /> {formatTime(elem.date)}
                     </span>
                     <button 
-                        onClick={() => promptDelete(elem._id)} // CHANGED: Calls promptDelete
+                        onClick={() => promptDelete(elem._id)}
                         className="delete-btn"
                         title="Delete"
                     >

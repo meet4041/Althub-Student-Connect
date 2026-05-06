@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from "../api/client";
-import { WEB_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
-import "../styles/Feedback.css"; // <--- New CSS Import
+import "../styles/Feedback.css";
 
 import { 
   Box, Card, Typography, Button, TextField, Rating, Autocomplete, CircularProgress 

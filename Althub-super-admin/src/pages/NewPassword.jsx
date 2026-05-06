@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, Fragment } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, Link } from 'react-router-dom';
@@ -60,18 +60,11 @@ const NewPassword = () => {
         }
     };
 
-    useEffect(() => {
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-    }, []);
-
     return (
         <Fragment>
             <ToastContainer autoClose={2500} hideProgressBar theme="colored" />
             <div className="auth-main-wrapper">
                 <div className="auth-split-container">
-                    {/* LEFT SIDE: BRAND VISUALS */}
                     <div className="auth-visual-side d-none d-lg-flex">
                         <div className="mesh-overlay"></div>
                         <div className="visual-inner">
@@ -87,7 +80,6 @@ const NewPassword = () => {
                         </div>
                     </div>
 
-                    {/* RIGHT SIDE: RESET FORM */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="form-heading mb-5">

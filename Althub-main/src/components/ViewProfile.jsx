@@ -4,7 +4,7 @@ import apiClient from "../api/client";
 import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import ProtectedImage from "../ProtectedImage";
+import ProtectedImage from "./common/ProtectedImage";
 import { 
   MapPin, Globe, Github, Edit3, MoreHorizontal, Plus, Lock, Trash2,
   Briefcase, GraduationCap, Award, ChevronRight, UserCheck 
@@ -214,7 +214,6 @@ export default function ViewProfile() {
                                 </div>
 
                                 <div className="vp-stats">
-                                    {/* Added 'group' manually for CSS hover effects */}
                                     <div className="stat-box group" onClick={() => { setFollowerTab("Follower"); setShowFollowers(true); }}>
                                         <span className="stat-val">{user.followers?.length || 0}</span>
                                         <span className="stat-label">Followers</span>

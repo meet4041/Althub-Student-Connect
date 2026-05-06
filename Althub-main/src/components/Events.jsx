@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../api/client";
-import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import EventModal from "./EventModal";
-import ProtectedImage from "../ProtectedImage";
-import "../styles/Events.css"; // <--- Import CSS
+import ProtectedImage from "./common/ProtectedImage";
+import "../styles/Events.css";
 
-// MUI Imports
 import {
   Container, Grid, Card, CardContent, CardActions, Typography, 
   Button, Box, Tabs, Tab
@@ -23,7 +21,7 @@ export default function Events() {
   const closeModal = () => setModal(false);
   const [event, setEvent] = useState({});
   const [showEvent, setShowEvent] = useState([]);
-  const [tabValue, setTabValue] = useState(0); // 0: All, 1: Upcoming, 2: Past
+  const [tabValue, setTabValue] = useState(0);
   const nav = useNavigate();
 
   const getEvents = () => {
@@ -37,7 +35,6 @@ export default function Events() {
 
   useEffect(() => { getEvents(); }, []);
 
-  // Filter Logic
   useEffect(() => {
     const currentDate = new Date();
     let filtered = [];
@@ -57,7 +54,6 @@ export default function Events() {
     <div className="evt-wrapper">
       <Container maxWidth="xl" className="evt-container">
         
-        {/* Header */}
         <Box className="evt-header-card">
           <Box>
             <Typography variant="h4" className="evt-header-title">Events</Typography>
@@ -75,7 +71,6 @@ export default function Events() {
           </Box>
         </Box>
 
-        {/* Tabs */}
         <Tabs 
             value={tabValue} 
             onChange={handleTabChange} 
@@ -87,22 +82,18 @@ export default function Events() {
             <Tab label="Past" className="evt-tab" />
         </Tabs>
 
-        {/* Grid */}
         {showEvent.length > 0 ? (
           <Grid container spacing={3}>
             {showEvent.map((elem) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={elem._id}>
                 <Card className="evt-card">
                   
-                  {/* Image Wrapper */}
                   <Box className="evt-card-media">
                     <ProtectedImage 
                       imgSrc={elem.photos && elem.photos[0]} 
                       defaultImage="images/event1.png" 
                       alt={elem.title}
-                      style={{width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s'}}
-                      // Note: Inline style here is minimal because ProtectedImage doesn't accept className easily for img tag inside sometimes
-                      // If ProtectedImage passes props to img, use className="evt-card-img" instead.
+                      className="evt-card-img"
                     />
                   </Box>
 

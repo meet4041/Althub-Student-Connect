@@ -1,9 +1,8 @@
 import apiClient from "../api/client";
 import React, { useState } from 'react';
-import { WEB_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import "../styles/ForgetPassword.css"; // <--- New CSS Import
+import "../styles/ForgetPassword.css";
 
 function ForgetPassword() {
   const [email, setEmail] = useState("");
@@ -42,7 +41,6 @@ function ForgetPassword() {
   return (
     <div className="forgot-page-wrapper">
       
-      {/* Left Side: Visual */}
       <div className="fp-visual-section">
         <img 
             src="images/Forgot password-amico.svg" 

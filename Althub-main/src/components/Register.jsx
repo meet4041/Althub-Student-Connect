@@ -2,15 +2,13 @@ import { useAuth } from '../auth/session';
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../api/client";
-import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import {
   ArrowLeft, ArrowRight, User, Calendar, MapPin,
   Mail, Phone, Github, Globe, Upload, Lock, Check, School, X, Eye, EyeOff
-} from 'lucide-react'; // Added Eye and EyeOff icons
+} from 'lucide-react';
 import "../styles/Register.css";
 
-// --- Client-Side Image Compression ---
 const compressImage = async (file) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -35,7 +33,7 @@ const compressImage = async (file) => {
 };
 
 export default function Register() {
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser } = useAuth();
 
   const nav = useNavigate();
   const [university, setUniversity] = useState([]);
@@ -44,11 +42,9 @@ export default function Register() {
   const [uploading, setUploading] = useState(false);
   const [profilePreview, setProfilePreview] = useState("");
 
-  // Password Visibility States
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Tag Inputs
   const [skillInput, setSkillInput] = useState("");
   const [skills, setSkills] = useState([]);
 
@@ -75,7 +71,6 @@ export default function Register() {
     setErrors((prev) => ({ ...prev, [`${e.target.name}_err`]: "" }));
   };
 
-  // --- Tag Logic ---
   const handleTagKeyDown = (e, type) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -257,7 +252,7 @@ export default function Register() {
                 name="password"
                 value={user.password}
                 onChange={handleChange}
-                className="custom-input pr-12" // Added extra padding right
+                className="custom-input pr-12"
                 placeholder="••••••••"
               />
               <button
@@ -280,7 +275,7 @@ export default function Register() {
                 name="cpassword"
                 value={user.cpassword}
                 onChange={handleChange}
-                className="custom-input pr-12" // Added extra padding right
+                className="custom-input pr-12"
                 placeholder="••••••••"
               />
               <button

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import apiClient from "./api/client";
-import { WEB_URL } from "./config/api";
+import apiClient from "../../api/client";
+import { WEB_URL } from "../../config/api";
 
 const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profile1.png", ...props }) => {
   const [currentSrc, setCurrentSrc] = useState(defaultImage);
@@ -32,8 +32,7 @@ const ProtectedImage = ({ imgSrc, alt, className, defaultImage = "/images/profil
       try {
         setLoading(true);
         const cleanPath = imgSrc.startsWith("/") ? imgSrc : `/${imgSrc}`;
-        const fullUrl = `${WEB_URL}${cleanPath}`;
-        const response = await apiClient.get(fullUrl, {
+        const response = await apiClient.get(`${WEB_URL}${cleanPath}`, {
           responseType: "blob",
           withCredentials: true,
         });

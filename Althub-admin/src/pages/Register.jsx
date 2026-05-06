@@ -124,9 +124,6 @@ const Register = () => {
                             </div>
                         </div>
                     </div>
-                    {/* ---------------------------------------- */}
-
-                    {/* RIGHT SIDE: FORM (UNCHANGED) */}
                     <div className="auth-form-side">
                         <div className="form-card-inner">
                             <div className="form-heading mb-4">

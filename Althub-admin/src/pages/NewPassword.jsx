@@ -6,9 +6,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { ALTHUB_API_URL } from "../config/baseURL";
 import axiosInstance from '../api/client';
 
-// COMPANY STANDARD: Import external CSS files
-import '../styles/login.css';    // Shared split-screen layout
-import '../styles/password.css'; // Page-specific styles
+import '../styles/login.css';
+import '../styles/password.css';
 
 function NewPassword() {
     const queryParameters = new URLSearchParams(window.location.search)

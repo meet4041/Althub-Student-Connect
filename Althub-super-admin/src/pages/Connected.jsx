@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState, Fragment } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axiosInstance from '../api/client';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 
 import '../styles/connected.css';
 
@@ -12,12 +11,6 @@ const Connected = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (document.getElementById('page-loader')) {
-            document.getElementById('page-loader').style.display = 'none';
-        }
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
-
         Promise.all([
             axiosInstance.get('/api/getInstitutes'),
             axiosInstance.get('/api/getPlacementCells'),
@@ -58,10 +51,7 @@ const Connected = () => {
     }, [alumniOffices]);
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content connected-wrapper">
+        <AppShell contentClassName="connected-wrapper">
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
                             <h1 className="page-header mb-1">Connected</h1>
@@ -128,10 +118,7 @@ const Connected = () => {
                             )}
                         </div>
                     )}
-                </div>
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 

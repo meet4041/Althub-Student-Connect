@@ -1,6 +1,6 @@
 import React from "react";
 import { Backdrop, CircularProgress, Typography } from "@mui/material";
-import "../styles/Loader.css"; // <--- Import CSS
+import "../styles/Loader.css";
 
 const Loader = () => {
   return (

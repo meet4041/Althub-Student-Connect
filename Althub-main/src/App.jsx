@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useLayoutEffect, Suspense, lazy } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom"; 
+import React, { Suspense, lazy } from "react";
+import { Navigate, Route, Routes } from "react-router-dom"; 
 import { ToastContainer } from "react-toastify";
 import { socket } from "./realtime/socket";
 
-// Components
 import Navbar from "./components/Navbar";
-import Loader from "./components/Loader"; 
+import Loader from "./components/Loader";
 import AuthGuard from "./auth/AuthGuard";
 
 const Main = lazy(() => import("./components/Main"));
@@ -24,15 +23,6 @@ const NewPassword = lazy(() => import("./components/NewPassword"));
 const MyPosts = lazy(() => import("./components/MyPosts"));
 
 function App() {
-  const [isAuthReady, setIsAuthReady] = useState(false); 
-  const nav = useNavigate(); 
-
-  useLayoutEffect(() => {
-    setIsAuthReady(true); 
-  }, []);
-
-  if (!isAuthReady) return null; 
-
   return (
     <>
       <ToastContainer />

@@ -1,12 +1,10 @@
 import React from "react";
 import Slider from "react-slick";
-import { WEB_URL } from "../config/api";
 import apiClient from "../api/client";
 import { toast } from "react-toastify";
-import ProtectedImage from "../ProtectedImage";
-import "../styles/EventModal.css"; // <--- Import CSS
+import ProtectedImage from "./common/ProtectedImage";
+import "../styles/EventModal.css";
 
-// MUI Imports
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, IconButton, Typography, Box, Grid, Chip

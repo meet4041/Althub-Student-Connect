@@ -2,16 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import apiClient from "../api/client";
-import { Eye, EyeOff, Loader2, Lock, Mail, ArrowLeft } from "lucide-react"; 
-import { WEB_URL } from "../config/api";
-import "../styles/Login.css"; 
+import { Eye, EyeOff, Loader2, Lock, Mail, ArrowLeft } from "lucide-react";
+import "../styles/Login.css";
 import { useAuth } from "../auth/session";
 
 export default function Login() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
 
   const { user: authUser, loginSync } = useAuth();
@@ -67,9 +65,7 @@ export default function Login() {
   return (
     <div className="login-wrapper">
 
-      {/* --- LEFT SIDE (Visual) --- */}
       <div className="login-visual-side">
-        {/* Blobs */}
         <div className="visual-blob bg-brand-300 top-0 left-0 w-96 h-96"></div>
         <div className="visual-blob bg-secondary-300 bottom-0 right-0 w-96 h-96 animation-delay-2000"></div>
 
@@ -84,7 +80,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* --- RIGHT SIDE (Form) --- */}
       <div className="login-form-side">
         <div className="form-side-glow form-side-glow-top"></div>
         <div className="form-side-glow form-side-glow-bottom"></div>
@@ -140,7 +135,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"} // Dynamic Type
                   name="password"
                   placeholder="••••••••"
-                  className="login-custom-input pr-12" // Added extra right padding for the eye icon
+                  className="login-custom-input pr-12"
                   value={user.password}
                   onChange={handleChange}
                   autoComplete="current-password"

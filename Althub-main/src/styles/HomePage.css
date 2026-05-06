@@ -9,13 +9,11 @@
   }
 
   .home-container {
-    /* CHANGED: Increased max-width from 7xl to 1600px to fill large screens */
     @apply max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-start;
   }
 
   /* --- Left Sidebar --- */
   .sidebar-left {
-    /* Sticky ensures it stays visible while scrolling */
     @apply hidden md:block md:col-span-3 lg:col-span-3 xl:col-span-3 sticky top-24 h-[calc(100vh-100px)] overflow-y-auto no-scrollbar;
   }
 
@@ -43,7 +41,6 @@
     @apply text-sm text-slate-500 font-medium;
   }
 
-  /* Profile Stats (New) */
   .profile-stats {
     @apply flex justify-center gap-6 mt-4 pt-4 border-t border-slate-100 px-6;
   }
@@ -71,7 +68,6 @@
 
   /* --- Center Feed --- */
   .feed-section {
-    /* Adjusted column span for better balance */
     @apply col-span-1 md:col-span-9 lg:col-span-6 xl:col-span-6 space-y-6 pb-20;
   }
 

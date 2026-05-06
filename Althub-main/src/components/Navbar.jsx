@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import apiClient from "../api/client";
-import { WEB_URL } from "../config/api";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import ProtectedImage from "../ProtectedImage";
-import { Home, FileText, Search, MessageSquare, Bell, Gift, MessageCircle, Menu, X, LogOut, User } from "lucide-react";
+import ProtectedImage from "./common/ProtectedImage";
+import { Home, FileText, Search, MessageSquare, Bell, MessageCircle, Menu, X, LogOut, User } from "lucide-react";
 import "../styles/Navbar.css";
 import { useAuth } from "../auth/session";
 
@@ -13,7 +11,6 @@ export default function Navbar({ socket }) {
   const { user, logout } = useAuth();
   const [showNavbar, setShowNavbar] = useState(true);
 
-  // Notification State
   const [hasMsg, setHasMsg] = useState(false);
   const [hasNotif, setHasNotif] = useState(false);
 
@@ -68,7 +65,6 @@ export default function Navbar({ socket }) {
 
   if (!showNavbar) return null;
 
-  // Navigation Items
   const navItems = [
     { text: "Home", icon: <Home size={20} className="nav-icon" />, path: "/home" },
     { text: "My Posts", icon: <FileText size={20} className="nav-icon" />, path: "/my-posts" },
@@ -78,7 +74,6 @@ export default function Navbar({ socket }) {
     { text: "Feedback", icon: <MessageCircle size={20} className="nav-icon" />, path: "/feedback" }
   ];
 
-  // Desktop only shows first 5 items
   const desktopItems = navItems.slice(0, 5);
 
   return (
@@ -86,20 +81,16 @@ export default function Navbar({ socket }) {
       <nav className="navbar-wrapper">
         <div className="navbar-container">
 
-          {/* Logo */}
           <div onClick={() => nav("/home")} className="nav-logo">
-            {/* <img src="/images/Logo1.jpeg" alt="AltHub" /> */}
             <h1 className="nav-logo-text">
               Alt<span className="logo-highlight">Hub</span>
             </h1>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="nav-links">
             {desktopItems.map((item) => (
               <button
                 key={item.text}
-                // Added 'group' here manually to enable group-hover on child icons
                 className={`nav-item group ${pathname === item.path ? 'active' : ''}`}
                 onClick={() => nav(item.path)}
               >
@@ -112,10 +103,8 @@ export default function Navbar({ socket }) {
             ))}
           </div>
 
-          {/* Actions */}
           <div className="nav-actions">
 
-            {/* Desktop Profile Button - Added 'group' here */}
             <div className="profile-btn group" onClick={() => nav("/view-profile")}>
               <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200">
                 <ProtectedImage
@@ -127,7 +116,6 @@ export default function Navbar({ socket }) {
               <span className="nav-username">{user?.fname || "User"}</span>
             </div>
 
-            {/* Mobile Toggle */}
             <button className="mobile-toggle" onClick={() => setMobileOpen(true)}>
               <Menu size={24} />
             </button>
@@ -136,15 +124,12 @@ export default function Navbar({ socket }) {
         </div>
       </nav>
 
-      {/* --- Mobile Drawer --- */}
-
       {mobileOpen && (
         <div className="drawer-overlay" onClick={() => setMobileOpen(false)}></div>
       )}
 
       <div className={`drawer-panel ${mobileOpen ? 'open' : ''}`}>
 
-        {/* Header */}
         <div className="drawer-header">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shadow-sm">
@@ -164,7 +149,6 @@ export default function Navbar({ socket }) {
           </button>
         </div>
 
-        {/* Menu Items */}
         <div className="drawer-menu">
           {navItems.map((item) => (
             <button

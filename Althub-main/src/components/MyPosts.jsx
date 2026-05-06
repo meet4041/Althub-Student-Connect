@@ -5,7 +5,7 @@ import apiClient from "../api/client";
 import { WEB_URL } from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import ProtectedImage from "../ProtectedImage";
+import ProtectedImage from "./common/ProtectedImage";
 import {
   Edit2, Trash2, Heart, X, Image as ImageIcon, FolderOpen, AlertTriangle
 } from "lucide-react";

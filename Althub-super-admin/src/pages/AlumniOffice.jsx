@@ -1,7 +1,6 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/client';
-import Menu from '../layouts/Menu.jsx';
-import Footer from '../layouts/Footer.jsx';
+import AppShell from '../layouts/AppShell.jsx';
 import SweetAlert from 'react-bootstrap-sweetalert';
 
 import '../styles/users.css';
@@ -18,10 +17,6 @@ const AlumniOffice = () => {
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
-        if (document.getElementById('page-loader')) document.getElementById('page-loader').style.display = 'none';
-        const element = document.getElementById("page-container");
-        if (element) element.classList.add("show");
-        
         fetchData();
     }, []);
 
@@ -60,10 +55,7 @@ const AlumniOffice = () => {
     };
 
     return (
-        <Fragment>
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content users-wrapper">
+        <AppShell contentClassName="users-wrapper">
                     
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
@@ -119,8 +111,6 @@ const AlumniOffice = () => {
                             )}
                         </div>
                     )}
-                </div>
-
                 <SweetAlert warning show={showDeletePrompt} showCancel confirmBtnText="Confirm" confirmBtnBsStyle="danger" title="Purge Record?" onConfirm={executeDelete} onCancel={() => setShowDeletePrompt(false)}>
                     This office will be permanently removed from the Althub registry.
                 </SweetAlert>
@@ -169,9 +159,7 @@ const AlumniOffice = () => {
                     </div>
                 )}
                 
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 

@@ -3,7 +3,6 @@ import React, { useEffect, useState, useCallback, Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/client';
 
-// IMPORT NEW STYLES
 import '../styles/menu.css';
 
 function Menu() {
@@ -60,10 +59,8 @@ function Menu() {
 
    return (
       <Fragment>
-         {/* MODERN HEADER */}
          <header className="admin-header">
             <Link to="/dashboard" className="admin-logo-link">
-               {/* <img src='Logo1.png' className="admin-logo-img" alt="logo" /> */}
                <span className="admin-brand-name">Althub super admin</span>
             </Link>
 
@@ -91,7 +88,6 @@ function Menu() {
             </div>
          </header>
 
-         {/* MODERN SIDEBAR */}
          <aside className="admin-sidebar">
             <div className="sidebar-profile">
                <span className="profile-name">{admin.name}</span>
@@ -119,14 +115,12 @@ function Menu() {
                   </Link>
                </li>
 
-               {/* NEW: PLACEMENT CELL BUTTON */}
                <li className="admin-nav-item">
                   <Link to="/placement-cell" className={`admin-nav-link ${isActive("/placement-cell")}`}>
                      <i className="fa fa-briefcase"></i> <span>All Placement Cells</span>
                   </Link>
                </li>
 
-               {/* NEW: ALUMNI OFFICE BUTTON */}
                <li className="admin-nav-item">
                   <Link to="/alumni-office" className={`admin-nav-link ${isActive("/alumni-office")}`}>
                      <i className="fa fa-graduation-cap"></i> <span>All Alumni Offices</span>

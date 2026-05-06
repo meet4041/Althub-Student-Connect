@@ -1,34 +1,16 @@
-/* eslint-disable react-hooks/exhaustive-deps, no-unused-vars */
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../../api/client';
-import { ALTHUB_API_URL } from '../../../config/baseURL';
-import Loader from '../../../layouts/Loader.jsx';
-import Menu from '../../../layouts/Menu.jsx';
-import Footer from '../../../layouts/Footer.jsx';
+import AppShell from '../../../layouts/AppShell.jsx';
 
 const Leaderboard = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
-        // --- MANDATORY THEME INITIALIZATION ---
-        // This ensures the page opens in "one-go" without a refresh
-        const loader = document.getElementById('page-loader');
-        const element = document.getElementById("page-container");
-        
-        if (loader) loader.style.display = 'none';
-        if (element) {
-            element.classList.add("show");
-            // Ensure sidebar/header padding is applied if classes are missing
-            element.style.visibility = "visible";
-            element.style.opacity = "1";
-        }
-
         fetchLeaderboard();
     }, []);
 
     const fetchLeaderboard = () => {
-        // Standardizing the fetch to use the token stored during login
         axiosInstance.get(`/api/v1/feedback/leaderboard`, {
         })
         .then(res => {
@@ -44,13 +26,8 @@ const Leaderboard = () => {
     };
 
     return (
-        <Fragment>
-            <Loader />
-            <div id="page-container" className="fade page-sidebar-fixed page-header-fixed">
-                <Menu />
-                <div id="content" className="content feedback-content-wrapper">
+        <AppShell contentClassName="feedback-content-wrapper">
                     <div className="leaderboard-container">
-                        {/* Header Section */}
                         <div className="d-sm-flex align-items-center justify-content-between mb-4 institute-page-header">
                             <div className="institute-page-header-copy">
                                 <nav aria-label="breadcrumb">
@@ -66,7 +43,6 @@ const Leaderboard = () => {
                             </div>
                         </div>
                         
-                        {/* Leaderboard Table Card */}
                         <div className="card border-0 shadow-sm institute-page-card leaderboard-card">
                             <div className="card-body p-0 bg-white">
                                 <div className="table-responsive">
@@ -113,10 +89,7 @@ const Leaderboard = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-                <Footer />
-            </div>
-        </Fragment>
+        </AppShell>
     );
 };
 
