@@ -31,7 +31,7 @@ const PlacementOffice = () => {
         }
         setInstitute_Name((user?.name || '') || '');
 
-        axiosInstance.get(`/api/v1/institutes/${id}/placement-cell`)
+        axiosInstance.get(`/api/getPlacementCellByInstitute/${id}`)
             .then((response) => {
                 if (response.data.success) {
                     setPlacementStaff(response.data.data || []);

@@ -20,10 +20,10 @@ function Dashboard() {
             setLoading(true);
             try {
                 const [uRes, iRes, aRes, pRes] = await Promise.all([
-                    axiosInstance.get(`/api/v1/users`),
-                    axiosInstance.get(`/api/v1/getInstitutes`),
-                    axiosInstance.get(`/api/v1/getAlumniOffices`),
-                    axiosInstance.get(`/api/v1/getPlacementCells`)
+                    axiosInstance.get(`/api/getUsers`),
+                    axiosInstance.get(`/api/getInstitutes`),
+                    axiosInstance.get(`/api/getAlumniOffices`),
+                    axiosInstance.get(`/api/getPlacementCells`)
                 ]);
 
                 setCounts({

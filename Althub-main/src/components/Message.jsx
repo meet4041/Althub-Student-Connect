@@ -30,7 +30,7 @@ const ChatUserItem = ({ data, currentId, onClick }) => {
   useEffect(() => {
     const friendId = data.members.find((m) => m !== myId);
     if (friendId) {
-      apiClient.get(`/api/v1/users/${friendId}`)
+      apiClient.get(`/api/searchUserById/${friendId}`)
         .then(res => setFriend(res.data.data[0]))
         .catch(console.error);
     }
@@ -76,7 +76,7 @@ export default function Message({ socket }) {
   // --- 1. Initialize & Fetch Conversations ---
   const getConversations = useCallback(() => {
     if (!userid) return;
-    apiClient.get(`/api/v1/users/${userid}/conversations`)
+    apiClient.get(`/api/getConversations/${userid}`)
       .then((res) => {
         setConversations(res.data.data);
       })
@@ -109,7 +109,7 @@ export default function Message({ socket }) {
       const friend = location.state;
       setReceiver(friend);
       // Check if conversation exists
-      apiClient.post(`/api/v1/conversations/search`, { person1: userid, person2: friend?._id })
+      apiClient.post(`/api/searchConversations`, { person1: userid, person2: friend?._id })
         .then((res) => {
           if (res.data.data.length > 0) {
             setCurrentChat(res.data.data[0]);
@@ -124,7 +124,7 @@ export default function Message({ socket }) {
   // --- 4. Fetch Messages for Current Chat ---
   useEffect(() => {
     if (currentChat && currentChat._id !== "new") {
-      apiClient.get(`/api/v1/conversations/${currentChat._id}/messages`)
+      apiClient.get(`/api/newConversation/${currentChat._id}/messages`)
         .then((res) => setMessages(res.data.data))
         .catch((err) => console.log('Message fetch failed', err));
     } else {
@@ -174,7 +174,7 @@ export default function Message({ socket }) {
 
     // Save to DB
     try {
-      const res = await apiClient.post(`/api/v1/messages`, msgData);
+      const res = await apiClient.post(`/api/messages`, msgData);
       // If it was a new chat, update conversation ID
       if (currentChat?._id === "new") {
         getConversations(); // Refresh list

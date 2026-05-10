@@ -55,18 +55,9 @@ const uploadLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-const sendActorSession = (req, res) => {
-    const actor = req.user?.toObject ? req.user.toObject() : { ...req.user };
-    delete actor.password;
-    delete actor.token;
-    res.status(200).send({ success: true, data: actor });
-};
-
 // --- ROUTES ---
 
-admin_route.post('/adminLogin', admin_controller.adminLogin); 
-
-admin_route.get('/auth/super-admin/me', requireAuth, requireRole('admin'), sendActorSession);
+admin_route.post('/adminLogin', admin_controller.adminLogin);
 
 admin_route.post('/updatepassword', requireAuth, requireRole('admin'), admin_controller.updatePassword);
 

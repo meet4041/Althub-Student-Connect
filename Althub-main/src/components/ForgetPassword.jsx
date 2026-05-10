@@ -23,7 +23,7 @@ function ForgetPassword() {
 
     setLoading(true);
     apiClient({
-        url: `/api/v1/userForgetPassword`,
+        url: `/api/userForgetPassword`,
         data: { email: trimmedEmail },
         method: 'post',
       }).then((response) => {

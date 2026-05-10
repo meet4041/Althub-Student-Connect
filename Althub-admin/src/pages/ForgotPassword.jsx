@@ -30,7 +30,7 @@ function ForgotPassword() {
         e.preventDefault();
         if (validate()) {
             setDisable(true);
-            axiosInstance.post(`/api/v1/instituteForgetPassword`, { email: email.trim().toLowerCase() })
+            axiosInstance.post(`/api/instituteForgetPassword`, { email: email.trim().toLowerCase() })
                 .then((response) => {
                     if (response.data.success) {
                         toast.success(response.data.msg || "Reset link sent!");

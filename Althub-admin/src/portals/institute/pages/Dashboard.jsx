@@ -71,7 +71,7 @@ function Dashboard() {
         try {
             const formData = new FormData();
             formData.append('file', csvFile);
-            const res = await axiosInstance.post('/api/v1/bulkInviteAlumniCsv', formData, {
+            const res = await axiosInstance.post('/api/bulkInviteAlumniCsv', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             const { createdCount, skippedCount, failedCount } = res.data?.data || {};
@@ -101,7 +101,7 @@ function Dashboard() {
                 return;
             }
 
-            const response = await axiosInstance.get(`/api/v1/institutes/${instituteKey}/users`);
+            const response = await axiosInstance.get(`/api/getUsersOfInstitute/${instituteKey}`);
             if (response.data.success) {
                 const allUsers = response.data.data || [];
                 const studentCount = allUsers.filter(u => u.type !== 'Alumni').length;
@@ -120,7 +120,7 @@ function Dashboard() {
 
     const getTotalEvents = async () => {
         try {
-            const response = await axiosInstance.get(`/api/v1/institutes/${institute_Id}/events`);
+            const response = await axiosInstance.get(`/api/getEventsByInstitute/${institute_Id}`);
             const eventList = response.data.success ? (response.data.data || []) : [];
             const now = new Date();
             const futureEvents = eventList
@@ -142,7 +142,7 @@ function Dashboard() {
 
     const getTotalPosts = async () => {
         try {
-            const response = await axiosInstance.get(`/api/v1/users/${institute_Id}/posts`);
+            const response = await axiosInstance.get(`/api/getPostById/${institute_Id}`);
             setPosts(response.data.success ? response.data.data.length : 0);
         } catch (err) { setPosts(0); }
     };
@@ -157,7 +157,7 @@ function Dashboard() {
 
     const getPortalAnnouncement = async () => {
         try {
-            const response = await axiosInstance.get('/api/v1/portalAnnouncement');
+            const response = await axiosInstance.get('/api/portalAnnouncement');
             if (response.data?.success && response.data.data) {
                 setAnnouncement(response.data.data);
             }

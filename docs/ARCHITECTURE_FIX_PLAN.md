@@ -44,10 +44,7 @@ This plan tracks structural fixes that make the repo easier to scale. It intenti
 
 ## Phase 6: Backend API Structure
 
-- [x] Introduce `/api/v1` for new routes.
-- [x] Keep old `/api` routes as compatibility aliases during migration.
-- [x] Add initial resource-based aliases for posts, events, users, and notifications.
-- [ ] Continue renaming remaining endpoints toward resource-based conventions.
+- [x] Single unversioned `/api` namespace (the `/api/v1` experiment was reverted; all routes use named-action endpoints — see `docs/API_MIGRATION.md`).
 - [ ] Group backend code by domain or add service boundaries under the existing structure.
 - [x] Apply `asyncHandler` and the global error response format to inline route handlers.
 - [x] Apply `asyncHandler` and the global error response format to smaller domain controllers.

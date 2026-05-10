@@ -23,7 +23,7 @@ const AlumniOffice = () => {
     const fetchData = () => {
         setLoading(true);
         // Unrestricted fetch for all Alumni Office records
-        axiosInstance.get('/api/v1/getAlumniOffices')
+        axiosInstance.get('/api/getAlumniOffices')
             .then(res => {
                 const results = res.data.data || [];
                 setData(results);
@@ -46,7 +46,7 @@ const AlumniOffice = () => {
     }, [searchTerm, data]);
 
     const executeDelete = () => {
-        axiosInstance.delete(`/api/v1/deleteInstitute/${deleteId}`)
+        axiosInstance.delete(`/api/deleteInstitute/${deleteId}`)
             .then(() => {
                 setShowDeletePrompt(false);
                 setShowSuccessAlert(true);

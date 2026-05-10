@@ -1,25 +1,10 @@
 import express from "express";
 import { uploadSingle } from '../db/conn.js';
-import * as user_controller from "../controllers/userController.js"; 
+import * as user_controller from "../controllers/userController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
-import { authCookieNames } from "../config/authCookies.js";
 import rateLimit from "express-rate-limit";
 
 const user_route = express.Router();
-
-const requireMainActor = (req, res, next) => {
-    const mainCandidate = req.authCandidates?.find(({ cookieName, user }) => (
-        cookieName === authCookieNames.main &&
-        user?.constructor?.modelName === "usersTB1"
-    ));
-
-    if (!mainCandidate) {
-        return res.status(401).json({ success: false, msg: "Main session required." });
-    }
-
-    req.user = mainCandidate.user;
-    next();
-};
 
 const uploadLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 mins
@@ -40,7 +25,6 @@ user_route.get('/userLogout', user_controller.userLogout);
 
 // --- PROTECTED ROUTES ---
 user_route.get('/auth/me', requireAuth, user_controller.getMyAuth);
-user_route.get('/auth/main/me', requireAuth, requireMainActor, user_controller.getMyAuth);
 user_route.post('/updatePassword', requireAuth, user_controller.updatePassword);
 user_route.post('/userProfileEdit', requireAuth, user_controller.userProfileEdit);
 user_route.put('/deleteProfilePic/:id', requireAuth, user_controller.deleteProfilePic);

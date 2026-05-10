@@ -23,7 +23,8 @@ export default function Notification() {
   const getNotifications = () => {
     if (!userid) return;
 
-    apiClient.get(`/api/v1/users/${userid}/notifications`, { withCredentials: true })
+    // legacy backend: POST /api/getnotifications with userid in body
+    apiClient.post(`/api/getnotifications`, { userid }, { withCredentials: true })
       .then((res) => {
         if (res.data?.data) {
           const allowed = ["New Follower", "New Like", "New Event", "New Message"];
@@ -48,7 +49,8 @@ export default function Notification() {
   const confirmDelete = () => {
     if (!deleteId) return;
     
-    apiClient.delete(`/api/v1/notifications/${deleteId}`, { withCredentials: true })
+    // legacy backend exposes this as POST with notificationId in body
+    apiClient.post(`/api/deleteNotification`, { notificationId: deleteId }, { withCredentials: true })
       .then((res) => {
         if (res.data.success) {
           setNotifications(prev => prev.filter(item => item._id !== deleteId));

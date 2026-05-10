@@ -20,7 +20,7 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
     if (userid && userid !== "") {
       apiClient({
         method: "get",
-        url: `/api/v1/users/${userid}`,
+        url: `/api/searchUserById/${userid}`,
       })
         .then((Response) => {
           if (Response.data && Response.data.data && Response.data.data[0]) {
@@ -37,7 +37,7 @@ function ConnectionUser({ userid, type, getUser, isOwner }) {
     e.stopPropagation(); // Prevent triggering the profile click
     if (window.confirm("Do you want to remove this user?")) {
       apiClient({
-        url: `/api/v1/users/${type === "Follower" ? myid : userid}/unfollow`,
+        url: `/api/searchUserById/${type === "Follower" ? myid : userid}/unfollow`,
         data: {
           userId: type === "Follower" ? userid : myid,
         },

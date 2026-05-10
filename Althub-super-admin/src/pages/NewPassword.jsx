@@ -43,7 +43,7 @@ const NewPassword = () => {
         }
         if (validate()) {
             setDisable(true);
-            axiosInstance.post(`/api/v1/resetpassword?token=${token}`, {
+            axiosInstance.post(`/api/resetpassword?token=${token}`, {
                 password: form.password,
             }).then((response) => {
                 if (response.data.success === true) {

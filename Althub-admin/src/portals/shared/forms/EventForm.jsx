@@ -81,9 +81,10 @@ export default function EventForm({ config = {} }) {
     body.append('venue', data.venue);
     fileList.forEach((file) => body.append('photos', file));
 
+    if (isEdit && editingEvent?._id) body.append('id', editingEvent._id);
     const request = isEdit && editingEvent?._id
-      ? axiosInstance.patch(`/api/v1/events/${editingEvent._id}`, body, { headers: { 'Content-Type': 'multipart/form-data' } })
-      : axiosInstance.post(`/api/v1/events`, body, { headers: { 'Content-Type': 'multipart/form-data' } });
+      ? axiosInstance.post(`/api/editEvent`, body, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : axiosInstance.post(`/api/addEvent`, body, { headers: { 'Content-Type': 'multipart/form-data' } });
 
     request
       .then((res) => {

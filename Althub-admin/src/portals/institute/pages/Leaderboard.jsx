@@ -11,7 +11,7 @@ const Leaderboard = () => {
     }, []);
 
     const fetchLeaderboard = () => {
-        axiosInstance.get(`/api/v1/feedback/leaderboard`, {
+        axiosInstance.get(`/api/getLeaderboard`, {
         })
         .then(res => {
             if (res.data.success) {

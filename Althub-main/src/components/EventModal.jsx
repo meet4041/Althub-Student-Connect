@@ -33,7 +33,7 @@ const EventModal = ({ closeModal, event, getEvents }) => {
   };
 
   const handleJoin = () => {
-    apiClient.put(`/api/v1/events/${event._id}/participation`, {})
+    apiClient.put(`/api/participateInEvent/${event._id}`, {})
       .then((res) => {
         toast.success(res.data);
         closeModal();

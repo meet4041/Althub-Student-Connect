@@ -25,7 +25,7 @@ export default function Events() {
   const nav = useNavigate();
 
   const getEvents = () => {
-    apiClient.get(`/api/v1/events`)
+    apiClient.get(`/api/getEvents`)
       .then((res) => {
         setEvents(res.data.data);
         setShowEvent(res.data.data);

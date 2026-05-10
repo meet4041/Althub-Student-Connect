@@ -52,7 +52,7 @@ export default function ViewSearchProfile({ socket }) {
 
   const getUser = useCallback((signal) => {
     if (userID) {
-      apiClient.get(`/api/v1/users/${userID}`, { signal }).then((res) => {
+      apiClient.get(`/api/searchUserById/${userID}`, { signal }).then((res) => {
         if (res.data.data?.length) {
           const profile = res.data.data[0];
           setUser(profile);
@@ -64,31 +64,31 @@ export default function ViewSearchProfile({ socket }) {
   }, [userID]);
 
   const getSelf = useCallback((signal) => {
-    if (userID) apiClient.get(`/api/v1/users/${myID}`, { signal }).then((res) => { if (res.data.data) setSelf(res.data.data[0]); });
+    if (userID) apiClient.get(`/api/searchUserById/${myID}`, { signal }).then((res) => { if (res.data.data) setSelf(res.data.data[0]); });
   }, [userID, myID]);
 
   const getEducation = useCallback((signal) => {
-    if (userID) apiClient.get(`/api/v1/users/${userID}/education`, { signal }).then((res) => setEducation(res.data.data || []));
+    if (userID) apiClient.post(`/api/getEducation`, { userid: userID }, { signal }).then((res) => setEducation(res.data.data || []));
   }, [userID]);
 
   const getExperience = useCallback((signal) => {
-    if (userID) apiClient.get(`/api/v1/users/${userID}/experience`, { signal }).then((res) => setExperience(res.data.data || []));
+    if (userID) apiClient.post(`/api/getExperience`, { userid: userID }, { signal }).then((res) => setExperience(res.data.data || []));
   }, [userID]);
 
   const handleFollow = () => {
     const msg = `${self.fname} ${self.lname} Started Following You`;
     if (socket) socket.emit("sendNotification", { receiverid: userID, title: "New Follower", msg });
-    apiClient.post(`/api/v1/notifications`, { userid: userID, msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() });
+    apiClient.post(`/api/addNotification`, { userid: userID, msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() });
 
-    apiClient.put(`/api/v1/users/${userID}/follow`, { userId: myID }).then((res) => {
+    apiClient.put(`/api/follow/${userID}`, { userId: myID }).then((res) => {
         toast.success(res.data);
         getUser();
-        if (!user.followings.includes(myID.toString())) apiClient.post(`/api/v1/conversations`, { senderId: myID, receiverId: userID });
+        if (!user.followings.includes(myID.toString())) apiClient.post(`/api/newConversation`, { senderId: myID, receiverId: userID });
     });
   };
 
   const confirmUnfollow = () => {
-    apiClient.put(`/api/v1/users/${userID}/unfollow`, { userId: myID }).then(() => {
+    apiClient.put(`/api/unfollow/${userID}`, { userId: myID }).then(() => {
         toast.info("Unfollowed successfully.");
         setShowUnfollowModal(false);
         getUser();

@@ -36,7 +36,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
   useEffect(() => {
     setEducations(education);
     setModalType(modal); 
-    apiClient.get(`/api/v1/institutes`).then((res) => setUniversity(res.data.data));
+    apiClient.get(`/api/getInstitutes`).then((res) => setUniversity(res.data.data));
   }, [education, modal]);
 
   const handleChange = (e) => {
@@ -86,8 +86,8 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
     };
 
     const request = ex._id
-        ? apiClient.patch(`/api/v1/education/${ex._id}`, payload)
-        : apiClient.post(`/api/v1/users/${userID}/education`, payload);
+        ? apiClient.post(`/api/editEducation`, { ...payload, _id: ex._id })
+        : apiClient.post(`/api/addEducation`, payload);
 
     request
         .then(() => {
@@ -105,7 +105,7 @@ const EditEducationModal = ({ closeModal, education, getEducation, modal }) => {
 
   const handleDelete = () => {
     if (window.confirm("Delete this record?")) {
-      apiClient.delete(`/api/v1/education/${ex._id}`).then(() => {
+      apiClient.delete(`/api/deleteEducation/${ex._id}`).then(() => {
           toast.success("Deleted!");
           getEducation();
           handleCancel();

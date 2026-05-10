@@ -50,7 +50,7 @@ const AlumniAddCourse = () => {
 
         setDisable(true);
         try {
-            await axiosInstance.post('/api/v1/courses', {
+            await axiosInstance.post('/api/addCourse', {
                 instituteid,
                 name: trimmedName,
                 stream: trimmedStream,

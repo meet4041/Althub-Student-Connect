@@ -51,7 +51,7 @@ function NewPassword() {
     if (validate()) {
       setLoading(true);
       apiClient({
-        url: `/api/v1/userResetPassword?token=${token}`,
+        url: `/api/userResetPassword?token=${token}`,
         data: {
           password: password.new
         },

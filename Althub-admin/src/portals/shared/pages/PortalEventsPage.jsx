@@ -48,7 +48,7 @@ export default function PortalEventsPage({ config = {} }) {
 
   const fetchEvents = useCallback(() => {
     if (!ownerId) return;
-    axiosInstance.get(`/api/v1/institutes/${ownerId}/events`)
+    axiosInstance.get(`/api/getEventsByInstitute/${ownerId}`)
       .then((response) => {
         setEvents(response.data.success ? (response.data.data || []) : []);
       })
@@ -107,7 +107,7 @@ export default function PortalEventsPage({ config = {} }) {
   };
 
   const deleteEvent = () => {
-    axiosInstance.delete(`/api/v1/events/${deleteId}`)
+    axiosInstance.delete(`/api/deleteEvent/${deleteId}`)
       .then((res) => {
         if (res.data.success) {
           setAlert(false);

@@ -91,16 +91,9 @@ app.options('*', cors(corsOptions));
 // Strategy:
 //  - Every request gets a `csrf_token` cookie (readable, SameSite=None in prod
 //    so it survives cross-site requests; HttpOnly auth cookies are separate).
-//  - State-changing methods must echo it back in the X-CSRF-Token header.
+//  - State-changing methods must echo the cookie back in the X-CSRF-Token header.
 //  - Pre-auth endpoints (login/register/password reset) are allowlisted because
 //    a fresh visitor may not have a cookie yet.
-//
-// Path matching: requests can arrive as `/v1/<endpoint>` (current) or `/<endpoint>`
-// (legacy mount, removed but third-party clients may still hit it). We list
-// canonical endpoint names once and expand to all known prefixes so the check
-// is robust to mount-path changes and avoids surprises like the one fixed in
-// commit history (frontend on /api/v1, backend allowlist only had /<endpoint>,
-// CSRF rejected logins).
 
 const csrfCookieOptions = {
   httpOnly: false,
@@ -109,31 +102,23 @@ const csrfCookieOptions = {
   path: '/',
 };
 
-const CSRF_EXEMPT_ENDPOINTS = [
-  "adminLogin",
-  "instituteLogin",
-  "userLogin",
-  "registerInstitute",
-  "register",
-  "uploadUserImage",
-  "instituteForgetPassword",
-  "instituteResetPassword",
-  "forgetpassword",
-  "resetpassword",
-  "userForgetPassword",
-  "userResetPassword",
-  "refreshToken",
-];
-
-// Build allowlist with every prefix the CSRF middleware might see.
-// `app.use("/api", csrfProtect)` strips `/api`, so req.path will be either
-// `/v1/<endpoint>` or `/<endpoint>` (legacy). Belt-and-suspenders: include both.
-const CSRF_PREFIXES = ['', '/v1'];
-const csrfAllowlist = new Set(
-  CSRF_EXEMPT_ENDPOINTS.flatMap((endpoint) =>
-    CSRF_PREFIXES.map((prefix) => `${prefix}/${endpoint}`)
-  )
-);
+// Endpoints that don't require a CSRF token. Paths are relative to the /api
+// mount (so "/userLogin" matches a POST to /api/userLogin).
+const csrfAllowlist = new Set([
+  "/adminLogin",
+  "/instituteLogin",
+  "/userLogin",
+  "/registerInstitute",
+  "/register",
+  "/uploadUserImage",
+  "/instituteForgetPassword",
+  "/instituteResetPassword",
+  "/forgetpassword",
+  "/resetpassword",
+  "/userForgetPassword",
+  "/userResetPassword",
+  "/refreshToken",
+]);
 
 const ensureCsrfCookie = (req, res, next) => {
   if (!req.cookies?.csrf_token) {
@@ -183,30 +168,10 @@ app.use("/api", ensureCsrfCookie, csrfProtect);
 app.get("/api/csrf", (req, res) => {
   res.json({ csrfToken: req.cookies?.csrf_token || null });
 });
-app.get("/api/v1/csrf", (req, res) => {
-  res.json({ csrfToken: req.cookies?.csrf_token || null });
-});
-
-const apiVersionHeader = (version) => (req, res, next) => {
-  res.setHeader("X-Althub-API-Version", version);
-  next();
-};
-
-const legacyApiHeader = (req, res, next) => {
-  res.setHeader("X-Althub-API-Version", "legacy");
-  res.setHeader("X-Althub-API-Deprecated", "true");
-  res.setHeader("X-Althub-API-Successor", "/api/v1");
-  next();
-};
 
 // --- MOUNT ROUTES ---
-// Both /api (legacy) and /api/v1 are mounted. Keeping the legacy mount means
-// a rolling deploy can never leave the system in a state where the frontend
-// uses paths the backend doesn't serve. Once all clients have moved to /v1
-// for an extended period, the legacy mount can be removed.
 const apiRouterOptions = { apiLimiter, imageLimiter, loginLimiter };
-app.use("/api/v1", apiVersionHeader("v1"), createApiRouter({ ...apiRouterOptions, includeResourceAliases: true }));
-app.use("/api", legacyApiHeader, createApiRouter(apiRouterOptions));
+app.use("/api", createApiRouter(apiRouterOptions));
 
 // Health Check + deploy identification.
 // `curl /` shows the running commit so you can verify what's actually live

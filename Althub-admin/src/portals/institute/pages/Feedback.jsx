@@ -20,7 +20,7 @@ const Feedback = () => {
 
     const fetchFeedbackData = () => {
         setLoading(true);
-        axiosInstance.get(`/api/v1/feedback`, {
+        axiosInstance.get(`/api/getFeedback`, {
         })
         .then((response) => {
             if (response.data.success) {
@@ -46,7 +46,7 @@ const Feedback = () => {
     }, [searchTerm, feedbacks]);
 
     const confirmDelete = () => {
-        axiosInstance.delete(`/api/v1/feedback/${deleteId}`, {
+        axiosInstance.delete(`/api/deleteFeedback/${deleteId}`, {
         })
         .then((response) => {
             if (response.data.success) {

@@ -23,7 +23,7 @@ const PlacementCell = () => {
     const fetchData = () => {
         setLoading(true);
         // Unrestricted fetch of all placement cell records
-        axiosInstance.get('/api/v1/getPlacementCells')
+        axiosInstance.get('/api/getPlacementCells')
             .then(res => {
                 const results = res.data.data || [];
                 setData(results);
@@ -46,7 +46,7 @@ const PlacementCell = () => {
     }, [searchTerm, data]);
 
     const executeDelete = () => {
-        axiosInstance.delete(`/api/v1/deleteInstitute/${deleteId}`)
+        axiosInstance.delete(`/api/deleteInstitute/${deleteId}`)
             .then(() => {
                 setShowDeletePrompt(false);
                 setShowSuccessAlert(true);

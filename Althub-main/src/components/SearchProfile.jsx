@@ -34,7 +34,7 @@ export default function SearchProfile({ socket }) {
 
   useEffect(() => {
     if(userID) {
-      apiClient.get(`/api/v1/users/${userID}`)
+      apiClient.get(`/api/searchUserById/${userID}`)
         .then((res) => { if (res?.data?.data) setSelf(res.data.data[0]); })
         .catch(console.error);
     }
@@ -50,7 +50,7 @@ export default function SearchProfile({ socket }) {
         year: overrideParams.year !== undefined ? overrideParams.year : year
     };
 
-    apiClient.post(`/api/v1/users/search`, payload)
+    apiClient.post(`/api/searchUser`, payload)
       .then((res) => {
         const users = (res.data.data || []).filter((user) => user._id !== userID);
         setShowUsers(users);
@@ -71,18 +71,18 @@ export default function SearchProfile({ socket }) {
     const msg = `${self.fname} ${self.lname} Started Following You`;
     if (socket) socket.emit("sendNotification", { receiverid: targetId, title: "New Follower", msg: msg });
     
-    apiClient.post(`/api/v1/notifications`, { 
+    apiClient.post(`/api/addNotification`, { 
         userid: targetId, msg: msg, image: self.profilepic || "", title: "New Follower", date: new Date().toISOString() 
     });
 
-    apiClient.put(`/api/v1/users/${targetId}/follow`, { userId: userID })
+    apiClient.put(`/api/follow/${targetId}`, { userId: userID })
         .then(() => {
             toast.success("Following!");
             performSearch(); 
-            apiClient.post(`/api/v1/conversations/search`, { person1: targetId, person2: userID })
+            apiClient.post(`/api/searchConversations`, { person1: targetId, person2: userID })
             .then((res) => {
                 if (res.data.data.length <= 0) {
-                    apiClient.post(`/api/v1/conversations`, { senderId: userID, receiverId: targetId });
+                    apiClient.post(`/api/newConversation`, { senderId: userID, receiverId: targetId });
                 }
             });
         })
@@ -91,7 +91,7 @@ export default function SearchProfile({ socket }) {
 
   const confirmUnfollow = () => {
     if (!unfollowId) return;
-    apiClient.put(`/api/v1/users/${unfollowId}/unfollow`, { userId: userID })
+    apiClient.put(`/api/unfollow/${unfollowId}`, { userId: userID })
         .then(() => {
             toast.info("Unfollowed.");
             setUnfollowId(null);

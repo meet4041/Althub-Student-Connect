@@ -41,7 +41,7 @@ export default function PostForm({ config = {} }) {
       return;
     }
     setOwnerId(id);
-    axiosInstance.get(`/api/v1/institutes/${id}`)
+    axiosInstance.get(`/api/getInstituteById/${id}`)
       .then((res) => { if (res.data.success) setProfile(res.data.data); })
       .catch(() => {});
   }, [editingPost?._id, isEdit, navigate, options.backPath, user?._id]);
@@ -76,9 +76,10 @@ export default function PostForm({ config = {} }) {
     body.append('title', 'Update');
     fileList.forEach((file) => body.append('photos', file));
 
+    if (isEdit && editingPost?._id) body.append('id', editingPost._id);
     const request = isEdit && editingPost?._id
-      ? axiosInstance.patch(`/api/v1/posts/${editingPost._id}`, body, { headers: { 'Content-Type': 'multipart/form-data' } })
-      : axiosInstance.post(`/api/v1/posts`, body, { headers: { 'Content-Type': 'multipart/form-data' } });
+      ? axiosInstance.post(`/api/editPost`, body, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : axiosInstance.post(`/api/addPost`, body, { headers: { 'Content-Type': 'multipart/form-data' } });
 
     request
       .then(() => {

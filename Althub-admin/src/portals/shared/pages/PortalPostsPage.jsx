@@ -48,7 +48,7 @@ export default function PortalPostsPage({ config = {} }) {
 
   const fetchPosts = useCallback(() => {
     if (!ownerId) return;
-    axiosInstance.get(`/api/v1/users/${ownerId}/posts`)
+    axiosInstance.get(`/api/getPostById/${ownerId}`)
       .then((response) => setPosts(response.data.success ? (response.data.data || []) : []))
       .catch(() => setPosts([]));
   }, [ownerId]);
@@ -71,7 +71,7 @@ export default function PortalPostsPage({ config = {} }) {
   };
 
   const deletePost = () => {
-    axiosInstance.delete(`/api/v1/posts/${deleteId}`)
+    axiosInstance.delete(`/api/deletePost/${deleteId}`)
       .then((res) => {
         if (res.data.success) {
           setAlert(false);

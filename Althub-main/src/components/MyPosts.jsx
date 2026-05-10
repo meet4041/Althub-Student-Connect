@@ -60,14 +60,14 @@ export default function MyPosts() {
     if (!userid) return;
 
     // 1. User Profile
-    apiClient.get(`/api/v1/users/${userid}`, { withCredentials: true })
+    apiClient.get(`/api/searchUserById/${userid}`, { withCredentials: true })
       .then((res) => {
         if (res.data?.data) setUser(res.data.data[0]);
       })
       .catch(err => console.error("User fetch error:", err));
 
     // 2. My Posts
-    apiClient.get(`/api/v1/users/${userid}/posts`, {
+    apiClient.get(`/api/getPostById/${userid}`, {
       withCredentials: true
     })
       .then((res) => {
@@ -83,7 +83,7 @@ export default function MyPosts() {
       });
 
     // 3. Suggestions
-    apiClient.post(`/api/v1/users/random`, { userid })
+    apiClient.post(`/api/getRandomUsers`, { userid })
       .then((res) => {
         setTopUsers(res.data.data || []);
       })
@@ -104,7 +104,7 @@ export default function MyPosts() {
   const confirmDelete = () => {
     if (!deleteId) return;
 
-    apiClient.delete(`/api/v1/posts/${deleteId}`, { withCredentials: true })
+    apiClient.delete(`/api/deletePost/${deleteId}`, { withCredentials: true })
       .then(() => {
         toast.success("Post deleted");
         setDeleteId(null);
@@ -126,7 +126,7 @@ export default function MyPosts() {
     formData.append("description", editDesc);
     editImages.forEach(img => formData.append("existingPhotos", img));
 
-    apiClient.patch(`/api/v1/posts/${editId}`, formData, {
+    apiClient.post(`/api/editPost`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
       withCredentials: true
     })

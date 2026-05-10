@@ -49,7 +49,7 @@ const Users = () => {
         }
         axiosInstance({
             method: "get",
-            url: `/api/v1/institutes/${instituteKey}/users`,
+            url: `/api/getUsersOfInstitute/${instituteKey}`,
         }).then((response) => {
             setUsers(response.data.success ? response.data.data : []);
             setIsTableLoading(false);
@@ -121,7 +121,7 @@ const Users = () => {
     const DeleteUser = () => {
         axiosInstance({
             method: "delete",
-            url: `/api/v1/users/${deleteId}`,
+            url: `/api/searchUserById/${deleteId}`,
         }).then((response) => {
             if (response.data.success) {
                 setAlert(false);

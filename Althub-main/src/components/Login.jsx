@@ -37,26 +37,14 @@ export default function Login() {
     return true;
   };
 
-  // Login with transparent legacy-path fallback. See admin/Login.jsx for rationale.
-  // Remove once new backend is confirmed deployed.
-  const loginRequest = (payload) =>
-    apiClient.post('/api/v1/userLogin', payload, { withCredentials: true })
-      .catch((err) => {
-        const status = err.response?.status;
-        if (status === 403 || status === 404) {
-          return apiClient.post('/api/userLogin', payload, { withCredentials: true });
-        }
-        throw err;
-      });
-
   const handleLogin = (e) => {
     e.preventDefault();
     if (validate()) {
       setLoading(true);
-      loginRequest({
+      apiClient.post('/api/userLogin', {
         email: user.email,
         password: user.password,
-      }).then((response) => {
+      }, { withCredentials: true }).then((response) => {
         toast.success("Welcome back!");
         loginSync(response.data.data);
         setUser({ email: "", password: "" });

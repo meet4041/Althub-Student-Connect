@@ -26,7 +26,7 @@ const Register = () => {
     useEffect(() => {
         const fetchInstitutes = async () => {
             try {
-                const res = await axiosInstance.get('/api/v1/institutes');
+                const res = await axiosInstance.get('/api/getInstitutes');
                 if (res.data.success) {
                     setInstitutesList(res.data.data || []);
                 }
@@ -83,7 +83,7 @@ const Register = () => {
                 phone: (formData.phone || '').trim().slice(0, 20)
             };
             delete payload.confirmPassword;
-            const response = await axiosInstance.post('/api/v1/registerInstitute', payload);
+            const response = await axiosInstance.post('/api/registerInstitute', payload);
 
             if (response.data.success) {
                 toast.success(`${formData.role.replace('_', ' ').toUpperCase()} Registered Successfully!`);

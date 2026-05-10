@@ -15,17 +15,12 @@ import company_route from "./companyRoute.js";
 import notification_route from "./notificationRoute.js";
 import images_route from "./imagesRoute.js";
 import portal_announcement_route from "./portalAnnouncementRoute.js";
-import v1ResourceAliases from "./v1ResourceAliases.js";
 
-export const createApiRouter = ({ apiLimiter, imageLimiter, loginLimiter, includeResourceAliases = false } = {}) => {
+export const createApiRouter = ({ apiLimiter, imageLimiter, loginLimiter } = {}) => {
   const router = express.Router();
 
   router.use("/images", imageLimiter, images_route);
   router.use(apiLimiter);
-
-  if (includeResourceAliases) {
-    router.use(v1ResourceAliases);
-  }
 
   router.post("/adminLogin", loginLimiter);
   router.post("/instituteLogin", loginLimiter);

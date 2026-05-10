@@ -75,7 +75,7 @@ export default function ViewProfile() {
     // --- Data Fetching ---
     const getUser = useCallback(() => {
         if (!userID) return;
-        apiClient.get(`/api/v1/users/${userID}`, { withCredentials: true }).then((res) => {
+        apiClient.get(`/api/searchUserById/${userID}`, { withCredentials: true }).then((res) => {
             if (res.data?.data?.length) {
                 const u = res.data.data[0];
                 setUser(u);
@@ -87,17 +87,18 @@ export default function ViewProfile() {
 
     const getEducation = useCallback(() => {
         if (!userID) return;
-        apiClient.get(`/api/v1/users/${userID}/education`, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
+        // legacy backend: POST with userid in body
+        apiClient.post(`/api/getEducation`, { userid: userID }, { withCredentials: true }).then((res) => setEducation(res.data.data || []));
     }, [userID]);
 
     const getExperience = useCallback(() => {
         if (!userID) return;
-        apiClient.get(`/api/v1/users/${userID}/experience`, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
+        apiClient.post(`/api/getExperience`, { userid: userID }, { withCredentials: true }).then((res) => setExperience(res.data.data || []));
     }, [userID]);
 
     const getNewUsers = useCallback(() => {
         if (!userID) return;
-        apiClient.post(`/api/v1/users/random`, { userid: userID }, { withCredentials: true }).then((res) => setTopUsers(res.data.data));
+        apiClient.post(`/api/getRandomUsers`, { userid: userID }, { withCredentials: true }).then((res) => setTopUsers(res.data.data));
     }, [userID]);
 
     useEffect(() => {
@@ -107,7 +108,7 @@ export default function ViewProfile() {
     // --- Handlers ---
     const handleDeleteAccount = () => {
         if (window.confirm("Are you sure? This cannot be undone.")) {
-            apiClient.delete(`/api/v1/users/${userID}`, { withCredentials: true }).then(() => {
+            apiClient.delete(`/api/deleteUser/${userID}`, { withCredentials: true }).then(() => {
                 toast.success("Account Deleted"); logout(); nav("/");
             });
         }

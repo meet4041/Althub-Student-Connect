@@ -54,13 +54,6 @@ const uploadLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-const sendActorSession = (req, res) => {
-    const actor = req.user?.toObject ? req.user.toObject() : { ...req.user };
-    delete actor.password;
-    delete actor.token;
-    res.status(200).send({ success: true, data: actor });
-};
-
 institute_route.post('/instituteForgetPassword', forgetLimiter, institute_controller.instituteForgetPassword);
 institute_route.post('/instituteResetPassword', institute_controller.instituteResetPassword);
 institute_route.get('/instituteLogout', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.instituteLogout);
@@ -69,7 +62,6 @@ institute_route.get('/instituteLogout', requireAuth, requireRole('institute', 'a
 // ==============================
 // PROTECTED ROUTES (Login Required)
 // ==============================
-institute_route.get('/auth/admin/me', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), sendActorSession);
 institute_route.post('/instituteUpdatePassword', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.instituteUpdatePassword);
 institute_route.post('/instituteUpdate', requireAuth, requireRole('institute', 'alumni_office', 'placement_cell'), institute_controller.updateInstitute);
 institute_route.delete('/deleteInstitute/:id', requireAuth, requireRole('admin', 'institute', 'alumni_office', 'placement_cell'), institute_controller.deleteInstitute);

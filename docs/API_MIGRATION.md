@@ -1,65 +1,41 @@
-# Althub API Migration
+# Althub API
 
-The backend now supports a versioned API boundary:
+The backend exposes a single, unversioned API surface mounted at `/api`.
 
-```text
-/api/v1
+There is no versioning scheme — the `/api/v1` prefix and resource-style aliases
+(`/api/v1/posts`, `/api/v1/institutes/:id`, etc.) introduced during an earlier
+exploration were removed in favour of a single namespace. All endpoints use
+named-action paths (e.g. `GET /api/getPost`, `POST /api/addPost`).
+
+## Conventions
+
+- All endpoints live under `/api/<endpoint>`. No version prefix.
+- HTTP method matches semantic intent (GET reads, POST writes).
+- A few historical endpoints accept POST for reads when the body needs a
+  `userid` field (e.g. `POST /api/getEducation`, `POST /api/getnotifications`).
+- Auth is cookie-based (HttpOnly JWT). See `Althub-server/middleware/authMiddleware.js`.
+- CSRF protection: state-changing requests must include the `csrf_token` cookie
+  value in an `X-CSRF-Token` header. The cookie is set on every response;
+  cross-site frontends can fetch it via `GET /api/csrf` (returns the token in
+  the response body since cross-site cookies are unreadable from JS).
+
+## Adding a new endpoint
+
+1. Add the route in the appropriate `Althub-server/routes/<resource>Route.js`
+2. Use `requireAuth` + `requireRole(...)` for protected routes
+3. Use the named-action pattern (`getX`, `addX`, `editX`, `deleteX`) — REST-style
+   nesting (`/users/:id/posts`) was tried and reverted; keep things flat
+4. If the endpoint is pre-auth (login, register, password reset), add it to
+   the `csrfAllowlist` Set in `Althub-server/index.js`
+
+## Frontend usage
+
+```js
+import apiClient from '../api/client';
+
+apiClient.get('/api/getInstituteById/694b...');
+apiClient.post('/api/addPost', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 ```
 
-Existing `/api` routes remain available as compatibility routes while the frontend migrates.
-
-## Compatibility Behavior
-
-Legacy `/api` responses include headers:
-
-```text
-X-Althub-API-Version: legacy
-X-Althub-API-Deprecated: true
-X-Althub-API-Successor: /api/v1
-```
-
-Versioned `/api/v1` responses include:
-
-```text
-X-Althub-API-Version: v1
-```
-
-## Initial Resource-Style Aliases
-
-These `/api/v1` routes are aliases over existing controllers.
-
-| Legacy route | Versioned route |
-| --- | --- |
-| `GET /api/getPost` | `GET /api/v1/posts` |
-| `POST /api/addPost` | `POST /api/v1/posts` |
-| `POST /api/editPost` | `PATCH /api/v1/posts/:id` |
-| `DELETE /api/deletePost/:id` | `DELETE /api/v1/posts/:id` |
-| `PUT /api/like/:id` | `PUT /api/v1/posts/:id/like` |
-| `GET /api/getPostById/:userid` | `GET /api/v1/users/:userId/posts` |
-| `GET /api/getFriendsPost/all` | `GET /api/v1/posts/friends` |
-| `GET /api/getEvents` | `GET /api/v1/events` |
-| `POST /api/addEvent` | `POST /api/v1/events` |
-| `POST /api/editEvent` | `PATCH /api/v1/events/:id` |
-| `DELETE /api/deleteEvent/:id` | `DELETE /api/v1/events/:id` |
-| `PUT /api/participateInEvent/:id` | `PUT /api/v1/events/:id/participation` |
-| `GET /api/getUpcommingEvents` | `GET /api/v1/events/upcoming` |
-| `GET /api/getEventsByInstitute/:organizerid` | `GET /api/v1/institutes/:organizerId/events` |
-| `GET /api/getUsers` | `GET /api/v1/users` |
-| `GET /api/searchUserById/:_id` | `GET /api/v1/users/:id` |
-| `GET /api/getUsersOfInstitute/:institute` | `GET /api/v1/institutes/:institute/users` |
-| `POST /api/searchUser` | `POST /api/v1/users/search` |
-| `POST /api/getRandomUsers` | `POST /api/v1/users/random` |
-| `PUT /api/follow/:id` | `PUT /api/v1/users/:id/follow` |
-| `PUT /api/unfollow/:id` | `PUT /api/v1/users/:id/unfollow` |
-| `POST /api/getnotifications` | `GET /api/v1/users/:userid/notifications` |
-| `POST /api/addNotification` | `POST /api/v1/notifications` |
-| `POST /api/deleteNotification` | `DELETE /api/v1/notifications/:id` |
-
-## Backend Migration Rules
-
-- Keep existing `/api` routes until all frontends move to `/api/v1`.
-- Add new routes under `/api/v1` first.
-- Prefer resource nouns over action verbs.
-- Keep route access rules close to each route.
-- Use `asyncHandler` or controller-level error forwarding for new async controllers.
-- Do not add new `getSomething`, `addSomething`, or `editSomething` endpoint names.
+The shared `apiClient` (`Althub-shared/src/apiClient.js`) handles CSRF
+token attachment and cookie credentials automatically.

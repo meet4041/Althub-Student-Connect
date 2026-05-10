@@ -61,7 +61,7 @@ const AlumniMembers = () => {
 
         axiosInstance({
             method: 'get',
-            url: `/api/v1/institutes/${instituteKey}/users`,
+            url: `/api/getUsersOfInstitute/${instituteKey}`,
         }).then((response) => {
             const fetchedUsers = response.data.success ? response.data.data : [];
             const alumniOnly = fetchedUsers.filter((user) => user.type === 'Alumni');

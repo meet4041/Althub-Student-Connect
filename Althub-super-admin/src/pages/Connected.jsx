@@ -12,9 +12,9 @@ const Connected = () => {
 
     useEffect(() => {
         Promise.all([
-            axiosInstance.get('/api/v1/getInstitutes'),
-            axiosInstance.get('/api/v1/getPlacementCells'),
-            axiosInstance.get('/api/v1/getAlumniOffices')
+            axiosInstance.get('/api/getInstitutes'),
+            axiosInstance.get('/api/getPlacementCells'),
+            axiosInstance.get('/api/getAlumniOffices')
         ]).then(([instRes, placementRes, alumniRes]) => {
             setInstitutes(instRes.data.data || []);
             setPlacementCells(placementRes.data.data || []);

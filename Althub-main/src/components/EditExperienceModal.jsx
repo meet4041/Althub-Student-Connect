@@ -67,7 +67,7 @@ const [uploading, setUploading] = useState(false);
     const body = new FormData();
     body.append("companylogo", file); // Key must match backend storage setup
 
-    apiClient.post(`/api/v1/uploadCompanyLogo`, body, { 
+    apiClient.post(`/api/uploadCompanyLogo`, body, { 
         headers: { "Content-Type": "multipart/form-data" } 
     })
     .then((res) => {
@@ -113,8 +113,8 @@ const [uploading, setUploading] = useState(false);
     };
 
     const request = ex._id
-      ? apiClient.patch(`/api/v1/experience/${ex._id}`, payload)
-      : apiClient.post(`/api/v1/users/${userID}/experience`, payload);
+      ? apiClient.post(`/api/editExperience`, { ...payload, _id: ex._id })
+      : apiClient.post(`/api/addExperience`, payload);
 
     request
       .then((res) => {
@@ -139,7 +139,7 @@ const [uploading, setUploading] = useState(false);
 
   const handleDelete = () => {
     if (window.confirm("Delete this experience?")) {
-      apiClient.delete(`/api/v1/experience/${ex._id}`).then(() => {
+      apiClient.delete(`/api/deleteExperience/${ex._id}`).then(() => {
         toast.success("Deleted!");
         getExperience();
         handleCancel();

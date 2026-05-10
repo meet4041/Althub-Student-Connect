@@ -19,7 +19,7 @@ export default function Feedback() {
     const location = useLocation();
 
     useEffect(() => {
-        apiClient.get(`/api/v1/users`, {
+        apiClient.get(`/api/getUsers`, {
             withCredentials: true 
         }).then((res) => {
             if(res.data.success) {
@@ -59,7 +59,7 @@ export default function Feedback() {
         setIsSubmitting(true);
 
         apiClient({
-            url: `/api/v1/feedback`,
+            url: `/api/addFeedback`,
             method: 'post',
             withCredentials: true,
             data: {

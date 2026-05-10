@@ -16,12 +16,12 @@ import { readCookie } from './cookies.js';
 // to know the value to echo back — unless we explicitly ask the backend.
 //
 // To handle both cases uniformly, every client maintains an in-memory token
-// cache that's hydrated from `GET /api/v1/csrf` on first need. We prefer:
+// cache that's hydrated from `GET /api/csrf` on first need. We prefer:
 //   1. cached value (fastest, works in both modes)
 //   2. cookie value (covers same-origin without an extra round-trip)
 //   3. fetch from /csrf (covers cross-site)
 
-const CSRF_FETCH_PATH = '/api/v1/csrf';
+const CSRF_FETCH_PATH = '/api/csrf';
 
 const tokenCache = new WeakMap(); // axios instance -> { token, inflight }
 
@@ -113,22 +113,6 @@ export const createApiClient = ({
           config.headers = { ...(config.headers || {}), 'X-CSRF-Token': fresh };
           return client.request(config);
         }
-      }
-
-      // Transitional: if /api/v1/X 404s (or 403s from a backend whose CSRF
-      // allowlist doesn't recognize v1-prefixed paths), retry on /api/X. This
-      // keeps things working when the backend deploy is behind the frontend.
-      // Once backend has /api/v1, v1 paths will succeed first try and this
-      // branch becomes inert.
-      const canFallbackToLegacy =
-        (status === 404 || status === 403) &&
-        !config.__legacyPathFallbackTried &&
-        typeof config.url === 'string' &&
-        config.url.includes('/api/v1/');
-      if (canFallbackToLegacy) {
-        config.__legacyPathFallbackTried = true;
-        config.url = config.url.replace('/api/v1/', '/api/');
-        return client.request(config);
       }
 
       const shouldRedirect =

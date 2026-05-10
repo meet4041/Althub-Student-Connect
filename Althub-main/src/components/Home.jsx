@@ -76,12 +76,13 @@ export default function Home({ socket }) {
   };
 
   const checkEducation = useCallback(() => {
-    if (userid) apiClient.get(`/api/v1/users/${userid}/education`).then((res) => setHasEducation(res.data.data?.length > 0));
+    // legacy backend: POST /api/getEducation with userid in body
+    if (userid) apiClient.post(`/api/getEducation`, { userid }).then((res) => setHasEducation(res.data.data?.length > 0));
   }, [userid]);
 
   const getSuggestions = useCallback(() => {
     if (!userid) return;
-    apiClient.post(`/api/v1/users/random`, { userid })
+    apiClient.post(`/api/getRandomUsers`, { userid })
       .then((res) => {
         if (res.data.data) {
           const allSuggestions = res.data.data.filter(u =>
@@ -98,8 +99,8 @@ export default function Home({ socket }) {
 
   useEffect(() => {
     checkEducation();
-    apiClient.get(`/api/v1/posts`, { withCredentials: true }).then((res) => setPost(res.data.data));
-    apiClient.get(`/api/v1/events`).then((res) => setEvents(res.data.data));
+    apiClient.get(`/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
+    apiClient.get(`/api/getEvents`).then((res) => setEvents(res.data.data));
   }, [checkEducation]);
 
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function Home({ socket }) {
       const compressed = await Promise.all(Array.from(fileList).map(f => compressImage(f)));
       compressed.forEach(f => body.append(`photos`, f, f.name));
     }
-    apiClient.post(`/api/v1/posts`, body, { headers: { "Content-type": "multipart/form-data" }, withCredentials: true })
+    apiClient.post(`/api/addPost`, body, { headers: { "Content-type": "multipart/form-data" }, withCredentials: true })
       .then(() => {
         toast.success("Posted!");
         filePreviews.forEach((url) => URL.revokeObjectURL(url));
@@ -140,15 +141,15 @@ export default function Home({ socket }) {
         setFileList(null);
         setDescription("");
         setUploading(false);
-        apiClient.get(`/api/v1/posts`, { withCredentials: true }).then((res) => setPost(res.data.data));
+        apiClient.get(`/api/getPost`, { withCredentials: true }).then((res) => setPost(res.data.data));
       })
       .catch(() => { toast.error("Failed"); setUploading(false); });
   };
 
   const handleLike = (elem) => {
-    apiClient.put(`/api/v1/posts/${elem._id}/like`, { userId: userid }).then((res) => {
+    apiClient.put(`/api/like/${elem._id}`, { userId: userid }).then((res) => {
       if (userid !== elem.userid && res.data.msg === "Like") socket.emit("sendNotification", { receiverid: elem.userid, title: "New Like", msg: `${user.fname} Liked Your Post` });
-      apiClient.get(`/api/v1/posts`, { withCredentials: true }).then((r) => setPost(r.data.data));
+      apiClient.get(`/api/getPost`, { withCredentials: true }).then((r) => setPost(r.data.data));
     });
   };
 
